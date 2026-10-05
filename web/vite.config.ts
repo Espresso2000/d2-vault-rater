@@ -1,6 +1,8 @@
 import { defineConfig, type Plugin } from "vite";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import basicSsl from "@vitejs/plugin-basic-ssl";
+import { localBungie, localPort } from "./local-server.ts";
 
 const here = import.meta.dirname;
 const srcDir = resolve(here, "../src");
@@ -49,10 +51,15 @@ function reportPage(): Plugin {
   };
 }
 
-export default defineConfig({
-  base: "./",
-  plugins: [shims(), reportPage()],
-  server: { port: 5173, strictPort: true, fs: { allow: [resolve(here, "..")] } },
-  build: { outDir: "dist", emptyOutDir: true, target: "es2022", chunkSizeWarningLimit: 1200 },
-  worker: { format: "es" },
+// `--mode localhost`: https on the Bungie app's localhost redirect port, plus the token relay.
+export default defineConfig(({ mode }) => {
+  const local = mode === "localhost";
+  return {
+    base: "./",
+    plugins: [shims(), reportPage(), ...(local ? [basicSsl(), localBungie()] : [])],
+    server: { port: local ? localPort() : 5173, strictPort: true, fs: { allow: [resolve(here, "..")] } },
+    preview: { port: local ? localPort() : 4173, strictPort: true },
+    build: { outDir: "dist", emptyOutDir: true, target: "es2022", chunkSizeWarningLimit: 1200 },
+    worker: { format: "es" },
+  };
 });

@@ -27,7 +27,9 @@ The first run opens the Bungie login; paste back the address your browser lands 
 
 `web/` is the same rater as a static site that runs entirely in your browser: Bungie sign-in, your vault, every report tab (Overview, Weapons, Armor, RADS with encounter loadouts, Full list, Shard list, Wrapped, Settings), DIM tags and loadouts, item moves, and a lock plan you preview before anything changes. It reuses the rating code in `src/`; `web/vite.config.ts` swaps the few Node-only modules (`config`, `bungie/client`, `bungie/oauth`, `bungie/manifest`, `dim/sync`) for browser versions in `web/src/shims`.
 
-It needs its own Bungie app (keep the Confidential one for the local app):
+**On your own PC:** double-click `Vault Rater Web.cmd` (next to `Vault Rater.cmd`), or run `npm run local` in `web/`. It serves the site at https://localhost:7777 (the redirect URL the local app already registers) with a self-signed certificate, so your browser warns once: choose Advanced, then continue. It uses the keys in `.env`; a tiny relay in `web/local-server.ts` adds the client secret to Bungie token requests, so the secret never reaches the page, and you stay signed in (Confidential apps get refresh tokens).
+
+**Hosted on a static server**, it needs its own Bungie app (keep the Confidential one for the local app):
 
 - OAuth client type: **Public** (no secret ships with the site; Bungie gives public clients no refresh token, so you sign in again after about an hour)
 - Redirect URL: the site's address, e.g. `https://espresso-6.github.io/vault-rater/`

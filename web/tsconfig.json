@@ -9,7 +9,7 @@
     "resolveJsonModule": true,
     "noEmit": true,
     "types": ["vite/client"],
-    "allowImportingTsExtensions": false
+    "allowImportingTsExtensions": true
   },
   "include": ["src/**/*.ts", "scripts/**/*.ts", "vite.config.ts"]
 }

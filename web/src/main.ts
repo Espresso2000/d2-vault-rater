@@ -6,7 +6,7 @@ import { hydrate, paths, readText } from "./shims/config";
 import { loadTokens, clearTokens, LoginRequired, minutesLeft } from "./shims/client";
 import { startLogin, finishLogin } from "./shims/oauth";
 import { clearDimToken, fetchDimData, keepIds, setDimTag, DIM_TAGS, type DimTagValue, type DimData } from "./shims/sync";
-import { appConfig, configured, redirectUrl, saveLocalConfig } from "./appConfig";
+import { appConfig, configured, loadServedConfig, redirectUrl, saveLocalConfig } from "./appConfig";
 import { loadLiteManifest } from "./manifest";
 import { ensureSources } from "./sources";
 import { fetchVault } from "../../src/vault/fetch.js";
@@ -53,7 +53,7 @@ function showSignIn(message = "") {
     <p class="lede">Sign in with your Bungie account. Vault Rater reads your vault and rates every weapon and armor piece against Aegis's tier list.
     It never changes anything in game until you preview a change and confirm it.</p>
     <div class="vr-actions"><button class="btn primary" id="vr-signin">Sign in with Bungie</button></div>
-    <p class="small muted">Bungie keeps you signed in for about an hour; after that this page asks you to sign in again.</p>`);
+    ${appConfig().tokenEndpoint ? "" : `<p class="small muted">Bungie keeps you signed in for about an hour; after that this page asks you to sign in again.</p>`}`);
   $("#vr-signin").onclick = () => {
     try {
       location.href = startLogin();
@@ -238,7 +238,7 @@ window.VR_API = async (path, body) => {
 
 /* ---------- Boot ---------- */
 async function boot() {
-  await hydrate().catch(() => {});
+  await Promise.all([hydrate().catch(() => {}), loadServedConfig()]);
   if (!configured()) return showSetup();
   const url = new URL(location.href);
   if (url.searchParams.has("code") || url.searchParams.has("error")) {

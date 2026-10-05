@@ -3,6 +3,7 @@
  * no refresh token, so when the access token runs out (about an hour) the player signs in again.
  */
 import { bungieEnv } from "./config";
+import { appConfig } from "../appConfig";
 
 export const BUNGIE = "https://www.bungie.net";
 const PLATFORM = `${BUNGIE}/Platform`;
@@ -51,7 +52,9 @@ export function saveTokens(raw: { access_token: string; refresh_token?: string; 
 
 export async function tokenRequest(body: Record<string, string>): Promise<Tokens> {
   const env = bungieEnv();
-  const res = await fetch(`${PLATFORM}/App/OAuth/Token/`, {
+  // Run locally with a Confidential app, the local server adds the secret (see local-server.ts).
+  const relay = appConfig().tokenEndpoint;
+  const res = await fetch(relay || `${PLATFORM}/App/OAuth/Token/`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded", "X-API-Key": env.apiKey },
     // Public client: the client id goes in the body and there is no secret.
