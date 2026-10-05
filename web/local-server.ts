@@ -48,7 +48,9 @@ function middleware(): Connect.NextHandleFunction {
     if (req.method === "POST" && path.endsWith("/oauth/token")) {
       // Only this page may use the relay.
       const origin = req.headers.origin;
-      if (origin && origin !== `https://${req.headers.host}`) return (res.statusCode = 403), res.end("Wrong origin");
+      // HTTP/2 (what Vite uses over https) sends :authority instead of Host.
+      const host = req.headers.host || (req.headers[":authority"] as string | undefined);
+      if (origin && origin !== `https://${host}`) return (res.statusCode = 403), res.end("Wrong origin");
       const env = readEnv();
       const body = new URLSearchParams(await readBody(req));
       const grant = body.get("grant_type");
