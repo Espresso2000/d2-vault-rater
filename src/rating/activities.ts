@@ -51,7 +51,7 @@ export interface RatedActivity {
 const base = (n: string) => normalizeName(n.replace(/\s*\((adept|harrowed|timelost)\)\s*$/i, ""));
 
 /**
- * Ranks raids and dungeons by how much they would add to this vault:
+ * Ranks raids and dungeons (each kind on its own) by how much they would add to this vault:
  * 40% loot quality (the activity's three best weapons on Aegis's sheet),
  * 40% need (good loot you lack, or own only with a weak roll), 20% armor set bonus you don't have yet.
  */
@@ -132,6 +132,8 @@ export function rateActivities(
     };
   });
   rated.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
-  rated.forEach((r, i) => (r.rank = i + 1));
+  // Raids and dungeons are ranked separately: rank is the place among activities of the same kind.
+  const next: Record<string, number> = {};
+  for (const r of rated) r.rank = next[r.kind] = (next[r.kind] ?? 0) + 1;
   return rated;
 }

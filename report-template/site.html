@@ -549,6 +549,101 @@ body.vr-booting > header.hero, body.vr-booting > nav.tabs, body.vr-booting > mai
 .prestable th { color: var(--faint); font-weight: 600; }
 .tablewrap { overflow-x: auto; }
 
+/* ===== Sleeker theme: calmer surfaces, one accent gradient, a slowly shifting background ===== */
+:root {
+  --line: rgba(60, 82, 160, .28);
+  --line-hi: rgba(84, 110, 200, .42);
+  --glass: rgba(11, 18, 46, .58);
+  --glass-hi: rgba(20, 31, 74, .72);
+  --glow-line: linear-gradient(90deg, transparent, rgba(77,125,255,.55) 20%, rgba(54,196,242,.8) 50%, rgba(51,227,160,.55) 80%, transparent);
+}
+body { background: var(--void); }
+/* Aurora: two soft blue/green clouds that drift and breathe behind everything. */
+body::before {
+  content: ""; position: fixed; inset: -25%; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(38% 30% at 22% 18%, rgba(77,125,255,.20), transparent 70%),
+    radial-gradient(34% 28% at 82% 12%, rgba(51,227,160,.13), transparent 70%),
+    radial-gradient(40% 34% at 70% 88%, rgba(54,196,242,.10), transparent 70%),
+    radial-gradient(30% 26% at 12% 80%, rgba(51,227,160,.08), transparent 70%);
+  animation: aurora 48s ease-in-out infinite alternate;
+}
+@keyframes aurora {
+  0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); filter: hue-rotate(0deg); }
+  50% { transform: translate3d(4%, -3%, 0) rotate(6deg) scale(1.06); filter: hue-rotate(-18deg); }
+  100% { transform: translate3d(-3%, 4%, 0) rotate(-4deg) scale(1.03); filter: hue-rotate(12deg); }
+}
+#stars { opacity: .8; }
+
+/* Hero */
+header.hero { padding-block: clamp(28px, 5vw, 56px) 22px; }
+.hero .lede { max-width: 70ch; }
+.tile { background: var(--glass); border-color: var(--line); backdrop-filter: blur(6px); }
+.tile::before { opacity: .55; height: 1px; }
+.tile .big { font-size: 32px; }
+
+/* Pills */
+.chips { gap: 6px; }
+.chip { padding: 6px 12px; gap: 8px; border-color: var(--line-hi); background: linear-gradient(180deg, rgba(20,31,74,.65), rgba(11,18,46,.65)); backdrop-filter: blur(6px); box-shadow: inset 0 1px 0 rgba(255,255,255,.04); }
+.chip .k { font: 600 10.5px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }
+.chip b { font-weight: 600; }
+
+/* Tab bar and dividers: a glowing gradient hairline instead of a flat rule */
+nav.tabs { background: rgba(5,9,25,.72); border-bottom: 0; }
+nav.tabs::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--glow-line); box-shadow: 0 0 14px rgba(54,196,242,.35); }
+nav.tabs .wrap { padding-right: 84px; }
+nav.tabs button { transition: color .15s ease; }
+.sub-head::after { height: 1px; background: linear-gradient(90deg, var(--line-hi), transparent); }
+footer { border-top: 0; position: relative; }
+footer::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--glow-line); opacity: .7; }
+.sec-head h2::before { box-shadow: none; width: 3px; }
+
+/* Calmer cards */
+.pick, .rad { background: var(--glass); border-color: var(--line-hi); backdrop-filter: blur(6px); }
+.elcard, .qlink, .tcard, .acard, .setcard, .set, .toolbar, .exitem, .radset, .dimbox, .planbox, .setform fieldset { backdrop-filter: blur(6px); }
+.elcard, .qlink, .tcard, .acard, .setcard, .set { background: var(--glass); }
+.toolbar { background: rgba(8,13,36,.78); }
+.row { background: rgba(11,18,46,.5); }
+.row:hover { background: var(--glass-hi); }
+.pick:hover { transform: translateY(-2px); box-shadow: 0 14px 40px -22px rgba(54,196,242,.5); }
+
+/* Full list: rows ~10% taller with ~25% more room between them */
+#exlist .list { gap: 8px 12px; }
+#exlist .row { padding-block: 11px; }
+.more { gap: 10px; flex-wrap: wrap; }
+.btn.ghost { background: transparent; }
+
+/* RADS: raids and dungeons ranked separately */
+.radgroups { display: grid; gap: 34px; }
+.radgroup .sub-head { margin-top: 0; }
+.radgroup .sub-head h3 { font-size: 18px; font-weight: 600; }
+
+/* Settings gear: big, fixed in the top right corner */
+.gear { position: fixed; z-index: 7; top: calc(8px + env(safe-area-inset-top, 0px)); right: clamp(10px, 2vw, 22px); width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center;
+  border: 1px solid var(--line-hi); background: rgba(11,18,46,.78); backdrop-filter: blur(10px); color: var(--muted); box-shadow: 0 8px 30px rgba(0,0,0,.45); transition: color .2s ease, border-color .2s ease, transform .4s ease; }
+.gear svg { width: 28px; height: 28px; fill: currentColor; }
+.gear:hover { color: var(--ink); border-color: var(--cyan); transform: rotate(45deg); }
+.gear[aria-pressed="true"] { color: #04102a; background: var(--grad); border-color: transparent; }
+
+/* Back to top */
+.totop { position: fixed; z-index: 7; right: clamp(12px, 2vw, 24px); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); padding: 10px 16px; border-radius: 999px; font: 600 13px var(--display); letter-spacing: .06em;
+  border: 1px solid var(--line-hi); background: rgba(11,18,46,.85); backdrop-filter: blur(10px); color: var(--ink); box-shadow: 0 10px 30px rgba(0,0,0,.45); }
+.totop:hover { border-color: var(--green); }
+
+/* Footer: three short cards and a meta line */
+footer { padding-block: 34px 56px; }
+footer .wrap { gap: 18px; }
+.foot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 14px; }
+.foot-grid section { padding: 16px 18px; border-radius: 14px; border: 1px solid var(--line); background: rgba(11,18,46,.45); display: grid; gap: 8px; align-content: start; }
+.foot-grid h3 { font: 600 12px/1.2 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--cyan); }
+.foot-grid p { font-size: 13px; color: var(--muted); }
+.foot-grid p b { color: var(--ink); font-weight: 600; }
+.foot-meta { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12.5px; color: var(--faint); }
+.foot-meta span + span::before { content: "·"; margin-right: 18px; color: var(--line-hi); }
+
+@media (prefers-reduced-motion: reduce) { body::before { animation: none; } }
+@media (max-width: 560px) { .gear { width: 44px; height: 44px; } .gear svg { width: 24px; height: 24px; } nav.tabs .wrap { padding-right: 64px; } }
+
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
 </head>
@@ -586,12 +681,19 @@ body.vr-booting > header.hero, body.vr-booting > nav.tabs, body.vr-booting > mai
 
 <footer>
   <div class="wrap">
-    <p><b>How scores work.</b> Weapons: 60% Aegis tier (S 100, A 85, B 70, C 50, D 30, up to +5 for rank in tier) and 40% roll, where each perk column counts if any selectable perk is one Aegis recommends. Weapons missing from Aegis's sheet fall back to the voltron community wishlist. Armor: 40% stats against a Tier 5 roll, 25% fit to the stats your builds use, 25% set bonus (Aegis's set tiers S to F, counting how many slots of the set you own), 10% Tier 5 or exotic.</p>
-    <p><b>Encounter guides.</b> Each encounter lists what it demands, then builds a loadout from your vault: one weapon per slot, at most one exotic, ranked by vault score and fit for the role. Weapons that guides name for that encounter or role get extra weight. Research: Shacknews, Destructoid, Grindout, Deltia's Gaming and Game Rant's Monument of Triumph boss-damage picks.</p>
-    <p><b>RADS farm score.</b> 40% loot quality (the activity's three best weapons on Aegis's sheet), 40% need (S, A and B-tier loot you don't own, or own only with a weak roll), 20% armor set bonus you don't have a full set of yet. Loot comes from Bungie's collections and Aegis's sheet, plus exotic quests inside the activity.</p>
-    <p id="foot-meta"></p>
+    <div class="foot-grid">
+      <section><h3>How scores work</h3>
+        <p><b>Weapons</b> 60% Aegis tier (S 100 · A 85 · B 70 · C 50 · D 30, up to +5 for rank) and 40% roll: a perk column counts when any selectable perk is one Aegis recommends. Off-sheet weapons fall back to the voltron wishlist.</p>
+        <p><b>Armor</b> 40% stats vs a Tier 5 roll · 25% fit to your build stats · 25% set bonus (Aegis S–F) · 10% Tier 5 or exotic.</p></section>
+      <section><h3>Encounter loadouts</h3>
+        <p>One weapon per slot, at most one exotic, ranked by vault score and fit for each role. Guide picks get extra weight (Shacknews, Destructoid, Grindout, Deltia's Gaming, Game Rant).</p></section>
+      <section><h3>RADS farm score</h3>
+        <p>Raids and dungeons are ranked separately. 40% loot quality (the three best weapons on Aegis's sheet) · 40% need (S–B loot you lack or own with a weak roll) · 20% armor set you haven't completed.</p></section>
+    </div>
+    <p class="foot-meta" id="foot-meta"></p>
   </div>
 </footer>
+<button class="totop" id="totop" type="button" aria-label="Back to top" hidden>↑ Top</button></footer>
 
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" aria-modal="true" role="dialog" aria-label="Item details"></aside>
@@ -635,66 +737,63 @@ function vrMain() {
   const frameOf = (w) => (w.f || "").replace(/ Frame$/, "");
   const typeLine = (w) => [frameOf(w), w.t].filter(Boolean).join(" ");
   const fmtDate = (iso) => new Date(iso).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+  const fmtDateTime = (iso) => new Date(iso).toLocaleString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
   const plural = (n, one, many = one + "s") => `${fmt(n)} ${n === 1 ? one : many}`;
   const by = (f) => (a, b) => f(b) - f(a);
   const isExotic = (x) => x.r === "Exotic";
   const NAME = DATA.wrapped?.name || "";
   const S = DATA.summary;
 
-  /* ---------- Starfield ---------- */
+  /* ---------- Starfield: three depth layers drifting slowly, with a soft twinkle ---------- */
   (function stars() {
     const c = $("#stars"), ctx = c.getContext("2d");
-    const draw = () => {
-      const dpr = Math.min(2, window.devicePixelRatio || 1);
-      c.width = innerWidth * dpr; c.height = innerHeight * dpr;
-      let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-      const n = Math.round((innerWidth * innerHeight) / 2600);
-      for (let i = 0; i < n; i++) {
-        ctx.fillStyle = `rgba(${rnd() < 0.5 ? "170,200,255" : "170,255,225"},${rnd() * 0.7 + 0.15})`;
-        ctx.beginPath(); ctx.arc(rnd() * c.width, rnd() * c.height, (rnd() * 1.1 + 0.2) * dpr, 0, Math.PI * 2); ctx.fill();
+    const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let list = [], dpr = 1, w = 0, h = 0, last = 0, raf = 0;
+    const seed = () => {
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      w = c.width = innerWidth * dpr; h = c.height = innerHeight * dpr;
+      let sd = 7; const rnd = () => ((sd = (sd * 16807) % 2147483647) / 2147483647);
+      list = Array.from({ length: Math.round((innerWidth * innerHeight) / 3200) }, () => {
+        const z = rnd(); // depth: near stars are bigger, brighter and drift faster
+        return { x: rnd() * w, y: rnd() * h, r: (0.35 + z * 1.05) * dpr, a: 0.18 + z * 0.55, v: (0.6 + z * 2.4) * dpr, p: rnd() * 6.28, g: rnd() < 0.45 };
+      });
+    };
+    const draw = (t, dt) => {
+      ctx.clearRect(0, 0, w, h);
+      for (const s of list) {
+        s.x -= s.v * dt * 2.2; s.y += s.v * dt * 0.6;
+        if (s.x < -4) s.x = w + 4;
+        if (s.y > h + 4) s.y = -4;
+        const tw = still ? 1 : 0.75 + 0.25 * Math.sin(t / 1400 + s.p);
+        ctx.fillStyle = `rgba(${s.g ? "160,255,215" : "170,200,255"},${s.a * tw})`;
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.283); ctx.fill();
       }
     };
-    draw();
-    let t; addEventListener("resize", () => { clearTimeout(t); t = setTimeout(draw, 150); });
+    // About 30 frames a second is plenty for a slow drift; stops while the tab is hidden.
+    const loop = (t) => {
+      raf = requestAnimationFrame(loop);
+      if (t - last < 33) return;
+      const dt = last ? Math.min(0.1, (t - last) / 1000) : 0;
+      last = t; draw(t, dt);
+    };
+    const start = () => { if (still) return draw(0, 0); if (!raf) { last = 0; raf = requestAnimationFrame(loop); } };
+    const stop = () => { cancelAnimationFrame(raf); raf = 0; };
+    seed(); start();
+    let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { seed(); if (still) draw(0, 0); }, 150); });
+    document.addEventListener("visibilitychange", () => (document.hidden ? stop() : start()));
   })();
 
   /* ---------- Hero ---------- */
   $("#h1").innerHTML = `${NAME ? esc(NAME) + "’s " : ""}<span class="grad-text">Vault Report</span>`;
   $("#lede").textContent = `${fmt(S.vaultSize)} items rated against Aegis's Endgame Analysis tier list and community god rolls. ${S.weaponShard + S.armorShard} can go, freeing that many vault slots.`;
+  const pill = (k, v, title = "") => `<span class="chip"${title ? ` title="${esc(title)}"` : ""}><span class="k">${k}</span><b>${v}</b></span>`;
   $("#hero-chips").innerHTML = [
-    `<span class="chip">Strictness <b>${esc(DATA.preset[0].toUpperCase() + DATA.preset.slice(1))}</b></span>`,
-    `<span class="chip">Focus <b>${esc(DATA.focus.toUpperCase())}</b></span>`,
-    `<span class="chip">Rated <b>${esc(fmtDate(DATA.generated))}</b></span>`,
-    ...(DATA.dim ? ["tags", "loadouts", "protectTagged"].filter((k) => k !== "protectTagged" || DATA.dim.tags).map((k) => {
-      const on = DATA.dim[k];
-      const name = k === "protectTagged" ? "Protect DIM keeps" : "DIM " + k;
-      const label = `${name} <b>${on ? (DATA.dim.loaded || k === "protectTagged" ? "On" : "Unavailable") : "Off"}${on && DATA.dim.loaded && k !== "protectTagged" ? ` · ${k === "tags" ? DATA.dim.taggedCount : DATA.dim.loadoutCount}` : ""}</b>`;
-      const tip = k === "protectTagged" ? "Items you tagged Favorite or Keep in DIM are never marked to shard." : "Turn off for faster reports.";
-      return window.VR_LOCAL ? `<button class="chip" data-dimtoggle="${k}" title="${tip} Click to turn ${on ? "off" : "on"} and re-rate.">${label}</button>` : `<span class="chip" title="${on && !DATA.dim.loaded && k !== "protectTagged" ? esc(DATA.dim.error || "") : tip + " Change with: npm run vault -- dim " + (k === "protectTagged" ? "protect" : k) + " " + (on ? "off" : "on")}">${label}</span>`;
-    }) : []),
-  ].join("") + (window.VR_LOCAL ? `<button class="btn primary" id="rerate">Re-rate my vault</button>${window.VR_WEB ? '<button class="btn" id="signout">Sign out</button>' : ""}<span class="chip" id="rerate-msg" hidden></span>` : "");
-  if (window.VR_WEB) $("#signout").onclick = () => api("/api/signout");
-  if (window.VR_LOCAL) $("#rerate").onclick = async () => {
-    const b = $("#rerate"), msg = $("#rerate-msg");
-    b.disabled = true; b.textContent = "Re-rating…"; msg.hidden = false; msg.textContent = "Reading your vault from Bungie. This takes a minute.";
-    try {
-      const res = await api("/api/refresh");
-      if (!res.ok) throw new Error(res.error);
-      location.reload();
-    } catch (e) { b.disabled = false; b.textContent = "Re-rate my vault"; msg.textContent = "Re-rating failed: " + e.message; }
-  };
-  $("#hero-chips").addEventListener("click", async (e) => {
-    const b = e.target.closest("[data-dimtoggle]"); if (!b) return;
-    const k = b.dataset.dimtoggle;
-    b.disabled = true; b.innerHTML = `${b.innerHTML.split(" <b>")[0]} <b>Updating…</b>`;
-    try {
-      const st = await api("/api/settings", { dim: { [k]: !DATA.dim[k] } });
-      if (!st.ok) throw new Error(st.error);
-      const res = await api("/api/refresh");
-      if (!res.ok) throw new Error(res.error);
-      location.reload();
-    } catch (err) { b.disabled = false; b.innerHTML = `${b.innerHTML.split(" <b>")[0]} <b>Failed: ${esc(err.message)}</b>`; }
-  });
+    pill("Strictness", esc(DATA.preset[0].toUpperCase() + DATA.preset.slice(1))),
+    pill("Focus", esc(DATA.focus.toUpperCase())),
+    pill("Rated", esc(fmtDateTime(DATA.generated)), new Date(DATA.generated).toLocaleString()),
+    // The offline report has no Settings, so it still shows the DIM state here.
+    ...(!window.VR_LOCAL && DATA.dim ? ["tags", "loadouts"].map((k) => pill("DIM " + k, DATA.dim[k] ? (DATA.dim.loaded ? "On" : "Unavailable") : "Off", DATA.dim.error || "")) : []),
+  ].join("");
   $("#tiles").innerHTML = [
     ["Weapons kept", S.weaponKeep, `of ${S.weapons} in your vault`],
     ["Weapons to shard", S.weaponShard, `${DATA.duplicates.length} weapons have extra copies`],
@@ -706,23 +805,35 @@ function vrMain() {
   $("#tierbar").innerHTML = [...TIERS, "U"].filter((t) => tc[t]).map((t) => `<span style="width:${(tc[t] / DATA.weapons.length) * 100}%;background:var(--${t})" title="${tierLabel(t)}: ${tc[t]}"></span>`).join("");
   $("#tierbar").setAttribute("aria-label", [...TIERS, "U"].map((t) => `${tierLabel(t)} ${tc[t]}`).join(", "));
   $("#tierlegend").innerHTML = [...TIERS, "U"].map((t) => `<span><i style="background:var(--${t})"></i>${tierLabel(t)} <b class="num" style="color:var(--ink)">${tc[t]}</b></span>`).join("");
-  $("#foot-meta").textContent = `Generated ${new Date(DATA.generated).toLocaleString()} by D2 Vault Rater. Nothing in game changes until you approve a lock plan.`;
+  $("#foot-meta").innerHTML = `<span>Rated ${esc(fmtDateTime(DATA.generated))}</span><span>D2 Vault Rater</span><span>Nothing changes in game until you confirm a lock plan</span>`;
 
   /* ---------- Tabs ---------- */
   const TABS = [["overview", "Overview", null], ["weapons", "Weapons", S.weapons], ["armor", "Armor", S.armor], ["rads", "RADS", (DATA.rads || []).length || null], ["list", "Full list", null], ["shard", "Shard list", S.weaponShard + S.armorShard], ["wrapped", "Wrapped", null], ...(window.VR_LOCAL ? [["settings", "Settings", null]] : [])];
   if (!$("#p-settings")) $("main").insertAdjacentHTML("beforeend", '<section class="panel" id="p-settings" role="tabpanel" hidden></section>');
-  $("#tabs").innerHTML = TABS.map(([id, label, n]) => `<button role="tab" id="t-${id}" aria-controls="p-${id}" aria-selected="false">${label}${n != null ? `<span class="count">${n}</span>` : ""}</button>`).join("");
+  $("#tabs").innerHTML = TABS.map(([id, label, n]) => `<button role="tab" id="t-${id}" aria-controls="p-${id}" aria-selected="false"${id === "settings" ? " hidden" : ""}>${label}${n != null ? `<span class="count">${n}</span>` : ""}</button>`).join("");
+  if (window.VR_LOCAL && !$("#gear")) {
+    document.body.insertAdjacentHTML("beforeend", `<button class="gear" id="gear" type="button" aria-label="Settings" title="Settings" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.14 12.94a7.4 7.4 0 0 0 .05-.94 7.4 7.4 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.84a.5.5 0 0 0-.49.42l-.36 2.54c-.59.24-1.13.56-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.67 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.4 7.4 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.3.6.22l2.39-.96c.5.38 1.04.7 1.63.94l.36 2.54c.04.24.25.42.49.42h3.84c.24 0 .45-.18.49-.42l.36-2.54c.59-.24 1.13-.56 1.63-.94l2.39.96c.22.08.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2Z"/></svg></button>`);
+    $("#gear").onclick = () => show(location.hash === "#settings" ? store.get("vr-last-tab") || "overview" : "settings", true);
+  }
   const RENDER = {}, rendered = {};
   function show(id, scroll) {
     if (!TABS.some((t) => t[0] === id)) id = "overview";
     for (const [t] of TABS) { $(`#t-${t}`).setAttribute("aria-selected", String(t === id)); $(`#p-${t}`).hidden = t !== id; }
     if (!rendered[id]) { RENDER[id](); rendered[id] = true; }
     store.set("vr-tab", id);
+    if (id !== "settings") store.set("vr-last-tab", id);
+    $("#gear")?.setAttribute("aria-pressed", String(id === "settings"));
     // Clicking a tab adds a history entry (Back returns to the previous tab); restoring one does not.
     try { if (location.hash.slice(1) !== id) history[scroll ? "pushState" : "replaceState"](null, "", "#" + id); } catch {}
     if (scroll) scrollTo({ top: $("nav.tabs").offsetTop, behavior: "smooth" });
   }
   $("#tabs").addEventListener("click", (e) => { const b = e.target.closest("button[role=tab]"); if (b) show(b.id.slice(2), true); });
+
+  const toTop = () => scrollTo({ top: 0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  $("#totop").onclick = toTop;
+  const onScroll = () => ($("#totop").hidden = scrollY < 900);
+  addEventListener("scroll", onScroll, { passive: true }); onScroll();
+  document.addEventListener("click", (e) => { if (e.target.closest("[data-totop]")) toTop(); });
 
   /* ---------- Shared pieces ---------- */
   const weaponRow = (w) => `<button class="row" data-w="${w.id}">${img(w.ic)}
@@ -892,10 +1003,10 @@ function vrMain() {
     if (!rads.length) { $("#p-rads").innerHTML = '<div class="empty">Raid and dungeon loot has not been imported yet. Re-run the rater to add it.</div>'; return; }
     const chase = rads.reduce((n, r) => n + r.counts.chase, 0);
     $("#p-rads").innerHTML = `<div>
-      <div class="sec-head"><h2>RADS: raids and dungeons</h2><p>All ${rads.length} ranked by what they would add to your vault. ${chase} weapons across them are ones you don't own yet.</p></div>
+      <div class="sec-head"><h2>RADS: raids and dungeons</h2><p>${rads.filter((r) => r.kind === "raid").length} raids and ${rads.filter((r) => r.kind === "dungeon").length} dungeons, each ranked on its own by what it would add to your vault. ${chase} weapons across them are ones you don't own yet.</p></div>
       <div class="rads-head"><div class="seg" role="group" aria-label="Activity type" id="radseg">${[["all", "All"], ["raid", "Raids"], ["dungeon", "Dungeons"]].map(([k, l]) => `<button data-k="${k}" aria-pressed="${k === radFilter}">${l}</button>`).join("")}</div>
         <div class="rads-legend"><span><span class="st chase">Chase</span> you don't own it</span><span><span class="st upgrade">Upgrade</span> you own a weak roll</span><span><span class="st have">Got it</span> you own a good roll</span></div></div>
-      <div class="rads" id="radlist"></div></div>`;
+      <div id="radlist" class="radgroups"></div></div>`;
     $("#radseg").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; radFilter = b.dataset.k; $$("#radseg button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); drawRads(); };
     drawRads();
   };
@@ -930,7 +1041,7 @@ function vrMain() {
     if (out) out.textContent = res ? res.map((m) => `${m.name}: ${m.ok ? (m.equipped ? "equipped" : "moved") : "failed"}${m.error ? " (" + m.error + ")" : ""}`).join(" · ") : "Couldn't move the loadout.";
   });
   function drawRads() {
-    const list = (DATA.rads || []).filter((r) => radFilter === "all" || r.kind === radFilter);
+    const kinds = radFilter === "all" ? ["raid", "dungeon"] : [radFilter];
     const vClass = (v) => (v === "Farm it" ? "farm" : v === "Worth a run" ? "run" : "low");
     const status = (w) => w.status === "chase" ? '<span class="st chase">Chase</span>' : w.status === "upgrade" ? `<span class="st upgrade" title="Your best roll scores ${w.bestRoll}">Upgrade</span>` : `<span class="st have" title="Your best copy scores ${w.bestScore}">Got it</span>`;
     const row = (w, i, key) => `<button class="lootrow" ${w.best ? `data-w="${w.best}" title="Open your best copy"` : `data-loot="${key}|${i}" title="See where to get it"`}>${img(w.icon)}
@@ -939,8 +1050,8 @@ function vrMain() {
     const setBox = (st) => `<div class="radset"><div class="top"><b>${esc(st.name)}</b><span class="small muted">armor set</span></div>
       <div class="bon">${st.bonuses.length ? st.bonuses.map((b) => `<span><span class="small">${b.pieces}PC</span> ${esc(b.name)} ${b.tier ? `<span class="tier t${b.tier}">${b.tier}</span>` : '<span class="tier tU">—</span>'}</span>`).join("") : "Not on Aegis's set list yet."}</div>
       <div class="own">${Object.keys(st.ownedSlots).length ? "You own " + Object.entries(st.ownedSlots).map(([c, n]) => `${esc(c)} ${n}/5`).join(" · ") : "You don't own any pieces yet."}</div></div>`;
-    $("#radlist").innerHTML = list.map((r, i) => {
-      const top = i === 0 && radFilter === "all";
+    const card = (r, i) => {
+      const top = i === 0;
       const shown = r.weapons.slice(0, top ? 8 : 6), more = r.weapons.slice(shown.length);
       const parts = [["Loot quality", r.parts.quality], ["You need", r.parts.need], ["Armor set", r.parts.sets]];
       const weaponsHtml = `<div><div class="cap" style="margin-bottom:6px">Weapons · ${r.weapons.length}</div><div class="loot">${shown.map((w, j) => row(w, j, r.key)).join("")}</div>${more.length ? `<details><summary>Show ${more.length} more</summary><div class="loot">${more.map((w, j) => row(w, j + shown.length, r.key)).join("")}</div></details>` : ""}</div>`;
@@ -949,10 +1060,16 @@ function vrMain() {
       const note = `<p class="small muted">${r.counts.sTier ? `${r.counts.sTier} S-tier weapon${r.counts.sTier > 1 ? "s" : ""} in the loot pool. ` : ""}${r.counts.chase ? `${r.counts.chase} you don't own` : "You own everything here"}${r.counts.upgrade ? `, ${r.counts.upgrade} worth re-rolling` : ""}.</p>`;
       return `<article class="rad${top ? " top" : ""}" id="rad-${esc(r.key)}">
         <div class="banner">${r.image && IMG[r.image] ? `<img src="${IMG[r.image]}" alt="" loading="lazy">` : ""}
-          <div class="chips-tl"><span class="chip"><b>${r.kind === "raid" ? "Raid" : "Dungeon"}</b></span>${top ? '<span class="chip" style="color:var(--green)"><b>Best farm right now</b></span>' : ""}</div>
+          <div class="chips-tl"><span class="chip"><b>${r.kind === "raid" ? "Raid" : "Dungeon"}</b></span>${top ? `<span class="chip" style="color:var(--green)"><b>Best ${r.kind} to farm</b></span>` : ""}</div>
           <span class="verdict-tag ${vClass(r.verdict)}">${r.verdict}</span>
-          <div class="title"><span class="rk">${r.rank}</span><h3>${esc(r.name)}</h3><div class="farm"><b class="num">${r.score}</b><span>Farm score</span></div></div></div>
+          <div class="title"><span class="rk">${i + 1}</span><h3>${esc(r.name)}</h3><div class="farm"><b class="num">${r.score}</b><span>Farm score</span></div></div></div>
         <div class="body">${top ? `${weaponsHtml}<div class="stack">${bars}${note}${setsHtml}</div><div style="grid-column:1/-1">${encGuide(r.key, true)}</div>` : bars + note + weaponsHtml + setsHtml + encGuide(r.key, false)}</div></article>`;
+    };
+    // Each kind is ranked on its own (by farm score), whatever the data's overall rank says.
+    $("#radlist").innerHTML = kinds.map((k) => {
+      const list = (DATA.rads || []).filter((r) => r.kind === k).sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
+      if (!list.length) return "";
+      return `<section class="radgroup"><div class="sub-head"><h3>${k === "raid" ? "Raids" : "Dungeons"}</h3><span class="small muted">${list.length} ranked</span></div><div class="rads">${list.map(card).join("")}</div></section>`;
     }).join("");
   }
 
@@ -1121,7 +1238,7 @@ function vrMain() {
       }).join("");
     }
     $("#exlist").innerHTML = html;
-    $("#exmore").innerHTML = !st.group && list.length > shown && shown < top ? `<button class="btn" id="exmorebtn">Show ${Math.min(300, list.length - shown)} more</button>` : "";
+    $("#exmore").innerHTML = (!st.group && list.length > shown && shown < top ? `<button class="btn" id="exmorebtn">Show ${Math.min(300, list.length - shown)} more</button>` : "") + (list.length > 8 ? `<button class="btn ghost" type="button" data-totop>↑ Back to top</button>` : "");
     const mb = $("#exmorebtn"); if (mb) mb.onclick = () => { st.limit += 300; drawExplorer(false); };
   }
   function fillFacet(d) {
@@ -1228,6 +1345,9 @@ function vrMain() {
     const opt = (v, cur, label) => `<option value="${v}" ${v === cur ? "selected" : ""}>${label}</option>`;
     $("#p-settings").innerHTML = `<form class="setform" id="setform">
       <div class="sec-head" style="margin:0"><h2>Settings</h2><p>Saving re-rates your vault.</p></div>
+      <fieldset><legend>Your vault</legend>
+        <p class="small muted">Rated ${esc(fmtDateTime(DATA.generated))}.${window.VR_SESSION ? " " + esc(window.VR_SESSION()) : ""}</p>
+        <div class="confirmrow"><button class="btn primary" type="button" id="rerate">Re-rate my vault</button>${window.VR_WEB ? '<button class="btn" type="button" id="signout">Sign out</button>' : ""}<span class="small muted" id="rerate-msg" aria-live="polite"></span></div></fieldset>
       <fieldset><legend>Strictness</legend><div class="presets">${Object.entries(PRESET_INFO).map(([k, [l, d]]) => `<label><span><input type="radio" name="preset" value="${k}" ${st.preset === k ? "checked" : ""}> <b>${l}</b></span><span>${d}</span></label>`).join("")}</div>
         <div class="tablewrap"><table class="prestable"><tr><th></th><th>Lenient</th><th>Balanced</th><th>Strict</th><th>Ruthless</th></tr>
           <tr><td>Lowest tier kept</td><td>C</td><td>B</td><td>A</td><td>S</td></tr><tr><td>Roll score to keep a spare</td><td>50</td><td>70</td><td>80</td><td>90</td></tr>
@@ -1238,11 +1358,19 @@ function vrMain() {
       <fieldset><legend>Focus and protection</legend>
         <label class="small">Focus <select name="focus">${opt("pve", st.focus, "PvE")}${opt("pvp", st.focus, "PvP")}${opt("both", st.focus, "Both")}</select></label>
         <label class="small" style="display:grid;gap:6px">Never shard these (weapon or armor names, one per line)<textarea name="protect" rows="4">${esc((st.protect || []).join("\n"))}</textarea></label></fieldset>
-      <fieldset><legend>DIM</legend><div class="toggles">
+      <fieldset><legend>DIM</legend>
+        <p class="small muted">${!DATA.dim?.tags && !DATA.dim?.loadouts ? "Off." : DATA.dim?.loaded ? `Connected: ${DATA.dim.taggedCount} tagged items, ${DATA.dim.loadoutCount} loadouts.` : "Couldn't reach DIM" + (DATA.dim?.error ? ": " + esc(DATA.dim.error) : ".")}</p><div class="toggles">
         <label><input type="checkbox" name="dimtags" ${DATA.dim?.tags ? "checked" : ""}> <span>Read DIM tags and notes (and edit them here)</span></label>
         <label><input type="checkbox" name="dimloadouts" ${DATA.dim?.loadouts ? "checked" : ""}> <span>Read DIM loadouts (and pull them to a character)</span></label>
         <label><input type="checkbox" name="dimprotect" ${DATA.dim?.protectTagged !== false ? "checked" : ""}> <span>Protect DIM keeps: never mark items tagged Favorite or Keep to shard</span></label></div></fieldset>
       <div class="confirmrow"><button class="btn primary" type="submit">Save and re-rate</button><span class="small muted" id="setmsg" aria-live="polite"></span></div></form>`;
+    if (window.VR_WEB) $("#signout").onclick = () => api("/api/signout");
+    $("#rerate").onclick = async () => {
+      const b = $("#rerate"), msg = $("#rerate-msg");
+      b.disabled = true; b.textContent = "Re-rating…"; msg.textContent = "Reading your vault from Bungie. This takes a minute.";
+      try { const res = await api("/api/refresh"); if (!res.ok) throw new Error(res.error); location.reload(); }
+      catch (e) { b.disabled = false; b.textContent = "Re-rate my vault"; msg.textContent = "Re-rating failed: " + e.message; }
+    };
     $("#setform").onsubmit = async (e) => {
       e.preventDefault();
       const f = e.target, byWeaponType = {};

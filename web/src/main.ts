@@ -30,6 +30,7 @@ declare global {
     VR_WEB?: boolean;
     VR_API?: (path: string, body: Record<string, unknown>) => Promise<Record<string, unknown>>;
     VR_START?: (data: unknown, images: Record<string, string>) => void;
+    VR_SESSION?: () => string;
   }
 }
 
@@ -164,21 +165,18 @@ async function run() {
   const back = sessionStorage.getItem("vr-return-hash");
   if (back) (sessionStorage.removeItem("vr-return-hash"), history.replaceState(null, "", back));
   window.VR_START!(data, images);
-  addSessionChip();
+  watchSession();
 }
 
-/** A chip in the hero showing how long the Bungie sign-in lasts. */
-function addSessionChip() {
-  const chips = document.querySelector("#hero-chips");
-  if (!chips) return;
-  const chip = document.createElement("span");
-  chip.className = "chip";
-  chip.id = "vr-session";
-  chips.prepend(chip);
+/** Sign-in status for the Settings panel, and a banner once Bungie access really runs out. */
+function watchSession() {
+  const canRefresh = () => {
+    const t = loadTokens();
+    return !!t?.refresh_token && Date.now() < t.refresh_expires_at;
+  };
+  window.VR_SESSION = () => (canRefresh() ? "Signed in to Bungie; this browser renews the sign-in by itself." : minutesLeft() > 0 ? `Signed in to Bungie for ${minutesLeft()} more minutes.` : "Your Bungie sign-in has expired.");
   const tick = () => {
-    const left = minutesLeft();
-    chip.innerHTML = left > 0 ? `Signed in <b>${left} min left</b>` : `Signed in <b>expired</b>`;
-    if (left <= 0) expiredBanner("Your Bungie sign-in expired. Sign in again to move items, change locks or edit DIM tags.");
+    if (!canRefresh() && minutesLeft() <= 0) expiredBanner("Your Bungie sign-in expired. Sign in again to move items, change locks or edit DIM tags.");
   };
   tick();
   setInterval(tick, 30_000);
