@@ -1,0 +1,1559 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>__TITLE__</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a deep-space console. Gradient hero with the vault's headline numbers, a sticky tab bar,
+   then calm panels: highlights by weapon type, a full filterable list, armor, and a Wrapped story.
+   A details drawer slides in from the right (bottom sheet on phones). */
+:root {
+  color-scheme: dark;
+  --void: #050919;
+  --deep: #0a1130;
+  --panel: #0e173b;
+  --panel-hi: #14204c;
+  --line: #1c2958;
+  --line-hi: #2c3d7c;
+  --ink: #e7ecff;
+  --muted: #98a4cc;
+  --faint: #6a77a3;
+  --blue: #4d7dff;
+  --cyan: #36c4f2;
+  --green: #33e3a0;
+  --gold: #f2c14e;
+  --grad: linear-gradient(115deg, #4d7dff 0%, #36c4f2 48%, #33e3a0 100%);
+  --grad-soft: linear-gradient(115deg, rgba(77,125,255,.20), rgba(51,227,160,.14));
+  --S: #f2c14e; --A: #4d9bff; --B: #33d69a; --C: #8d97b8; --D: #ff6b6b; --U: #6a77a3;
+  --Kinetic: #d9dde8; --Arc: #7bdcff; --Solar: #ff9c45; --Void: #b78bff; --Stasis: #5b8cff; --Strand: #3fe08a; --Unknown: #8d97b8;
+  --keep: #33e3a0; --shard: #ff7a7a; --review: #f2c14e; --exotic: #f2c14e;
+  --display: "Chakra Petch", "Segoe UI", system-ui, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  --r: 12px;
+}
+* { box-sizing: border-box; }
+html { background: var(--void); }
+body {
+  margin: 0; color: var(--ink); font: 15px/1.5 var(--body);
+  background:
+    radial-gradient(1200px 600px at 8% -12%, rgba(77,125,255,.26), transparent 60%),
+    radial-gradient(900px 520px at 100% 0%, rgba(51,227,160,.15), transparent 60%),
+    radial-gradient(800px 800px at 50% 120%, rgba(54,196,242,.09), transparent 60%),
+    var(--void);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+#stars { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: .65; }
+.wrap { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding-inline: 24px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; letter-spacing: .01em; }
+p { margin: 0; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+.eyebrow { font: 600 12px/1 var(--display); letter-spacing: .18em; text-transform: uppercase; color: var(--cyan); }
+.cap { font: 600 11px/1.2 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.grad-text { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.stack { display: grid; gap: 12px; }
+
+/* Hero */
+header.hero { padding-block: 44px 26px; display: grid; gap: 24px; }
+.hero-top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; }
+.hero h1 { font-size: clamp(32px, 5.6vw, 56px); line-height: 1.04; font-weight: 700; margin-top: 10px; }
+.hero .lede { margin-top: 10px; color: var(--muted); max-width: 62ch; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; border: 1px solid var(--line-hi); background: rgba(14,23,59,.7); font-size: 13px; color: var(--muted); white-space: nowrap; }
+.chip b { color: var(--ink); font-weight: 600; }
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.tile { position: relative; padding: 16px 18px; border-radius: var(--r); background: linear-gradient(180deg, rgba(20,32,76,.85), rgba(10,17,48,.85)); border: 1px solid var(--line); overflow: hidden; }
+.tile::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 2px; background: var(--grad); }
+.tile .label { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.tile .big { font: 700 34px/1.1 var(--display); margin-top: 6px; }
+.tile .sub { font-size: 13px; color: var(--faint); margin-top: 2px; }
+.tierbar { display: grid; gap: 8px; }
+.tierbar .bar { display: flex; height: 10px; border-radius: 999px; overflow: hidden; background: var(--deep); border: 1px solid var(--line); }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+
+/* Tabs */
+nav.tabs { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: rgba(5,9,25,.84); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+nav.tabs .wrap { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+nav.tabs button { background: none; border: 0; padding: 14px 14px 12px; font: 600 14px/1 var(--display); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border-bottom: 2px solid transparent; white-space: nowrap; }
+nav.tabs button:hover { color: var(--ink); }
+nav.tabs button[aria-selected="true"] { color: var(--ink); border-image: var(--grad) 1; border-bottom-width: 2px; border-bottom-style: solid; }
+nav.tabs .count { font: 500 12px var(--mono); color: var(--faint); margin-left: 6px; }
+
+main { padding-block: 30px 64px; }
+section.panel { display: grid; gap: 44px; }
+.sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; margin-bottom: 16px; }
+.sec-head h2 { font-size: 22px; font-weight: 600; }
+.sec-head p { color: var(--muted); font-size: 14px; }
+.sub-head { display: flex; align-items: center; gap: 12px; margin: 26px 0 12px; }
+.sub-head::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.sub-head:first-child { margin-top: 0; }
+
+/* Badges */
+.tier { display: inline-grid; place-items: center; min-width: 26px; height: 22px; padding: 0 6px; border-radius: 6px; font: 700 13px/1 var(--display); color: #0a1130; background: var(--U); flex: none; }
+.tier.tE, .stier.tE { background: #e0566f; } .tier.tF, .stier.tF { background: #a8455a; }
+.stier { display: inline-grid; place-items: center; min-width: 16px; height: 15px; padding: 0 3px; margin-left: 5px; border-radius: 4px; font: 700 10px/1 var(--display); color: #0a1130; background: var(--U); vertical-align: 1px; }
+.stier.tS { background: var(--S); } .stier.tA { background: var(--A); } .stier.tB { background: var(--B); } .stier.tC { background: var(--C); } .stier.tD { background: var(--D); }
+.tier.tS { background: var(--S); } .tier.tA { background: var(--A); } .tier.tB { background: var(--B); } .tier.tC { background: var(--C); } .tier.tD { background: var(--D); }
+.tier.tU { background: transparent; color: var(--muted); border: 1px solid var(--line-hi); font-size: 11px; }
+.el { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.el i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; background: currentColor; box-shadow: 0 0 8px currentColor; }
+.el span { color: var(--ink); }
+.verdict { display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.verdict.keep { color: var(--keep); } .verdict.shard { color: var(--shard); } .verdict.review { color: var(--review); }
+.exo { color: var(--exotic); font: 600 11px var(--display); letter-spacing: .12em; text-transform: uppercase; }
+.score { display: grid; justify-items: end; gap: 4px; }
+.score b { font: 700 18px/1 var(--display); }
+.meter { width: 64px; height: 4px; border-radius: 99px; background: var(--deep); overflow: hidden; }
+.meter span { display: block; height: 100%; background: var(--grad); }
+.ph { display: block; width: 44px; height: 44px; border-radius: 7px; background: var(--grad-soft); }
+
+/* Top picks */
+.picks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.pick { position: relative; border-radius: 16px; overflow: hidden; border: 1px solid var(--line-hi); background: var(--panel); cursor: pointer; display: flex; flex-direction: column; transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
+.pick:hover { transform: translateY(-3px); border-color: var(--cyan); box-shadow: 0 14px 40px -18px rgba(54,196,242,.55); }
+.pick .art { position: relative; aspect-ratio: 16 / 7; background: var(--grad-soft); overflow: hidden; max-width: 100%; }
+.pick .art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pick .art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 35%, rgba(14,23,59,.96)); }
+.pick .slot { position: absolute; top: 12px; left: 12px; z-index: 1; }
+.pick .body { padding: 0 16px 16px; margin-top: -30px; position: relative; z-index: 1; display: grid; gap: 10px; }
+.pick .title { display: flex; align-items: center; gap: 10px; }
+.pick .title img { width: 48px; height: 48px; border-radius: 8px; border: 1px solid var(--line-hi); flex: none; }
+.pick .title h3 { font-size: 20px; line-height: 1.15; }
+.runners { display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px; color: var(--faint); align-items: center; }
+.runners button { background: var(--deep); border: 1px solid var(--line); border-radius: 999px; padding: 3px 9px; color: var(--muted); font-size: 12px; }
+.runners button:hover { border-color: var(--cyan); color: var(--ink); }
+.perkopts { display: flex; flex-wrap: wrap; gap: 6px; }
+.perk { padding: 3px 9px; border-radius: 8px; background: var(--panel); border: 1px solid var(--line); font-size: 13px; }
+.perk.good { border-color: rgba(51,227,160,.6); background: rgba(51,227,160,.12); color: #c9ffe8; }
+.perk.good::before { content: "✓ "; color: var(--green); }
+
+/* Element cards */
+.elements { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; }
+.elcard { padding: 14px; border-radius: var(--r); background: rgba(14,23,59,.78); border: 1px solid var(--line); display: grid; gap: 10px; text-align: left; position: relative; overflow: hidden; }
+.elcard::before { content: ""; position: absolute; inset: -40% -40% auto auto; width: 140px; height: 140px; border-radius: 50%; background: currentColor; opacity: .08; filter: blur(10px); }
+button.elcard:hover { border-color: currentColor; }
+.elcard .head { display: flex; align-items: center; justify-content: space-between; font: 600 13px var(--display); letter-spacing: .12em; text-transform: uppercase; }
+.elcard .w { display: flex; align-items: center; gap: 10px; color: var(--ink); min-width: 0; }
+.elcard .w img { width: 40px; height: 40px; border-radius: 7px; flex: none; }
+.elcard .w > div { min-width: 0; }
+.nm { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sm { font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Quick links */
+.quick { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+.qlink { display: grid; gap: 4px; text-align: left; padding: 14px 16px; border-radius: var(--r); background: rgba(14,23,59,.7); border: 1px solid var(--line); }
+.qlink:hover { border-color: var(--cyan); background: var(--panel-hi); }
+.qlink b { font: 600 15px var(--display); letter-spacing: .02em; }
+.qlink span { font-size: 13px; color: var(--muted); }
+.qlink .n { font: 700 22px/1 var(--display); color: var(--ink); }
+
+/* Type highlight cards */
+.types { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 12px; }
+.tcard { border-radius: 14px; background: rgba(14,23,59,.72); border: 1px solid var(--line); padding: 14px; display: grid; gap: 10px; align-content: start; }
+button.tcard:hover { border-color: var(--line-hi); }
+.tcard header { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.tcard h3 { font-size: 17px; font-weight: 600; }
+.tcard header .small { color: var(--faint); white-space: nowrap; }
+.mini { display: grid; grid-template-columns: 18px 40px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 10px; background: transparent; border: 1px solid transparent; text-align: left; width: 100%; }
+.mini:hover { background: var(--panel-hi); border-color: var(--line-hi); }
+.mini .rk { font: 700 13px var(--display); color: var(--faint); text-align: center; }
+.mini img, .mini .ph { width: 40px; height: 40px; border-radius: 7px; }
+.mini .right { display: flex; align-items: center; gap: 8px; }
+.mini .right b { font: 700 16px var(--display); min-width: 28px; text-align: right; }
+.linkbtn { background: none; border: 0; padding: 4px 0 0; color: var(--cyan); font-size: 13px; font-weight: 600; text-align: left; justify-self: start; }
+.linkbtn:hover { text-decoration: underline; }
+
+/* Exotic grid */
+.exotics { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
+.exitem { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 12px; border-radius: var(--r); background: linear-gradient(135deg, rgba(242,193,78,.09), rgba(14,23,59,.8) 55%); border: 1px solid rgba(242,193,78,.25); text-align: left; }
+.exitem:hover { border-color: var(--gold); }
+.exitem img, .exitem .ph { width: 48px; height: 48px; border-radius: 8px; }
+
+/* Toolbar */
+.toolbar { display: grid; gap: 10px; padding: 14px; border-radius: 14px; background: rgba(10,17,48,.88); border: 1px solid var(--line); margin-bottom: 14px; }
+.tb-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.tb-row .label { font-size: 12px; color: var(--faint); margin-right: 2px; }
+.toolbar input[type=search] { flex: 1 1 240px; min-width: 0; background: var(--void); border: 1px solid var(--line-hi); border-radius: 9px; padding: 8px 12px; }
+.toolbar select { background: var(--void); border: 1px solid var(--line-hi); border-radius: 9px; padding: 7px 10px; max-width: 100%; }
+.seg { display: inline-flex; border: 1px solid var(--line-hi); border-radius: 10px; overflow: hidden; flex: none; }
+.seg button { background: transparent; border: 0; padding: 7px 14px; color: var(--muted); font-weight: 600; }
+.seg button[aria-pressed="true"] { background: var(--grad); color: #04102a; }
+.views { display: flex; flex-wrap: wrap; gap: 6px; }
+.view { border: 1px solid var(--line-hi); background: var(--deep); border-radius: 999px; padding: 5px 12px; font-size: 13px; color: var(--muted); }
+.view:hover { color: var(--ink); border-color: var(--cyan); }
+.view[aria-pressed="true"] { background: var(--grad-soft); color: var(--ink); border-color: var(--cyan); }
+details.ms { position: relative; }
+details.ms summary { list-style: none; display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border: 1px solid var(--line-hi); border-radius: 9px; background: var(--void); font-size: 14px; cursor: pointer; white-space: nowrap; user-select: none; }
+details.ms summary::-webkit-details-marker { display: none; }
+details.ms summary::after { content: "▾"; color: var(--faint); font-size: 11px; }
+details.ms[open] summary, details.ms.active summary { border-color: var(--cyan); }
+details.ms summary .n { background: var(--grad); color: #04102a; border-radius: 999px; font: 700 11px/1 var(--mono); padding: 3px 6px; }
+.ms .pop { position: absolute; z-index: 8; top: calc(100% + 6px); left: 0; min-width: 230px; max-width: min(320px, 86vw); max-height: 320px; overflow: auto; padding: 8px; border-radius: 12px; background: var(--panel); border: 1px solid var(--line-hi); box-shadow: 0 18px 50px rgba(0,0,0,.5); display: grid; gap: 2px; }
+.ms .pop label { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 6px 8px; border-radius: 8px; font-size: 14px; cursor: pointer; }
+.ms .pop label:hover { background: var(--panel-hi); }
+.ms .pop label span:last-child { font: 500 12px var(--mono); color: var(--faint); }
+.ms .pop input { accent-color: var(--cyan); }
+.ms .pop .clear { justify-self: end; background: none; border: 0; color: var(--cyan); font-size: 12px; padding: 4px 8px; }
+.result { margin-left: auto; font-size: 13px; color: var(--muted); }
+.active-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.fchip { display: inline-flex; gap: 6px; align-items: center; background: var(--grad-soft); border: 1px solid var(--line-hi); border-radius: 999px; padding: 3px 6px 3px 10px; font-size: 12.5px; }
+.fchip button { background: none; border: 0; color: var(--muted); padding: 0 4px; font-size: 14px; line-height: 1; }
+.fchip button:hover { color: var(--ink); }
+
+/* List rows */
+.list { display: grid; gap: 6px; }
+.row { display: grid; grid-template-columns: 44px minmax(0, 2.2fr) minmax(0, 1.1fr) 54px 92px 84px; align-items: center; gap: 14px; padding: 8px 12px; border-radius: 10px; background: rgba(14,23,59,.6); border: 1px solid transparent; text-align: left; width: 100%; }
+.row:hover { border-color: var(--line-hi); background: var(--panel-hi); }
+.row img, .row .ph { width: 44px; height: 44px; border-radius: 7px; display: block; }
+.group { display: grid; gap: 8px; }
+.group + .group { margin-top: 18px; }
+.ghead { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; padding: 0 4px; }
+.ghead h3 { font-size: 17px; font-weight: 600; }
+.ghead .small { color: var(--faint); }
+.group .group { margin-left: 14px; padding-left: 14px; border-left: 1px solid var(--line); }
+.group .group .ghead h3 { font-size: 15px; color: var(--muted); }
+.empty { padding: 32px; text-align: center; color: var(--muted); border: 1px dashed var(--line-hi); border-radius: var(--r); }
+.more { margin-top: 12px; display: flex; justify-content: center; }
+.btn { background: var(--panel-hi); border: 1px solid var(--line-hi); border-radius: 10px; padding: 9px 16px; font-weight: 600; }
+.btn:hover { border-color: var(--cyan); }
+.btn.primary { background: var(--grad); color: #04102a; border: 0; }
+
+/* Armor */
+.armor-best { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.acard { padding: 12px; border-radius: var(--r); background: rgba(14,23,59,.78); border: 1px solid var(--line); display: grid; gap: 10px; text-align: left; align-content: start; }
+.acard:hover { border-color: var(--line-hi); }
+.acard .top { display: flex; gap: 10px; align-items: center; min-width: 0; }
+.acard .top img, .acard .top .ph { width: 44px; height: 44px; border-radius: 7px; flex: none; }
+.acard .top > div { min-width: 0; }
+.stats { display: grid; gap: 5px; }
+.stat { display: grid; grid-template-columns: 70px minmax(0, 1fr) 26px; gap: 8px; align-items: center; font-size: 12px; color: var(--muted); }
+.stat .track { height: 5px; border-radius: 9px; background: var(--deep); overflow: hidden; }
+.stat .track span { display: block; height: 100%; background: var(--grad); }
+.stat b { color: var(--ink); font: 500 12px var(--mono); text-align: right; }
+.stat.want { color: var(--green); }
+.sets { display: flex; flex-wrap: wrap; gap: 8px; }
+.set { padding: 8px 12px; border-radius: 10px; background: rgba(14,23,59,.7); border: 1px solid var(--line); font-size: 13.5px; }
+.set b { font: 700 15px var(--display); margin-left: 6px; }
+.set.full { border-color: rgba(51,227,160,.5); }
+
+/* Armor set cards */
+.setgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; }
+.setcard { padding: 14px 16px; border-radius: 14px; background: rgba(14,23,59,.72); border: 1px solid var(--line); display: grid; gap: 12px; align-content: start; }
+.setcard.on { border-color: rgba(51,227,160,.45); }
+.setcard header { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.setcard h3 { font-size: 17px; font-weight: 600; }
+.setcard .val { font: 700 22px/1 var(--display); text-align: right; }
+.setcard .val span { display: block; font: 500 11px var(--body); color: var(--faint); margin-top: 3px; }
+.slotdots { display: flex; gap: 4px; align-items: center; font-size: 12px; color: var(--muted); }
+.slotdots i { width: 20px; height: 6px; border-radius: 3px; background: var(--line-hi); }
+.slotdots i.on { background: var(--green); box-shadow: 0 0 6px rgba(51,227,160,.5); }
+.slotdots span { margin-left: 6px; }
+.bonus { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: start; font-size: 13.5px; }
+.bonus .pc { font: 700 12px var(--display); color: var(--faint); padding-top: 3px; }
+.bonus.active .pc { color: var(--green); }
+.bonus .bn { font-weight: 600; }
+.bonus p { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+details.full summary { cursor: pointer; color: var(--green); font-size: 12.5px; margin-top: 4px; }
+details.full div { white-space: pre-line; color: var(--muted); font-size: 12.5px; margin-top: 6px; }
+
+/* RADS */
+.rads-head { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.rads-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--muted); }
+.rads { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.rad { border-radius: 18px; overflow: hidden; background: var(--panel); border: 1px solid var(--line-hi); display: flex; flex-direction: column; min-width: 0; }
+.rad.top { grid-column: 1 / -1; border-color: rgba(51,227,160,.5); box-shadow: 0 20px 60px -30px rgba(51,227,160,.45); }
+.rad .banner { position: relative; aspect-ratio: 16 / 7; max-width: 100%; background: var(--grad-soft); overflow: hidden; }
+.rad.top .banner { aspect-ratio: 16 / 5; }
+.rad .banner img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .6s ease; }
+.rad:hover .banner img { transform: scale(1.03); }
+.rad .banner::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(5,9,25,.15) 0%, rgba(5,9,25,.1) 40%, rgba(14,23,59,.97) 100%); }
+.rad .chips-tl { position: absolute; top: 12px; left: 12px; z-index: 1; display: flex; gap: 6px; }
+.rad .verdict-tag { position: absolute; top: 12px; right: 12px; z-index: 1; padding: 4px 12px; border-radius: 999px; font: 700 12px/1.2 var(--display); letter-spacing: .1em; text-transform: uppercase; backdrop-filter: blur(6px); }
+.verdict-tag.farm { background: rgba(51,227,160,.2); color: var(--green); border: 1px solid rgba(51,227,160,.6); }
+.verdict-tag.run { background: rgba(54,196,242,.18); color: var(--cyan); border: 1px solid rgba(54,196,242,.55); }
+.verdict-tag.low { background: rgba(5,9,25,.6); color: var(--muted); border: 1px solid var(--line-hi); }
+.rad .title { position: absolute; left: 18px; right: 18px; bottom: 14px; z-index: 1; display: flex; align-items: flex-end; gap: 14px; }
+.rad .rk { font: 700 46px/0.9 var(--display); color: transparent; -webkit-text-stroke: 1.5px rgba(231,236,255,.75); }
+.rad.top .rk { font-size: 64px; -webkit-text-stroke-color: var(--green); }
+.rad .title h3 { font-size: 24px; line-height: 1.1; }
+.rad.top .title h3 { font-size: 32px; }
+.rad .farm { margin-left: auto; text-align: right; }
+.rad .farm b { display: block; font: 700 34px/1 var(--display); }
+.rad .farm span { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.rad .body { padding: 14px 18px 18px; display: grid; gap: 16px; }
+.rad.top .body { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); align-items: start; }
+.parts3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.parts3 div { display: grid; gap: 5px; font-size: 12px; color: var(--muted); }
+.parts3 b { color: var(--ink); font: 600 13px var(--display); }
+.parts3 .track { height: 5px; border-radius: 9px; background: var(--deep); overflow: hidden; }
+.parts3 .track span { display: block; height: 100%; background: var(--grad); }
+.loot { display: grid; gap: 4px; }
+.lootrow { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 5px 8px; border-radius: 9px; border: 1px solid transparent; background: transparent; text-align: left; width: 100%; }
+.lootrow:hover { background: var(--panel-hi); border-color: rgba(51,227,160,.4); }
+.lootrow img, .lootrow .ph { width: 34px; height: 34px; border-radius: 6px; }
+.st { font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.st.chase { color: var(--gold); } .st.upgrade { color: var(--cyan); } .st.have { color: var(--green); }
+.rad details summary { cursor: pointer; color: var(--green); font-size: 13px; font-weight: 600; padding: 4px 8px; list-style: none; }
+.rad details summary::-webkit-details-marker { display: none; }
+.encs { border-top: 1px solid var(--line); padding-top: 10px; }
+.encs > summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 10px; font: 600 15px var(--display); letter-spacing: .04em; color: var(--ink); padding: 4px 0; }
+.encs > summary::-webkit-details-marker { display: none; }
+.encs > summary::after { content: "Show"; font: 600 12px var(--body); color: var(--green); }
+.encs[open] > summary::after { content: "Hide"; }
+.enc { display: grid; gap: 8px; padding: 12px 0; border-bottom: 1px dashed var(--line); }
+.enc:last-child { border-bottom: 0; }
+.enc .eh { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.enc .eh b { font: 600 15px var(--display); }
+.enc .kind { font: 600 10.5px var(--display); letter-spacing: .14em; text-transform: uppercase; padding: 2px 7px; border-radius: 5px; border: 1px solid var(--line-hi); color: var(--muted); }
+.enc .kind.boss { color: var(--gold); border-color: rgba(242,193,78,.5); }
+.enc p { font-size: 13.5px; color: var(--muted); }
+.kit { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.kitw { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 8px; align-items: center; padding: 6px 8px; border-radius: 9px; background: rgba(5,9,25,.45); border: 1px solid var(--line); text-align: left; min-width: 0; }
+.kitw:hover { border-color: rgba(51,227,160,.5); }
+.kitw img, .kitw .ph { width: 30px; height: 30px; border-radius: 5px; }
+.kitw .role { font: 600 10px var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--faint); }
+.kitw .role .m { color: var(--green); margin-left: 4px; }
+.kitw.empty { color: var(--faint); font-size: 12.5px; display: block; }
+.wanted { font-size: 12.5px; color: var(--muted); }
+.wanted b { color: var(--gold); font-weight: 600; }
+@media (max-width: 700px) { .kit { grid-template-columns: minmax(0, 1fr); } }
+.radset { display: grid; gap: 8px; padding: 12px; border-radius: 12px; background: rgba(5,9,25,.4); border: 1px solid var(--line); }
+.radset .top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.radset .bon { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 13px; color: var(--muted); align-items: center; }
+.radset .bon span { display: inline-flex; gap: 6px; align-items: center; }
+.radset .own { font-size: 12.5px; color: var(--muted); }
+@media (max-width: 960px) {
+  .rads { grid-template-columns: minmax(0, 1fr); }
+  .rad.top .body { grid-template-columns: minmax(0, 1fr); }
+  .rad.top .banner { aspect-ratio: 16 / 7; }
+}
+@media (max-width: 560px) {
+  .rad .rk, .rad.top .rk { font-size: 36px; }
+  .rad .title h3, .rad.top .title h3 { font-size: 20px; }
+  .rad .farm b { font-size: 26px; }
+  .lootrow { grid-template-columns: 34px minmax(0, 1fr) auto; }
+  .lootrow .tier { display: none; }
+}
+
+/* DIM tags and loadouts */
+.dtag { display: inline-flex; align-items: center; font: 600 10px/1.4 var(--display); letter-spacing: .08em; text-transform: uppercase; padding: 0 6px; border-radius: 5px; margin-left: 6px; vertical-align: 2px; border: 1px solid currentColor; }
+.dtag.favorite, .tagbtn.favorite[aria-pressed="true"] { color: #ff79b4; } .dtag.keep, .tagbtn.keep[aria-pressed="true"] { color: var(--green); }
+.dtag.infuse, .tagbtn.infuse[aria-pressed="true"] { color: var(--cyan); } .dtag.junk, .tagbtn.junk[aria-pressed="true"] { color: var(--shard); }
+.dtag.archive, .tagbtn.archive[aria-pressed="true"] { color: var(--muted); }
+.lochip { display: inline-flex; align-items: center; gap: 3px; margin-left: 6px; font: 600 11px var(--display); color: #9db8ff; vertical-align: 1px; }
+.dimpanel { display: grid; gap: 10px; padding: 14px; border-radius: 12px; border: 1px solid var(--line-hi); background: var(--panel); }
+.tagbtns { display: flex; flex-wrap: wrap; gap: 6px; }
+.tagbtn { border: 1px solid var(--line-hi); background: var(--deep); color: var(--muted); border-radius: 999px; padding: 4px 12px; font-size: 13px; font-weight: 600; }
+.tagbtn[aria-pressed="true"] { border-color: currentColor; background: rgba(255,255,255,.06); color: var(--ink); }
+.dimpanel textarea { width: 100%; resize: vertical; background: var(--void); border: 1px solid var(--line-hi); border-radius: 9px; padding: 8px 10px; font: 14px var(--body); color: var(--ink); }
+button.chip { cursor: pointer; }
+button.chip:hover { border-color: var(--green); }
+
+/* Moving items */
+.movebtns { display: flex; flex-wrap: wrap; gap: 6px; }
+.movebtn { border: 1px solid rgba(51,227,160,.45); background: rgba(51,227,160,.08); color: var(--ink); border-radius: 999px; padding: 4px 12px; font-size: 13px; font-weight: 600; }
+.movebtn:hover:not(:disabled) { background: rgba(51,227,160,.18); }
+.movebtn:disabled { opacity: .45; cursor: default; }
+.movebtn.vault { border-color: var(--line-hi); background: var(--deep); }
+.pullrow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12.5px; color: var(--muted); }
+.lorow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+
+/* Shard */
+.dimbox { padding: 18px; border-radius: 14px; border: 1px solid var(--line-hi); background: var(--grad-soft); display: grid; gap: 10px; }
+.dimbox code { display: block; max-height: 90px; overflow: auto; font: 500 12px/1.5 var(--mono); color: var(--muted); background: rgba(5,9,25,.6); border-radius: 8px; padding: 10px; word-break: break-all; }
+.dimbox .acts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+/* Wrapped */
+.slides { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-auto-flow: row dense; gap: 14px; }
+.slide { grid-column: span 3; position: relative; overflow: hidden; border-radius: 20px; padding: 26px; min-height: 230px; display: grid; gap: 12px; align-content: start; border: 1px solid var(--line-hi);
+  background: radial-gradient(500px 260px at 100% 0%, rgba(51,227,160,.22), transparent 70%), radial-gradient(500px 300px at 0% 100%, rgba(77,125,255,.28), transparent 70%), var(--deep); }
+.slide.wide { grid-column: span 6; }
+.slide.third { grid-column: span 2; }
+.slide.alt { background: radial-gradient(520px 280px at 0% 0%, rgba(54,196,242,.24), transparent 70%), radial-gradient(460px 300px at 100% 100%, rgba(51,227,160,.20), transparent 70%), var(--deep); }
+.slide.gold { background: radial-gradient(520px 280px at 100% 0%, rgba(242,193,78,.18), transparent 70%), radial-gradient(460px 300px at 0% 100%, rgba(77,125,255,.24), transparent 70%), var(--deep); }
+.slide .kicker { font: 600 12px/1 var(--display); letter-spacing: .18em; text-transform: uppercase; color: var(--cyan); }
+.slide .huge { font: 700 clamp(44px, 7vw, 76px)/0.95 var(--display); letter-spacing: -.01em; }
+.slide .big { font: 700 clamp(26px, 3.6vw, 38px)/1.08 var(--display); }
+.slide p { color: var(--muted); max-width: 56ch; }
+.slide p b { color: var(--ink); }
+.statgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px 18px; }
+.statgrid div b { display: block; font: 700 26px/1.1 var(--display); }
+.statgrid div span { font-size: 12.5px; color: var(--muted); }
+.bars { display: grid; gap: 8px; }
+.barrow { display: grid; grid-template-columns: 150px minmax(0, 1fr) 70px; gap: 10px; align-items: center; font-size: 13.5px; }
+.barrow .track { height: 12px; border-radius: 99px; background: rgba(5,9,25,.6); overflow: hidden; }
+.barrow .track span { display: block; height: 100%; background: var(--grad); border-radius: 99px; }
+.barrow b { font: 500 13px var(--mono); text-align: right; }
+.toplist { display: grid; gap: 8px; }
+.topw { display: grid; grid-template-columns: 26px 44px minmax(0, 1fr) auto; gap: 12px; align-items: center; }
+.topw .rk { font: 700 20px var(--display); color: var(--faint); }
+.topw img, .topw .ph { width: 44px; height: 44px; border-radius: 8px; }
+.topw b { font: 700 18px var(--display); }
+.chars { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.char { position: relative; border-radius: 12px; overflow: hidden; min-height: 96px; padding: 14px 16px; display: grid; align-content: end; gap: 2px; background: var(--panel); border: 1px solid var(--line-hi); }
+.char img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .55; }
+.char::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(5,9,25,.85), rgba(5,9,25,.2)); }
+.char > div { position: relative; z-index: 1; }
+.char b { font: 700 20px var(--display); }
+.char span { font-size: 13px; color: var(--muted); }
+.elshare { display: flex; height: 18px; border-radius: 99px; overflow: hidden; }
+.elshare span { display: block; height: 100%; }
+
+/* Drawer */
+.scrim { position: fixed; inset: 0; background: rgba(2,4,14,.62); backdrop-filter: blur(3px); z-index: 20; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
+.scrim.open { opacity: 1; pointer-events: auto; }
+aside.drawer { position: fixed; z-index: 21; top: 0; right: 0; bottom: 0; width: min(520px, 100%); background: var(--deep); border-left: 1px solid var(--line-hi); transform: translateX(102%); transition: transform .28s cubic-bezier(.2,.8,.2,1); overflow-y: auto; padding-bottom: env(safe-area-inset-bottom, 0px); }
+aside.drawer.open { transform: none; }
+.d-art { position: relative; aspect-ratio: 16 / 8; background: var(--grad-soft); overflow: hidden; max-width: 100%; }
+.d-art img.shot { width: 100%; height: 100%; object-fit: cover; display: block; }
+.d-art .bigicon { position: absolute; inset: 0; display: grid; place-items: center; }
+.d-art .bigicon img { width: 112px; height: 112px; border-radius: 14px; border: 1px solid var(--line-hi); box-shadow: 0 10px 40px rgba(54,196,242,.35); }
+.d-art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 45%, var(--deep)); }
+.d-close { position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); right: 12px; z-index: 2; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line-hi); background: rgba(5,9,25,.75); font-size: 18px; line-height: 1; }
+.d-body { padding: 0 22px 28px; display: grid; gap: 20px; margin-top: -26px; position: relative; z-index: 1; }
+.d-body h2 { font-size: 26px; margin-top: 6px; }
+.d-body .sub { color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; margin-top: 8px; }
+.breakdown { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.breakdown div { padding: 10px 12px; border-radius: 10px; background: var(--panel); border: 1px solid var(--line); }
+.breakdown b { display: block; font: 700 22px/1.1 var(--display); }
+.breakdown span { font-size: 12px; color: var(--muted); }
+.facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 16px; font-size: 13.5px; }
+.facts div { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--line); padding-block: 5px; }
+.facts span { color: var(--muted); }
+.perkcols { display: grid; gap: 10px; }
+.perkcol { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 10px; align-items: start; }
+.perkcol .cap { padding-top: 7px; }
+.wherebox { display: grid; gap: 8px; padding: 14px; border-radius: 12px; border: 1px solid rgba(51,227,160,.4); background: linear-gradient(135deg, rgba(51,227,160,.10), rgba(14,23,59,.6) 60%); }
+.wherebox .line { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; font-size: 14px; }
+.wherebox .line span:first-child { color: var(--faint); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; padding-top: 2px; }
+.wherebox .go { justify-self: start; background: var(--grad); color: #04102a; border: 0; border-radius: 999px; padding: 5px 12px; font-weight: 700; font-size: 13px; }
+.reasons { margin: 0; padding-left: 18px; color: var(--muted); display: grid; gap: 4px; font-size: 14px; }
+.notes { padding: 12px 14px; border-radius: 10px; border-left: 3px solid var(--cyan); background: var(--panel); color: var(--muted); font-size: 14px; }
+
+footer { padding-block: 24px 48px; color: var(--faint); font-size: 13px; border-top: 1px solid var(--line); }
+footer .wrap { display: grid; gap: 8px; }
+footer p { max-width: 90ch; }
+
+@media (max-width: 960px) {
+  .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .picks { grid-template-columns: minmax(0, 1fr); }
+  .armor-best { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .row { grid-template-columns: 44px minmax(0, 1fr) 46px 74px; }
+  .row .c-el, .row .c-verdict { display: none; }
+  .slide, .slide.third { grid-column: span 6; }
+  .chars { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 560px) {
+  .wrap { padding-inline: 16px; }
+  .armor-best { grid-template-columns: minmax(0, 1fr); }
+  .types { grid-template-columns: minmax(0, 1fr); }
+  .tile .big { font-size: 28px; }
+  .slide { padding: 20px; min-height: 0; }
+  .barrow { grid-template-columns: 100px minmax(0, 1fr) 56px; }
+  aside.drawer { top: auto; height: 88vh; width: 100%; border-left: 0; border-top: 1px solid var(--line-hi); border-radius: 18px 18px 0 0; transform: translateY(102%); }
+  .breakdown b { font-size: 18px; }
+  .perkcol { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .perkcol .cap { padding-top: 0; }
+  .facts { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Sub-category chips on type cards */
+.subchips { display: flex; flex-wrap: wrap; gap: 5px; }
+.subchip { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 2px 9px; font-size: 12px; color: var(--muted); }
+.subchip i { width: 7px; height: 7px; border-radius: 50%; background: var(--dot); }
+.subchip span { font: 500 11px var(--mono); color: var(--faint); }
+.subchip:hover { border-color: var(--green); color: var(--ink); }
+.subchip[aria-pressed="true"] { border-color: var(--green); background: rgba(51,227,160,.12); color: #c9ffe8; }
+
+/* Full list: two rows side by side on wide screens */
+#exlist .list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 10px; }
+#exlist .row { grid-template-columns: 44px minmax(0, 1fr) 30px 76px 62px; gap: 10px; }
+#exlist .row .c-el { display: none; }
+#exlist .row .el-inline { display: inline-flex; }
+#exlist .meter { width: 48px; }
+#exlist .verdict { font-size: 11px; padding: 1px 7px; }
+.el-inline { display: none; }
+
+/* Green accents */
+.sec-head h2::before { content: ""; display: inline-block; width: 4px; height: .8em; border-radius: 2px; background: var(--green); box-shadow: 0 0 10px rgba(51,227,160,.6); margin-right: 10px; vertical-align: -1px; }
+.score b.hi { color: var(--green); }
+.tile.good .big { color: var(--green); }
+.linkbtn { color: var(--green); }
+.row:hover, .mini:hover, .qlink:hover, .acard:hover, button.tcard:hover { border-color: rgba(51,227,160,.55); }
+nav.tabs button[aria-selected="true"] .count { color: var(--green); }
+.slide.alt .kicker, .ghead h3 + .small { color: var(--green); }
+.qlink .n { color: var(--green); }
+details.ms summary .n, .view[aria-pressed="true"] { border-color: var(--green); }
+@media (max-width: 960px) {
+  #exlist .list { grid-template-columns: minmax(0, 1fr); }
+  #exlist .row { grid-template-columns: 44px minmax(0, 1fr) 30px 74px; }
+  #exlist .row .c-verdict { display: none; }
+}
+
+/* Panels use display:grid, which would override the hidden attribute and stack every tab. */
+[hidden] { display: none !important; }
+body { overflow-x: clip; }
+/* Fill wide monitors; grids add columns instead of stretching a few. */
+.wrap { max-width: 1680px; padding-inline: clamp(16px, 3vw, 40px); }
+.types { grid-template-columns: repeat(auto-fill, minmax(min(330px, 100%), 1fr)); }
+.setgrid { grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr)); }
+.exotics { grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr)); }
+.quick { grid-template-columns: repeat(auto-fill, minmax(min(230px, 100%), 1fr)); }
+.elements { grid-template-columns: repeat(auto-fill, minmax(min(170px, 100%), 1fr)); }
+.rads { grid-template-columns: repeat(auto-fill, minmax(min(480px, 100%), 1fr)); }
+.picks { grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); }
+@media (min-width: 1500px) { #exlist .list { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 960px) { .picks { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 420px) { .tiles { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; } .tile { padding: 12px; } .breakdown { gap: 6px; } }
+body.vr-booting > header.hero, body.vr-booting > nav.tabs, body.vr-booting > main, body.vr-booting > footer { display: none; }
+
+/* Lock plan and settings (local app and web app) */
+.planbox { display: grid; gap: 12px; padding: 18px; border-radius: 14px; border: 1px solid rgba(242,193,78,.45); background: linear-gradient(135deg, rgba(242,193,78,.08), rgba(14,23,59,.7) 60%); }
+.planbox .counts { display: flex; flex-wrap: wrap; gap: 8px; }
+.planlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 6px 14px; max-height: 420px; overflow: auto; padding: 4px; }
+.planlist div { display: flex; gap: 8px; align-items: baseline; font-size: 13.5px; min-width: 0; }
+.planlist div span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.planlist .lk, .planlist .ul { flex: none; min-width: 54px; font-weight: 600; } .planlist .lk { color: var(--green); } .planlist .ul { color: var(--shard); }
+.confirmrow { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.btn.danger { background: rgba(255,122,122,.16); border-color: rgba(255,122,122,.7); }
+.btn:disabled { opacity: .5; cursor: default; }
+.setform { display: grid; gap: 22px; }
+.setform fieldset { border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin: 0; display: grid; gap: 12px; background: rgba(14,23,59,.55); min-width: 0; }
+.setform legend { font: 600 15px var(--display); padding: 0 6px; }
+.presets { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px; }
+.presets label { display: grid; gap: 4px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line-hi); background: var(--deep); cursor: pointer; }
+.presets label:has(input:checked) { border-color: var(--green); background: rgba(51,227,160,.08); }
+.presets input { accent-color: var(--green); }
+.presets b { font: 600 15px var(--display); }
+.presets span { font-size: 12.5px; color: var(--muted); }
+.typegrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: 8px 16px; }
+.typegrid label { display: flex; justify-content: space-between; gap: 10px; align-items: center; font-size: 14px; }
+.typegrid select, .setform select, .setform textarea { background: var(--void); border: 1px solid var(--line-hi); border-radius: 9px; padding: 6px 10px; color: var(--ink); max-width: 100%; }
+.setform textarea { width: 100%; font: 14px var(--body); }
+.toggles { display: grid; gap: 8px; }
+.toggles label { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; }
+.toggles input { accent-color: var(--green); margin-top: 4px; }
+.prestable { width: 100%; border-collapse: collapse; font-size: 13px; }
+.prestable th, .prestable td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+.prestable th { color: var(--faint); font-weight: 600; }
+.tablewrap { overflow-x: auto; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<canvas id="stars" aria-hidden="true"></canvas>
+
+<header class="hero wrap">
+  <div class="hero-top">
+    <div>
+      <div class="eyebrow">Destiny 2 · Vault review</div>
+      <h1 id="h1"></h1>
+      <p class="lede" id="lede"></p>
+    </div>
+    <div class="chips" id="hero-chips"></div>
+  </div>
+  <div class="tiles" id="tiles"></div>
+  <div class="tierbar">
+    <div class="cap">Weapons by Aegis tier</div>
+    <div class="bar" id="tierbar" role="img"></div>
+    <div class="legend" id="tierlegend"></div>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Report sections"><div class="wrap" role="tablist" id="tabs"></div></nav>
+
+<main class="wrap">
+  <section class="panel" id="p-overview" role="tabpanel"></section>
+  <section class="panel" id="p-weapons" role="tabpanel" hidden></section>
+  <section class="panel" id="p-armor" role="tabpanel" hidden></section>
+  <section class="panel" id="p-rads" role="tabpanel" hidden></section>
+  <section class="panel" id="p-list" role="tabpanel" hidden></section>
+  <section class="panel" id="p-shard" role="tabpanel" hidden></section>
+  <section class="panel" id="p-wrapped" role="tabpanel" hidden></section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><b>How scores work.</b> Weapons: 60% Aegis tier (S 100, A 85, B 70, C 50, D 30, up to +5 for rank in tier) and 40% roll, where each perk column counts if any selectable perk is one Aegis recommends. Weapons missing from Aegis's sheet fall back to the voltron community wishlist. Armor: 40% stats against a Tier 5 roll, 25% fit to the stats your builds use, 25% set bonus (Aegis's set tiers S to F, counting how many slots of the set you own), 10% Tier 5 or exotic.</p>
+    <p><b>Encounter guides.</b> Each encounter lists what it demands, then builds a loadout from your vault: one weapon per slot, at most one exotic, ranked by vault score and fit for the role. Weapons that guides name for that encounter or role get extra weight. Research: Shacknews, Destructoid, Grindout, Deltia's Gaming and Game Rant's Monument of Triumph boss-damage picks.</p>
+    <p><b>RADS farm score.</b> 40% loot quality (the activity's three best weapons on Aegis's sheet), 40% need (S, A and B-tier loot you don't own, or own only with a weak roll), 20% armor set bonus you don't have a full set of yet. Loot comes from Bungie's collections and Aegis's sheet, plus exotic quests inside the activity.</p>
+    <p id="foot-meta"></p>
+  </div>
+</footer>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-modal="true" role="dialog" aria-label="Item details"></aside>
+
+<script>
+let DATA = /*__DATA__*/null;
+const IMG = /*__IMG__*/{};
+</script>
+<script>
+// The local report embeds DATA; the web app sets it later and calls VR_START.
+window.VR_START = (data, images) => { if (data) DATA = data; if (images) Object.assign(IMG, images); document.body.classList.remove("vr-booting"); vrMain(); };
+/** Calls the local app's server, or the web app's in-browser handlers (window.VR_API). */
+const api = (path, body) => (window.VR_API ? window.VR_API(path, body || {}) : fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body || {}) }).then((x) => x.json()));
+function vrMain() {
+  // Swap each embedded data URI for a short blob URL once, so rows don't each carry a copy of the image.
+  for (const [k, uri] of Object.entries(IMG)) {
+    if (!String(uri).startsWith("data:")) continue;
+    try {
+      const [head, b64] = uri.split(",");
+      const bin = atob(b64), bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      IMG[k] = URL.createObjectURL(new Blob([bytes], { type: head.slice(5, head.indexOf(";")) }));
+    } catch {}
+  }
+  const $ = (s, el = document) => el.querySelector(s);
+  const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+  const img = (k, cls = "") => (k && IMG[k] ? `<img ${cls ? `class="${cls}" ` : ""}src="${IMG[k]}" alt="" loading="lazy">` : `<span class="ph"></span>`);
+  const fmt = (n) => Math.round(n || 0).toLocaleString();
+  const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
+  const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
+  const W = new Map(DATA.weapons.map((w) => [w.id, w]));
+  const A = new Map(DATA.armor.map((a) => [a.id, a]));
+  const TIERS = ["S", "A", "B", "C", "D"];
+  const tierOf = (w) => w.tier || "U";
+  const tierLabel = (t) => (t === "U" ? "Not on sheet" : `${t} tier`);
+  const tierBadge = (w) => `<span class="tier t${tierOf(w)}" title="${w.tier ? `Aegis ${w.tier} tier${w.rank ? ` #${w.rank} ` : " "}${esc(w.tab || "")}` : "Not on Aegis's sheet"}">${w.tier || "—"}</span>`;
+  const elDot = (e) => `<span class="el" style="color:var(--${esc(e)})"><i></i><span>${esc(e)}</span></span>`;
+  const verdict = (v) => `<span class="verdict ${v}">${v === "keep" ? "Keep" : v === "shard" ? "Shard" : "Review"}</span>`;
+  const scoreCell = (s) => `<div class="score"><b class="num${s >= 90 ? " hi" : ""}">${s}</b><div class="meter"><span style="width:${Math.max(0, Math.min(100, s))}%"></span></div></div>`;
+  const frameOf = (w) => (w.f || "").replace(/ Frame$/, "");
+  const typeLine = (w) => [frameOf(w), w.t].filter(Boolean).join(" ");
+  const fmtDate = (iso) => new Date(iso).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+  const plural = (n, one, many = one + "s") => `${fmt(n)} ${n === 1 ? one : many}`;
+  const by = (f) => (a, b) => f(b) - f(a);
+  const isExotic = (x) => x.r === "Exotic";
+  const NAME = DATA.wrapped?.name || "";
+  const S = DATA.summary;
+
+  /* ---------- Starfield ---------- */
+  (function stars() {
+    const c = $("#stars"), ctx = c.getContext("2d");
+    const draw = () => {
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      c.width = innerWidth * dpr; c.height = innerHeight * dpr;
+      let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+      const n = Math.round((innerWidth * innerHeight) / 2600);
+      for (let i = 0; i < n; i++) {
+        ctx.fillStyle = `rgba(${rnd() < 0.5 ? "170,200,255" : "170,255,225"},${rnd() * 0.7 + 0.15})`;
+        ctx.beginPath(); ctx.arc(rnd() * c.width, rnd() * c.height, (rnd() * 1.1 + 0.2) * dpr, 0, Math.PI * 2); ctx.fill();
+      }
+    };
+    draw();
+    let t; addEventListener("resize", () => { clearTimeout(t); t = setTimeout(draw, 150); });
+  })();
+
+  /* ---------- Hero ---------- */
+  $("#h1").innerHTML = `${NAME ? esc(NAME) + "’s " : ""}<span class="grad-text">Vault Report</span>`;
+  $("#lede").textContent = `${fmt(S.vaultSize)} items rated against Aegis's Endgame Analysis tier list and community god rolls. ${S.weaponShard + S.armorShard} can go, freeing that many vault slots.`;
+  $("#hero-chips").innerHTML = [
+    `<span class="chip">Strictness <b>${esc(DATA.preset[0].toUpperCase() + DATA.preset.slice(1))}</b></span>`,
+    `<span class="chip">Focus <b>${esc(DATA.focus.toUpperCase())}</b></span>`,
+    `<span class="chip">Rated <b>${esc(fmtDate(DATA.generated))}</b></span>`,
+    ...(DATA.dim ? ["tags", "loadouts", "protectTagged"].filter((k) => k !== "protectTagged" || DATA.dim.tags).map((k) => {
+      const on = DATA.dim[k];
+      const name = k === "protectTagged" ? "Protect DIM keeps" : "DIM " + k;
+      const label = `${name} <b>${on ? (DATA.dim.loaded || k === "protectTagged" ? "On" : "Unavailable") : "Off"}${on && DATA.dim.loaded && k !== "protectTagged" ? ` · ${k === "tags" ? DATA.dim.taggedCount : DATA.dim.loadoutCount}` : ""}</b>`;
+      const tip = k === "protectTagged" ? "Items you tagged Favorite or Keep in DIM are never marked to shard." : "Turn off for faster reports.";
+      return window.VR_LOCAL ? `<button class="chip" data-dimtoggle="${k}" title="${tip} Click to turn ${on ? "off" : "on"} and re-rate.">${label}</button>` : `<span class="chip" title="${on && !DATA.dim.loaded && k !== "protectTagged" ? esc(DATA.dim.error || "") : tip + " Change with: npm run vault -- dim " + (k === "protectTagged" ? "protect" : k) + " " + (on ? "off" : "on")}">${label}</span>`;
+    }) : []),
+  ].join("") + (window.VR_LOCAL ? `<button class="btn primary" id="rerate">Re-rate my vault</button>${window.VR_WEB ? '<button class="btn" id="signout">Sign out</button>' : ""}<span class="chip" id="rerate-msg" hidden></span>` : "");
+  if (window.VR_WEB) $("#signout").onclick = () => api("/api/signout");
+  if (window.VR_LOCAL) $("#rerate").onclick = async () => {
+    const b = $("#rerate"), msg = $("#rerate-msg");
+    b.disabled = true; b.textContent = "Re-rating…"; msg.hidden = false; msg.textContent = "Reading your vault from Bungie. This takes a minute.";
+    try {
+      const res = await api("/api/refresh");
+      if (!res.ok) throw new Error(res.error);
+      location.reload();
+    } catch (e) { b.disabled = false; b.textContent = "Re-rate my vault"; msg.textContent = "Re-rating failed: " + e.message; }
+  };
+  $("#hero-chips").addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-dimtoggle]"); if (!b) return;
+    const k = b.dataset.dimtoggle;
+    b.disabled = true; b.innerHTML = `${b.innerHTML.split(" <b>")[0]} <b>Updating…</b>`;
+    try {
+      const st = await api("/api/settings", { dim: { [k]: !DATA.dim[k] } });
+      if (!st.ok) throw new Error(st.error);
+      const res = await api("/api/refresh");
+      if (!res.ok) throw new Error(res.error);
+      location.reload();
+    } catch (err) { b.disabled = false; b.innerHTML = `${b.innerHTML.split(" <b>")[0]} <b>Failed: ${esc(err.message)}</b>`; }
+  });
+  $("#tiles").innerHTML = [
+    ["Weapons kept", S.weaponKeep, `of ${S.weapons} in your vault`],
+    ["Weapons to shard", S.weaponShard, `${DATA.duplicates.length} weapons have extra copies`],
+    ["Armor kept", S.armorKeep, `of ${S.armor} pieces`],
+    ["Armor to shard", S.armorShard, "Weaker copies and outscored legacy armor"],
+  ].map(([l, n, s], i) => `<div class="tile${i % 2 === 0 ? " good" : ""}"><div class="label">${l}</div><div class="big num">${n}</div><div class="sub">${esc(s)}</div></div>`).join("");
+  const tc = { S: 0, A: 0, B: 0, C: 0, D: 0, U: 0 };
+  for (const w of DATA.weapons) tc[tierOf(w)]++;
+  $("#tierbar").innerHTML = [...TIERS, "U"].filter((t) => tc[t]).map((t) => `<span style="width:${(tc[t] / DATA.weapons.length) * 100}%;background:var(--${t})" title="${tierLabel(t)}: ${tc[t]}"></span>`).join("");
+  $("#tierbar").setAttribute("aria-label", [...TIERS, "U"].map((t) => `${tierLabel(t)} ${tc[t]}`).join(", "));
+  $("#tierlegend").innerHTML = [...TIERS, "U"].map((t) => `<span><i style="background:var(--${t})"></i>${tierLabel(t)} <b class="num" style="color:var(--ink)">${tc[t]}</b></span>`).join("");
+  $("#foot-meta").textContent = `Generated ${new Date(DATA.generated).toLocaleString()} by D2 Vault Rater. Nothing in game changes until you approve a lock plan.`;
+
+  /* ---------- Tabs ---------- */
+  const TABS = [["overview", "Overview", null], ["weapons", "Weapons", S.weapons], ["armor", "Armor", S.armor], ["rads", "RADS", (DATA.rads || []).length || null], ["list", "Full list", null], ["shard", "Shard list", S.weaponShard + S.armorShard], ["wrapped", "Wrapped", null], ...(window.VR_LOCAL ? [["settings", "Settings", null]] : [])];
+  if (!$("#p-settings")) $("main").insertAdjacentHTML("beforeend", '<section class="panel" id="p-settings" role="tabpanel" hidden></section>');
+  $("#tabs").innerHTML = TABS.map(([id, label, n]) => `<button role="tab" id="t-${id}" aria-controls="p-${id}" aria-selected="false">${label}${n != null ? `<span class="count">${n}</span>` : ""}</button>`).join("");
+  const RENDER = {}, rendered = {};
+  function show(id, scroll) {
+    if (!TABS.some((t) => t[0] === id)) id = "overview";
+    for (const [t] of TABS) { $(`#t-${t}`).setAttribute("aria-selected", String(t === id)); $(`#p-${t}`).hidden = t !== id; }
+    if (!rendered[id]) { RENDER[id](); rendered[id] = true; }
+    store.set("vr-tab", id);
+    // Clicking a tab adds a history entry (Back returns to the previous tab); restoring one does not.
+    try { if (location.hash.slice(1) !== id) history[scroll ? "pushState" : "replaceState"](null, "", "#" + id); } catch {}
+    if (scroll) scrollTo({ top: $("nav.tabs").offsetTop, behavior: "smooth" });
+  }
+  $("#tabs").addEventListener("click", (e) => { const b = e.target.closest("button[role=tab]"); if (b) show(b.id.slice(2), true); });
+
+  /* ---------- Shared pieces ---------- */
+  const weaponRow = (w) => `<button class="row" data-w="${w.id}">${img(w.ic)}
+      <div style="min-width:0"><div class="nm">${esc(w.n)}${dtag(w)}${lochip(w)}${w.lk ? ' <span class="small muted" title="Locked in game">🔒</span>' : ""}</div><div class="sm">${isExotic(w) ? '<span class="exo">Exotic</span> · ' : ""}${esc(typeLine(w))}<span class="el-inline"> · ${elDot(w.e)}</span>${w.loc && w.loc !== "Vault" ? " · " + esc(w.loc) : ""}</div></div>
+      <div class="c-el">${elDot(w.e)}</div><div>${tierBadge(w)}</div>${scoreCell(w.sc)}<div class="c-verdict">${verdict(w.v)}</div></button>`;
+  const statBars = (a, full) => {
+    const want = new Set(DATA.buildStats[a.cls] || []);
+    const list = full && a.all ? Object.entries(a.all).sort((x, y) => y[1] - x[1]) : a.st;
+    return `<div class="stats">${list.map(([n, v]) => `<div class="stat${want.has(n) ? " want" : ""}"><span>${esc(n)}</span><div class="track"><span style="width:${Math.min(100, (v / 30) * 100)}%"></span></div><b>${v}</b></div>`).join("")}</div>`;
+  };
+  const gearTier = (a) => (a.gt ? "T" + a.gt : isExotic(a) ? "EX" : "—");
+  const TAG_LABEL = { favorite: "Favorite", keep: "Keep", infuse: "Infuse", junk: "Junk", archive: "Archive" };
+  const DIMS = DATA.dim || { tags: false, loadouts: false, loaded: false };
+  const dtag = (x) => (DIMS.tags && x.tg ? `<span class="dtag ${x.tg}" title="DIM tag${x.nt ? ": " + esc(x.nt) : ""}">${TAG_LABEL[x.tg] || esc(x.tg)}</span>` : "");
+  const lochip = (x) => (DIMS.loadouts && x.lo?.length ? `<span class="lochip" title="In DIM loadouts: ${esc(x.lo.join(", "))}">◆ ${x.lo.length}</span>` : "");
+  const SET_TIERS = ["S", "A", "B", "C", "D", "E", "F"];
+  const bestSetTier = (a) => (a.si ? a.si.bonuses.map((b) => b.tier).filter(Boolean).sort((x, y) => SET_TIERS.indexOf(x) - SET_TIERS.indexOf(y))[0] || null : null);
+  const stier = (t) => (t ? `<span class="stier t${t}" title="Aegis set tier ${t}">${t}</span>` : "");
+  const setLine = (a) => (a.si ? " · " + esc(a.si.name) + stier(bestSetTier(a)) : a.set ? " · " + esc(a.set) : "");
+  const bonusRow = (b, owned) => `<div class="bonus${owned >= b.pieces ? " active" : ""}"><span class="pc">${b.pieces}PC</span><div><div class="bn">${esc(b.name)}</div>${b.effect || b.notes ? `<p>${esc([b.effect, b.notes].filter(Boolean).join(". "))}</p>` : ""}${b.description ? `<details class="full"><summary>Full bonus text</summary><div>${esc(b.description)}</div></details>` : ""}</div>${b.tier ? `<span class="tier t${b.tier}" title="Aegis rank #${b.rank ?? "?"}">${b.tier}</span>` : `<span class="tier tU">—</span>`}</div>`;
+  const armorRow = (a) => `<button class="row" data-a="${a.id}">${img(a.ic)}
+      <div style="min-width:0"><div class="nm">${esc(a.n)}${dtag(a)}${lochip(a)}${a.lk ? ' <span class="small muted" title="Locked in game">🔒</span>' : ""}</div><div class="sm">${isExotic(a) ? '<span class="exo">Exotic</span> · ' : ""}${esc(a.cls)} ${esc(a.s)} · ${esc(a.arch || "Legacy")}${setLine(a)}</div></div>
+      <div class="c-el sm">${a.st.map(([n, v]) => `${esc(n)} ${v}`).join(" / ")}</div><div><span class="tier tU" title="Gear tier">${gearTier(a)}</span></div>${scoreCell(a.sc)}<div class="c-verdict">${verdict(a.v)}</div></button>`;
+  const copiesOf = (w) => DATA.weapons.filter((x) => x.n === w.n).length;
+  const mini = (w, i) => `<button class="mini" data-w="${w.id}"><span class="rk">${i + 1}</span>${img(w.ic)}<div style="min-width:0"><div class="nm">${esc(w.n)}${copiesOf(w) > 1 ? ` <span class="small muted">×${copiesOf(w)}</span>` : ""}</div><div class="sm">${esc(frameOf(w) || w.t)} · <span class="el" style="color:var(--${esc(w.e)})"><i></i><span>${esc(w.e)}</span></span></div></div><div class="right">${tierBadge(w)}<b class="num">${w.sc}</b></div></button>`;
+
+  document.addEventListener("click", (e) => {
+    const go = e.target.closest("[data-view]"); if (go) { e.preventDefault(); openList(go.dataset.set, go.dataset.view); return; }
+    const w = e.target.closest("[data-w]"); if (w) return openWeapon(w.dataset.w);
+    const a = e.target.closest("[data-a]"); if (a) return openArmor(a.dataset.a);
+  });
+  document.addEventListener("keydown", (e) => {
+    if ((e.key === "Enter" || e.key === " ") && e.target.matches("[role=button][data-w]")) { e.preventDefault(); openWeapon(e.target.dataset.w); }
+  });
+
+  /* ---------- Overview ---------- */
+  RENDER.overview = () => {
+    const picks = Object.entries(DATA.bestBySlot).map(([slot, ids]) => {
+      const w = W.get(ids[0]);
+      const good = new Set(w.pk.flatMap((p) => p.m));
+      const traits = w.pk.filter((p) => p.k === "perk1" || p.k === "perk2").flatMap((p) => p.o);
+      return `<div class="pick" data-w="${w.id}" role="button" tabindex="0">
+        <div class="art">${w.ss && IMG[w.ss] ? `<img src="${IMG[w.ss]}" alt="">` : ""}<span class="chip slot"><b>${esc(slot)}</b></span></div>
+        <div class="body">
+          <div class="title">${img(w.ic)}<div style="min-width:0"><h3>${esc(w.n)}</h3><div class="small muted">${esc(typeLine(w))} · ${esc(w.e)}</div></div></div>
+          <div style="display:flex;gap:10px;align-items:center">${tierBadge(w)}<span class="small muted">${w.tier ? `Aegis #${w.rank ?? "?"} in ${esc(w.tab)}` : "Wishlist rated"}</span><span style="margin-left:auto">${scoreCell(w.sc)}</span></div>
+          <div class="perkopts">${traits.slice(0, 8).map((o) => `<span class="perk${good.has(o) ? " good" : ""}">${esc(o)}</span>`).join("")}</div>
+          ${ids.length > 1 ? `<div class="runners">Runners-up ${ids.slice(1, 4).map((id) => `<button data-w="${id}">${esc(W.get(id).n)} · ${W.get(id).sc}</button>`).join("")}</div>` : ""}
+        </div></div>`;
+    }).join("");
+    const elements = Object.entries(DATA.bestByElement).map(([el, ids]) => {
+      const w = W.get(ids[0]);
+      return `<button class="elcard" data-w="${w.id}" style="color:var(--${esc(el)})"><div class="head"><span>${esc(el)}</span>${tierBadge(w)}</div>
+        <div class="w">${img(w.ic)}<div><div class="nm">${esc(w.n)}</div><div class="sm">${esc(w.t)} · <b class="num" style="color:var(--ink)">${w.sc}</b></div></div></div></button>`;
+    }).join("");
+    const q = (set, view, title, n, sub) => `<button class="qlink" data-set="${set}" data-view="${view}"><span class="n num">${n}</span><b>${title}</b><span>${sub}</span></button>`;
+    const shardW = DATA.weapons.filter((w) => w.v === "shard");
+    $("#p-overview").innerHTML = `
+      <div><div class="sec-head"><h2>Top picks by slot</h2><p>The highest scoring weapon you own for each slot.</p></div><div class="picks">${picks}</div></div>
+      <div><div class="sec-head"><h2>Best by element</h2><p>Your strongest option for every damage type.</p></div><div class="elements">${elements}</div></div>
+      <div><div class="sec-head"><h2>Jump in</h2><p>Each opens the full list with the filters already set.</p></div><div class="quick">
+        ${q("w", "delete", "Delete these first", shardW.filter((w) => ["d-tier", "low-tier", "trash-roll"].includes(w.c)).length, "D tier, below your tier floor, or wishlist trash")}
+        ${q("w", "dupes", "Duplicates to clear", shardW.filter((w) => w.c === "duplicate").length, "You keep a better copy of each")}
+        ${q("w", "best-type-el", "Best of every type and element", new Set(DATA.weapons.map((w) => w.t + "|" + w.e)).size, "Like your best Solar auto rifle")}
+        ${q("w", "god", "Wishlist god rolls", DATA.weapons.filter((w) => w.god).length, "Rolls the community wishlist marks as ideal")}
+        ${q("a", "best-slot", "Best armor per class and slot", Object.values(DATA.armorBest).reduce((n, s) => n + Object.keys(s).length, 0), "Your strongest piece in every slot")}
+        ${q("a", "delete", "Armor to shard", S.armorShard, "Weaker copies and outscored legacy armor")}
+      </div></div>`;
+  };
+
+  /* ---------- Weapons highlights ---------- */
+  const AMMO_ORDER = ["Primary", "Special", "Heavy"];
+  const typeCards = [];
+  RENDER.weapons = () => {
+    // One card per weapon type. A type is split by ammo only when at least 5 legendaries use the less common
+    // ammo (special and heavy grenade launchers, rocket sidearms); stragglers and exotics join the main card.
+    const ammoCount = {};
+    for (const w of DATA.weapons) if (!isExotic(w)) { const m = (ammoCount[w.t] ??= {}); m[w.am || "Other"] = (m[w.am || "Other"] || 0) + 1; }
+    for (const w of DATA.weapons) if (!ammoCount[w.t]) (ammoCount[w.t] = {})[w.am || "Other"] = 1;
+    const mainAmmo = (t) => Object.entries(ammoCount[t]).sort((x, y) => y[1] - x[1])[0][0];
+    const splits = (t) => Object.entries(ammoCount[t]).filter(([, n]) => n >= 5).map(([am]) => am);
+    const groups = {};
+    const cards = new Map();
+    for (const w of DATA.weapons) {
+      const sp = splits(w.t);
+      const am = !isExotic(w) && sp.includes(w.am) ? w.am : mainAmmo(w.t), key = w.t + "|" + am;
+      if (!cards.has(key)) cards.set(key, { type: w.t, ammo: am, split: sp.length > 1, title: sp.length > 1 ? `${am} ${w.t}` : w.t, all: [], leg: [] });
+      const c = cards.get(key); c.all.push(w); if (!isExotic(w)) c.leg.push(w);
+    }
+    typeCards.length = 0;
+    for (const c of [...cards.values()].sort((a, b) => a.title.localeCompare(b.title))) { c.i = typeCards.push(c) - 1; c.sub = ""; (groups[c.ammo] ??= []).push(c); }
+    const ammoSections = [...AMMO_ORDER, ...Object.keys(groups).filter((k) => !AMMO_ORDER.includes(k))].filter((k) => groups[k]).map((k) =>
+      `<div class="sub-head"><span class="cap">${esc(k)} ammo · ${groups[k].length} types</span></div><div class="types">${groups[k].map((c) => `<article class="tcard" id="tc${c.i}">${typeCardBody(c)}</article>`).join("")}</div>`).join("");
+    const exotics = DATA.weapons.filter(isExotic).sort(by((w) => w.sc));
+    const exBySlot = {};
+    for (const w of exotics) (exBySlot[w.s] ??= []).push(w);
+    const exItem = (w) => `<button class="exitem" data-w="${w.id}">${img(w.ic)}<div style="min-width:0"><div class="nm">${esc(w.n)}</div><div class="sm">${esc(w.t)} · <span class="el" style="color:var(--${esc(w.e)})"><i></i><span>${esc(w.e)}</span></span></div></div><div style="display:flex;gap:8px;align-items:center">${tierBadge(w)}<b class="num" style="font:700 16px var(--display)">${w.sc}</b></div></button>`;
+    const gaps = DATA.gaps.length ? `<div class="elements">${DATA.gaps.map((g) => `<div class="elcard" style="color:var(--${esc(g.element) || "Unknown"})"><div class="head"><span>${esc(g.element || "—")}</span><span class="tier tS">S</span></div><div class="w"><div><div class="nm">${esc(g.name)}</div><div class="sm">${esc([g.frame, g.tab].filter(Boolean).join(" · "))}</div></div></div></div>`).join("")}</div>` : `<div class="empty">You own every S-tier weapon on the sheet.</div>`;
+    $("#p-weapons").innerHTML = `
+      <div><div class="sec-head"><h2>Legendary highlights by type</h2><p>Top three of every weapon type. Pick a frame or element to see the best in that sub-category.</p></div>${ammoSections}</div>
+      <div><div class="sec-head"><h2><span style="color:var(--gold)">Exotics</span></h2><p>Your best five exotics per slot, out of ${exotics.length}.</p></div>
+        ${["Kinetic", "Energy", "Power"].filter((s) => exBySlot[s]).map((s) => `<div class="sub-head"><span class="cap">${s} · best 5 of ${exBySlot[s].length}</span></div><div class="exotics">${exBySlot[s].slice(0, 5).map(exItem).join("")}</div>`).join("")}
+        <div style="margin-top:14px"><button class="btn" data-set="w" data-view="exotics">See all ${exotics.length} exotics in the full list →</button></div></div>
+      <div><div class="sec-head"><h2>Worth farming</h2><p>S-tier weapons on Aegis's sheet that you don't own yet.</p></div>${gaps}</div>`;
+    $("#p-weapons").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-sub]"); if (!b) return;
+      e.stopPropagation();
+      const c = typeCards[b.dataset.card]; c.sub = b.dataset.sub;
+      $(`#tc${c.i}`).innerHTML = typeCardBody(c);
+    });
+  };
+  function typeCardBody(c) {
+    const count = (f) => { const m = {}; for (const w of c.leg) { const k = f(w); if (k) m[k] = (m[k] || 0) + 1; } return Object.entries(m).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])); };
+    const frames = count(frameOf), els = count((w) => w.e);
+    const [kind, val] = c.sub ? c.sub.split(":") : ["", ""];
+    const list = c.leg.filter((w) => !kind || (kind === "f" ? frameOf(w) : w.e) === val);
+    const seen = new Set();
+    const best = [...list].sort(by((w) => w.sc)).filter((w) => !seen.has(w.n) && seen.add(w.n)).slice(0, 3);
+    const keep = c.leg.filter((w) => w.v === "keep").length;
+    const chip = (sub, label, n) => `<button class="subchip" data-card="${c.i}" data-sub="${esc(sub)}" aria-pressed="${c.sub === sub}"${sub.startsWith("e:") ? ` style="--dot:var(--${esc(label)})"` : ""}>${sub.startsWith("e:") ? "<i></i>" : ""}${esc(label)}${n ? `<span>${n}</span>` : ""}</button>`;
+    const subs = c.leg.length > 1 ? `<div class="subchips">${chip("", "All")}${frames.length > 1 ? frames.map(([f, n]) => chip("f:" + f, f, n)).join("") : ""}</div>${els.length > 1 ? `<div class="subchips">${els.map(([e, n]) => chip("e:" + e, e, n)).join("")}</div>` : ""}` : "";
+    const exo = c.all.length - c.leg.length;
+    return `<header><h3>${esc(c.title)}</h3><span class="small num">${c.leg.length} legendary${exo ? ` · ${exo} exotic` : ""} · ${keep} kept</span></header>${subs}
+      <div>${best.length ? best.map(mini).join("") : `<p class="small muted" style="padding:8px">${c.leg.length ? "None in this sub-category." : "You only own exotics of this type."}</p>`}</div>
+      <button class="linkbtn" data-set="w" data-view="type:${esc(c.type)}${c.split ? "|" + esc(c.ammo) : ""}">See all ${c.all.length}, best first →</button>`;
+  }
+
+  /* ---------- Armor highlights ---------- */
+  const classes = Object.keys(DATA.armorBest).sort();
+  const SLOTS = ["Helmet", "Arms", "Chest", "Legs", "Class Item"];
+  let armorClass = classes.includes(store.get("vr-class")) ? store.get("vr-class") : classes[0];
+  RENDER.armor = () => {
+    $("#p-armor").innerHTML = `<div><div class="sec-head"><div class="seg" role="group" aria-label="Class" id="aclass">${classes.map((c) => `<button data-c="${esc(c)}" aria-pressed="${c === armorClass}">${esc(c)}</button>`).join("")}</div><p id="awant"></p></div><div id="abody" class="stack" style="gap:40px"></div></div>`;
+    $("#aclass").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; armorClass = b.dataset.c; store.set("vr-class", armorClass); $$("#aclass button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); drawArmor(); });
+    drawArmor();
+  };
+  function drawArmor() {
+    const cls = armorClass, want = DATA.buildStats[cls] || [];
+    $("#awant").innerHTML = want.length ? `Your ${esc(cls)} builds lean on <b style="color:var(--green)">${want.map(esc).join(" + ")}</b>` : "";
+    const mine = DATA.armor.filter((a) => a.cls === cls);
+    const card = (a, label) => `<button class="acard" data-a="${a.id}"><div class="cap">${esc(label)}</div><div class="top">${img(a.ic)}<div><div class="nm">${esc(a.n)}</div><div class="sm">${esc(a.arch || "Legacy")}${setLine(a)}</div></div></div>${statBars(a)}<div style="display:flex;justify-content:space-between;align-items:center"><span class="small muted">${a.gt ? "Tier " + a.gt : esc(a.r)}</span><b class="num" style="font:700 18px var(--display)">${a.sc}</b></div></button>`;
+    const legBySlot = (s) => mine.filter((a) => a.s === s && !isExotic(a)).sort(by((a) => a.sc));
+    const bestLeg = SLOTS.map((s) => [s, legBySlot(s)[0]]).filter(([, a]) => a);
+    const runners = SLOTS.map((s) => [s, legBySlot(s).slice(1, 4)]).filter(([, l]) => l.length);
+    const exo = mine.filter(isExotic).sort(by((a) => a.sc));
+    const exItem = (a) => `<button class="exitem" data-a="${a.id}">${img(a.ic)}<div style="min-width:0"><div class="nm">${esc(a.n)}</div><div class="sm">${esc(a.s)} · ${a.st.map(([n, v]) => `${esc(n)} ${v}`).join(" / ")}</div></div><b class="num" style="font:700 16px var(--display)">${a.sc}</b></button>`;
+    const bySet = new Map();
+    for (const a of mine) if (a.si) bySet.set(a.si.name, [...(bySet.get(a.si.name) || []), a]);
+    const sets = [...bySet].map(([name, pieces]) => ({ name, pieces, def: DATA.sets?.[name], si: pieces[0].si, slots: new Set(pieces.map((p) => p.s)) })).sort((x, y) => y.si.value - x.si.value || y.slots.size - x.slots.size);
+    const setCard = (x) => `<article class="setcard${x.slots.size >= 2 ? " on" : ""}"><header><div><h3>${esc(x.name)}</h3><div class="small muted">${esc(x.def?.source || "")}</div></div><div class="val num">${x.si.value}<span>set rating</span></div></header>
+      <div class="slotdots">${SLOTS.map((sl) => `<i class="${x.slots.has(sl) ? "on" : ""}" title="${sl}"></i>`).join("")}<span>${x.slots.size} of 5 slots · ${x.pieces.length} pieces</span></div>
+      ${(x.def?.bonuses || x.si.bonuses).map((b) => bonusRow(b, x.slots.size)).join("") || `<p class="small muted">Not on Aegis's set list yet.</p>`}
+      <button class="linkbtn" data-set="a" data-view="set:${esc(cls)}|${esc(x.name)}">See these ${x.pieces.length} pieces →</button></article>`;
+    const rmini = (a, i) => `<button class="mini" data-a="${a.id}"><span class="rk">${i + 2}</span>${img(a.ic)}<div style="min-width:0"><div class="nm">${esc(a.n)}</div><div class="sm">${esc(a.arch || "Legacy")} · ${a.st.slice(0, 2).map(([n, v]) => `${esc(n)} ${v}`).join(" / ")}</div></div><div class="right"><b class="num">${a.sc}</b></div></button>`;
+    $("#abody").innerHTML = `
+      <div><div class="sec-head"><h2>Best legendary piece per slot</h2><p>${mine.length} ${esc(cls)} pieces rated. Green stats are the ones your builds use.</p></div><div class="armor-best">${bestLeg.map(([s, a]) => card(a, s)).join("")}</div></div>
+      ${runners.length ? `<div><div class="sec-head"><h2>Runners-up</h2><p>The next best legendary pieces in each slot.</p></div><div class="types">${runners.map(([s, l]) => `<article class="tcard"><header><h3>${esc(s)}</h3><span class="small">${mine.filter((a) => a.s === s).length} owned</span></header><div>${l.map(rmini).join("")}</div></article>`).join("")}</div></div>` : ""}
+      <div><div class="sec-head"><h2><span style="color:var(--gold)">Exotics</span></h2><p>${exo.length} exotic ${esc(cls)} pieces, best rolls first.</p></div>${exo.length ? `<div class="exotics">${exo.map(exItem).join("")}</div>` : `<div class="empty">No exotic armor for this class.</div>`}</div>
+      ${sets.length ? `<div><div class="sec-head"><h2>Armor sets</h2><p>Rated with Aegis's set bonus tiers. Green bonuses are active because you own enough slots of that set.</p></div><div class="setgrid">${sets.map(setCard).join("")}</div></div>` : ""}
+      <div><button class="btn" data-set="a" data-view="class:${esc(cls)}">Open all ${esc(cls)} armor in the full list →</button></div>`;
+  }
+
+  /* ---------- RADS: raids and dungeons ---------- */
+  let radFilter = "all";
+  RENDER.rads = () => {
+    const rads = DATA.rads || [];
+    if (!rads.length) { $("#p-rads").innerHTML = '<div class="empty">Raid and dungeon loot has not been imported yet. Re-run the rater to add it.</div>'; return; }
+    const chase = rads.reduce((n, r) => n + r.counts.chase, 0);
+    $("#p-rads").innerHTML = `<div>
+      <div class="sec-head"><h2>RADS: raids and dungeons</h2><p>All ${rads.length} ranked by what they would add to your vault. ${chase} weapons across them are ones you don't own yet.</p></div>
+      <div class="rads-head"><div class="seg" role="group" aria-label="Activity type" id="radseg">${[["all", "All"], ["raid", "Raids"], ["dungeon", "Dungeons"]].map(([k, l]) => `<button data-k="${k}" aria-pressed="${k === radFilter}">${l}</button>`).join("")}</div>
+        <div class="rads-legend"><span><span class="st chase">Chase</span> you don't own it</span><span><span class="st upgrade">Upgrade</span> you own a weak roll</span><span><span class="st have">Got it</span> you own a good roll</span></div></div>
+      <div class="rads" id="radlist"></div></div>`;
+    $("#radseg").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; radFilter = b.dataset.k; $$("#radseg button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); drawRads(); };
+    drawRads();
+  };
+  const ROLE_LABEL = { "boss-burst": "Burst DPS", "boss-sustained": "Sustained DPS", precision: "Precision", "add-clear": "Add clear", range: "Long range", close: "Close range", sword: "Sword DPS", support: "Support" };
+  const encGuide = (key, open) => {
+    const list = DATA.encounters?.[key] || [];
+    if (!list.length) return "";
+    const kit = (e) => e.roles.map((role) => {
+      const p = e.picks.find((x) => x.role === role);
+      if (!p) return `<div class="kitw empty"><div class="role">${ROLE_LABEL[role]}</div>Nothing in your vault fits</div>`;
+      const w = W.get(p.id);
+      return `<button class="kitw" data-w="${p.id}">${img(w?.ic)}<div style="min-width:0"><div class="role">${ROLE_LABEL[role]}${p.meta ? `<span class="m">${p.meta === "encounter" ? "Guide pick" : "Meta"}</span>` : ""}</div><div class="nm" style="font-size:13.5px">${esc(p.name)}</div></div></button>`;
+    }).join("");
+    return `<details class="encs"${open ? " open" : ""}><summary>Encounter guide · ${list.length} encounters</summary>${list.map((e) => `<div class="enc">
+      <div class="eh"><b>${esc(e.name)}</b><span class="kind ${e.kind}">${e.kind === "boss" ? "Boss" : e.kind === "traversal" ? "Traversal" : "Mechanics"}</span></div>
+      <p>${esc(e.tip)}</p>
+      <div class="kit">${kit(e)}</div>
+      ${e.missing.length ? `<div class="wanted">Worth getting for this: <b>${e.missing.map(esc).join(", ")}</b></div>` : ""}
+      ${window.VR_LOCAL && e.picks.length && DATA.chars?.length ? `<div class="pullrow">Pull and equip this loadout on: ${DATA.chars.map((c) => `<button class="movebtn" data-pullenc="${esc(key)}|${list.indexOf(e)}" data-to="${c.id}">${esc(c.cls)}</button>`).join("")}<span class="encmsg" aria-live="polite"></span></div>` : ""}</div>`).join("")}</details>`;
+  };
+  document.addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-pullenc]"); if (!b) return;
+    const [key, i] = b.dataset.pullenc.split("|");
+    const enc = DATA.encounters[key][Number(i)];
+    const row = b.closest(".pullrow");
+    row.querySelectorAll("button").forEach((x) => (x.disabled = true));
+    const msg = row.querySelector(".encmsg");
+    const res = await doMove(enc.picks.map((p) => p.id), b.dataset.to, true, null);
+    row.querySelectorAll("button").forEach((x) => (x.disabled = false));
+    const r2 = document.querySelector(`[data-pullenc="${key}|${i}"]`)?.closest(".pullrow")?.querySelector(".encmsg");
+    const out = r2 || msg;
+    if (out) out.textContent = res ? res.map((m) => `${m.name}: ${m.ok ? (m.equipped ? "equipped" : "moved") : "failed"}${m.error ? " (" + m.error + ")" : ""}`).join(" · ") : "Couldn't move the loadout.";
+  });
+  function drawRads() {
+    const list = (DATA.rads || []).filter((r) => radFilter === "all" || r.kind === radFilter);
+    const vClass = (v) => (v === "Farm it" ? "farm" : v === "Worth a run" ? "run" : "low");
+    const status = (w) => w.status === "chase" ? '<span class="st chase">Chase</span>' : w.status === "upgrade" ? `<span class="st upgrade" title="Your best roll scores ${w.bestRoll}">Upgrade</span>` : `<span class="st have" title="Your best copy scores ${w.bestScore}">Got it</span>`;
+    const row = (w, i, key) => `<button class="lootrow" ${w.best ? `data-w="${w.best}" title="Open your best copy"` : `data-loot="${key}|${i}" title="See where to get it"`}>${img(w.icon)}
+      <div style="min-width:0"><div class="nm">${esc(w.name)}${w.rarity === "Exotic" ? ' <span class="exo">Exotic</span>' : ""}</div><div class="sm">${esc([w.frame && w.frame.replace(/ Frame$/, ""), w.type].filter(Boolean).join(" "))} · <span class="el" style="color:var(--${esc(w.element)})"><i></i><span>${esc(w.element)}</span></span>${w.owned ? ` · you own ${w.owned}` : ""}</div></div>
+      <span class="tier t${w.tier || "U"}" title="${w.tier ? `Aegis ${w.tier} tier${w.aegisRank ? " #" + w.aegisRank : ""} in ${esc(w.tab || "")}` : "Not on Aegis's sheet"}">${w.tier || "—"}</span>${status(w)}</button>`;
+    const setBox = (st) => `<div class="radset"><div class="top"><b>${esc(st.name)}</b><span class="small muted">armor set</span></div>
+      <div class="bon">${st.bonuses.length ? st.bonuses.map((b) => `<span><span class="small">${b.pieces}PC</span> ${esc(b.name)} ${b.tier ? `<span class="tier t${b.tier}">${b.tier}</span>` : '<span class="tier tU">—</span>'}</span>`).join("") : "Not on Aegis's set list yet."}</div>
+      <div class="own">${Object.keys(st.ownedSlots).length ? "You own " + Object.entries(st.ownedSlots).map(([c, n]) => `${esc(c)} ${n}/5`).join(" · ") : "You don't own any pieces yet."}</div></div>`;
+    $("#radlist").innerHTML = list.map((r, i) => {
+      const top = i === 0 && radFilter === "all";
+      const shown = r.weapons.slice(0, top ? 8 : 6), more = r.weapons.slice(shown.length);
+      const parts = [["Loot quality", r.parts.quality], ["You need", r.parts.need], ["Armor set", r.parts.sets]];
+      const weaponsHtml = `<div><div class="cap" style="margin-bottom:6px">Weapons · ${r.weapons.length}</div><div class="loot">${shown.map((w, j) => row(w, j, r.key)).join("")}</div>${more.length ? `<details><summary>Show ${more.length} more</summary><div class="loot">${more.map((w, j) => row(w, j + shown.length, r.key)).join("")}</div></details>` : ""}</div>`;
+      const bars = `<div class="parts3">${parts.map(([l, v]) => `<div><span>${l} <b class="num">${v}</b></span><div class="track"><span style="width:${v}%"></span></div></div>`).join("")}</div>`;
+      const setsHtml = r.sets.map(setBox).join("");
+      const note = `<p class="small muted">${r.counts.sTier ? `${r.counts.sTier} S-tier weapon${r.counts.sTier > 1 ? "s" : ""} in the loot pool. ` : ""}${r.counts.chase ? `${r.counts.chase} you don't own` : "You own everything here"}${r.counts.upgrade ? `, ${r.counts.upgrade} worth re-rolling` : ""}.</p>`;
+      return `<article class="rad${top ? " top" : ""}" id="rad-${esc(r.key)}">
+        <div class="banner">${r.image && IMG[r.image] ? `<img src="${IMG[r.image]}" alt="" loading="lazy">` : ""}
+          <div class="chips-tl"><span class="chip"><b>${r.kind === "raid" ? "Raid" : "Dungeon"}</b></span>${top ? '<span class="chip" style="color:var(--green)"><b>Best farm right now</b></span>' : ""}</div>
+          <span class="verdict-tag ${vClass(r.verdict)}">${r.verdict}</span>
+          <div class="title"><span class="rk">${r.rank}</span><h3>${esc(r.name)}</h3><div class="farm"><b class="num">${r.score}</b><span>Farm score</span></div></div></div>
+        <div class="body">${top ? `${weaponsHtml}<div class="stack">${bars}${note}${setsHtml}</div><div style="grid-column:1/-1">${encGuide(r.key, true)}</div>` : bars + note + weaponsHtml + setsHtml + encGuide(r.key, false)}</div></article>`;
+    }).join("");
+  }
+
+  /* ---------- Full list (explorer) ---------- */
+  const uniqSorted = (list, f) => [...new Set(list.flatMap((x) => [].concat(f(x) ?? [])).filter((v) => v !== null && v !== ""))].sort((a, b) => String(a).localeCompare(String(b)));
+  const WEAPON_EXTRAS = { "In a DIM loadout": (w) => !!w.lo?.length, "God roll": (w) => w.god, "Trash roll": (w) => w.trash, Crafted: (w) => w.cr, Adept: (w) => w.ad, Locked: (w) => w.lk, Unlocked: (w) => !w.lk, Equipped: (w) => (w.loc || "").includes("equipped") };
+  const ARMOR_EXTRAS = { "In a DIM loadout": (a) => !!a.lo?.length, Locked: (a) => a.lk, Unlocked: (a) => !a.lk, "Tier 5": (a) => a.gt === 5, Legacy: (a) => a.legacy, "Part of a set": (a) => !!a.set, Equipped: (a) => (a.loc || "").includes("equipped") };
+  const CAT_LABEL = { duplicate: "Duplicate", outscored: "Outscored", "low-tier": "Below tier floor", "d-tier": "D tier", "trash-roll": "Trash roll", unrated: "Unrated", armor: "Armor" };
+  const VERDICT = { keep: "Keep", shard: "Shard", review: "Review" };
+  const SETS = {
+    w: {
+      label: "Weapons", noun: "weapon", items: DATA.weapons, row: weaponRow,
+      search: (w) => [w.n, w.t, w.f, w.e, w.mw, ...w.pk.flatMap((p) => p.o)].join(" "),
+      facets: [
+        ["t", "Type", (w) => w.t], ["e", "Element", (w) => w.e], ["f", "Frame", frameOf], ["s", "Slot", (w) => w.s], ["am", "Ammo", (w) => w.am],
+        ["r", "Rarity", (w) => w.r], ["tier", "Aegis tier", (w) => tierLabel(tierOf(w))], ["v", "Verdict", (w) => VERDICT[w.v]],
+        ["c", "Shard reason", (w) => (w.c ? CAT_LABEL[w.c] || w.c : null)], ["pk", "Perk", (w) => w.pk.filter((p) => p.k === "perk1" || p.k === "perk2").flatMap((p) => p.o)],
+        ["x", "Extras", (w) => Object.entries(WEAPON_EXTRAS).filter(([, f]) => f(w)).map(([k]) => k)], ["loc", "Location", (w) => w.loc],
+        ...(DIMS.tags && DIMS.loaded ? [["dt", "DIM tag", (w) => (w.tg ? TAG_LABEL[w.tg] : "Untagged")]] : []),
+        ...(DIMS.loadouts && DIMS.loaded ? [["dl", "DIM loadout", (w) => (w.lo?.length ? w.lo : ["Not in a loadout"])]] : []),
+      ],
+      sorts: { score: ["Vault score", (w) => w.sc], roll: ["Roll score", (w) => w.rs], tier: ["Aegis tier and rank", (w) => (w.tier ? (5 - TIERS.indexOf(w.tier)) * 100 - (w.rank ?? 50) : -1)], power: ["Power", (w) => w.pw ?? 0], name: ["Name", (w) => w.n.toLowerCase()], type: ["Type", (w) => w.t] },
+      groups: { "": "Nothing", ...(DIMS.tags && DIMS.loaded ? { dt: "DIM tag" } : {}), t: "Type", e: "Element", f: "Frame", s: "Slot", am: "Ammo", tier: "Aegis tier", v: "Verdict", c: "Shard reason", r: "Rarity", name: "Weapon name" },
+      views: {
+        "best-type-el": ["Best of every type and element", { group: "t", group2: "e", top: "1" }],
+        "solar-autos": ["Best Solar auto rifles", { f: { t: ["Auto Rifle"], e: ["Solar"] } }],
+        "top3-type": ["Top 3 legendaries per type", { group: "t", top: "3", f: { r: ["Legendary"] } }],
+        delete: ["Delete immediately", { f: { v: ["Shard"], c: ["D tier", "Below tier floor", "Trash roll"] }, dir: "asc" }],
+        worst: ["Worst first", { f: { v: ["Shard"] }, dir: "asc" }],
+        dupes: ["Duplicates", { f: { c: ["Duplicate"] }, group: "name" }],
+        god: ["God rolls", { f: { x: ["God roll"] }, group: "t" }],
+        exotics: ["Exotics", { f: { r: ["Exotic"] }, group: "s" }],
+        unrated: ["Not on Aegis's sheet", { f: { tier: ["Not on sheet"] } }],
+        "locked-shard": ["Locked but rated shard", { f: { x: ["Locked"], v: ["Shard"] }, dir: "asc" }],
+        ...(DIMS.tags && DIMS.loaded ? {
+          "dim-conflict": ["Rated shard, but you tagged it keep", { f: { v: ["Shard"], dt: ["Favorite", "Keep"] }, dir: "asc" }],
+          "dim-junk": ["Tagged junk in DIM", { f: { dt: ["Junk"] }, dir: "asc" }],
+        } : {}),
+        ...(DIMS.loadouts && DIMS.loaded ? { "dim-loadouts": ["In your DIM loadouts", { f: { x: ["In a DIM loadout"] }, group: "t" }] } : {}),
+      },
+      grouper: (k) => (k === "name" ? (w) => w.n : k === "f" ? (w) => frameOf(w) || "No frame" : k === "tier" ? (w) => tierLabel(tierOf(w)) : k === "c" ? (w) => (w.c ? CAT_LABEL[w.c] || w.c : "Not sharded") : k === "v" ? (w) => VERDICT[w.v] : (w) => w[k] ?? "Unknown"),
+    },
+    a: {
+      label: "Armor", noun: "piece", items: DATA.armor, row: armorRow,
+      search: (a) => [a.n, a.arch, a.set, a.s, a.cls].join(" "),
+      facets: [
+        ["cls", "Class", (a) => a.cls], ["s", "Slot", (a) => a.s], ["r", "Rarity", (a) => a.r], ["arch", "Archetype", (a) => a.arch || "Legacy"], ["set", "Set", (a) => a.si?.name || a.set],
+        ["stier", "Set tier", (a) => (bestSetTier(a) ? bestSetTier(a) + " tier set" : a.si ? "Unrated set" : null)], ["gt", "Gear tier", (a) => (a.gt ? "Tier " + a.gt : null)], ["p", "Highest stat", (a) => a.st[0]?.[0]], ["v", "Verdict", (a) => VERDICT[a.v]],
+        ["x", "Extras", (a) => Object.entries(ARMOR_EXTRAS).filter(([, f]) => f(a)).map(([k]) => k)], ["loc", "Location", (a) => a.loc],
+        ...(DIMS.tags && DIMS.loaded ? [["dt", "DIM tag", (a) => (a.tg ? TAG_LABEL[a.tg] : "Untagged")]] : []),
+        ...(DIMS.loadouts && DIMS.loaded ? [["dl", "DIM loadout", (a) => (a.lo?.length ? a.lo : ["Not in a loadout"])]] : []),
+      ],
+      sorts: Object.assign({ score: ["Armor score", (a) => a.sc], setv: ["Set rating", (a) => a.si?.value ?? -1], total: ["Stat total", (a) => a.tot], name: ["Name", (a) => a.n.toLowerCase()] },
+        Object.fromEntries(uniqSorted(DATA.armor, (a) => Object.keys(a.all || {})).map((k) => ["stat:" + k, [k + " stat", (a) => a.all?.[k] ?? 0]]))),
+      groups: { "": "Nothing", ...(DIMS.tags && DIMS.loaded ? { dt: "DIM tag" } : {}), cls: "Class", s: "Slot", arch: "Archetype", set: "Set", stier: "Set tier", r: "Rarity", gt: "Gear tier", p: "Highest stat", v: "Verdict" },
+      views: {
+        "best-slot": ["Best per class and slot", { group: "cls", group2: "s", top: "1" }],
+        "best-sets": ["Best sets first", { group: "set", sort: "setv", f: { r: ["Legendary"] } }],
+        "top3-slot": ["Top 3 legendaries per class and slot", { group: "cls", group2: "s", top: "3", f: { r: ["Legendary"] } }],
+        delete: ["Delete immediately", { f: { v: ["Shard"] }, dir: "asc" }],
+        exotics: ["Exotics", { f: { r: ["Exotic"] }, group: "cls" }],
+        t5: ["Tier 5 only", { f: { x: ["Tier 5"] }, group: "cls", sort: "total" }],
+        totals: ["Highest stat totals", { sort: "total" }],
+        legacy: ["Legacy armor", { f: { x: ["Legacy"] }, group: "cls", dir: "asc" }],
+      },
+      grouper: (k) => (k === "arch" ? (a) => a.arch || "Legacy" : k === "gt" ? (a) => (a.gt ? "Tier " + a.gt : "No tier") : k === "p" ? (a) => a.st[0]?.[0] || "—" : k === "set" ? (a) => a.si?.name || a.set || "No set" : k === "stier" ? (a) => (bestSetTier(a) ? bestSetTier(a) + " tier set" : "Unrated or no set") : k === "v" ? (a) => VERDICT[a.v] : (a) => a[k] ?? "Unknown"),
+    },
+  };
+  const blank = () => ({ q: "", f: {}, sort: "score", dir: "desc", group: "", group2: "", top: "", view: "", limit: 150 });
+  const ex = { set: "w", w: blank(), a: blank(), pass: () => true };
+
+  function openList(set, view) {
+    ex.set = set;
+    if (view?.startsWith("type:")) { const [t, am] = view.slice(5).split("|"); Object.assign(ex[set], blank(), { f: am ? { t: [t], am: [am] } : { t: [t] } }); }
+    else if (view?.startsWith("set:")) { const [c, n] = view.slice(4).split("|"); Object.assign(ex[set], blank(), { f: { cls: [c], set: [n] }, group: "s" }); }
+    else if (view?.startsWith("class:")) Object.assign(ex[set], blank(), { f: { cls: [view.slice(6)] }, group: "s" });
+    else if (view) applyView(set, view, false);
+    if (rendered.list) drawExplorer(true);
+    show("list", true);
+  }
+  function applyView(set, id, draw = true) {
+    const v = SETS[set].views[id]; if (!v) return;
+    Object.assign(ex[set], blank(), JSON.parse(JSON.stringify(v[1])), { view: id });
+    if (draw) drawExplorer(true);
+  }
+  RENDER.list = () => { $("#p-list").innerHTML = `<div id="explorer"></div>`; drawExplorer(true); };
+
+  function drawExplorer(full) {
+    const cfg = SETS[ex.set], st = ex[ex.set];
+    if (full) {
+      const opt = (o, sel) => Object.entries(o).map(([k, l]) => `<option value="${esc(k)}"${k === sel ? " selected" : ""}>${esc(Array.isArray(l) ? l[0] : l)}</option>`).join("");
+      $("#explorer").innerHTML = `
+        <div class="sec-head"><div class="seg" role="group" aria-label="Item kind" id="exset">${Object.entries(SETS).map(([k, c]) => `<button data-s="${k}" aria-pressed="${k === ex.set}">${c.label}</button>`).join("")}</div><p>Filter, sort and group everything you own.</p></div>
+        <div class="toolbar">
+          <div class="tb-row"><span class="label">Quick views</span><div class="views">${Object.entries(cfg.views).map(([k, [l]]) => `<button class="view" data-v="${k}" aria-pressed="${st.view === k}">${esc(l)}</button>`).join("")}</div></div>
+          <div class="tb-row"><input type="search" id="exq" placeholder="${ex.set === "w" ? "Search name, type, perk or masterwork" : "Search name, set or archetype"}" aria-label="Search" value="${esc(st.q)}">${cfg.facets.map(([k, l]) => `<details class="ms" data-k="${k}"><summary>${esc(l)}</summary><div class="pop"></div></details>`).join("")}</div>
+          <div class="tb-row">
+            <span class="label">Sort by</span><select id="exsort" aria-label="Sort by">${opt(cfg.sorts, st.sort)}</select>
+            <div class="seg" id="exdir" role="group" aria-label="Sort direction"><button data-d="desc" aria-pressed="${st.dir === "desc"}">Best first</button><button data-d="asc" aria-pressed="${st.dir === "asc"}">Worst first</button></div>
+            <span class="label">Group by</span><select id="exgroup" aria-label="Group by">${opt(cfg.groups, st.group)}</select>
+            <span class="label">then by</span><select id="exgroup2" aria-label="Then group by">${opt(cfg.groups, st.group2)}</select>
+            <span class="label">Show</span><select id="extop" aria-label="Items per group">${opt({ "": "All", 1: "Best 1", 3: "Best 3", 5: "Best 5" }, st.top)}</select>
+            <button class="btn" id="exreset" style="padding:6px 12px">Reset</button>
+          </div>
+          <div class="tb-row"><div class="active-chips" id="exchips"></div><span class="result num" id="excount"></span></div>
+        </div>
+        <div id="exlist"></div><div class="more" id="exmore"></div>`;
+      const touch = () => { st.view = ""; st.limit = 150; $$("#explorer .view").forEach((b) => b.setAttribute("aria-pressed", "false")); drawExplorer(false); };
+      $("#exset").onclick = (e) => { const b = e.target.closest("button"); if (b) { ex.set = b.dataset.s; drawExplorer(true); } };
+      $("#explorer .views").onclick = (e) => { const b = e.target.closest("button"); if (b) applyView(ex.set, b.dataset.v); };
+      $("#exq").oninput = (e) => { st.q = e.target.value; touch(); };
+      $("#exsort").onchange = (e) => { st.sort = e.target.value; touch(); };
+      $("#exgroup").onchange = (e) => { st.group = e.target.value; touch(); };
+      $("#exgroup2").onchange = (e) => { st.group2 = e.target.value; touch(); };
+      $("#extop").onchange = (e) => { st.top = e.target.value; touch(); };
+      $("#exdir").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; st.dir = b.dataset.d; $$("#exdir button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); touch(); };
+      $("#exreset").onclick = () => { Object.assign(st, blank()); drawExplorer(true); };
+      $("#exchips").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; const k = b.dataset.k; st.f[k] = st.f[k].filter((v) => v !== b.dataset.v); if (!st.f[k].length) delete st.f[k]; st.view = ""; drawExplorer(true); };
+      for (const d of $$("#explorer details.ms")) {
+        d.addEventListener("toggle", () => { if (d.open) { $$("#explorer details.ms[open]").forEach((o) => o !== d && (o.open = false)); fillFacet(d); } });
+        d.querySelector(".pop").addEventListener("change", () => {
+          const vals = $$("input:checked", d).map((i) => i.value);
+          if (vals.length) st.f[d.dataset.k] = vals; else delete st.f[d.dataset.k];
+          touch(); fillFacet(d);
+        });
+        d.querySelector(".pop").addEventListener("click", (e) => { if (e.target.closest(".clear")) { delete st.f[d.dataset.k]; touch(); fillFacet(d); } });
+      }
+    }
+    // Filter
+    const facetFn = Object.fromEntries(cfg.facets.map(([k, , f]) => [k, f]));
+    const q = st.q.trim().toLowerCase();
+    ex.pass = (x, skip) => (!q || cfg.search(x).toLowerCase().includes(q)) &&
+      Object.entries(st.f).every(([k, vals]) => k === skip || !vals.length || [].concat(facetFn[k](x) ?? []).some((v) => vals.includes(String(v))));
+    const list = cfg.items.filter((x) => ex.pass(x));
+    const [, key] = cfg.sorts[st.sort] || cfg.sorts.score;
+    const dir = st.dir === "asc" ? 1 : -1;
+    const cmp = (a, b) => { const x = key(a), y = key(b); return (x > y ? 1 : x < y ? -1 : 0) * (st.sort === "name" || st.sort === "type" ? -dir : dir) || (a.sc - b.sc) * dir; };
+    list.sort(cmp);
+    // Facet buttons and active chips
+    for (const d of $$("#explorer details.ms")) {
+      const n = (st.f[d.dataset.k] || []).length;
+      d.querySelector("summary").innerHTML = `${esc(cfg.facets.find((f) => f[0] === d.dataset.k)[1])}${n ? ` <span class="n">${n}</span>` : ""}`;
+      d.classList.toggle("active", n > 0);
+    }
+    $("#exchips").innerHTML = Object.entries(st.f).flatMap(([k, vals]) => vals.map((v) => `<span class="fchip">${esc(cfg.facets.find((f) => f[0] === k)[1])}: ${esc(v)}<button data-k="${esc(k)}" data-v="${esc(v)}" aria-label="Remove ${esc(v)} filter">×</button></span>`)).join("");
+    $("#excount").textContent = plural(list.length, cfg.noun);
+    // Render, with up to two grouping levels; groups are ordered by their first (best or worst) item
+    const top = st.top ? Number(st.top) : Infinity;
+    const groupList = (items, gk) => {
+      const g = new Map(), f = gk === "dt" ? (x) => (x.tg ? TAG_LABEL[x.tg] : "Untagged") : gk === "dl" ? (x) => x.lo?.[0] || "Not in a loadout" : cfg.grouper(gk);
+      for (const x of items) { const k = String(f(x)); g.set(k, [...(g.get(k) || []), x]); }
+      return [...g].sort((a, b) => cmp(a[1][0], b[1][0]) || a[0].localeCompare(b[0]));
+    };
+    const head = (k, shown, all) => `<div class="ghead"><h3>${esc(k)}</h3><span class="small num">${all.length}${shown < all.length ? `, showing ${shown}` : ""} · best ${Math.max(...all.map((x) => x.sc))}</span></div>`;
+    let html, shown = 0;
+    if (!list.length) html = `<div class="empty">Nothing matches these filters. Remove one above or press Reset.</div>`;
+    else if (!st.group) { const part = list.slice(0, Math.min(st.limit, top)); shown = part.length; html = `<div class="list">${part.map(cfg.row).join("")}</div>`; }
+    else {
+      shown = list.length;
+      html = groupList(list, st.group).map(([k, items]) => {
+        if (st.group2 && st.group2 !== st.group) {
+          const inner = groupList(items, st.group2).map(([k2, sub]) => `<div class="group">${head(k2, Math.min(top, sub.length), sub)}<div class="list">${sub.slice(0, top).map(cfg.row).join("")}</div></div>`).join("");
+          return `<div class="group">${head(k, items.length, items)}${inner}</div>`;
+        }
+        return `<div class="group">${head(k, Math.min(top, items.length), items)}<div class="list">${items.slice(0, top).map(cfg.row).join("")}</div></div>`;
+      }).join("");
+    }
+    $("#exlist").innerHTML = html;
+    $("#exmore").innerHTML = !st.group && list.length > shown && shown < top ? `<button class="btn" id="exmorebtn">Show ${Math.min(300, list.length - shown)} more</button>` : "";
+    const mb = $("#exmorebtn"); if (mb) mb.onclick = () => { st.limit += 300; drawExplorer(false); };
+  }
+  function fillFacet(d) {
+    const cfg = SETS[ex.set], st = ex[ex.set], k = d.dataset.k;
+    const f = cfg.facets.find((x) => x[0] === k)[2];
+    const counts = new Map();
+    for (const x of cfg.items) if (ex.pass(x, k)) for (const v of [].concat(f(x) ?? [])) if (v !== null && v !== "") counts.set(String(v), (counts.get(String(v)) || 0) + 1);
+    const sel = new Set(st.f[k] || []);
+    const order = k === "tier" ? [...TIERS.map(tierLabel), "Not on sheet"] : null;
+    const vals = uniqSorted(cfg.items, f).map(String);
+    if (order) vals.sort((a, b) => order.indexOf(a) - order.indexOf(b));
+    else if (k === "pk") vals.sort((a, b) => (counts.get(b) || 0) - (counts.get(a) || 0) || a.localeCompare(b));
+    d.querySelector(".pop").innerHTML = (sel.size ? `<button class="clear">Clear</button>` : "") + (vals.filter((v) => sel.has(v) || counts.get(v)).map((v) =>
+      `<label><input type="checkbox" value="${esc(v)}"${sel.has(v) ? " checked" : ""}><span>${esc(v)}</span><span>${counts.get(v) || 0}</span></label>`).join("") || `<span class="small muted" style="padding:6px 8px">No options with these filters.</span>`);
+  }
+  document.addEventListener("click", (e) => { if (!e.target.closest("details.ms")) $$("details.ms[open]").forEach((d) => (d.open = false)); });
+
+  /* ---------- Shard ---------- */
+  const CAT = {
+    duplicate: ["Duplicates", "You already keep a better copy of the same weapon."],
+    outscored: ["Outscored", "Another weapon of the same type, frame and element scores well ahead."],
+    "low-tier": ["Below your tier floor", "Aegis tier is under the cutoff for your strictness and the roll is not strong enough to keep."],
+    "d-tier": ["D tier", "Aegis rates these at the bottom of their weapon type."],
+    "trash-roll": ["Trash rolls", "The community wishlist marks this roll as one to delete."],
+    unrated: ["Unrated", "Not on Aegis's sheet and no wishlist support."],
+    review: ["Review first", "Flagged but never unlocked: extra exotic copies and close calls."],
+  };
+  RENDER.shard = () => {
+    const groups = new Map();
+    for (const w of DATA.weapons.filter((w) => w.v !== "keep")) { const k = w.v === "review" ? "review" : w.c || "outscored"; groups.set(k, [...(groups.get(k) || []), w]); }
+    const junkIds = DATA.weapons.filter((w) => w.v === "shard").map((w) => w.id).concat(DATA.armor.filter((a) => a.v === "shard").map((a) => a.id));
+    const search = DATA.searches?.junk || junkIds.map((id) => `id:${id}`).join(" or ");
+    const order = ["d-tier", "trash-roll", "low-tier", "unrated", "outscored", "duplicate", "review"];
+    const wGroups = order.filter((k) => groups.has(k)).map((k) => {
+      const list = groups.get(k).sort((a, b) => a.sc - b.sc);
+      return `<div class="group"><div class="ghead"><h3>${CAT[k][0]}</h3><span class="small num">${list.length}</span></div><p class="small muted" style="padding:0 4px">${CAT[k][1]}</p><div class="list">${list.map(weaponRow).join("")}</div></div>`;
+    }).join("");
+    const aList = DATA.armor.filter((a) => a.v !== "keep").sort((a, b) => a.cls.localeCompare(b.cls) || a.s.localeCompare(b.s) || a.sc - b.sc);
+    $("#p-shard").innerHTML = `
+      <div class="dimbox"><div><h2 style="font-size:20px">Select all junk in DIM</h2><p class="muted small" style="margin-top:6px">Paste this into DIM's search bar to select all ${junkIds.length} items marked Shard, then review and dismantle. Nothing is unlocked in game until you approve the lock plan.</p></div>
+        <code id="dimsearch">${esc(search)}</code>
+        <div class="acts"><button class="btn primary" id="copysearch">Copy DIM search</button><span class="muted small" id="copied" aria-live="polite"></span></div></div>
+      ${planBox()}
+      <div><div class="sec-head"><h2>Weapons</h2><p>Worst reasons first, lowest scores at the top of each group.</p></div>${wGroups || `<div class="empty">No weapons to shard at this strictness.</div>`}</div>
+      <div><div class="sec-head"><h2>Armor</h2><p>${aList.length} lower scoring copies and outscored legacy pieces.</p></div><div class="list">${aList.map(armorRow).join("") || `<div class="empty">No armor to shard.</div>`}</div></div>`;
+    $("#copysearch").onclick = async () => {
+      try { await navigator.clipboard.writeText(search); $("#copied").textContent = "Copied. Paste it into DIM's search bar."; }
+      catch { const r = document.createRange(); r.selectNodeContents($("#dimsearch")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); $("#copied").textContent = "Selected. Press Ctrl+C to copy."; }
+    };
+  };
+
+  /* ---------- Lock plan: dry run first, nothing changes until confirmed ---------- */
+  function planBox() {
+    const P = DATA.plan;
+    if (!window.VR_LOCAL || !P) return "";
+    const locks = P.items.filter((i) => i.lock), unlocks = P.items.filter((i) => i.lock === false);
+    return `<div class="planbox" id="planbox"><div><h2 style="font-size:20px">Lock plan (dry run)</h2>
+        <p class="muted small" style="margin-top:6px">Locks every keeper that isn't locked yet${unlocks.length ? " and unlocks the junk your strictness allows" : ""}. Equipped, Adept and protected items are never unlocked. Nothing changes in game until you preview the list and confirm.</p></div>
+      <div class="counts"><span class="chip">Lock <b>${locks.length}</b></span><span class="chip">Unlock <b>${unlocks.length}</b></span><span class="chip">Plan <b>${esc(P.id.slice(-6))}</b></span></div>
+      <div class="confirmrow"><button class="btn" id="planpreview" ${P.items.length ? "" : "disabled"}>${P.items.length ? "Preview changes" : "Nothing to change"}</button><span class="small muted" id="planmsg" aria-live="polite"></span></div>
+      <div id="plandetail" class="stack" hidden></div></div>`;
+  }
+  document.addEventListener("click", async (e) => {
+    const P = DATA.plan;
+    if (e.target.closest("#planpreview")) {
+      const d = $("#plandetail");
+      const row = (i) => `<div><span class="${i.lock ? "lk" : "ul"}">${i.lock ? "Lock" : "Unlock"}</span><span>${esc(i.n)}</span></div>`;
+      d.innerHTML = `<div class="planlist">${P.items.filter((i) => i.lock).map(row).join("")}${P.items.filter((i) => i.lock === false).map(row).join("")}</div>
+        <label class="small"><input type="checkbox" id="planok"> I checked this list. Change these ${P.items.length} locks in game.</label>
+        <div class="confirmrow"><button class="btn danger" id="planapply" disabled>Apply ${P.items.length} lock changes</button><span class="small muted">You can undo afterwards.</span></div>`;
+      d.hidden = false;
+      $("#planmsg").textContent = "Dry run only. Nothing has changed.";
+    }
+    if (e.target.closest("#planok")) $("#planapply").disabled = !$("#planok").checked;
+    const apply = e.target.closest("#planapply");
+    if (apply && $("#planok")?.checked) {
+      apply.disabled = true; $("#planmsg").textContent = "Changing locks… keep this page open.";
+      try {
+        const r = await api("/api/locks/apply", { planId: P.id, confirm: true });
+        if (!r.ok) throw new Error(r.error);
+        $("#plandetail").innerHTML = `<p class="small">Locked ${r.locked}, unlocked ${r.unlocked}${r.failed?.length ? ", failed " + r.failed.length + ": " + esc(r.failed.map((f) => f.name + " (" + f.error + ")").join("; ")) : ""}.</p>
+          <div class="confirmrow"><button class="btn" id="planundo">Undo these lock changes</button></div>`;
+        $("#planmsg").textContent = "Done. Re-rate to see the new locks.";
+      } catch (err) { $("#planmsg").textContent = "Couldn't apply: " + err.message; apply.disabled = false; }
+    }
+    const undo = e.target.closest("#planundo");
+    if (undo) {
+      undo.disabled = true; $("#planmsg").textContent = "Putting locks back…";
+      try { const r = await api("/api/locks/undo", { planId: P.id }); if (!r.ok) throw new Error(r.error); $("#planmsg").textContent = `Restored ${r.restored} locks${r.failed?.length ? ", " + r.failed.length + " failed" : ""}.`; }
+      catch (err) { $("#planmsg").textContent = "Couldn't undo: " + err.message; undo.disabled = false; }
+    }
+  });
+
+  /* ---------- Settings ---------- */
+  const PRESET_INFO = {
+    lenient: ["Lenient", "Keeps C tier and up, 3 copies per archetype. Unlocks duplicates only."],
+    balanced: ["Balanced", "Keeps B tier and up (or a 70+ roll), 2 copies. The default."],
+    strict: ["Strict", "Keeps A tier and up (or an 80+ roll), 1 copy. Also unlocks D tier."],
+    ruthless: ["Ruthless", "Only S tier or a 90+ roll survives. Unlocks every shard category."],
+  };
+  RENDER.settings = () => {
+    const st = DATA.settings || { preset: DATA.preset, focus: DATA.focus, byWeaponType: {}, protect: [] };
+    const types = DATA.weaponTypes || [...new Set(DATA.weapons.map((w) => w.t))].sort();
+    const opt = (v, cur, label) => `<option value="${v}" ${v === cur ? "selected" : ""}>${label}</option>`;
+    $("#p-settings").innerHTML = `<form class="setform" id="setform">
+      <div class="sec-head" style="margin:0"><h2>Settings</h2><p>Saving re-rates your vault.</p></div>
+      <fieldset><legend>Strictness</legend><div class="presets">${Object.entries(PRESET_INFO).map(([k, [l, d]]) => `<label><span><input type="radio" name="preset" value="${k}" ${st.preset === k ? "checked" : ""}> <b>${l}</b></span><span>${d}</span></label>`).join("")}</div>
+        <div class="tablewrap"><table class="prestable"><tr><th></th><th>Lenient</th><th>Balanced</th><th>Strict</th><th>Ruthless</th></tr>
+          <tr><td>Lowest tier kept</td><td>C</td><td>B</td><td>A</td><td>S</td></tr><tr><td>Roll score to keep a spare</td><td>50</td><td>70</td><td>80</td><td>90</td></tr>
+          <tr><td>Copies per archetype</td><td>3</td><td>2</td><td>1</td><td>1</td></tr><tr><td>Unrated weapons</td><td>keep</td><td>keep, flagged</td><td>wishlist decides</td><td>shard unless god roll</td></tr>
+          <tr><td>Legacy armor</td><td>keep</td><td>keep if close</td><td>shard if outscored</td><td>shard</td></tr></table></div></fieldset>
+      <fieldset><legend>Per weapon type</legend><p class="small muted">Be stricter with types you hoard and gentler with the ones you need.</p>
+        <div class="typegrid">${types.map((t) => `<label><span>${esc(t)}</span><select data-type="${esc(t)}">${opt("", st.byWeaponType?.[t]?.preset || "", "Same as above")}${Object.entries(PRESET_INFO).map(([k, [l]]) => opt(k, st.byWeaponType?.[t]?.preset || "", l)).join("")}</select></label>`).join("")}</div></fieldset>
+      <fieldset><legend>Focus and protection</legend>
+        <label class="small">Focus <select name="focus">${opt("pve", st.focus, "PvE")}${opt("pvp", st.focus, "PvP")}${opt("both", st.focus, "Both")}</select></label>
+        <label class="small" style="display:grid;gap:6px">Never shard these (weapon or armor names, one per line)<textarea name="protect" rows="4">${esc((st.protect || []).join("\n"))}</textarea></label></fieldset>
+      <fieldset><legend>DIM</legend><div class="toggles">
+        <label><input type="checkbox" name="dimtags" ${DATA.dim?.tags ? "checked" : ""}> <span>Read DIM tags and notes (and edit them here)</span></label>
+        <label><input type="checkbox" name="dimloadouts" ${DATA.dim?.loadouts ? "checked" : ""}> <span>Read DIM loadouts (and pull them to a character)</span></label>
+        <label><input type="checkbox" name="dimprotect" ${DATA.dim?.protectTagged !== false ? "checked" : ""}> <span>Protect DIM keeps: never mark items tagged Favorite or Keep to shard</span></label></div></fieldset>
+      <div class="confirmrow"><button class="btn primary" type="submit">Save and re-rate</button><span class="small muted" id="setmsg" aria-live="polite"></span></div></form>`;
+    $("#setform").onsubmit = async (e) => {
+      e.preventDefault();
+      const f = e.target, byWeaponType = {};
+      for (const sel of $$("select[data-type]", f)) if (sel.value) byWeaponType[sel.dataset.type] = { preset: sel.value };
+      const body = { preset: f.preset.value, focus: f.focus.value, byWeaponType, protect: f.protect.value.split("\n").map((x) => x.trim()).filter(Boolean),
+        dim: { tags: f.dimtags.checked, loadouts: f.dimloadouts.checked, protectTagged: f.dimprotect.checked } };
+      $("#setmsg").textContent = "Saving and re-rating…";
+      try {
+        const r = await api("/api/settings", body); if (!r.ok) throw new Error(r.error);
+        const res = await api("/api/refresh"); if (!res.ok) throw new Error(res.error);
+        location.reload();
+      } catch (err) { $("#setmsg").textContent = "Couldn't save: " + err.message; }
+    };
+  };
+
+  /* ---------- Wrapped ---------- */
+  RENDER.wrapped = () => {
+    const X = DATA.wrapped, pve = X?.pve, pvp = X?.pvp;
+    const slides = [];
+    const slide = (cls, html) => slides.push(`<article class="slide ${cls}">${html}</article>`);
+    if (X && X.characters.length) {
+      const chars = [...X.characters].sort((a, b) => b.minutes - a.minutes), mins = chars.reduce((n, c) => n + c.minutes, 0);
+      slide("wide", `<div class="kicker">Time in the system</div><div class="huge num"><span class="grad-text">${fmt(mins / 60)}</span> hours</div>
+        <p>That's <b>${fmt(mins / 1440)} days</b> of Destiny. Your <b>${esc(chars[0].className)}</b> got ${pct(chars[0].minutes, mins)}% of it.</p>
+        <div class="chars">${chars.map((c) => `<div class="char">${c.emblem && IMG[c.emblem] ? `<img src="${IMG[c.emblem]}" alt="">` : ""}<div><b>${esc(c.className)}</b></div><div><span>${fmt(c.minutes / 60)} hours · Power ${c.light} · last played ${esc(fmtDate(c.lastPlayed))}</span></div></div>`).join("")}</div>`);
+    }
+    if (X && X.weaponTypeKills.length) {
+      const top = X.weaponTypeKills.slice(0, 8), max = top[0].kills;
+      slide("alt", `<div class="kicker">Weapon of choice</div><div class="big">${esc(top[0].type)}s</div><p>Your most used weapon type in PvE, with <b>${fmt(top[0].kills)}</b> kills.</p>
+        <div class="bars">${top.map((t) => `<div class="barrow"><span>${esc(t.type)}</span><div class="track"><span style="width:${(t.kills / max) * 100}%"></span></div><b class="num">${fmt(t.kills)}</b></div>`).join("")}</div>`);
+    }
+    if (X && X.topWeapons.length) {
+      slide("gold", `<div class="kicker">Exotic hall of fame</div><div class="big">${esc(X.topWeapons[0].name)}</div><p>Your most used exotics by kills, across all characters.</p>
+        <div class="toplist">${X.topWeapons.slice(0, 5).map((t, i) => `<div class="topw"><span class="rk">${i + 1}</span>${img(t.icon)}<div style="min-width:0"><div class="nm">${esc(t.name)}</div><div class="sm">${esc(t.type)} · ${pct(t.precision, t.kills)}% precision${t.owned ? "" : " · not in your vault now"}</div></div><b class="num">${fmt(t.kills)}</b></div>`).join("")}</div>`);
+    }
+    if (pve) {
+      slide("wide", `<div class="kicker">In the field</div><div class="huge num grad-text">${fmt(pve.kills)}</div><p>Enemies defeated in PvE. <b>${pct(pve.precisionKills, pve.kills)}%</b> were precision kills, and you went down ${fmt(pve.deaths)} times along the way.</p>
+        <div class="statgrid">
+          <div><b class="num">${fmt(pve.activitiesCleared)}</b><span>Activities cleared</span></div>
+          <div><b class="num">${fmt(pve.longestKillSpree)}</b><span>Longest kill spree</span></div>
+          <div><b class="num">${fmt(pve.bestSingleGameKills)}</b><span>Most kills in one activity</span></div>
+          <div><b class="num">${fmt(pve.longestKillDistance)}m</b><span>Longest kill</span></div>
+          <div><b class="num">${fmt(pve.resurrectionsPerformed)}</b><span>Teammates revived</span></div>
+          <div><b class="num">${fmt(pve.orbsDropped)}</b><span>Orbs of Power made</span></div>
+          <div><b class="num">${fmt(pve.publicEventsCompleted)}</b><span>Public events</span></div>
+          <div><b class="num">${fmt(pve.suicides)}</b><span>Times the floor won</span></div>
+        </div>`);
+      const abil = [["Super", pve.weaponKillsSuper], ["Grenade", pve.weaponKillsGrenade], ["Melee", pve.weaponKillsMelee]].filter(([, n]) => n).sort((a, b) => b[1] - a[1]);
+      if (abil.length) slide("third", `<div class="kicker">Ability kills</div><div class="big">${esc(abil[0][0])} enjoyer</div><p>${abil.map(([k, n]) => `<b>${fmt(n)}</b> ${k.toLowerCase()}`).join(", ")} kills.</p>`);
+    }
+    if (pvp && pvp.activitiesEntered) {
+      slide("third alt", `<div class="kicker">The Crucible</div><div class="big num">${(pvp.killsDeathsRatio ?? 0).toFixed(2)} K/D</div><p><b>${fmt(pvp.activitiesEntered)}</b> matches, <b>${pct(pvp.activitiesWon, pvp.activitiesEntered)}%</b> won. ${pvp.killsDeathsRatio >= 1 ? "Shaxx approves." : "PvE is clearly where the fun is."}</p>`);
+    }
+    const dur = (sec) => { sec = Math.round(sec || 0); const d = Math.floor(sec / 86400), h = Math.floor((sec % 86400) / 3600), m = Math.floor((sec % 3600) / 60); return d ? `${d}d ${h}h` : h ? `${h}h ${m}m` : `${m}m ${sec % 60}s`; };
+    const mode = (k) => X?.modes?.find((m) => m.key === k)?.stats;
+    if (X && (X.titles?.length || X.triumphs)) {
+      const titles = [...new Set((X.titles || []).map((t) => t.title))];
+      slide("third gold", `<div class="kicker">Your title</div><div class="big">${titles.length ? esc(titles.join(" · ")) : "Untitled"}</div>
+        <p>${titles.length ? (X.titles.length > 1 && titles.length === 1 ? "Worn on every character." : X.titles.map((t) => `${esc(t.className)}: <b>${esc(t.title)}</b>`).join(", ")) : "No title equipped right now."}</p>
+        ${X.triumphs ? `<div class="statgrid"><div><b class="num">${fmt(X.triumphs.lifetime)}</b><span>Lifetime triumph score</span></div><div><b class="num">${fmt(X.triumphs.active)}</b><span>Active triumph score</span></div></div>` : ""}`);
+    }
+    if (X?.modes?.length) {
+      const time = X.modes.map((m) => [m.label, m.stats.secondsPlayed || 0]).filter(([, t]) => t > 0).sort((a, b) => b[1] - a[1]);
+      const max = time[0]?.[1] || 1;
+      slide("wide alt", `<div class="kicker">Where your time went</div><div class="big">${esc(time[0][0])} is home</div><p>Hours played in each kind of activity.</p>
+        <div class="bars">${time.map(([l, t]) => `<div class="barrow"><span>${esc(l)}</span><div class="track"><span style="width:${(t / max) * 100}%"></span></div><b class="num">${fmt(t / 3600)}h</b></div>`).join("")}</div>`);
+      const ends = [["raid", "Raid clears"], ["dungeon", "Dungeon clears"], ["scored_nightfall", "Nightfall clears"], ["allStrikes", "Strike clears"], ["story", "Story missions"]].map(([k, l]) => [mode(k), l]).filter(([m]) => m);
+      if (ends.length) slide("wide", `<div class="kicker">Endgame résumé</div><div class="big">${fmt(mode("raid")?.activitiesCleared)} raids, ${fmt(mode("dungeon")?.activitiesCleared)} dungeons</div>
+        <p>Clears out of attempts. Raids took <b>${dur(mode("raid")?.secondsPlayed)}</b> of your life and dungeons <b>${dur(mode("dungeon")?.secondsPlayed)}</b>.</p>
+        <div class="statgrid">${ends.map(([m, l]) => `<div><b class="num">${fmt(m.activitiesCleared)}</b><span>${l} · ${pct(m.activitiesCleared, m.activitiesEntered)}% of ${fmt(m.activitiesEntered)} started</span></div>`).join("")}
+        ${mode("dungeon") ? `<div><b class="num">${fmt(mode("dungeon").bestSingleGameKills)}</b><span>Most kills in one dungeon run</span></div>` : ""}
+        ${mode("raid") ? `<div><b class="num">${fmt(mode("raid").kills)}</b><span>Enemies defeated in raids</span></div>` : ""}</div>`);
+      const comp = X.modes.filter((m) => m.pvp && m.stats.activitiesEntered);
+      if (comp.length) slide("third alt", `<div class="kicker">Competitive</div><div class="big">Win rates</div>
+        <div class="bars">${comp.map((m) => `<div class="barrow"><span>${esc(m.label)}</span><div class="track"><span style="width:${pct(m.stats.activitiesWon, m.stats.activitiesEntered)}%"></span></div><b class="num">${pct(m.stats.activitiesWon, m.stats.activitiesEntered)}%</b></div>`).join("")}</div>
+        <p>${comp.map((m) => `${esc(m.label)}: <b>${fmt(m.stats.activitiesWon)}</b> of ${fmt(m.stats.activitiesEntered)}`).join(" · ")}</p>`);
+    }
+    if (X?.weaponTypeKills?.length) {
+      const sharp = X.weaponTypeKills.filter((t) => t.kills >= 1000 && t.precision).sort((a, b) => b.precision / b.kills - a.precision / a.kills)[0];
+      if (sharp) slide("third", `<div class="kicker">Headshot specialist</div><div class="big">${esc(sharp.type)}s</div><p><b>${pct(sharp.precision, sharp.kills)}%</b> of your ${esc(sharp.type.toLowerCase())} kills are precision kills, your sharpest weapon type.</p>`);
+    }
+    if (pve) slide("wide", `<div class="kicker">Odds and ends</div><div class="big">The small print</div><div class="statgrid">
+      <div><b class="num">${fmt((pve.totalKillDistance || 0) / 1000)} km</b><span>Total distance of every kill, added up</span></div>
+      <div><b class="num">${(pve.averageKillDistance || 0).toFixed(1)}m</b><span>Average kill distance</span></div>
+      <div><b class="num">${dur(pve.longestSingleLife)}</b><span>Longest life without dying</span></div>
+      <div><b class="num">${dur(pve.averageLifespan)}</b><span>Average life</span></div>
+      <div><b class="num">${fmt(pve.orbsGathered)}</b><span>Orbs of Power picked up</span></div>
+      <div><b class="num">${fmt(pve.objectivesCompleted)}</b><span>Objectives completed</span></div>
+      <div><b class="num">${fmt(pve.heroicPublicEventsCompleted)}</b><span>Heroic public events</span></div>
+      <div><b class="num">${fmt(pve.assists)}</b><span>Assists</span></div>
+    </div>`);
+    const tally = (f) => { const m = {}; for (const w of DATA.weapons) for (const k of [].concat(f(w) || [])) m[k] = (m[k] || 0) + 1; return Object.entries(m).sort((a, b) => b[1] - a[1]); };
+    const perks = tally((w) => w.pk.filter((p) => p.k === "perk1" || p.k === "perk2").flatMap((p) => p.o));
+    const frames = tally((w) => frameOf(w) || null);
+    const mws = tally((w) => w.mw || null);
+    if (perks.length) slide("third gold", `<div class="kicker">Vault trivia</div><div class="big">${esc(perks[0][0])}</div><p>The most common perk in your vault, on <b>${perks[0][1]}</b> weapons. Next up: ${perks.slice(1, 4).map(([p, n]) => `${esc(p)} (${n})`).join(", ")}.</p>
+      <p>Favourite frame: <b>${esc(frames[0]?.[0] || "—")}</b> (${frames[0]?.[1] || 0}).${mws[0] ? ` Most common masterwork: <b>${esc(mws[0][0])}</b>.` : ""}</p>`);
+    const el = {}; for (const w of DATA.weapons) if (w.e !== "Kinetic") el[w.e] = (el[w.e] || 0) + 1;
+    const els = Object.entries(el).sort((a, b) => b[1] - a[1]), elTotal = els.reduce((n, [, c]) => n + c, 0);
+    if (els.length) slide("third gold", `<div class="kicker">Vault personality</div><div class="big" style="color:var(--${esc(els[0][0])})">${esc(els[0][0])} main</div><p>${pct(els[0][1], elTotal)}% of your elemental weapons are ${esc(els[0][0])}.</p>
+      <div class="elshare" role="img" aria-label="${els.map(([e, c]) => `${e} ${c}`).join(", ")}">${els.map(([e, c]) => `<span style="width:${(c / elTotal) * 100}%;background:var(--${esc(e)})" title="${esc(e)} ${c}"></span>`).join("")}</div>`);
+    const names = {}; for (const w of DATA.weapons) names[w.n] = (names[w.n] || 0) + 1;
+    const [hoardName, hoardN] = Object.entries(names).sort((a, b) => b[1] - a[1])[0] || [];
+    const types = {}; for (const w of DATA.weapons) types[w.t] = (types[w.t] || 0) + 1;
+    const [topType, topTypeN] = Object.entries(types).sort((a, b) => b[1] - a[1])[0] || [];
+    if (hoardName && hoardN > 1) slide("", `<div class="kicker">Hoarder award</div><div class="big">${hoardN} copies of ${esc(hoardName)}</div><p>Your most duplicated weapon. You also own <b>${topTypeN} ${esc(topType.toLowerCase())}s</b>, more than any other type.</p><button class="linkbtn" data-set="w" data-view="dupes">See every duplicate →</button>`);
+    const perkCount = (w) => w.pk.reduce((n, p) => n + p.o.length, 0);
+    const lockedLow = DATA.weapons.filter((w) => w.lk && w.tier).sort((a, b) => a.sc - b.sc)[0];
+    const hidden = DATA.weapons.filter((w) => !w.tier && !isExotic(w)).sort((a, b) => b.sc - a.sc)[0];
+    const buffet = [...DATA.weapons].sort((a, b) => perkCount(b) - perkCount(a))[0];
+    const weird = [
+      lockedLow && [lockedLow, "Loyalty over logic", `Locked, even though Aegis rates it ${lockedLow.tier} tier and it scores ${lockedLow.sc}. Sentimental value counts.`],
+      hidden && [hidden, "Off the map", `Your best weapon that isn't on Aegis's sheet, scoring ${hidden.sc} on wishlist rolls.`],
+      buffet && [buffet, "Perk buffet", `${perkCount(buffet)} selectable perks across its columns, the most in your vault.`],
+    ].filter(Boolean);
+    if (weird.length) slide("wide alt", `<div class="kicker">Weird finds</div><div class="big">Odd ones in your vault</div><div class="types">${weird.map(([w, t, d]) => `<button class="tcard" data-w="${w.id}" style="text-align:left"><div class="cap" style="color:var(--cyan)">${t}</div><div style="display:flex;gap:12px;align-items:center">${img(w.ic)}<div style="min-width:0"><div class="nm">${esc(w.n)}</div><div class="sm">${esc(typeLine(w))}</div></div></div><p class="small muted">${esc(d)}</p></button>`).join("")}</div>`);
+    const count = (f) => DATA.weapons.filter(f).length;
+    const closet = Object.entries(DATA.armor.reduce((m, a) => ((m[a.cls] = (m[a.cls] || 0) + 1), m), {})).sort((a, b) => b[1] - a[1])[0];
+    const bestArmor = [...DATA.armor].sort((a, b) => b.tot - a.tot)[0];
+    slide("wide", `<div class="kicker">Collection</div><div class="big">By the numbers</div><div class="statgrid">
+      <div><b class="num">${count((w) => w.god)}</b><span>Wishlist god rolls</span></div>
+      <div><b class="num">${count(isExotic)}</b><span>Exotic weapons</span></div>
+      <div><b class="num">${count((w) => w.ad)}</b><span>Adept weapons</span></div>
+      <div><b class="num">${count((w) => w.cr)}</b><span>Crafted weapons</span></div>
+      <div><b class="num">${count((w) => w.tier === "S")}</b><span>S-tier weapons</span></div>
+      ${closet ? `<div><b class="num">${closet[1]}</b><span>${esc(closet[0])} armor pieces, your biggest closet</span></div>` : ""}
+      ${bestArmor ? `<div><b class="num">${bestArmor.tot}</b><span>Best stat total: ${esc(bestArmor.n)}</span></div>` : ""}
+    </div>`);
+    $("#p-wrapped").innerHTML = `<div><div class="sec-head"><h2>${NAME ? esc(NAME) + "’s " : ""}Destiny Wrapped</h2><p>${X ? "From your Bungie account stats and your vault." : "From your vault. Account stats were not available this time."}</p></div><div class="slides">${slides.join("")}</div></div>`;
+  };
+
+  /* ---------- Drawer ---------- */
+  const drawer = $("#drawer"), scrim = $("#scrim");
+  let lastFocus = null;
+  function openDrawer(html) {
+    lastFocus = document.activeElement;
+    drawer.innerHTML = html; drawer.scrollTop = 0;
+    drawer.classList.add("open"); scrim.classList.add("open");
+    $(".d-close", drawer).focus();
+  }
+  function closeDrawer() { drawer.classList.remove("open"); scrim.classList.remove("open"); if (lastFocus) lastFocus.focus(); }
+  scrim.onclick = closeDrawer;
+  drawer.addEventListener("click", (e) => { if (e.target.closest(".d-close")) closeDrawer(); });
+  addEventListener("keydown", (e) => { if (e.key === "Escape" && drawer.classList.contains("open")) closeDrawer(); });
+  const COL = { barrel: "Barrel", magazine: "Magazine", perk1: "Trait 1", perk2: "Trait 2", origin: "Origin", masterwork: "Masterwork", other: "Other" };
+  const fact = (k, v) => (v === null || v === undefined || v === "" ? "" : `<div><span>${k}</span><b>${esc(v)}</b></div>`);
+
+  const whereBox = (src) => {
+    if (!src || (!src.bungie && !src.aegis && !src.activity)) return `<div class="wherebox"><div class="cap" style="color:var(--green)">Where to get it</div><p class="small muted">No source is listed for this weapon. It may no longer drop.</p></div>`;
+    return `<div class="wherebox"><div class="cap" style="color:var(--green)">Where to get it</div>
+      ${src.activity ? `<div class="line"><span>${(DATA.rads || []).find((r) => r.key === src.activity.key)?.kind === "dungeon" ? "Dungeon" : "Raid"}</span><b>${esc(src.activity.name)}</b></div>` : ""}
+      ${src.bungie ? `<div class="line"><span>Bungie</span><span>${esc(src.bungie)}</span></div>` : ""}
+      ${src.aegis && src.aegis !== "?" ? `<div class="line"><span>Aegis's sheet</span><span>${esc(src.aegis)}</span></div>` : ""}
+      ${src.activity && DATA.rads?.length ? `<button class="go" data-rad="${esc(src.activity.key)}">See ${esc(src.activity.name)} in RADS →</button>` : ""}</div>`;
+  };
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-rad]"); if (!b) return;
+    // Don't hand focus back to the weapon row: that would scroll the old tab and cancel the jump.
+    lastFocus = null; closeDrawer(); radFilter = "all"; show("rads", false);
+    if (rendered.rads) drawRads();
+    const card = document.getElementById("rad-" + b.dataset.rad);
+    if (!card) return;
+    setTimeout(() => {
+      scrollTo({ top: card.getBoundingClientRect().top + scrollY - $("nav.tabs").offsetHeight - 12 });
+      card.animate?.([{ boxShadow: "0 0 0 3px rgba(51,227,160,.9)" }, { boxShadow: "0 0 0 0 rgba(51,227,160,0)" }], { duration: 1800 });
+    }, 0);
+  });
+  function openLoot(key, i) {
+    const act = (DATA.rads || []).find((r) => r.key === key), w = act?.weapons[i]; if (!w) return;
+    openDrawer(`<button class="d-close" aria-label="Close">✕</button><div class="d-art">${act.image && IMG[act.image] ? `<img class="shot" src="${IMG[act.image]}" alt="">` : ""}<div class="bigicon">${img(w.icon)}</div></div>
+      <div class="d-body">
+        <div><div class="eyebrow" style="${w.rarity === "Exotic" ? "color:var(--gold)" : ""}">${esc(w.rarity)} · not in your vault</div><h2>${esc(w.name)}</h2>
+          <div class="sub">${esc([w.frame && w.frame.replace(/ Frame$/, ""), w.type].filter(Boolean).join(" "))} ${elDot(w.element)} <span class="st chase">Chase</span></div></div>
+        ${whereBox(w.src || { activity: { key: act.key, name: act.name } })}
+        <div class="breakdown"><div><b class="num">${w.tier || "—"}</b><span>Aegis tier</span></div><div><b class="num">${w.aegisRank ?? "—"}</b><span>Rank${w.tab ? " in " + esc(w.tab) : ""}</span></div><div><b class="num">${act.score}</b><span>${esc(act.name)} farm score</span></div></div>
+        ${w.notes ? `<div class="notes"><b style="color:var(--ink)">Aegis:</b> ${esc(w.notes)}</div>` : ""}
+      </div>`);
+  }
+  document.addEventListener("click", (e) => { const b = e.target.closest("[data-loot]"); if (!b) return; const [k, i] = b.dataset.loot.split("|"); openLoot(k, Number(i)); });
+  const CLASS_OF_TYPE = { 0: "Titan", 1: "Hunter", 2: "Warlock" };
+  const charId = (cls) => (DATA.chars || []).find((c) => c.cls === cls)?.id;
+  const clsOf = (id) => (DATA.chars || []).find((c) => c.id === id)?.cls;
+  const locText = (x) => (!x.wh || x.wh === "vault" ? "Vault" : `${clsOf(x.wh) || "Character"}${x.eq ? " (equipped)" : ""}`);
+  /** Move items through the local app; updates the page's copy of where things are. */
+  async function doMove(ids, to, equip, msgEl) {
+    if (msgEl) msgEl.textContent = `Moving ${ids.length} item${ids.length > 1 ? "s" : ""}…`;
+    try {
+      const res = await api("/api/move", { ids, to, equip });
+      if (!res.ok) throw new Error(res.error);
+      for (const m of res.results) {
+        const x = W.get(m.id) || A.get(m.id);
+        if (x && m.where) {
+          if (m.equipped) for (const o of [...DATA.weapons, ...DATA.armor]) if (o !== x && o.wh === m.where && o.eq && o.s === x.s && !!o.cls === !!x.cls) o.eq = false;
+          x.wh = m.where; x.eq = m.equipped; x.loc = locText(x);
+        }
+      }
+      const bad = res.results.filter((m) => !m.ok || m.error);
+      const done = res.results.length - bad.filter((m) => !m.ok).length;
+      if (msgEl) msgEl.textContent = `${done} of ${res.results.length} done.${bad.length ? " " + bad.map((m) => `${m.name}: ${m.error}`).join(" ") : ""}`;
+      for (const k of Object.keys(rendered)) delete rendered[k];
+      show(location.hash.slice(1) || "overview", false);
+      return res.results;
+    } catch (err) {
+      if (msgEl) msgEl.textContent = "Couldn't move: " + err.message;
+    }
+  }
+  function movePanel(x, isArmor) {
+    if (!window.VR_LOCAL || !DATA.chars?.length) return "";
+    const chars = DATA.chars.filter((c) => !isArmor || x.cls === "Any" || c.cls === x.cls);
+    return `<div class="dimpanel"><div class="cap">Move</div><div class="small"><span class="muted">Now:</span> <b>${esc(locText(x))}</b></div>
+      <div class="movebtns">${chars.map((c) => `<button class="movebtn" data-move="${c.id}" ${x.wh === c.id ? "disabled" : ""}>Pull to ${esc(c.cls)}</button>`).join("")}<button class="movebtn vault" data-move="vault" ${!x.wh || x.wh === "vault" ? "disabled" : ""}>Send to vault</button></div>
+      <label class="small muted"><input type="checkbox" id="moveequip"> Equip it after pulling</label>
+      <span class="small muted" id="movemsg" aria-live="polite">${x.eq ? "It's equipped, so equip something else in that slot before moving it." : ""}</span></div>`;
+  }
+  drawer.addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-move]"); if (!b) return;
+    const id = drawer.dataset.item;
+    b.disabled = true;
+    await doMove([id], b.dataset.move, $("#moveequip", drawer)?.checked && b.dataset.move !== "vault", $("#movemsg", drawer));
+    const msg = $("#movemsg", drawer)?.textContent;
+    (W.get(id) ? openWeapon : openArmor)(id);
+    if (msg) $("#movemsg", drawer).textContent = msg;
+  });
+  // Pull a DIM loadout to its character
+  drawer.addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-pulllo]"); if (!b) return;
+    const lo = DATA.dimLoadouts[Number(b.dataset.pulllo)];
+    const to = charId(CLASS_OF_TYPE[lo.classType]) || drawer.dataset.pullto;
+    const ids = lo.ids.filter((id) => W.has(id) || A.has(id));
+    b.disabled = true;
+    await doMove(ids, to, false, $("#lomsg", drawer));
+  });
+  function dimPanel(x) {
+    if (!DIMS.tags && !DIMS.loadouts) return "";
+    const head = '<div class="cap">DIM</div>';
+    if (!DIMS.loaded) return `<div class="dimpanel">${head}<p class="small muted">${DIMS.error ? "Couldn't reach DIM: " + esc(DIMS.error) : "DIM data wasn't loaded."}</p></div>`;
+    const tagUI = !DIMS.tags ? "" : window.VR_LOCAL
+      ? `<div class="tagbtns" data-id="${x.id}">${Object.entries(TAG_LABEL).map(([k, l]) => `<button class="tagbtn ${k}" data-tag="${k}" aria-pressed="${x.tg === k}">${l}</button>`).join("")}<button class="tagbtn" data-tag="" aria-pressed="${!x.tg}">No tag</button></div>
+        <textarea id="dimnotes" rows="2" placeholder="DIM notes" aria-label="DIM notes">${esc(x.nt || "")}</textarea>
+        <div class="tb-row"><button class="btn primary" id="dimsave" data-id="${x.id}">Save to DIM</button><span class="small muted" id="dimmsg" aria-live="polite"></span></div>`
+      : `<div class="facts"><div><span>Tag</span><b>${x.tg ? TAG_LABEL[x.tg] : "None"}</b></div>${x.nt ? `<div><span>Notes</span><b>${esc(x.nt)}</b></div>` : ""}</div><p class="small muted">Open the report from the local app (Vault Rater.cmd) to change tags here.</p>`;
+    const los = (DATA.dimLoadouts || []).map((l, i) => [l, i]).filter(([l]) => l.ids.includes(x.id));
+    const lo = !DIMS.loadouts ? "" : window.VR_LOCAL && los.length
+      ? `<div class="small muted">In DIM loadouts. Pull everything in one to its character:</div><div class="lorow">${los.map(([l, i]) => `<button class="movebtn" data-pulllo="${i}" title="Pull ${l.ids.length} items to your ${CLASS_OF_TYPE[l.classType] || "character"}">${esc(l.name)} → ${esc(CLASS_OF_TYPE[l.classType] || "any class")}</button>`).join("")}</div><span class="small muted" id="lomsg" aria-live="polite"></span>`
+      : `<div class="small"><span class="muted">In DIM loadouts:</span> ${x.lo?.length ? x.lo.map(esc).join(", ") : "none"}</div>`;
+    return `<div class="dimpanel">${head}${tagUI}${lo}</div>`;
+  }
+  drawer.addEventListener("click", async (e) => {
+    const t = e.target.closest(".tagbtn");
+    if (t) { $$(".tagbtn", drawer).forEach((b) => b.setAttribute("aria-pressed", String(b === t))); return; }
+    const save = e.target.closest("#dimsave"); if (!save) return;
+    const x = W.get(save.dataset.id) || A.get(save.dataset.id);
+    const tag = $(".tagbtn[aria-pressed=true]", drawer)?.dataset.tag || null;
+    const notes = $("#dimnotes", drawer).value.trim() || null;
+    save.disabled = true; $("#dimmsg").textContent = "Saving…";
+    try {
+      const res = await api("/api/tag", { id: x.id, tag, notes });
+      if (!res.ok) throw new Error(res.error);
+      x.tg = tag; x.nt = notes;
+      $("#dimmsg").textContent = "Saved to DIM. It shows in DIM after its next sync.";
+      for (const k of Object.keys(rendered)) delete rendered[k];
+      show(location.hash.slice(1) || "overview", false);
+    } catch (err) { $("#dimmsg").textContent = "Couldn't save: " + err.message; }
+    save.disabled = false;
+  });
+  function openWeapon(id) {
+    const w = W.get(id); if (!w) return;
+    drawer.dataset.item = id;
+    const good = new Set(w.pk.flatMap((p) => p.m));
+    const art = w.ss && IMG[w.ss] ? `<img class="shot" src="${IMG[w.ss]}" alt="">` : `<div class="bigicon">${img(w.ic)}</div>`;
+    const copies = DATA.weapons.filter((x) => x.n === w.n && x.id !== w.id).sort((a, b) => b.sc - a.sc);
+    openDrawer(`<button class="d-close" aria-label="Close">✕</button><div class="d-art">${art}</div>
+      <div class="d-body">
+        <div><div class="eyebrow" style="${isExotic(w) ? "color:var(--gold)" : ""}">${esc(w.s)} · ${esc(w.r)}</div><h2>${esc(w.n)}</h2>
+          <div class="sub">${esc(typeLine(w))} ${elDot(w.e)} ${verdict(w.v)} ${w.lk ? '<span class="chip">🔒 Locked</span>' : ""} ${w.god ? '<span class="chip" style="color:var(--green)">Wishlist god roll</span>' : ""}</div></div>
+        <div class="breakdown"><div><b class="num grad-text">${w.sc}</b><span>Vault score</span></div><div><b class="num">${w.ws}</b><span>${w.tier ? `Aegis ${w.tier}${w.rank ? " #" + w.rank : ""}` : "Wishlist tier"}</span></div><div><b class="num">${w.rs}</b><span>Roll score</span></div></div>
+        ${whereBox(w.src)}
+        ${movePanel(w, false)}
+        ${dimPanel(w)}
+        <div class="facts">${fact("Ammo", w.am)}${fact("Power", w.pw)}${fact("Masterwork", w.mw)}${fact("Gear tier", w.gt ? "Tier " + w.gt : null)}${fact("Where", w.loc)}${fact("Crafted", w.cr ? "Yes" : null)}${fact("Adept", w.ad ? "Yes" : null)}${fact("Aegis list", w.tab)}</div>
+        <div class="perkcols">${w.pk.filter((p) => p.o.length).map((p) => `<div class="perkcol"><div class="cap">${COL[p.k] || esc(p.k)}</div><div class="perkopts">${p.o.map((o) => `<span class="perk${good.has(o) ? " good" : ""}">${esc(o)}</span>`).join("")}</div></div>`).join("")}</div>
+        ${w.notes ? `<div class="notes"><b style="color:var(--ink)">Aegis:</b> ${esc(w.notes)}</div>` : ""}
+        <div><div class="cap" style="margin-bottom:8px">Why</div><ul class="reasons">${w.why.map((r) => `<li>${esc(r)}</li>`).join("")}</ul></div>
+        ${copies.length ? `<div><div class="cap" style="margin-bottom:8px">Other copies (${copies.length})</div><div class="list">${copies.map(weaponRow).join("")}</div></div>` : ""}
+      </div>`);
+  }
+  function openArmor(id) {
+    const a = A.get(id); if (!a) return;
+    drawer.dataset.item = id;
+    const others = DATA.armor.filter((x) => x.id !== a.id && x.cls === a.cls && x.s === a.s && (x.arch || "") === (a.arch || "")).sort((x, y) => y.sc - x.sc).slice(0, 6);
+    openDrawer(`<button class="d-close" aria-label="Close">✕</button><div class="d-art"><div class="bigicon">${img(a.ic)}</div></div>
+      <div class="d-body">
+        <div><div class="eyebrow" style="${isExotic(a) ? "color:var(--gold)" : ""}">${esc(a.cls)} · ${esc(a.s)} · ${esc(a.r)}</div><h2>${esc(a.n)}</h2>
+          <div class="sub">${esc(a.arch || "Legacy armor")}${setLine(a)} ${verdict(a.v)} ${a.lk ? '<span class="chip">🔒 Locked</span>' : ""}</div></div>
+        <div class="breakdown"><div><b class="num grad-text">${a.sc}</b><span>Armor score</span></div><div><b class="num">${a.tot}</b><span>Stat total</span></div><div><b class="num">${gearTier(a)}</b><span>Gear tier</span></div></div>
+        <div><div class="cap" style="margin-bottom:8px">Stats</div>${statBars(a, true)}</div>
+        <div class="breakdown" style="grid-template-columns:repeat(4,minmax(0,1fr))">${[["Stats", a.parts.stats], ["Build fit", a.parts.buildFit], ["Set", a.parts.set], ["Tier / exotic", a.parts.extras]].map(([l, v]) => `<div><b class="num" style="font-size:17px">${Math.round(v)}</b><span>${l}</span></div>`).join("")}</div>
+        <div class="facts">${fact("Where", a.loc)}${fact("Archetype", a.arch || "Legacy")}</div>
+        ${movePanel(a, true)}
+        ${dimPanel(a)}
+        ${a.si ? `<div><div class="cap" style="margin-bottom:10px">${esc(a.si.name)} set · ${a.si.ownedSlots} of 5 slots owned · rating ${a.si.value}</div><div class="stack">${(DATA.sets?.[a.si.name]?.bonuses || a.si.bonuses).map((b) => bonusRow(b, a.si.ownedSlots)).join("") || '<p class="small muted">Not on the set list yet.</p>'}</div></div>` : ""}
+        <div><div class="cap" style="margin-bottom:8px">Why</div><ul class="reasons">${a.why.map((r) => `<li>${esc(r)}</li>`).join("")}</ul></div>
+        ${others.length ? `<div><div class="cap" style="margin-bottom:8px">Same slot and archetype</div><div class="list">${others.map(armorRow).join("")}</div></div>` : ""}
+      </div>`);
+  }
+
+  /* ---------- Boot ---------- */
+  show(location.hash.slice(1) || store.get("vr-tab") || "overview");
+  addEventListener("hashchange", () => show(location.hash.slice(1)));
+}
+if (DATA) vrMain();
+</script>
+</body>
+</html>
