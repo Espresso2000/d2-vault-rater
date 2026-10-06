@@ -44,7 +44,7 @@ function reportPage(): Plugin {
         const shell = readFileSync(resolve(here, "src/shell.html"), "utf8");
         return tpl
           .replace("__TITLE__", "Vault Rater")
-          .replace("</head>", `<meta name="description" content="Rate your Destiny 2 vault against Aegis's tier list.">\n<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a1130'/%3E%3Cpath d='M8 9l8 15 8-15' fill='none' stroke='%2333e3a0' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">\n</head>`)
+          .replace("</head>", `<meta name="description" content="Rate your Destiny 2 vault against Aegis's tier list.">\n</head>`)
           .replace("<body>", `<body class="vr-booting">\n${shell}`)
           .replace(/<\/body>\s*<\/html>\s*$/, `<script type="module" src="/src/main.ts"></script>\n</body>\n</html>\n`);
       },
