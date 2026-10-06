@@ -1,0 +1,7 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "vault-rater-web-local", "runtimeExecutable": "npm", "runtimeArgs": ["--prefix", "d2-vault-rater/web", "run", "local"], "port": 7777, "url": "https://localhost:7777" },
+    { "name": "vault-rater-web-prod-debug", "runtimeExecutable": "cmd", "runtimeArgs": ["/c", "set VR_NO_SSL=1&& cd d2-vault-rater/web&& npx vite build&& npx vite preview --mode localhost --port 7797"], "port": 7797 }
+  ]
+}
