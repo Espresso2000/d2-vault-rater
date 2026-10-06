@@ -917,15 +917,17 @@ function vrMain() {
     shard: "<svg viewBox='0 0 51 51' aria-hidden='true'><g><polygon points='24.6,5.24 4.77,41.37 17.73,30.04 '/><polygon points='47.38,42.02 26.92,4.6 19.86,30.02 '/><polygon points='18.82,31.81 4.89,44 46.78,44 '/></g></svg>",
     wrapped: "<svg viewBox='0 -12.63 369.54991 369.54991' aria-hidden='true'><g><g><path d='M189.71791,36.81064h-9.3831L79.286,22.37509,116.81842,0H253.95608l37.53241,22.37509ZM0,158.15841l65.68172,85.1697,40.41952,98.88348L67.84705,319.11472,0,199.29971ZM191.271,49.89183l5.05244-5.77421L300.2593,29.68207l67.84706,117.64968-68.56883,87.335L191.271,172.594ZM303.86819,244.77167l65.68172-85.89148v41.86307L301.70286,319.83649l-38.976,23.81865Zm-123.4239-71.45594L72.17772,235.38857l-68.56883-87.335L72.17772,30.40385,175.39185,44.83939l5.05244,5.77422Zm3.49941,9.29389,107.54479,60.62929-39.69774,101.0488H115.37486l-38.976-101.0488Z'/></g></g></svg>",
     settings: "",
+    builds: "<svg viewBox='0 0 32 32' aria-hidden='true'><path d='M16 1 3 8.5v15L16 31l13-7.5v-15L16 1zm0 3.5 9.9 5.7L16 15.9 6.1 10.2 16 4.5zM5 12.4l10 5.8v10.5L5 22.9V12.4zm12 16.3V18.2l10-5.8v10.5l-10 5.8z'/></svg>",
   };
-  const TABS = [["overview", "Overview", null], ["weapons", "Weapons", S.weapons], ["armor", "Armor", S.armor], ["rads", "RADS", (DATA.rads || []).length || null], ["list", "Full list", null], ["shard", "Shard", S.weaponShard + S.armorShard], ["wrapped", "Wrapped", null], ...(window.VR_LOCAL ? [["settings", "Settings", null]] : [])];
+  const TABS = [["overview", "Overview", null], ["weapons", "Weapons", S.weapons], ["armor", "Armor", S.armor], ["rads", "RADS", (DATA.rads || []).length || null], ["list", "Full list", null], ["shard", "Shard", S.weaponShard + S.armorShard], ["wrapped", "Wrapped", null], ...(window.VR_BUILDS ? [["builds", "Builds", window.VR_BUILDS.count()]] : []), ...(window.VR_LOCAL ? [["settings", "Settings", null]] : [])];
   if (!$("#p-settings")) $("main").insertAdjacentHTML("beforeend", '<section class="panel" id="p-settings" role="tabpanel" hidden></section>');
+  if (window.VR_BUILDS && !$("#p-builds")) $("main").insertAdjacentHTML("beforeend", '<section class="panel" id="p-builds" role="tabpanel" hidden></section>');
   $("#tabs").innerHTML = TABS.map(([id, label, n]) => `<button role="tab" id="t-${id}" aria-controls="p-${id}" aria-selected="false"${id === "settings" ? " hidden" : ""}>${ICON[id]}${label}${n != null ? `<span class="count">${n}</span>` : ""}</button>`).join("");
   if (window.VR_LOCAL && !$("#gear")) {
     $("#bar-actions").insertAdjacentHTML("beforeend", `<button class="gear" id="gear" type="button" aria-label="Settings" title="Settings" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.14 12.94a7.4 7.4 0 0 0 .05-.94 7.4 7.4 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.84a.5.5 0 0 0-.49.42l-.36 2.54c-.59.24-1.13.56-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.67 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.4 7.4 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.3.6.22l2.39-.96c.5.38 1.04.7 1.63.94l.36 2.54c.04.24.25.42.49.42h3.84c.24 0 .45-.18.49-.42l.36-2.54c.59-.24 1.13-.56 1.63-.94l2.39.96c.22.08.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2Z"/></svg></button>`);
     $("#gear").onclick = () => show(location.hash === "#settings" ? store.get("vr-last-tab") || "overview" : "settings", true);
   }
-  const RENDER = {}, rendered = {};
+  const RENDER = { builds: () => window.VR_BUILDS.render($("#p-builds")) }, rendered = {};
   function show(id, scroll) {
     if (!TABS.some((t) => t[0] === id)) id = "overview";
     for (const [t] of TABS) { $(`#t-${t}`).setAttribute("aria-selected", String(t === id)); $(`#p-${t}`).hidden = t !== id; }

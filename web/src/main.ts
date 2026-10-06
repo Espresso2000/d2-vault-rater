@@ -23,6 +23,7 @@ import { planEncounters } from "../../src/rating/encounters.js";
 import { planDimActions, applyDimActions, undoDimActions, type DimPlan } from "../../src/dim/actions.js";
 import { moveItems } from "../../src/bungie/transfer.js";
 import { buildSiteData } from "../../src/report/siteData.js";
+import { initBuilds } from "./builds/ui";
 
 declare global {
   interface Window {
@@ -164,6 +165,7 @@ async function run() {
   if (status.warnings.length) console.warn("Vault Rater sources:", status.warnings);
   const back = sessionStorage.getItem("vr-return-hash");
   if (back) (sessionStorage.removeItem("vr-return-hash"), history.replaceState(null, "", back));
+  initBuilds({ vault, data, manifest: m });
   window.VR_START!(data, images);
   watchSession();
 }

@@ -108,3 +108,9 @@ export async function setDimTag(itemId: string, tag: DimTagValue | null, notes?:
   const res = r.results?.[0];
   if (res && res.status !== "Success") throw new Error(`DIM rejected the tag: ${res.message ?? res.status}`);
 }
+
+/** Any DIM API call as the signed-in player (the Builds tab reads and saves loadouts with it). */
+export async function dimCall<T>(path: string, body?: unknown): Promise<T> {
+  const { apiKey, token } = await dimAuth();
+  return dimFetch<T>(path, { body, headers: { "X-API-Key": apiKey, Authorization: `Bearer ${token}` } });
+}

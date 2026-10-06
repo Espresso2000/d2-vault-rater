@@ -9,6 +9,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { TABLES, type LiteManifest, type TableKey } from "../src/strip";
+import { stripBuildDefs } from "../src/builds/defs.strip";
 
 const here = resolve(import.meta.dirname, "..");
 const out = join(here, "public", "data");
@@ -39,6 +40,17 @@ else {
   for (const f of readdirSync(out)) if (/^manifest-.*\.json$/.test(f)) rmSync(join(out, f));
   writeFileSync(join(out, file), JSON.stringify(lite));
   console.log(`Wrote ${file}`);
+}
+
+// The Builds tab's definitions (subclasses, aspects, fragments, mods), so browsers skip the 200 MB item table.
+const buildsFile = `builds-${meta.version.replace(/[^\w.-]/g, "_")}.json`;
+if (!existsSync(join(out, buildsFile))) {
+  const get = async (t: string) => (await fetch("https://www.bungie.net" + meta.jsonWorldComponentContentPaths.en[t])).json();
+  console.log("Downloading the Builds tab's definitions…");
+  const defs = stripBuildDefs(meta.version, await get("DestinyInventoryItemDefinition"), await get("DestinyPlugSetDefinition"), await get("DestinySandboxPerkDefinition"), await get("DestinyLoadoutConstantsDefinition"));
+  for (const f of readdirSync(out)) if (/^builds-.*\.json$/.test(f)) rmSync(join(out, f));
+  writeFileSync(join(out, buildsFile), JSON.stringify(defs));
+  console.log(`Wrote ${buildsFile}`);
 }
 
 const src = join(process.env.VAULT_RATER_HOME || join(homedir(), ".d2-vault-rater"), "sources");

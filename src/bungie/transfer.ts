@@ -20,7 +20,7 @@ export interface MoveResult {
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /** Bungie throttles item actions; wait and retry like DIM does. */
-async function action(path: string, body: Record<string, unknown>): Promise<unknown> {
+export async function action(path: string, body: Record<string, unknown>): Promise<unknown> {
   for (let attempt = 0; ; attempt++) {
     try {
       return await bungie(path, { body });
