@@ -8,17 +8,19 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
-/* Layout: a deep-space console. Gradient hero with the vault's headline numbers, a sticky tab bar,
-   then calm panels: highlights by weapon type, a full filterable list, armor, and a Wrapped story.
-   A details drawer slides in from the right (bottom sheet on phones). */
+/* Layout: a deep-space console. A sticky glass app bar holds the brand, the tabs and the settings gear.
+   Overview opens with a hero of the vault's headline numbers; every other tab is a stack of collapsible
+   sections with a jump bar. A details drawer slides in from the right (bottom sheet on phones). */
 :root {
   color-scheme: dark;
   --void: #050919;
   --deep: #0a1130;
   --panel: #0e173b;
   --panel-hi: #14204c;
-  --line: #1c2958;
-  --line-hi: #2c3d7c;
+  --line: rgba(60, 82, 160, .28);
+  --line-hi: rgba(84, 110, 200, .42);
+  --glass: rgba(11, 18, 46, .58);
+  --glass-hi: rgba(20, 31, 74, .72);
   --ink: #e7ecff;
   --muted: #98a4cc;
   --faint: #6a77a3;
@@ -28,6 +30,7 @@
   --gold: #f2c14e;
   --grad: linear-gradient(115deg, #4d7dff 0%, #36c4f2 48%, #33e3a0 100%);
   --grad-soft: linear-gradient(115deg, rgba(77,125,255,.20), rgba(51,227,160,.14));
+  --glow-line: linear-gradient(90deg, transparent, rgba(77,125,255,.55) 20%, rgba(54,196,242,.8) 50%, rgba(51,227,160,.55) 80%, transparent);
   --S: #f2c14e; --A: #4d9bff; --B: #33d69a; --C: #8d97b8; --D: #ff6b6b; --U: #6a77a3;
   --Kinetic: #d9dde8; --Arc: #7bdcff; --Solar: #ff9c45; --Void: #b78bff; --Stasis: #5b8cff; --Strand: #3fe08a; --Unknown: #8d97b8;
   --keep: #33e3a0; --shard: #ff7a7a; --review: #f2c14e; --exotic: #f2c14e;
@@ -35,26 +38,35 @@
   --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
   --r: 12px;
+  --bar-h: 64px;
 }
 * { box-sizing: border-box; }
-html { background: var(--void); }
-body {
-  margin: 0; color: var(--ink); font: 15px/1.5 var(--body);
+html { background: var(--void); scroll-padding-top: calc(var(--bar-h) + 16px); }
+body { margin: 0; color: var(--ink); font: 15px/1.5 var(--body); background: var(--void); min-height: 100vh; overflow-x: clip; }
+/* Aurora: soft blue/green clouds that drift and breathe behind everything. */
+body::before {
+  content: ""; position: fixed; inset: -25%; z-index: 0; pointer-events: none;
   background:
-    radial-gradient(1200px 600px at 8% -12%, rgba(77,125,255,.26), transparent 60%),
-    radial-gradient(900px 520px at 100% 0%, rgba(51,227,160,.15), transparent 60%),
-    radial-gradient(800px 800px at 50% 120%, rgba(54,196,242,.09), transparent 60%),
-    var(--void);
-  background-attachment: fixed;
-  min-height: 100vh;
+    radial-gradient(38% 30% at 22% 18%, rgba(77,125,255,.20), transparent 70%),
+    radial-gradient(34% 28% at 82% 12%, rgba(51,227,160,.13), transparent 70%),
+    radial-gradient(40% 34% at 70% 88%, rgba(54,196,242,.10), transparent 70%),
+    radial-gradient(30% 26% at 12% 80%, rgba(51,227,160,.08), transparent 70%);
+  animation: aurora 48s ease-in-out infinite alternate;
 }
-#stars { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: .65; }
-.wrap { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding-inline: 24px; }
+@keyframes aurora {
+  0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); filter: hue-rotate(0deg); }
+  50% { transform: translate3d(4%, -3%, 0) rotate(6deg) scale(1.06); filter: hue-rotate(-18deg); }
+  100% { transform: translate3d(-3%, 4%, 0) rotate(-4deg) scale(1.03); filter: hue-rotate(12deg); }
+}
+#stars { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: .8; }
+.wrap { position: relative; z-index: 1; max-width: 1680px; margin: 0 auto; padding-inline: clamp(16px, 3vw, 40px); }
 h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; letter-spacing: .01em; }
 p { margin: 0; }
 button, input, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
 :focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+/* Panels use display:grid, which would override the hidden attribute and stack every tab. */
+[hidden] { display: none !important; }
 .num { font-variant-numeric: tabular-nums; }
 .eyebrow { font: 600 12px/1 var(--display); letter-spacing: .18em; text-transform: uppercase; color: var(--cyan); }
 .cap { font: 600 11px/1.2 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }
@@ -62,50 +74,126 @@ button { cursor: pointer; }
 .small { font-size: 13px; }
 .grad-text { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .stack { display: grid; gap: 12px; }
+/* Glass surface with a faint gradient rim */
+.glass { background: linear-gradient(var(--glass), var(--glass)) padding-box, linear-gradient(140deg, rgba(84,110,200,.55), rgba(60,82,160,.18) 40%, rgba(51,227,160,.28)) border-box; border: 1px solid transparent; backdrop-filter: blur(8px); }
 
-/* Hero */
-header.hero { padding-block: 44px 26px; display: grid; gap: 24px; }
+/* ---------- App bar ---------- */
+.topbar { position: sticky; top: 0; z-index: 10; padding-top: env(safe-area-inset-top, 0px); background: rgba(5,9,25,.74); backdrop-filter: blur(14px) saturate(140%); }
+.topbar::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--glow-line); box-shadow: 0 0 14px rgba(54,196,242,.35); }
+.appbar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 6px 20px; min-height: var(--bar-h); }
+.brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; min-width: 0; }
+.brand svg { width: 34px; height: 34px; flex: none; filter: drop-shadow(0 0 10px rgba(51,227,160,.35)); }
+.brand b { display: block; font: 700 16px/1.1 var(--display); letter-spacing: .06em; text-transform: uppercase; }
+.brand small { display: block; font-size: 12px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 22ch; }
+nav.tabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; justify-content: center; padding-block: 8px; }
+nav.tabs::-webkit-scrollbar { display: none; }
+nav.tabs button { display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: 999px; border: 1px solid transparent; background: none; font: 600 13px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); white-space: nowrap; transition: color .15s ease, background .15s ease; }
+nav.tabs button svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; opacity: .85; }
+nav.tabs button:hover { color: var(--ink); background: rgba(255,255,255,.04); }
+nav.tabs button[aria-selected="true"] { color: var(--ink); background: linear-gradient(var(--glass-hi), var(--glass-hi)) padding-box, var(--grad) border-box; box-shadow: 0 0 22px -8px rgba(54,196,242,.7); }
+nav.tabs button[aria-selected="true"] svg { color: var(--green); opacity: 1; }
+nav.tabs .count { font: 500 11px var(--mono); color: var(--faint); }
+nav.tabs button[aria-selected="true"] .count { color: var(--green); }
+.bar-actions { display: flex; gap: 8px; align-items: center; justify-self: end; }
+.gear { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--line-hi); background: rgba(11,18,46,.78); color: var(--muted); transition: color .2s ease, border-color .2s ease, transform .4s ease; }
+.gear svg { width: 22px; height: 22px; fill: currentColor; }
+.gear:hover { color: var(--ink); border-color: var(--cyan); transform: rotate(45deg); }
+.gear[aria-pressed="true"] { color: #04102a; background: var(--grad); border-color: transparent; }
+@media (max-width: 1100px) {
+  .appbar { grid-template-columns: minmax(0, 1fr) auto; padding-top: 8px; }
+  nav.tabs { grid-column: 1 / -1; order: 3; justify-content: flex-start; margin-inline: calc(-1 * clamp(16px, 3vw, 40px)); padding-inline: clamp(16px, 3vw, 40px); padding-top: 0; }
+  html { scroll-padding-top: 130px; }
+}
+
+/* ---------- Hero (Overview only) ---------- */
+.hero { position: relative; overflow: hidden; margin-top: clamp(18px, 3vw, 30px); padding: clamp(22px, 4vw, 44px); border-radius: 24px; display: grid; gap: 24px;
+  background: radial-gradient(700px 360px at 100% 0%, rgba(51,227,160,.13), transparent 70%), radial-gradient(700px 400px at 0% 100%, rgba(77,125,255,.20), transparent 70%), linear-gradient(var(--glass), var(--glass)) padding-box,
+    linear-gradient(140deg, rgba(84,110,200,.6), rgba(60,82,160,.15) 45%, rgba(51,227,160,.35)) border-box;
+  border: 1px solid transparent; backdrop-filter: blur(8px); }
+/* A faint planet ring in the corner */
+.hero::before { content: ""; position: absolute; width: 520px; height: 520px; right: -170px; top: -260px; border-radius: 50%; border: 1px solid rgba(54,196,242,.22); box-shadow: 0 0 80px rgba(54,196,242,.12), inset 0 0 60px rgba(51,227,160,.08); pointer-events: none; }
+.hero::after { content: ""; position: absolute; width: 340px; height: 340px; right: -80px; top: -170px; border-radius: 50%; background: radial-gradient(circle at 35% 70%, rgba(51,227,160,.22), rgba(77,125,255,.10) 55%, transparent 70%); pointer-events: none; }
+.hero > * { position: relative; z-index: 1; }
 .hero-top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; }
-.hero h1 { font-size: clamp(32px, 5.6vw, 56px); line-height: 1.04; font-weight: 700; margin-top: 10px; }
-.hero .lede { margin-top: 10px; color: var(--muted); max-width: 62ch; }
-.chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; border: 1px solid var(--line-hi); background: rgba(14,23,59,.7); font-size: 13px; color: var(--muted); white-space: nowrap; }
+.hero h1 { font-size: clamp(32px, 5.2vw, 54px); line-height: 1.04; font-weight: 700; margin-top: 10px; }
+.hero .lede { margin-top: 10px; color: var(--muted); max-width: 70ch; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line-hi); background: linear-gradient(180deg, rgba(20,31,74,.65), rgba(11,18,46,.65)); backdrop-filter: blur(6px); box-shadow: inset 0 1px 0 rgba(255,255,255,.04); font-size: 13px; color: var(--muted); white-space: nowrap; }
+.chip .k { font: 600 10.5px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }
 .chip b { color: var(--ink); font-weight: 600; }
 .tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-.tile { position: relative; padding: 16px 18px; border-radius: var(--r); background: linear-gradient(180deg, rgba(20,32,76,.85), rgba(10,17,48,.85)); border: 1px solid var(--line); overflow: hidden; }
-.tile::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 2px; background: var(--grad); }
-.tile .label { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.tile { position: relative; padding: 16px 18px; border-radius: 14px; background: rgba(5,9,25,.45); border: 1px solid var(--line); overflow: hidden; text-align: left; display: grid; gap: 2px; transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease; }
+.tile::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 2px; background: var(--grad); opacity: .6; }
+.tile.bad::before { background: linear-gradient(90deg, var(--shard), transparent); }
+button.tile:hover { border-color: rgba(51,227,160,.55); transform: translateY(-2px); box-shadow: 0 14px 34px -22px rgba(51,227,160,.6); }
+.tile .label { font: 600 11.5px/1.2 var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
 .tile .big { font: 700 34px/1.1 var(--display); margin-top: 6px; }
-.tile .sub { font-size: 13px; color: var(--faint); margin-top: 2px; }
+.tile.good .big { color: var(--green); }
+.tile .sub { font-size: 13px; color: var(--faint); }
+.tile .go { position: absolute; right: 14px; top: 14px; color: var(--faint); font-size: 14px; transition: transform .2s ease, color .2s ease; }
+button.tile:hover .go { color: var(--green); transform: translateX(3px); }
 .tierbar { display: grid; gap: 8px; }
 .tierbar .bar { display: flex; height: 10px; border-radius: 999px; overflow: hidden; background: var(--deep); border: 1px solid var(--line); }
 .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--muted); }
 .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
 
-/* Tabs */
-nav.tabs { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: rgba(5,9,25,.84); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
-nav.tabs .wrap { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
-nav.tabs button { background: none; border: 0; padding: 14px 14px 12px; font: 600 14px/1 var(--display); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border-bottom: 2px solid transparent; white-space: nowrap; }
-nav.tabs button:hover { color: var(--ink); }
-nav.tabs button[aria-selected="true"] { color: var(--ink); border-image: var(--grad) 1; border-bottom-width: 2px; border-bottom-style: solid; }
-nav.tabs .count { font: 500 12px var(--mono); color: var(--faint); margin-left: 6px; }
+/* ---------- Page structure ---------- */
+main { padding-block: 0 72px; }
+section.panel { display: grid; gap: 30px; padding-top: 26px; }
+section.panel > *, details.sec, details.subsec { min-width: 0; }
+#p-overview { padding-top: 30px; }
+/* Section headers: static ones (div.sec-head) and collapsible ones (details.sec > summary.sec-head) look the same. */
+.sec-head { position: relative; display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; padding-bottom: 12px; margin-bottom: 18px; }
+.sec-head::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: linear-gradient(90deg, var(--line-hi), rgba(54,196,242,.25) 30%, transparent); }
+.sec-head h2 { font-size: 21px; font-weight: 600; }
+.sec-head h2::before { content: ""; display: inline-block; width: 3px; height: .8em; border-radius: 2px; background: var(--green); margin-right: 10px; vertical-align: -1px; }
+.sec-head p { color: var(--muted); font-size: 13.5px; flex-basis: 100%; }
+details.sec > summary { list-style: none; cursor: pointer; user-select: none; }
+details.sec > summary::-webkit-details-marker { display: none; }
+details.sec > summary h2::before { display: none; }
+details.sec > summary p { padding-left: 38px; }
+details.sec:not([open]) > summary { margin-bottom: 0; }
+details.sec:not([open]) > summary p { display: none; }
+.badge { font: 600 12px/1 var(--mono); padding: 4px 8px; border-radius: 999px; background: rgba(51,227,160,.12); border: 1px solid rgba(51,227,160,.35); color: var(--green); }
+.badge.gold { background: rgba(242,193,78,.12); border-color: rgba(242,193,78,.4); color: var(--gold); }
+.badge.red { background: rgba(255,122,122,.12); border-color: rgba(255,122,122,.4); color: var(--shard); }
+/* Chevron: a circle with an arrow that turns when the section opens */
+.chev { position: relative; flex: none; width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--line-hi); background: rgba(11,18,46,.7); transition: border-color .2s ease, background .2s ease; }
+.chev::before { content: ""; position: absolute; left: 50%; top: 50%; width: 7px; height: 7px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: translate(-65%, -50%) rotate(-45deg); transition: transform .2s ease; }
+details[open] > summary .chev::before { transform: translate(-50%, -70%) rotate(45deg); }
+summary:hover .chev { border-color: var(--green); background: rgba(51,227,160,.1); }
+summary:hover .chev::before { border-color: var(--green); }
+.sec-head .fold-hint { margin-left: auto; font: 600 11px var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--faint); }
+details.sec[open] > summary .fold-hint::before { content: "Hide"; }
+details.sec:not([open]) > summary .fold-hint::before { content: "Show"; }
+/* Sub-sections inside a section */
+details.subsec + details.subsec { margin-top: 18px; }
+details.subsec > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 10px; margin: 0 0 12px; user-select: none; }
+details.subsec > summary::-webkit-details-marker { display: none; }
+details.subsec > summary::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, var(--line-hi), transparent); }
+details.subsec > summary .chev { width: 20px; height: 20px; }
+details.subsec > summary .chev::before { width: 5px; height: 5px; border-width: 1.5px; }
+details.subsec > summary h3 { font: 600 13px var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+details.subsec > summary .small { color: var(--faint); }
+details.subsec:not([open]) > summary { margin-bottom: 0; }
+/* Jump bar: section shortcuts plus collapse/expand all */
+.jumpbar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px; border-radius: 14px; }
+.jumpbar .cap { padding: 0 6px 0 8px; }
+.jumpbar button.j { border: 1px solid var(--line); background: rgba(5,9,25,.35); border-radius: 999px; padding: 5px 12px; font-size: 13px; color: var(--muted); }
+.jumpbar button.j:hover { color: var(--ink); border-color: rgba(51,227,160,.55); }
+.jumpbar button.j span { font: 500 11px var(--mono); color: var(--faint); margin-left: 6px; }
+.jumpbar .fold { margin-left: auto; background: none; border: 0; color: var(--green); font: 600 12px var(--display); letter-spacing: .1em; text-transform: uppercase; padding: 5px 10px; }
+.jumpbar .fold:hover { text-decoration: underline; }
+.pagebar { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; justify-content: space-between; }
+.pagebar p { color: var(--muted); font-size: 14px; }
 
-main { padding-block: 30px 64px; }
-section.panel { display: grid; gap: 44px; }
-.sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; margin-bottom: 16px; }
-.sec-head h2 { font-size: 22px; font-weight: 600; }
-.sec-head p { color: var(--muted); font-size: 14px; }
-.sub-head { display: flex; align-items: center; gap: 12px; margin: 26px 0 12px; }
-.sub-head::after { content: ""; flex: 1; height: 1px; background: var(--line); }
-.sub-head:first-child { margin-top: 0; }
-
-/* Badges */
+/* ---------- Badges ---------- */
 .tier { display: inline-grid; place-items: center; min-width: 26px; height: 22px; padding: 0 6px; border-radius: 6px; font: 700 13px/1 var(--display); color: #0a1130; background: var(--U); flex: none; }
+.tier.tS { background: var(--S); box-shadow: 0 0 12px -2px rgba(242,193,78,.6); } .tier.tA { background: var(--A); } .tier.tB { background: var(--B); } .tier.tC { background: var(--C); } .tier.tD { background: var(--D); }
 .tier.tE, .stier.tE { background: #e0566f; } .tier.tF, .stier.tF { background: #a8455a; }
+.tier.tU { background: transparent; color: var(--muted); border: 1px solid var(--line-hi); font-size: 11px; }
 .stier { display: inline-grid; place-items: center; min-width: 16px; height: 15px; padding: 0 3px; margin-left: 5px; border-radius: 4px; font: 700 10px/1 var(--display); color: #0a1130; background: var(--U); vertical-align: 1px; }
 .stier.tS { background: var(--S); } .stier.tA { background: var(--A); } .stier.tB { background: var(--B); } .stier.tC { background: var(--C); } .stier.tD { background: var(--D); }
-.tier.tS { background: var(--S); } .tier.tA { background: var(--A); } .tier.tB { background: var(--B); } .tier.tC { background: var(--C); } .tier.tD { background: var(--D); }
-.tier.tU { background: transparent; color: var(--muted); border: 1px solid var(--line-hi); font-size: 11px; }
 .el { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
 .el i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; background: currentColor; box-shadow: 0 0 8px currentColor; }
 .el span { color: var(--ink); }
@@ -114,125 +202,197 @@ section.panel { display: grid; gap: 44px; }
 .exo { color: var(--exotic); font: 600 11px var(--display); letter-spacing: .12em; text-transform: uppercase; }
 .score { display: grid; justify-items: end; gap: 4px; }
 .score b { font: 700 18px/1 var(--display); }
+.score b.hi { color: var(--green); }
 .meter { width: 64px; height: 4px; border-radius: 99px; background: var(--deep); overflow: hidden; }
 .meter span { display: block; height: 100%; background: var(--grad); }
 .ph { display: block; width: 44px; height: 44px; border-radius: 7px; background: var(--grad-soft); }
+.nm { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sm { font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.empty { padding: 32px; text-align: center; color: var(--muted); border: 1px dashed var(--line-hi); border-radius: var(--r); }
+.btn { background: var(--panel-hi); border: 1px solid var(--line-hi); border-radius: 10px; padding: 9px 16px; font-weight: 600; }
+.btn:hover { border-color: var(--cyan); }
+.btn.primary { background: var(--grad); color: #04102a; border: 0; }
+.btn.ghost { background: transparent; }
+.btn.danger { background: rgba(255,122,122,.16); border-color: rgba(255,122,122,.7); }
+.btn:disabled { opacity: .5; cursor: default; }
+.linkbtn { background: none; border: 0; padding: 4px 0 0; color: var(--green); font-size: 13px; font-weight: 600; text-align: left; justify-self: start; }
+.linkbtn:hover { text-decoration: underline; }
+/* Item icon with a tier (or gear tier) badge in the corner */
+.ico { position: relative; flex: none; width: 48px; height: 48px; }
+.ico img, .ico .ph { width: 100%; height: 100%; border-radius: 8px; display: block; border: 1px solid var(--line); }
+.ico .tier { position: absolute; right: -6px; bottom: -6px; min-width: 20px; height: 18px; padding: 0 4px; font-size: 11px; border-radius: 5px; box-shadow: 0 0 0 2px var(--void); }
+.ico .tier.tU { background: var(--deep); }
+.ico.exotic img { border-color: rgba(242,193,78,.6); }
 
-/* Top picks */
-.picks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-.pick { position: relative; border-radius: 16px; overflow: hidden; border: 1px solid var(--line-hi); background: var(--panel); cursor: pointer; display: flex; flex-direction: column; transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
-.pick:hover { transform: translateY(-3px); border-color: var(--cyan); box-shadow: 0 14px 40px -18px rgba(54,196,242,.55); }
+/* ---------- Overview ---------- */
+.picks { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 16px; }
+.pick { position: relative; border-radius: 18px; overflow: hidden; cursor: pointer; display: flex; flex-direction: column; transition: transform .2s ease, box-shadow .2s ease; }
+.pick:hover { transform: translateY(-3px); box-shadow: 0 18px 44px -22px rgba(54,196,242,.6); }
 .pick .art { position: relative; aspect-ratio: 16 / 7; background: var(--grad-soft); overflow: hidden; max-width: 100%; }
-.pick .art img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.pick .art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 35%, rgba(14,23,59,.96)); }
+.pick .art img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .6s ease; }
+.pick:hover .art img { transform: scale(1.04); }
+.pick .art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 35%, rgba(11,18,46,.97)); }
 .pick .slot { position: absolute; top: 12px; left: 12px; z-index: 1; }
-.pick .body { padding: 0 16px 16px; margin-top: -30px; position: relative; z-index: 1; display: grid; gap: 10px; }
-.pick .title { display: flex; align-items: center; gap: 10px; }
-.pick .title img { width: 48px; height: 48px; border-radius: 8px; border: 1px solid var(--line-hi); flex: none; }
+.pick .body { padding: 0 18px 18px; margin-top: -30px; position: relative; z-index: 1; display: grid; gap: 12px; }
+.pick .title { display: flex; align-items: center; gap: 12px; }
+.pick .title img { width: 52px; height: 52px; border-radius: 9px; border: 1px solid var(--line-hi); flex: none; }
 .pick .title h3 { font-size: 20px; line-height: 1.15; }
 .runners { display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px; color: var(--faint); align-items: center; }
 .runners button { background: var(--deep); border: 1px solid var(--line); border-radius: 999px; padding: 3px 9px; color: var(--muted); font-size: 12px; }
-.runners button:hover { border-color: var(--cyan); color: var(--ink); }
+.runners button:hover { border-color: var(--green); color: var(--ink); }
 .perkopts { display: flex; flex-wrap: wrap; gap: 6px; }
 .perk { padding: 3px 9px; border-radius: 8px; background: var(--panel); border: 1px solid var(--line); font-size: 13px; }
 .perk.good { border-color: rgba(51,227,160,.6); background: rgba(51,227,160,.12); color: #c9ffe8; }
 .perk.good::before { content: "✓ "; color: var(--green); }
-
-/* Element cards */
-.elements { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; }
-.elcard { padding: 14px; border-radius: var(--r); background: rgba(14,23,59,.78); border: 1px solid var(--line); display: grid; gap: 10px; text-align: left; position: relative; overflow: hidden; }
-.elcard::before { content: ""; position: absolute; inset: -40% -40% auto auto; width: 140px; height: 140px; border-radius: 50%; background: currentColor; opacity: .08; filter: blur(10px); }
+.elements { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(190px, 100%), 1fr)); gap: 10px; }
+.elcard { padding: 14px; border-radius: var(--r); background: var(--glass); border: 1px solid var(--line); display: grid; gap: 10px; text-align: left; position: relative; overflow: hidden; backdrop-filter: blur(6px); transition: border-color .2s ease; }
+.elcard::before { content: ""; position: absolute; inset: -40% -40% auto auto; width: 140px; height: 140px; border-radius: 50%; background: currentColor; opacity: .09; filter: blur(14px); }
+.elcard::after { content: ""; position: absolute; inset: 0 auto 0 0; width: 2px; background: currentColor; opacity: .6; }
 button.elcard:hover { border-color: currentColor; }
 .elcard .head { display: flex; align-items: center; justify-content: space-between; font: 600 13px var(--display); letter-spacing: .12em; text-transform: uppercase; }
 .elcard .w { display: flex; align-items: center; gap: 10px; color: var(--ink); min-width: 0; }
 .elcard .w img { width: 40px; height: 40px; border-radius: 7px; flex: none; }
 .elcard .w > div { min-width: 0; }
-.nm { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sm { font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-/* Quick links */
-.quick { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
-.qlink { display: grid; gap: 4px; text-align: left; padding: 14px 16px; border-radius: var(--r); background: rgba(14,23,59,.7); border: 1px solid var(--line); }
-.qlink:hover { border-color: var(--cyan); background: var(--panel-hi); }
+.quick { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); gap: 10px; }
+.qlink { position: relative; display: grid; gap: 4px; text-align: left; padding: 14px 16px; border-radius: var(--r); background: var(--glass); border: 1px solid var(--line); backdrop-filter: blur(6px); transition: border-color .2s ease, background .2s ease; }
+.qlink:hover { border-color: rgba(51,227,160,.55); background: var(--glass-hi); }
 .qlink b { font: 600 15px var(--display); letter-spacing: .02em; }
 .qlink span { font-size: 13px; color: var(--muted); }
-.qlink .n { font: 700 22px/1 var(--display); color: var(--ink); }
+.qlink .n { font: 700 22px/1 var(--display); color: var(--green); }
+.qlink::after { content: "→"; position: absolute; right: 16px; top: 14px; color: var(--faint); transition: transform .2s ease, color .2s ease; }
+.qlink:hover::after { color: var(--green); transform: translateX(3px); }
 
-/* Type highlight cards */
-.types { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 12px; }
-.tcard { border-radius: 14px; background: rgba(14,23,59,.72); border: 1px solid var(--line); padding: 14px; display: grid; gap: 10px; align-content: start; }
-button.tcard:hover { border-color: var(--line-hi); }
+/* ---------- Weapons ---------- */
+.types { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(330px, 100%), 1fr)); gap: 12px; }
+.tcard { border-radius: 14px; background: var(--glass); border: 1px solid var(--line); padding: 14px; display: grid; gap: 10px; align-content: start; backdrop-filter: blur(6px); }
+button.tcard:hover { border-color: rgba(51,227,160,.55); }
 .tcard header { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
 .tcard h3 { font-size: 17px; font-weight: 600; }
 .tcard header .small { color: var(--faint); white-space: nowrap; }
 .mini { display: grid; grid-template-columns: 18px 40px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 10px; background: transparent; border: 1px solid transparent; text-align: left; width: 100%; }
-.mini:hover { background: var(--panel-hi); border-color: var(--line-hi); }
+.mini:hover { background: var(--glass-hi); border-color: rgba(51,227,160,.55); }
 .mini .rk { font: 700 13px var(--display); color: var(--faint); text-align: center; }
 .mini img, .mini .ph { width: 40px; height: 40px; border-radius: 7px; }
 .mini .right { display: flex; align-items: center; gap: 8px; }
 .mini .right b { font: 700 16px var(--display); min-width: 28px; text-align: right; }
-.linkbtn { background: none; border: 0; padding: 4px 0 0; color: var(--cyan); font-size: 13px; font-weight: 600; text-align: left; justify-self: start; }
-.linkbtn:hover { text-decoration: underline; }
-
-/* Exotic grid */
-.exotics { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
-.exitem { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 12px; border-radius: var(--r); background: linear-gradient(135deg, rgba(242,193,78,.09), rgba(14,23,59,.8) 55%); border: 1px solid rgba(242,193,78,.25); text-align: left; }
-.exitem:hover { border-color: var(--gold); }
+.subchips { display: flex; flex-wrap: wrap; gap: 5px; }
+/* One scrolling line per chip row keeps type cards short. */
+.tcard .subchips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent); mask-image: linear-gradient(90deg, #000 88%, transparent); padding-right: 24px; }
+.tcard .subchips::-webkit-scrollbar { display: none; }
+.subchip { flex: none; display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 2px 9px; font-size: 12px; color: var(--muted); }
+.subchip i { width: 7px; height: 7px; border-radius: 50%; background: var(--dot); }
+.subchip span { font: 500 11px var(--mono); color: var(--faint); }
+.subchip:hover { border-color: var(--green); color: var(--ink); }
+.subchip[aria-pressed="true"] { border-color: var(--green); background: rgba(51,227,160,.12); color: #c9ffe8; }
+.exotics { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: 10px; }
+.exitem { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 12px; border-radius: var(--r); background: linear-gradient(135deg, rgba(242,193,78,.09), rgba(14,23,59,.8) 55%); border: 1px solid rgba(242,193,78,.25); text-align: left; backdrop-filter: blur(6px); }
+.exitem:hover { border-color: var(--gold); box-shadow: 0 10px 30px -20px rgba(242,193,78,.7); }
 .exitem img, .exitem .ph { width: 48px; height: 48px; border-radius: 8px; }
 
-/* Toolbar */
-.toolbar { display: grid; gap: 10px; padding: 14px; border-radius: 14px; background: rgba(10,17,48,.88); border: 1px solid var(--line); margin-bottom: 14px; }
+/* ---------- Full list: toolbar ---------- */
+.toolbar { display: grid; gap: 12px; padding: 14px; border-radius: 16px; margin-bottom: 16px; }
 .tb-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.tb-row .label { font-size: 12px; color: var(--faint); margin-right: 2px; }
-.toolbar input[type=search] { flex: 1 1 240px; min-width: 0; background: var(--void); border: 1px solid var(--line-hi); border-radius: 9px; padding: 8px 12px; }
+.tb-row .label { font: 600 11px var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--faint); margin-right: 2px; }
+/* Filters and sorting fold away on phones */
+.tb-more { display: grid; gap: 12px; }
+.tb-more[open] { display: grid; }
+.tb-more > summary { list-style: none; cursor: pointer; display: none; align-items: center; gap: 10px; font: 600 12px var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.tb-more > summary::-webkit-details-marker { display: none; }
+.tb-more .chev { width: 20px; height: 20px; }
+.tb-more .chev::before { width: 5px; height: 5px; border-width: 1.5px; }
+.tb-more[open] > .tb-row, .tb-more[open] > .tb-split { margin-top: 0; }
+@media (max-width: 700px) { .tb-more > summary { display: flex; } }
+.tb-split { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; }
+.tb-split > div { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.searchbox { position: relative; flex: 1 1 280px; min-width: 0; display: flex; }
+.searchbox svg { position: absolute; left: 12px; top: 50%; width: 16px; height: 16px; transform: translateY(-50%); fill: none; stroke: var(--faint); stroke-width: 2; pointer-events: none; }
+.toolbar input[type=search] { width: 100%; background: var(--void); border: 1px solid var(--line-hi); border-radius: 10px; padding: 9px 12px 9px 36px; }
+.toolbar input[type=search]:focus { border-color: var(--green); outline: none; box-shadow: 0 0 0 3px rgba(51,227,160,.15); }
 .toolbar select { background: var(--void); border: 1px solid var(--line-hi); border-radius: 9px; padding: 7px 10px; max-width: 100%; }
-.seg { display: inline-flex; border: 1px solid var(--line-hi); border-radius: 10px; overflow: hidden; flex: none; }
-.seg button { background: transparent; border: 0; padding: 7px 14px; color: var(--muted); font-weight: 600; }
+.seg { display: inline-flex; border: 1px solid var(--line-hi); border-radius: 10px; overflow: hidden; flex: none; background: rgba(5,9,25,.4); }
+.seg button { background: transparent; border: 0; padding: 7px 14px; color: var(--muted); font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+.seg button:hover { color: var(--ink); }
 .seg button[aria-pressed="true"] { background: var(--grad); color: #04102a; }
-.views { display: flex; flex-wrap: wrap; gap: 6px; }
-.view { border: 1px solid var(--line-hi); background: var(--deep); border-radius: 999px; padding: 5px 12px; font-size: 13px; color: var(--muted); }
-.view:hover { color: var(--ink); border-color: var(--cyan); }
-.view[aria-pressed="true"] { background: var(--grad-soft); color: var(--ink); border-color: var(--cyan); }
+.seg.icons button { padding: 7px 10px; }
+.seg.icons svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
+.views { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.view { border: 1px solid var(--line-hi); background: var(--deep); border-radius: 999px; padding: 5px 12px; font-size: 13px; color: var(--muted); white-space: nowrap; flex: none; }
+.view:hover { color: var(--ink); border-color: var(--green); }
+.view[aria-pressed="true"] { background: var(--grad-soft); color: var(--ink); border-color: var(--green); }
 details.ms { position: relative; }
 details.ms summary { list-style: none; display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border: 1px solid var(--line-hi); border-radius: 9px; background: var(--void); font-size: 14px; cursor: pointer; white-space: nowrap; user-select: none; }
 details.ms summary::-webkit-details-marker { display: none; }
 details.ms summary::after { content: "▾"; color: var(--faint); font-size: 11px; }
-details.ms[open] summary, details.ms.active summary { border-color: var(--cyan); }
+details.ms[open] summary, details.ms.active summary { border-color: var(--green); }
 details.ms summary .n { background: var(--grad); color: #04102a; border-radius: 999px; font: 700 11px/1 var(--mono); padding: 3px 6px; }
 .ms .pop { position: absolute; z-index: 8; top: calc(100% + 6px); left: 0; min-width: 230px; max-width: min(320px, 86vw); max-height: 320px; overflow: auto; padding: 8px; border-radius: 12px; background: var(--panel); border: 1px solid var(--line-hi); box-shadow: 0 18px 50px rgba(0,0,0,.5); display: grid; gap: 2px; }
 .ms .pop label { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 6px 8px; border-radius: 8px; font-size: 14px; cursor: pointer; }
 .ms .pop label:hover { background: var(--panel-hi); }
 .ms .pop label span:last-child { font: 500 12px var(--mono); color: var(--faint); }
-.ms .pop input { accent-color: var(--cyan); }
-.ms .pop .clear { justify-self: end; background: none; border: 0; color: var(--cyan); font-size: 12px; padding: 4px 8px; }
-.result { margin-left: auto; font-size: 13px; color: var(--muted); }
+.ms .pop input { accent-color: var(--green); }
+.ms .pop .clear { justify-self: end; background: none; border: 0; color: var(--green); font-size: 12px; padding: 4px 8px; }
+.result { margin-left: auto; font: 600 13px var(--display); letter-spacing: .06em; color: var(--muted); }
 .active-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.active-chips:empty { display: none; }
 .fchip { display: inline-flex; gap: 6px; align-items: center; background: var(--grad-soft); border: 1px solid var(--line-hi); border-radius: 999px; padding: 3px 6px 3px 10px; font-size: 12.5px; }
 .fchip button { background: none; border: 0; color: var(--muted); padding: 0 4px; font-size: 14px; line-height: 1; }
 .fchip button:hover { color: var(--ink); }
+.more { margin-top: 16px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
 
-/* List rows */
+/* ---------- Rows: wide, one item per line ---------- */
 .list { display: grid; gap: 6px; }
-.row { display: grid; grid-template-columns: 44px minmax(0, 2.2fr) minmax(0, 1.1fr) 54px 92px 84px; align-items: center; gap: 14px; padding: 8px 12px; border-radius: 10px; background: rgba(14,23,59,.6); border: 1px solid transparent; text-align: left; width: 100%; }
-.row:hover { border-color: var(--line-hi); background: var(--panel-hi); }
-.row img, .row .ph { width: 44px; height: 44px; border-radius: 7px; display: block; }
-.group { display: grid; gap: 8px; }
-.group + .group { margin-top: 18px; }
-.ghead { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; padding: 0 4px; }
+.row { position: relative; display: grid; grid-template-columns: 48px minmax(0, 1fr) auto auto; align-items: center; gap: 14px; padding: 9px 14px 9px 16px; border-radius: 12px; background: rgba(11,18,46,.55); border: 1px solid var(--line); text-align: left; width: 100%; overflow: hidden; transition: border-color .15s ease, background .15s ease; }
+.row::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; border-radius: 0 3px 3px 0; background: var(--line-hi); }
+.row.v-keep::before { background: var(--keep); box-shadow: 0 0 10px rgba(51,227,160,.5); }
+.row.v-shard::before { background: var(--shard); }
+.row.v-review::before { background: var(--review); }
+.row:hover { border-color: rgba(51,227,160,.55); background: var(--glass-hi); }
+.row .perkline { display: flex; gap: 4px; flex-wrap: nowrap; overflow: hidden; margin-top: 4px; }
+.row .perkline span { font-size: 11.5px; padding: 1px 7px; border-radius: 6px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+.row .perkline span.good { border-color: rgba(51,227,160,.45); color: #c9ffe8; background: rgba(51,227,160,.08); }
+.row .perkline:empty { display: none; }
+.row .c-verdict { min-width: 62px; display: flex; justify-content: flex-end; }
+.list.rows { grid-template-columns: repeat(auto-fill, minmax(min(520px, 100%), 1fr)); gap: 8px 12px; }
+#exlist .row { padding-block: 11px; }
+/* Groups in the full list */
+.group { display: grid; gap: 10px; }
+.group + .group { margin-top: 20px; }
+details.group > summary { list-style: none; cursor: pointer; }
+details.group > summary::-webkit-details-marker { display: none; }
+.ghead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 0 4px; }
 .ghead h3 { font-size: 17px; font-weight: 600; }
-.ghead .small { color: var(--faint); }
+.ghead .small { color: var(--green); }
+.ghead .chev { width: 20px; height: 20px; }
+.ghead .chev::before { width: 5px; height: 5px; border-width: 1.5px; }
 .group .group { margin-left: 14px; padding-left: 14px; border-left: 1px solid var(--line); }
 .group .group .ghead h3 { font-size: 15px; color: var(--muted); }
-.empty { padding: 32px; text-align: center; color: var(--muted); border: 1px dashed var(--line-hi); border-radius: var(--r); }
-.more { margin-top: 12px; display: flex; justify-content: center; }
-.btn { background: var(--panel-hi); border: 1px solid var(--line-hi); border-radius: 10px; padding: 9px 16px; font-weight: 600; }
-.btn:hover { border-color: var(--cyan); }
-.btn.primary { background: var(--grad); color: #04102a; border: 0; }
 
-/* Armor */
+/* ---------- Tiles: tall, many per line, like an inventory ---------- */
+.list.tilegrid { grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 12px; }
+.itile { position: relative; display: grid; grid-template-rows: auto 1fr; padding: 0; border-radius: 12px; overflow: hidden; text-align: left; background: rgba(11,18,46,.6); border: 1px solid var(--line); transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease; }
+.itile:hover { transform: translateY(-3px); border-color: rgba(51,227,160,.6); box-shadow: 0 14px 30px -18px rgba(51,227,160,.6); }
+.itile.exotic { border-color: rgba(242,193,78,.45); }
+.itile .art { position: relative; aspect-ratio: 1; background: var(--grad-soft); }
+.itile .art img, .itile .art .ph { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 0; }
+.itile .art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 60%, rgba(5,9,25,.65)); }
+.itile .art .tier { position: absolute; top: 7px; left: 7px; z-index: 1; height: 20px; min-width: 22px; font-size: 12px; }
+.itile .art .tier.tU { background: rgba(5,9,25,.75); }
+.itile .art .elc { position: absolute; top: 9px; right: 9px; z-index: 1; width: 12px; height: 12px; border-radius: 50%; background: currentColor; box-shadow: 0 0 10px currentColor, 0 0 0 2px rgba(5,9,25,.7); }
+.itile .art .flags { position: absolute; bottom: 6px; left: 7px; z-index: 1; display: flex; gap: 4px; font-size: 11px; }
+.itile .art .sc { position: absolute; right: 8px; bottom: 6px; z-index: 1; font: 700 18px/1 var(--display); text-shadow: 0 1px 6px rgba(0,0,0,.8); }
+.itile .art .sc.hi { color: var(--green); }
+.itile .tb { display: grid; gap: 2px; padding: 8px 10px 10px; min-width: 0; align-content: start; }
+.itile .tb .nm { font-size: 13.5px; }
+.itile .tb .sm { font-size: 11.5px; }
+.itile .vbar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--line-hi); }
+.itile.v-keep .vbar { background: var(--grad); }
+.itile.v-shard .vbar { background: var(--shard); }
+.itile.v-review .vbar { background: var(--review); }
+
+/* ---------- Armor ---------- */
 .armor-best { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
-.acard { padding: 12px; border-radius: var(--r); background: rgba(14,23,59,.78); border: 1px solid var(--line); display: grid; gap: 10px; text-align: left; align-content: start; }
-.acard:hover { border-color: var(--line-hi); }
+.acard { padding: 12px; border-radius: var(--r); background: var(--glass); border: 1px solid var(--line); display: grid; gap: 10px; text-align: left; align-content: start; backdrop-filter: blur(6px); }
+.acard:hover { border-color: rgba(51,227,160,.55); }
 .acard .top { display: flex; gap: 10px; align-items: center; min-width: 0; }
 .acard .top img, .acard .top .ph { width: 44px; height: 44px; border-radius: 7px; flex: none; }
 .acard .top > div { min-width: 0; }
@@ -242,14 +402,8 @@ details.ms summary .n { background: var(--grad); color: #04102a; border-radius: 
 .stat .track span { display: block; height: 100%; background: var(--grad); }
 .stat b { color: var(--ink); font: 500 12px var(--mono); text-align: right; }
 .stat.want { color: var(--green); }
-.sets { display: flex; flex-wrap: wrap; gap: 8px; }
-.set { padding: 8px 12px; border-radius: 10px; background: rgba(14,23,59,.7); border: 1px solid var(--line); font-size: 13.5px; }
-.set b { font: 700 15px var(--display); margin-left: 6px; }
-.set.full { border-color: rgba(51,227,160,.5); }
-
-/* Armor set cards */
-.setgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; }
-.setcard { padding: 14px 16px; border-radius: 14px; background: rgba(14,23,59,.72); border: 1px solid var(--line); display: grid; gap: 12px; align-content: start; }
+.setgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr)); gap: 12px; }
+.setcard { padding: 14px 16px; border-radius: 14px; background: var(--glass); border: 1px solid var(--line); display: grid; gap: 12px; align-content: start; backdrop-filter: blur(6px); }
 .setcard.on { border-color: rgba(51,227,160,.45); }
 .setcard header { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
 .setcard h3 { font-size: 17px; font-weight: 600; }
@@ -267,17 +421,16 @@ details.ms summary .n { background: var(--grad); color: #04102a; border-radius: 
 details.full summary { cursor: pointer; color: var(--green); font-size: 12.5px; margin-top: 4px; }
 details.full div { white-space: pre-line; color: var(--muted); font-size: 12.5px; margin-top: 6px; }
 
-/* RADS */
-.rads-head { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+/* ---------- RADS ---------- */
 .rads-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--muted); }
-.rads { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-.rad { border-radius: 18px; overflow: hidden; background: var(--panel); border: 1px solid var(--line-hi); display: flex; flex-direction: column; min-width: 0; }
-.rad.top { grid-column: 1 / -1; border-color: rgba(51,227,160,.5); box-shadow: 0 20px 60px -30px rgba(51,227,160,.45); }
+.rads { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(480px, 100%), 1fr)); gap: 16px; }
+.rad { border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.rad.top { grid-column: 1 / -1; box-shadow: 0 20px 60px -30px rgba(51,227,160,.45); }
 .rad .banner { position: relative; aspect-ratio: 16 / 7; max-width: 100%; background: var(--grad-soft); overflow: hidden; }
-.rad.top .banner { aspect-ratio: 16 / 5; }
+.rad.top .banner { aspect-ratio: 16 / 5; max-height: 340px; width: 100%; }
 .rad .banner img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .6s ease; }
 .rad:hover .banner img { transform: scale(1.03); }
-.rad .banner::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(5,9,25,.15) 0%, rgba(5,9,25,.1) 40%, rgba(14,23,59,.97) 100%); }
+.rad .banner::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(5,9,25,.15) 0%, rgba(5,9,25,.1) 40%, rgba(11,18,46,.97) 100%); }
 .rad .chips-tl { position: absolute; top: 12px; left: 12px; z-index: 1; display: flex; gap: 6px; }
 .rad .verdict-tag { position: absolute; top: 12px; right: 12px; z-index: 1; padding: 4px 12px; border-radius: 999px; font: 700 12px/1.2 var(--display); letter-spacing: .1em; text-transform: uppercase; backdrop-filter: blur(6px); }
 .verdict-tag.farm { background: rgba(51,227,160,.2); color: var(--green); border: 1px solid rgba(51,227,160,.6); }
@@ -327,26 +480,13 @@ details.full div { white-space: pre-line; color: var(--muted); font-size: 12.5px
 .kitw.empty { color: var(--faint); font-size: 12.5px; display: block; }
 .wanted { font-size: 12.5px; color: var(--muted); }
 .wanted b { color: var(--gold); font-weight: 600; }
-@media (max-width: 700px) { .kit { grid-template-columns: minmax(0, 1fr); } }
 .radset { display: grid; gap: 8px; padding: 12px; border-radius: 12px; background: rgba(5,9,25,.4); border: 1px solid var(--line); }
 .radset .top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
 .radset .bon { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 13px; color: var(--muted); align-items: center; }
 .radset .bon span { display: inline-flex; gap: 6px; align-items: center; }
 .radset .own { font-size: 12.5px; color: var(--muted); }
-@media (max-width: 960px) {
-  .rads { grid-template-columns: minmax(0, 1fr); }
-  .rad.top .body { grid-template-columns: minmax(0, 1fr); }
-  .rad.top .banner { aspect-ratio: 16 / 7; }
-}
-@media (max-width: 560px) {
-  .rad .rk, .rad.top .rk { font-size: 36px; }
-  .rad .title h3, .rad.top .title h3 { font-size: 20px; }
-  .rad .farm b { font-size: 26px; }
-  .lootrow { grid-template-columns: 34px minmax(0, 1fr) auto; }
-  .lootrow .tier { display: none; }
-}
 
-/* DIM tags and loadouts */
+/* ---------- DIM tags, loadouts and moving items ---------- */
 .dtag { display: inline-flex; align-items: center; font: 600 10px/1.4 var(--display); letter-spacing: .08em; text-transform: uppercase; padding: 0 6px; border-radius: 5px; margin-left: 6px; vertical-align: 2px; border: 1px solid currentColor; }
 .dtag.favorite, .tagbtn.favorite[aria-pressed="true"] { color: #ff79b4; } .dtag.keep, .tagbtn.keep[aria-pressed="true"] { color: var(--green); }
 .dtag.infuse, .tagbtn.infuse[aria-pressed="true"] { color: var(--cyan); } .dtag.junk, .tagbtn.junk[aria-pressed="true"] { color: var(--shard); }
@@ -359,8 +499,6 @@ details.full div { white-space: pre-line; color: var(--muted); font-size: 12.5px
 .dimpanel textarea { width: 100%; resize: vertical; background: var(--void); border: 1px solid var(--line-hi); border-radius: 9px; padding: 8px 10px; font: 14px var(--body); color: var(--ink); }
 button.chip { cursor: pointer; }
 button.chip:hover { border-color: var(--green); }
-
-/* Moving items */
 .movebtns { display: flex; flex-wrap: wrap; gap: 6px; }
 .movebtn { border: 1px solid rgba(51,227,160,.45); background: rgba(51,227,160,.08); color: var(--ink); border-radius: 999px; padding: 4px 12px; font-size: 13px; font-weight: 600; }
 .movebtn:hover:not(:disabled) { background: rgba(51,227,160,.18); }
@@ -369,12 +507,43 @@ button.chip:hover { border-color: var(--green); }
 .pullrow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12.5px; color: var(--muted); }
 .lorow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 
-/* Shard */
-.dimbox { padding: 18px; border-radius: 14px; border: 1px solid var(--line-hi); background: var(--grad-soft); display: grid; gap: 10px; }
+/* ---------- Shard ---------- */
+.actiongrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 14px; align-items: start; }
+.dimbox { padding: 18px; border-radius: 16px; border: 1px solid var(--line-hi); background: var(--grad-soft); display: grid; gap: 10px; backdrop-filter: blur(6px); }
 .dimbox code { display: block; max-height: 90px; overflow: auto; font: 500 12px/1.5 var(--mono); color: var(--muted); background: rgba(5,9,25,.6); border-radius: 8px; padding: 10px; word-break: break-all; }
 .dimbox .acts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.reason { padding: 0 4px 10px; font-size: 13px; color: var(--muted); }
+.planbox { display: grid; gap: 12px; padding: 18px; border-radius: 16px; border: 1px solid rgba(242,193,78,.45); background: linear-gradient(135deg, rgba(242,193,78,.08), rgba(14,23,59,.7) 60%); backdrop-filter: blur(6px); }
+.planbox .counts { display: flex; flex-wrap: wrap; gap: 8px; }
+.planlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 6px 14px; max-height: 420px; overflow: auto; padding: 4px; }
+.planlist div { display: flex; gap: 8px; align-items: baseline; font-size: 13.5px; min-width: 0; }
+.planlist div span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.planlist .lk, .planlist .ul { flex: none; min-width: 54px; font-weight: 600; } .planlist .lk { color: var(--green); } .planlist .ul { color: var(--shard); }
+.confirmrow { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 
-/* Wrapped */
+/* ---------- Settings ---------- */
+.setform { display: grid; gap: 22px; max-width: 1100px; }
+.setform fieldset { border: 1px solid var(--line); border-radius: 16px; padding: 18px; margin: 0; display: grid; gap: 12px; background: var(--glass); backdrop-filter: blur(6px); min-width: 0; }
+.setform legend { font: 600 15px var(--display); padding: 0 6px; }
+.presets { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px; }
+.presets label { display: grid; gap: 4px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line-hi); background: var(--deep); cursor: pointer; }
+.presets label:has(input:checked) { border-color: var(--green); background: rgba(51,227,160,.08); }
+.presets input { accent-color: var(--green); }
+.presets b { font: 600 15px var(--display); }
+.presets span { font-size: 12.5px; color: var(--muted); }
+.typegrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: 8px 16px; }
+.typegrid label { display: flex; justify-content: space-between; gap: 10px; align-items: center; font-size: 14px; }
+.typegrid select, .setform select, .setform textarea { background: var(--void); border: 1px solid var(--line-hi); border-radius: 9px; padding: 6px 10px; color: var(--ink); max-width: 100%; }
+.setform textarea { width: 100%; font: 14px var(--body); }
+.toggles { display: grid; gap: 8px; }
+.toggles label { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; }
+.toggles input { accent-color: var(--green); margin-top: 4px; }
+.prestable { width: 100%; border-collapse: collapse; font-size: 13px; }
+.prestable th, .prestable td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+.prestable th { color: var(--faint); font-weight: 600; }
+.tablewrap { overflow-x: auto; }
+
+/* ---------- Wrapped ---------- */
 .slides { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-auto-flow: row dense; gap: 14px; }
 .slide { grid-column: span 3; position: relative; overflow: hidden; border-radius: 20px; padding: 26px; min-height: 230px; display: grid; gap: 12px; align-content: start; border: 1px solid var(--line-hi);
   background: radial-gradient(500px 260px at 100% 0%, rgba(51,227,160,.22), transparent 70%), radial-gradient(500px 300px at 0% 100%, rgba(77,125,255,.28), transparent 70%), var(--deep); }
@@ -383,6 +552,7 @@ button.chip:hover { border-color: var(--green); }
 .slide.alt { background: radial-gradient(520px 280px at 0% 0%, rgba(54,196,242,.24), transparent 70%), radial-gradient(460px 300px at 100% 100%, rgba(51,227,160,.20), transparent 70%), var(--deep); }
 .slide.gold { background: radial-gradient(520px 280px at 100% 0%, rgba(242,193,78,.18), transparent 70%), radial-gradient(460px 300px at 0% 100%, rgba(77,125,255,.24), transparent 70%), var(--deep); }
 .slide .kicker { font: 600 12px/1 var(--display); letter-spacing: .18em; text-transform: uppercase; color: var(--cyan); }
+.slide.alt .kicker { color: var(--green); }
 .slide .huge { font: 700 clamp(44px, 7vw, 76px)/0.95 var(--display); letter-spacing: -.01em; }
 .slide .big { font: 700 clamp(26px, 3.6vw, 38px)/1.08 var(--display); }
 .slide p { color: var(--muted); max-width: 56ch; }
@@ -410,10 +580,10 @@ button.chip:hover { border-color: var(--green); }
 .elshare { display: flex; height: 18px; border-radius: 99px; overflow: hidden; }
 .elshare span { display: block; height: 100%; }
 
-/* Drawer */
+/* ---------- Drawer ---------- */
 .scrim { position: fixed; inset: 0; background: rgba(2,4,14,.62); backdrop-filter: blur(3px); z-index: 20; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
 .scrim.open { opacity: 1; pointer-events: auto; }
-aside.drawer { position: fixed; z-index: 21; top: 0; right: 0; bottom: 0; width: min(520px, 100%); background: var(--deep); border-left: 1px solid var(--line-hi); transform: translateX(102%); transition: transform .28s cubic-bezier(.2,.8,.2,1); overflow-y: auto; padding-bottom: env(safe-area-inset-bottom, 0px); }
+aside.drawer { position: fixed; z-index: 21; top: 0; right: 0; bottom: 0; width: min(540px, 100%); background: var(--deep); border-left: 1px solid var(--line-hi); box-shadow: -30px 0 80px -30px rgba(54,196,242,.35); transform: translateX(102%); transition: transform .28s cubic-bezier(.2,.8,.2,1); overflow-y: auto; padding-bottom: env(safe-area-inset-bottom, 0px); }
 aside.drawer.open { transform: none; }
 .d-art { position: relative; aspect-ratio: 16 / 8; background: var(--grad-soft); overflow: hidden; max-width: 100%; }
 .d-art img.shot { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -441,198 +611,13 @@ aside.drawer.open { transform: none; }
 .reasons { margin: 0; padding-left: 18px; color: var(--muted); display: grid; gap: 4px; font-size: 14px; }
 .notes { padding: 12px 14px; border-radius: 10px; border-left: 3px solid var(--cyan); background: var(--panel); color: var(--muted); font-size: 14px; }
 
-footer { padding-block: 24px 48px; color: var(--faint); font-size: 13px; border-top: 1px solid var(--line); }
-footer .wrap { display: grid; gap: 8px; }
-footer p { max-width: 90ch; }
-
-@media (max-width: 960px) {
-  .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .picks { grid-template-columns: minmax(0, 1fr); }
-  .armor-best { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .row { grid-template-columns: 44px minmax(0, 1fr) 46px 74px; }
-  .row .c-el, .row .c-verdict { display: none; }
-  .slide, .slide.third { grid-column: span 6; }
-  .chars { grid-template-columns: minmax(0, 1fr); }
-}
-@media (max-width: 560px) {
-  .wrap { padding-inline: 16px; }
-  .armor-best { grid-template-columns: minmax(0, 1fr); }
-  .types { grid-template-columns: minmax(0, 1fr); }
-  .tile .big { font-size: 28px; }
-  .slide { padding: 20px; min-height: 0; }
-  .barrow { grid-template-columns: 100px minmax(0, 1fr) 56px; }
-  aside.drawer { top: auto; height: 88vh; width: 100%; border-left: 0; border-top: 1px solid var(--line-hi); border-radius: 18px 18px 0 0; transform: translateY(102%); }
-  .breakdown b { font-size: 18px; }
-  .perkcol { grid-template-columns: minmax(0, 1fr); gap: 4px; }
-  .perkcol .cap { padding-top: 0; }
-  .facts { grid-template-columns: minmax(0, 1fr); }
-}
-
-/* Sub-category chips on type cards */
-.subchips { display: flex; flex-wrap: wrap; gap: 5px; }
-.subchip { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 2px 9px; font-size: 12px; color: var(--muted); }
-.subchip i { width: 7px; height: 7px; border-radius: 50%; background: var(--dot); }
-.subchip span { font: 500 11px var(--mono); color: var(--faint); }
-.subchip:hover { border-color: var(--green); color: var(--ink); }
-.subchip[aria-pressed="true"] { border-color: var(--green); background: rgba(51,227,160,.12); color: #c9ffe8; }
-
-/* Full list: two rows side by side on wide screens */
-#exlist .list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 10px; }
-#exlist .row { grid-template-columns: 44px minmax(0, 1fr) 30px 76px 62px; gap: 10px; }
-#exlist .row .c-el { display: none; }
-#exlist .row .el-inline { display: inline-flex; }
-#exlist .meter { width: 48px; }
-#exlist .verdict { font-size: 11px; padding: 1px 7px; }
-.el-inline { display: none; }
-
-/* Green accents */
-.sec-head h2::before { content: ""; display: inline-block; width: 4px; height: .8em; border-radius: 2px; background: var(--green); box-shadow: 0 0 10px rgba(51,227,160,.6); margin-right: 10px; vertical-align: -1px; }
-.score b.hi { color: var(--green); }
-.tile.good .big { color: var(--green); }
-.linkbtn { color: var(--green); }
-.row:hover, .mini:hover, .qlink:hover, .acard:hover, button.tcard:hover { border-color: rgba(51,227,160,.55); }
-nav.tabs button[aria-selected="true"] .count { color: var(--green); }
-.slide.alt .kicker, .ghead h3 + .small { color: var(--green); }
-.qlink .n { color: var(--green); }
-details.ms summary .n, .view[aria-pressed="true"] { border-color: var(--green); }
-@media (max-width: 960px) {
-  #exlist .list { grid-template-columns: minmax(0, 1fr); }
-  #exlist .row { grid-template-columns: 44px minmax(0, 1fr) 30px 74px; }
-  #exlist .row .c-verdict { display: none; }
-}
-
-/* Panels use display:grid, which would override the hidden attribute and stack every tab. */
-[hidden] { display: none !important; }
-body { overflow-x: clip; }
-/* Fill wide monitors; grids add columns instead of stretching a few. */
-.wrap { max-width: 1680px; padding-inline: clamp(16px, 3vw, 40px); }
-.types { grid-template-columns: repeat(auto-fill, minmax(min(330px, 100%), 1fr)); }
-.setgrid { grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr)); }
-.exotics { grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr)); }
-.quick { grid-template-columns: repeat(auto-fill, minmax(min(230px, 100%), 1fr)); }
-.elements { grid-template-columns: repeat(auto-fill, minmax(min(170px, 100%), 1fr)); }
-.rads { grid-template-columns: repeat(auto-fill, minmax(min(480px, 100%), 1fr)); }
-.picks { grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); }
-@media (min-width: 1500px) { #exlist .list { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-@media (max-width: 960px) { .picks { grid-template-columns: minmax(0, 1fr); } }
-@media (max-width: 420px) { .tiles { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; } .tile { padding: 12px; } .breakdown { gap: 6px; } }
-body.vr-booting > header.hero, body.vr-booting > nav.tabs, body.vr-booting > main, body.vr-booting > footer { display: none; }
-
-/* Lock plan and settings (local app and web app) */
-.planbox { display: grid; gap: 12px; padding: 18px; border-radius: 14px; border: 1px solid rgba(242,193,78,.45); background: linear-gradient(135deg, rgba(242,193,78,.08), rgba(14,23,59,.7) 60%); }
-.planbox .counts { display: flex; flex-wrap: wrap; gap: 8px; }
-.planlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 6px 14px; max-height: 420px; overflow: auto; padding: 4px; }
-.planlist div { display: flex; gap: 8px; align-items: baseline; font-size: 13.5px; min-width: 0; }
-.planlist div span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.planlist .lk, .planlist .ul { flex: none; min-width: 54px; font-weight: 600; } .planlist .lk { color: var(--green); } .planlist .ul { color: var(--shard); }
-.confirmrow { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-.btn.danger { background: rgba(255,122,122,.16); border-color: rgba(255,122,122,.7); }
-.btn:disabled { opacity: .5; cursor: default; }
-.setform { display: grid; gap: 22px; }
-.setform fieldset { border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin: 0; display: grid; gap: 12px; background: rgba(14,23,59,.55); min-width: 0; }
-.setform legend { font: 600 15px var(--display); padding: 0 6px; }
-.presets { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px; }
-.presets label { display: grid; gap: 4px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line-hi); background: var(--deep); cursor: pointer; }
-.presets label:has(input:checked) { border-color: var(--green); background: rgba(51,227,160,.08); }
-.presets input { accent-color: var(--green); }
-.presets b { font: 600 15px var(--display); }
-.presets span { font-size: 12.5px; color: var(--muted); }
-.typegrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: 8px 16px; }
-.typegrid label { display: flex; justify-content: space-between; gap: 10px; align-items: center; font-size: 14px; }
-.typegrid select, .setform select, .setform textarea { background: var(--void); border: 1px solid var(--line-hi); border-radius: 9px; padding: 6px 10px; color: var(--ink); max-width: 100%; }
-.setform textarea { width: 100%; font: 14px var(--body); }
-.toggles { display: grid; gap: 8px; }
-.toggles label { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; }
-.toggles input { accent-color: var(--green); margin-top: 4px; }
-.prestable { width: 100%; border-collapse: collapse; font-size: 13px; }
-.prestable th, .prestable td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: left; }
-.prestable th { color: var(--faint); font-weight: 600; }
-.tablewrap { overflow-x: auto; }
-
-/* ===== Sleeker theme: calmer surfaces, one accent gradient, a slowly shifting background ===== */
-:root {
-  --line: rgba(60, 82, 160, .28);
-  --line-hi: rgba(84, 110, 200, .42);
-  --glass: rgba(11, 18, 46, .58);
-  --glass-hi: rgba(20, 31, 74, .72);
-  --glow-line: linear-gradient(90deg, transparent, rgba(77,125,255,.55) 20%, rgba(54,196,242,.8) 50%, rgba(51,227,160,.55) 80%, transparent);
-}
-body { background: var(--void); }
-/* Aurora: two soft blue/green clouds that drift and breathe behind everything. */
-body::before {
-  content: ""; position: fixed; inset: -25%; z-index: 0; pointer-events: none;
-  background:
-    radial-gradient(38% 30% at 22% 18%, rgba(77,125,255,.20), transparent 70%),
-    radial-gradient(34% 28% at 82% 12%, rgba(51,227,160,.13), transparent 70%),
-    radial-gradient(40% 34% at 70% 88%, rgba(54,196,242,.10), transparent 70%),
-    radial-gradient(30% 26% at 12% 80%, rgba(51,227,160,.08), transparent 70%);
-  animation: aurora 48s ease-in-out infinite alternate;
-}
-@keyframes aurora {
-  0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); filter: hue-rotate(0deg); }
-  50% { transform: translate3d(4%, -3%, 0) rotate(6deg) scale(1.06); filter: hue-rotate(-18deg); }
-  100% { transform: translate3d(-3%, 4%, 0) rotate(-4deg) scale(1.03); filter: hue-rotate(12deg); }
-}
-#stars { opacity: .8; }
-
-/* Hero */
-header.hero { padding-block: clamp(28px, 5vw, 56px) 22px; }
-.hero .lede { max-width: 70ch; }
-.tile { background: var(--glass); border-color: var(--line); backdrop-filter: blur(6px); }
-.tile::before { opacity: .55; height: 1px; }
-.tile .big { font-size: 32px; }
-
-/* Pills */
-.chips { gap: 6px; }
-.chip { padding: 6px 12px; gap: 8px; border-color: var(--line-hi); background: linear-gradient(180deg, rgba(20,31,74,.65), rgba(11,18,46,.65)); backdrop-filter: blur(6px); box-shadow: inset 0 1px 0 rgba(255,255,255,.04); }
-.chip .k { font: 600 10.5px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }
-.chip b { font-weight: 600; }
-
-/* Tab bar and dividers: a glowing gradient hairline instead of a flat rule */
-nav.tabs { background: rgba(5,9,25,.72); border-bottom: 0; }
-nav.tabs::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--glow-line); box-shadow: 0 0 14px rgba(54,196,242,.35); }
-nav.tabs .wrap { padding-right: 84px; }
-nav.tabs button { transition: color .15s ease; }
-.sub-head::after { height: 1px; background: linear-gradient(90deg, var(--line-hi), transparent); }
-footer { border-top: 0; position: relative; }
+/* ---------- Footer and floating buttons ---------- */
+footer { position: relative; padding-block: 28px 56px; color: var(--faint); font-size: 13px; }
 footer::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--glow-line); opacity: .7; }
-.sec-head h2::before { box-shadow: none; width: 3px; }
-
-/* Calmer cards */
-.pick, .rad { background: var(--glass); border-color: var(--line-hi); backdrop-filter: blur(6px); }
-.elcard, .qlink, .tcard, .acard, .setcard, .set, .toolbar, .exitem, .radset, .dimbox, .planbox, .setform fieldset { backdrop-filter: blur(6px); }
-.elcard, .qlink, .tcard, .acard, .setcard, .set { background: var(--glass); }
-.toolbar { background: rgba(8,13,36,.78); }
-.row { background: rgba(11,18,46,.5); }
-.row:hover { background: var(--glass-hi); }
-.pick:hover { transform: translateY(-2px); box-shadow: 0 14px 40px -22px rgba(54,196,242,.5); }
-
-/* Full list: rows ~10% taller with ~25% more room between them */
-#exlist .list { gap: 8px 12px; }
-#exlist .row { padding-block: 11px; }
-.more { gap: 10px; flex-wrap: wrap; }
-.btn.ghost { background: transparent; }
-
-/* RADS: raids and dungeons ranked separately */
-.radgroups { display: grid; gap: 34px; }
-.radgroup .sub-head { margin-top: 0; }
-.radgroup .sub-head h3 { font-size: 18px; font-weight: 600; }
-
-/* Settings gear: big, fixed in the top right corner */
-.gear { position: fixed; z-index: 7; top: calc(8px + env(safe-area-inset-top, 0px)); right: clamp(10px, 2vw, 22px); width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center;
-  border: 1px solid var(--line-hi); background: rgba(11,18,46,.78); backdrop-filter: blur(10px); color: var(--muted); box-shadow: 0 8px 30px rgba(0,0,0,.45); transition: color .2s ease, border-color .2s ease, transform .4s ease; }
-.gear svg { width: 28px; height: 28px; fill: currentColor; }
-.gear:hover { color: var(--ink); border-color: var(--cyan); transform: rotate(45deg); }
-.gear[aria-pressed="true"] { color: #04102a; background: var(--grad); border-color: transparent; }
-
-/* Back to top */
-.totop { position: fixed; z-index: 7; right: clamp(12px, 2vw, 24px); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); padding: 10px 16px; border-radius: 999px; font: 600 13px var(--display); letter-spacing: .06em;
-  border: 1px solid var(--line-hi); background: rgba(11,18,46,.85); backdrop-filter: blur(10px); color: var(--ink); box-shadow: 0 10px 30px rgba(0,0,0,.45); }
-.totop:hover { border-color: var(--green); }
-
-/* Footer: three short cards and a meta line */
-footer { padding-block: 34px 56px; }
-footer .wrap { gap: 18px; }
+footer .wrap { display: grid; gap: 16px; }
+footer details > summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; font: 600 12px var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--cyan); }
+footer details > summary::-webkit-details-marker { display: none; }
+footer details[open] > summary { margin-bottom: 14px; }
 .foot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 14px; }
 .foot-grid section { padding: 16px 18px; border-radius: 14px; border: 1px solid var(--line); background: rgba(11,18,46,.45); display: grid; gap: 8px; align-content: start; }
 .foot-grid h3 { font: 600 12px/1.2 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--cyan); }
@@ -640,36 +625,84 @@ footer .wrap { gap: 18px; }
 .foot-grid p b { color: var(--ink); font-weight: 600; }
 .foot-meta { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12.5px; color: var(--faint); }
 .foot-meta span + span::before { content: "·"; margin-right: 18px; color: var(--line-hi); }
+.totop { position: fixed; z-index: 7; right: clamp(12px, 2vw, 24px); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); padding: 10px 16px; border-radius: 999px; font: 600 13px var(--display); letter-spacing: .06em;
+  border: 1px solid var(--line-hi); background: rgba(11,18,46,.85); backdrop-filter: blur(10px); color: var(--ink); box-shadow: 0 10px 30px rgba(0,0,0,.45); }
+.totop:hover { border-color: var(--green); }
+body.vr-booting > .topbar, body.vr-booting > main, body.vr-booting > footer { display: none; }
 
-@media (prefers-reduced-motion: reduce) { body::before { animation: none; } }
-@media (max-width: 560px) { .gear { width: 44px; height: 44px; } .gear svg { width: 24px; height: 24px; } nav.tabs .wrap { padding-right: 64px; } }
-
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+/* ---------- Responsive ---------- */
+@media (min-width: 1500px) { .armor-best { gap: 14px; } }
+@media (max-width: 960px) {
+  .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .armor-best { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .row .perkline { display: none; }
+  .slide, .slide.third { grid-column: span 6; }
+  .chars { grid-template-columns: minmax(0, 1fr); }
+  .rads { grid-template-columns: minmax(0, 1fr); }
+  .rad.top .body { grid-template-columns: minmax(0, 1fr); }
+  .rad.top .banner { aspect-ratio: 16 / 7; }
+}
+@media (max-width: 700px) { .kit { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 560px) {
+  .brand small { display: none; }
+  .armor-best { grid-template-columns: minmax(0, 1fr); }
+  .tile .big { font-size: 28px; }
+  .tile { padding: 12px; }
+  .slide { padding: 20px; min-height: 0; }
+  .barrow { grid-template-columns: 100px minmax(0, 1fr) 56px; }
+  .row { grid-template-columns: 44px minmax(0, 1fr) auto; gap: 10px; padding-inline: 12px 10px; }
+  .ico { width: 44px; height: 44px; }
+  .row .c-verdict { display: none; }
+  .list.tilegrid { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
+  .itile .tb { padding: 6px 8px 8px; }
+  details.sec > summary p { padding-left: 0; }
+  .jumpbar .cap { display: none; }
+  aside.drawer { top: auto; height: 88vh; width: 100%; border-left: 0; border-top: 1px solid var(--line-hi); border-radius: 18px 18px 0 0; transform: translateY(102%); }
+  .breakdown b { font-size: 18px; }
+  .perkcol { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .perkcol .cap { padding-top: 0; }
+  .facts { grid-template-columns: minmax(0, 1fr); }
+  .rad .rk, .rad.top .rk { font-size: 36px; }
+  .rad .title h3, .rad.top .title h3 { font-size: 20px; }
+  .rad .farm b { font-size: 26px; }
+  .lootrow { grid-template-columns: 34px minmax(0, 1fr) auto; }
+  .lootrow .tier { display: none; }
+}
+@media (max-width: 420px) { .breakdown { gap: 6px; } .hero { border-radius: 18px; } }
+@media (prefers-reduced-motion: reduce) { body::before { animation: none; } * { transition: none !important; animation: none !important; } }
 </style>
 </head>
 <body>
 <canvas id="stars" aria-hidden="true"></canvas>
 
-<header class="hero wrap">
-  <div class="hero-top">
-    <div>
-      <div class="eyebrow">Destiny 2 · Vault review</div>
-      <h1 id="h1"></h1>
-      <p class="lede" id="lede"></p>
-    </div>
-    <div class="chips" id="hero-chips"></div>
-  </div>
-  <div class="tiles" id="tiles"></div>
-  <div class="tierbar">
-    <div class="cap">Weapons by Aegis tier</div>
-    <div class="bar" id="tierbar" role="img"></div>
-    <div class="legend" id="tierlegend"></div>
+<header class="topbar">
+  <div class="wrap appbar">
+    <a class="brand" href="#overview" aria-label="Vault Rater overview">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4d7dff"/><stop offset=".5" stop-color="#36c4f2"/><stop offset="1" stop-color="#33e3a0"/></linearGradient></defs><rect x="1" y="1" width="30" height="30" rx="8" fill="#0a1130" stroke="url(#lg)" stroke-width="1.2"/><path d="M8 9l8 15 8-15" fill="none" stroke="url(#lg)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span><b>Vault Rater</b><small id="brand-sub">Destiny 2</small></span>
+    </a>
+    <nav class="tabs" role="tablist" aria-label="Report sections" id="tabs"></nav>
+    <div class="bar-actions" id="bar-actions"></div>
   </div>
 </header>
 
-<nav class="tabs" aria-label="Report sections"><div class="wrap" role="tablist" id="tabs"></div></nav>
-
 <main class="wrap">
+  <header class="hero" id="hero">
+    <div class="hero-top">
+      <div>
+        <div class="eyebrow">Destiny 2 · Vault review</div>
+        <h1 id="h1"></h1>
+        <p class="lede" id="lede"></p>
+      </div>
+      <div class="chips" id="hero-chips"></div>
+    </div>
+    <div class="tiles" id="tiles"></div>
+    <div class="tierbar">
+      <div class="cap">Weapons by Aegis tier</div>
+      <div class="bar" id="tierbar" role="img"></div>
+      <div class="legend" id="tierlegend"></div>
+    </div>
+  </header>
   <section class="panel" id="p-overview" role="tabpanel"></section>
   <section class="panel" id="p-weapons" role="tabpanel" hidden></section>
   <section class="panel" id="p-armor" role="tabpanel" hidden></section>
@@ -681,19 +714,22 @@ footer .wrap { gap: 18px; }
 
 <footer>
   <div class="wrap">
-    <div class="foot-grid">
-      <section><h3>How scores work</h3>
-        <p><b>Weapons</b> 60% Aegis tier (S 100 · A 85 · B 70 · C 50 · D 30, up to +5 for rank) and 40% roll: a perk column counts when any selectable perk is one Aegis recommends. Off-sheet weapons fall back to the voltron wishlist.</p>
-        <p><b>Armor</b> 40% stats vs a Tier 5 roll · 25% fit to your build stats · 25% set bonus (Aegis S–F) · 10% Tier 5 or exotic.</p></section>
-      <section><h3>Encounter loadouts</h3>
-        <p>One weapon per slot, at most one exotic, ranked by vault score and fit for each role. Guide picks get extra weight (Shacknews, Destructoid, Grindout, Deltia's Gaming, Game Rant).</p></section>
-      <section><h3>RADS farm score</h3>
-        <p>Raids and dungeons are ranked separately. 40% loot quality (the three best weapons on Aegis's sheet) · 40% need (S–B loot you lack or own with a weak roll) · 20% armor set you haven't completed.</p></section>
-    </div>
+    <details>
+      <summary><span class="chev"></span>How scoring works</summary>
+      <div class="foot-grid">
+        <section><h3>Weapons and armor</h3>
+          <p><b>Weapons</b> 60% Aegis tier (S 100 · A 85 · B 70 · C 50 · D 30, up to +5 for rank) and 40% roll: a perk column counts when any selectable perk is one Aegis recommends. Off-sheet weapons fall back to the voltron wishlist.</p>
+          <p><b>Armor</b> 40% stats vs a Tier 5 roll · 25% fit to your build stats · 25% set bonus (Aegis S–F) · 10% Tier 5 or exotic.</p></section>
+        <section><h3>Encounter loadouts</h3>
+          <p>One weapon per slot, at most one exotic, ranked by vault score and fit for each role. Guide picks get extra weight (Shacknews, Destructoid, Grindout, Deltia's Gaming, Game Rant).</p></section>
+        <section><h3>RADS farm score</h3>
+          <p>Raids and dungeons are ranked separately. 40% loot quality (the three best weapons on Aegis's sheet) · 40% need (S–B loot you lack or own with a weak roll) · 20% armor set you haven't completed.</p></section>
+      </div>
+    </details>
     <p class="foot-meta" id="foot-meta"></p>
   </div>
 </footer>
-<button class="totop" id="totop" type="button" aria-label="Back to top" hidden>↑ Top</button></footer>
+<button class="totop" id="totop" type="button" aria-label="Back to top" hidden>↑ Top</button>
 
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" aria-modal="true" role="dialog" aria-label="Item details"></aside>
@@ -794,12 +830,14 @@ function vrMain() {
     // The offline report has no Settings, so it still shows the DIM state here.
     ...(!window.VR_LOCAL && DATA.dim ? ["tags", "loadouts"].map((k) => pill("DIM " + k, DATA.dim[k] ? (DATA.dim.loaded ? "On" : "Unavailable") : "Off", DATA.dim.error || "")) : []),
   ].join("");
+  $("#brand-sub").textContent = NAME ? `${NAME}’s vault` : "Destiny 2";
+  // Each tile opens the tab that explains its number.
   $("#tiles").innerHTML = [
-    ["Weapons kept", S.weaponKeep, `of ${S.weapons} in your vault`],
-    ["Weapons to shard", S.weaponShard, `${DATA.duplicates.length} weapons have extra copies`],
-    ["Armor kept", S.armorKeep, `of ${S.armor} pieces`],
-    ["Armor to shard", S.armorShard, "Weaker copies and outscored legacy armor"],
-  ].map(([l, n, s], i) => `<div class="tile${i % 2 === 0 ? " good" : ""}"><div class="label">${l}</div><div class="big num">${n}</div><div class="sub">${esc(s)}</div></div>`).join("");
+    ["Weapons kept", S.weaponKeep, `of ${S.weapons} in your vault`, "weapons"],
+    ["Weapons to shard", S.weaponShard, `${DATA.duplicates.length} weapons have extra copies`, "shard"],
+    ["Armor kept", S.armorKeep, `of ${S.armor} pieces`, "armor"],
+    ["Armor to shard", S.armorShard, "Weaker copies and outscored legacy armor", "shard"],
+  ].map(([l, n, s, tab], i) => `<button class="tile${i % 2 === 0 ? " good" : " bad"}" data-tab="${tab}"><span class="go" aria-hidden="true">→</span><span class="label">${l}</span><span class="big num">${n}</span><span class="sub">${esc(s)}</span></button>`).join("");
   const tc = { S: 0, A: 0, B: 0, C: 0, D: 0, U: 0 };
   for (const w of DATA.weapons) tc[tierOf(w)]++;
   $("#tierbar").innerHTML = [...TIERS, "U"].filter((t) => tc[t]).map((t) => `<span style="width:${(tc[t] / DATA.weapons.length) * 100}%;background:var(--${t})" title="${tierLabel(t)}: ${tc[t]}"></span>`).join("");
@@ -808,26 +846,77 @@ function vrMain() {
   $("#foot-meta").innerHTML = `<span>Rated ${esc(fmtDateTime(DATA.generated))}</span><span>D2 Vault Rater</span><span>Nothing changes in game until you confirm a lock plan</span>`;
 
   /* ---------- Tabs ---------- */
-  const TABS = [["overview", "Overview", null], ["weapons", "Weapons", S.weapons], ["armor", "Armor", S.armor], ["rads", "RADS", (DATA.rads || []).length || null], ["list", "Full list", null], ["shard", "Shard list", S.weaponShard + S.armorShard], ["wrapped", "Wrapped", null], ...(window.VR_LOCAL ? [["settings", "Settings", null]] : [])];
+  // Line icons (24px grid, stroked) for the tab bar.
+  const ICON = {
+    overview: '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
+    weapons: '<path d="M3 15h11l2-3h5v-2H8L6 8H3z"/><path d="M8 15l-1 5h3l1-5"/>',
+    armor: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M12 8v8M8.5 11h7"/>',
+    rads: '<path d="M4 20l5-14 3 7 3-4 5 11z"/><path d="M9 6V3"/>',
+    list: '<path d="M8 6h13M8 12h13M8 18h13"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',
+    shard: '<path d="M12 2l4 7-4 13-4-13z"/><path d="M8 9h8"/>',
+    wrapped: '<path d="M12 3l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.8z"/>',
+    settings: "",
+  };
+  const TABS = [["overview", "Overview", null], ["weapons", "Weapons", S.weapons], ["armor", "Armor", S.armor], ["rads", "RADS", (DATA.rads || []).length || null], ["list", "Full list", null], ["shard", "Shard", S.weaponShard + S.armorShard], ["wrapped", "Wrapped", null], ...(window.VR_LOCAL ? [["settings", "Settings", null]] : [])];
   if (!$("#p-settings")) $("main").insertAdjacentHTML("beforeend", '<section class="panel" id="p-settings" role="tabpanel" hidden></section>');
-  $("#tabs").innerHTML = TABS.map(([id, label, n]) => `<button role="tab" id="t-${id}" aria-controls="p-${id}" aria-selected="false"${id === "settings" ? " hidden" : ""}>${label}${n != null ? `<span class="count">${n}</span>` : ""}</button>`).join("");
+  $("#tabs").innerHTML = TABS.map(([id, label, n]) => `<button role="tab" id="t-${id}" aria-controls="p-${id}" aria-selected="false"${id === "settings" ? " hidden" : ""}><svg viewBox="0 0 24 24" aria-hidden="true">${ICON[id]}</svg>${label}${n != null ? `<span class="count">${n}</span>` : ""}</button>`).join("");
   if (window.VR_LOCAL && !$("#gear")) {
-    document.body.insertAdjacentHTML("beforeend", `<button class="gear" id="gear" type="button" aria-label="Settings" title="Settings" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.14 12.94a7.4 7.4 0 0 0 .05-.94 7.4 7.4 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.84a.5.5 0 0 0-.49.42l-.36 2.54c-.59.24-1.13.56-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.67 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.4 7.4 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.3.6.22l2.39-.96c.5.38 1.04.7 1.63.94l.36 2.54c.04.24.25.42.49.42h3.84c.24 0 .45-.18.49-.42l.36-2.54c.59-.24 1.13-.56 1.63-.94l2.39.96c.22.08.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2Z"/></svg></button>`);
+    $("#bar-actions").insertAdjacentHTML("beforeend", `<button class="gear" id="gear" type="button" aria-label="Settings" title="Settings" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.14 12.94a7.4 7.4 0 0 0 .05-.94 7.4 7.4 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.84a.5.5 0 0 0-.49.42l-.36 2.54c-.59.24-1.13.56-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.67 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.4 7.4 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.3.6.22l2.39-.96c.5.38 1.04.7 1.63.94l.36 2.54c.04.24.25.42.49.42h3.84c.24 0 .45-.18.49-.42l.36-2.54c.59-.24 1.13-.56 1.63-.94l2.39.96c.22.08.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2Z"/></svg></button>`);
     $("#gear").onclick = () => show(location.hash === "#settings" ? store.get("vr-last-tab") || "overview" : "settings", true);
   }
   const RENDER = {}, rendered = {};
   function show(id, scroll) {
     if (!TABS.some((t) => t[0] === id)) id = "overview";
     for (const [t] of TABS) { $(`#t-${t}`).setAttribute("aria-selected", String(t === id)); $(`#p-${t}`).hidden = t !== id; }
-    if (!rendered[id]) { RENDER[id](); rendered[id] = true; }
+    $("#hero").hidden = id !== "overview";
+    if (!rendered[id]) { RENDER[id](); rendered[id] = true; jumpBar($(`#p-${id}`)); }
     store.set("vr-tab", id);
     if (id !== "settings") store.set("vr-last-tab", id);
     $("#gear")?.setAttribute("aria-pressed", String(id === "settings"));
+    $(`#t-${id}`).scrollIntoView?.({ block: "nearest", inline: "nearest" });
     // Clicking a tab adds a history entry (Back returns to the previous tab); restoring one does not.
     try { if (location.hash.slice(1) !== id) history[scroll ? "pushState" : "replaceState"](null, "", "#" + id); } catch {}
-    if (scroll) scrollTo({ top: $("nav.tabs").offsetTop, behavior: "smooth" });
+    if (scroll) scrollTo({ top: 0, behavior: "smooth" });
   }
   $("#tabs").addEventListener("click", (e) => { const b = e.target.closest("button[role=tab]"); if (b) show(b.id.slice(2), true); });
+  document.addEventListener("click", (e) => { const b = e.target.closest("[data-tab]"); if (b) show(b.dataset.tab, true); });
+
+  /* ---------- Collapsible sections ---------- */
+  // Open/closed state is remembered per section in this browser.
+  let FOLD = {};
+  try { FOLD = JSON.parse(store.get("vr-fold") || "{}"); } catch {}
+  const isOpen = (id, dflt = true) => (id in FOLD ? FOLD[id] : dflt);
+  const chev = '<span class="chev" aria-hidden="true"></span>';
+  /** A top-level section: chevron, title, count badge and a one-line description that hides with the body. */
+  const sec = (id, title, sub, body, o = {}) => `<details class="sec" data-sec="${id}"${isOpen(id, o.open) ? " open" : ""}>
+    <summary class="sec-head">${chev}<h2>${title}</h2>${o.n != null ? `<span class="badge${o.tone ? " " + o.tone : ""}">${o.n}</span>` : ""}<span class="fold-hint"></span>${sub ? `<p>${sub}</p>` : ""}</summary>${body}</details>`;
+  /** A smaller section inside a section. */
+  const subsec = (id, title, note, body, open = true) => `<details class="subsec" data-sec="${id}"${isOpen(id, open) ? " open" : ""}><summary>${chev}<h3>${title}</h3>${note ? `<span class="small">${note}</span>` : ""}</summary>${body}</details>`;
+  document.addEventListener("toggle", (e) => {
+    const d = e.target;
+    if (!d.matches?.("details[data-sec]")) return;
+    FOLD[d.dataset.sec] = d.open;
+    store.set("vr-fold", JSON.stringify(FOLD));
+  }, true);
+  /** Opens every collapsed section around an element, so a jump to it lands on something visible. */
+  const reveal = (el) => { for (let d = el?.closest("details"); d; d = d.parentElement?.closest("details")) d.open = true; };
+  const barH = () => $(".topbar").offsetHeight;
+  /** Shortcuts to each section of a tab, plus collapse/expand all. Only for tabs with three or more sections. */
+  function jumpBar(panel) {
+    panel.querySelector(":scope > .jumpbar")?.remove();
+    const secs = [...panel.querySelectorAll("details.sec")];
+    if (secs.length < 3 || panel.id === "p-overview") return;
+    panel.insertAdjacentHTML("afterbegin", `<nav class="jumpbar glass" aria-label="Sections"><span class="cap">Jump to</span>${secs.map((d, i) => `<button class="j" data-j="${i}">${esc(d.querySelector("h2").textContent)}${d.querySelector(".badge") ? `<span>${esc(d.querySelector(".badge").textContent)}</span>` : ""}</button>`).join("")}<button class="fold" type="button"></button></nav>`);
+    const bar = panel.querySelector(":scope > .jumpbar"), fold = $(".fold", bar);
+    const label = () => (fold.textContent = secs.some((d) => d.open) ? "Collapse all" : "Expand all");
+    label();
+    secs.forEach((d) => d.addEventListener("toggle", label));
+    bar.onclick = (e) => {
+      const j = e.target.closest("[data-j]");
+      if (j) { const d = secs[j.dataset.j]; d.open = true; scrollTo({ top: d.getBoundingClientRect().top + scrollY - barH() - 12, behavior: "smooth" }); }
+      if (e.target.closest(".fold")) { const open = !secs.some((d) => d.open); secs.forEach((d) => (d.open = open)); }
+    };
+  }
 
   const toTop = () => scrollTo({ top: 0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
   $("#totop").onclick = toTop;
@@ -836,9 +925,20 @@ function vrMain() {
   document.addEventListener("click", (e) => { if (e.target.closest("[data-totop]")) toTop(); });
 
   /* ---------- Shared pieces ---------- */
-  const weaponRow = (w) => `<button class="row" data-w="${w.id}">${img(w.ic)}
-      <div style="min-width:0"><div class="nm">${esc(w.n)}${dtag(w)}${lochip(w)}${w.lk ? ' <span class="small muted" title="Locked in game">🔒</span>' : ""}</div><div class="sm">${isExotic(w) ? '<span class="exo">Exotic</span> · ' : ""}${esc(typeLine(w))}<span class="el-inline"> · ${elDot(w.e)}</span>${w.loc && w.loc !== "Vault" ? " · " + esc(w.loc) : ""}</div></div>
-      <div class="c-el">${elDot(w.e)}</div><div>${tierBadge(w)}</div>${scoreCell(w.sc)}<div class="c-verdict">${verdict(w.v)}</div></button>`;
+  const lockIcon = (x) => (x.lk ? ' <span class="small muted" title="Locked in game">🔒</span>' : "");
+  // Trait perks for a row: the ones Aegis recommends first, marked.
+  const traitChips = (w) => {
+    const good = new Set(w.pk.flatMap((p) => p.m));
+    return w.pk.filter((p) => p.k === "perk1" || p.k === "perk2").flatMap((p) => p.o).sort((a, b) => good.has(b) - good.has(a)).slice(0, 4).map((o) => `<span${good.has(o) ? ' class="good"' : ""}>${esc(o)}</span>`).join("");
+  };
+  /** Row: one wide line per item, with perks on wide screens. */
+  const weaponRow = (w) => `<button class="row v-${w.v}" data-w="${w.id}"><span class="ico${isExotic(w) ? " exotic" : ""}">${img(w.ic)}${tierBadge(w)}</span>
+      <div style="min-width:0"><div class="nm">${esc(w.n)}${dtag(w)}${lochip(w)}${lockIcon(w)}</div><div class="sm">${isExotic(w) ? '<span class="exo">Exotic</span> · ' : ""}${esc(typeLine(w))} · ${elDot(w.e)}${w.loc && w.loc !== "Vault" ? " · " + esc(w.loc) : ""}</div><div class="perkline">${traitChips(w)}</div></div>
+      ${scoreCell(w.sc)}<div class="c-verdict">${verdict(w.v)}</div></button>`;
+  /** Tile: tall and narrow, icon first, like an inventory grid. */
+  const weaponTile = (w) => `<button class="itile v-${w.v}${isExotic(w) ? " exotic" : ""}" data-w="${w.id}" title="${esc(w.n)} · ${esc(typeLine(w))} · ${VERDICT[w.v]}">
+      <div class="art">${img(w.ic)}${tierBadge(w)}<span class="elc" style="color:var(--${esc(w.e)})" title="${esc(w.e)}"></span><span class="flags">${w.lk ? "🔒" : ""}${w.god ? '<span title="Wishlist god roll" style="color:var(--green)">★</span>' : ""}</span><b class="sc num${w.sc >= 90 ? " hi" : ""}">${w.sc}</b></div>
+      <div class="tb"><div class="nm">${esc(w.n)}</div><div class="sm">${esc(frameOf(w) || w.t)}</div><div class="sm">${esc(w.t)}</div></div><span class="vbar"></span></button>`;
   const statBars = (a, full) => {
     const want = new Set(DATA.buildStats[a.cls] || []);
     const list = full && a.all ? Object.entries(a.all).sort((x, y) => y[1] - x[1]) : a.st;
@@ -854,9 +954,12 @@ function vrMain() {
   const stier = (t) => (t ? `<span class="stier t${t}" title="Aegis set tier ${t}">${t}</span>` : "");
   const setLine = (a) => (a.si ? " · " + esc(a.si.name) + stier(bestSetTier(a)) : a.set ? " · " + esc(a.set) : "");
   const bonusRow = (b, owned) => `<div class="bonus${owned >= b.pieces ? " active" : ""}"><span class="pc">${b.pieces}PC</span><div><div class="bn">${esc(b.name)}</div>${b.effect || b.notes ? `<p>${esc([b.effect, b.notes].filter(Boolean).join(". "))}</p>` : ""}${b.description ? `<details class="full"><summary>Full bonus text</summary><div>${esc(b.description)}</div></details>` : ""}</div>${b.tier ? `<span class="tier t${b.tier}" title="Aegis rank #${b.rank ?? "?"}">${b.tier}</span>` : `<span class="tier tU">—</span>`}</div>`;
-  const armorRow = (a) => `<button class="row" data-a="${a.id}">${img(a.ic)}
-      <div style="min-width:0"><div class="nm">${esc(a.n)}${dtag(a)}${lochip(a)}${a.lk ? ' <span class="small muted" title="Locked in game">🔒</span>' : ""}</div><div class="sm">${isExotic(a) ? '<span class="exo">Exotic</span> · ' : ""}${esc(a.cls)} ${esc(a.s)} · ${esc(a.arch || "Legacy")}${setLine(a)}</div></div>
-      <div class="c-el sm">${a.st.map(([n, v]) => `${esc(n)} ${v}`).join(" / ")}</div><div><span class="tier tU" title="Gear tier">${gearTier(a)}</span></div>${scoreCell(a.sc)}<div class="c-verdict">${verdict(a.v)}</div></button>`;
+  const armorRow = (a) => `<button class="row v-${a.v}" data-a="${a.id}"><span class="ico${isExotic(a) ? " exotic" : ""}">${img(a.ic)}<span class="tier tU" title="Gear tier">${gearTier(a)}</span></span>
+      <div style="min-width:0"><div class="nm">${esc(a.n)}${dtag(a)}${lochip(a)}${lockIcon(a)}</div><div class="sm">${isExotic(a) ? '<span class="exo">Exotic</span> · ' : ""}${esc(a.cls)} ${esc(a.s)} · ${esc(a.arch || "Legacy")}${setLine(a)}</div><div class="perkline">${a.st.map(([n, v]) => `<span>${esc(n)} ${v}</span>`).join("")}${a.tot ? `<span>Total ${a.tot}</span>` : ""}</div></div>
+      ${scoreCell(a.sc)}<div class="c-verdict">${verdict(a.v)}</div></button>`;
+  const armorTile = (a) => `<button class="itile v-${a.v}${isExotic(a) ? " exotic" : ""}" data-a="${a.id}" title="${esc(a.n)} · ${esc(a.cls)} ${esc(a.s)} · ${VERDICT[a.v]}">
+      <div class="art">${img(a.ic)}<span class="tier tU" title="Gear tier">${gearTier(a)}</span><span class="flags">${a.lk ? "🔒" : ""}</span><b class="sc num${a.sc >= 90 ? " hi" : ""}">${a.sc}</b></div>
+      <div class="tb"><div class="nm">${esc(a.n)}</div><div class="sm">${esc(a.cls)} ${esc(a.s)}</div><div class="sm">${esc(a.arch || "Legacy")}${a.tot ? " · " + a.tot : ""}</div></div><span class="vbar"></span></button>`;
   const copiesOf = (w) => DATA.weapons.filter((x) => x.n === w.n).length;
   const mini = (w, i) => `<button class="mini" data-w="${w.id}"><span class="rk">${i + 1}</span>${img(w.ic)}<div style="min-width:0"><div class="nm">${esc(w.n)}${copiesOf(w) > 1 ? ` <span class="small muted">×${copiesOf(w)}</span>` : ""}</div><div class="sm">${esc(frameOf(w) || w.t)} · <span class="el" style="color:var(--${esc(w.e)})"><i></i><span>${esc(w.e)}</span></span></div></div><div class="right">${tierBadge(w)}<b class="num">${w.sc}</b></div></button>`;
 
@@ -875,7 +978,7 @@ function vrMain() {
       const w = W.get(ids[0]);
       const good = new Set(w.pk.flatMap((p) => p.m));
       const traits = w.pk.filter((p) => p.k === "perk1" || p.k === "perk2").flatMap((p) => p.o);
-      return `<div class="pick" data-w="${w.id}" role="button" tabindex="0">
+      return `<div class="pick glass" data-w="${w.id}" role="button" tabindex="0">
         <div class="art">${w.ss && IMG[w.ss] ? `<img src="${IMG[w.ss]}" alt="">` : ""}<span class="chip slot"><b>${esc(slot)}</b></span></div>
         <div class="body">
           <div class="title">${img(w.ic)}<div style="min-width:0"><h3>${esc(w.n)}</h3><div class="small muted">${esc(typeLine(w))} · ${esc(w.e)}</div></div></div>
@@ -891,17 +994,17 @@ function vrMain() {
     }).join("");
     const q = (set, view, title, n, sub) => `<button class="qlink" data-set="${set}" data-view="${view}"><span class="n num">${n}</span><b>${title}</b><span>${sub}</span></button>`;
     const shardW = DATA.weapons.filter((w) => w.v === "shard");
-    $("#p-overview").innerHTML = `
-      <div><div class="sec-head"><h2>Top picks by slot</h2><p>The highest scoring weapon you own for each slot.</p></div><div class="picks">${picks}</div></div>
-      <div><div class="sec-head"><h2>Best by element</h2><p>Your strongest option for every damage type.</p></div><div class="elements">${elements}</div></div>
-      <div><div class="sec-head"><h2>Jump in</h2><p>Each opens the full list with the filters already set.</p></div><div class="quick">
+    $("#p-overview").innerHTML =
+      sec("ov-picks", "Top picks by slot", "The highest scoring weapon you own for each slot.", `<div class="picks">${picks}</div>`) +
+      sec("ov-quick", "Jump in", "Each opens the full list with the filters already set.", `<div class="quick">
         ${q("w", "delete", "Delete these first", shardW.filter((w) => ["d-tier", "low-tier", "trash-roll"].includes(w.c)).length, "D tier, below your tier floor, or wishlist trash")}
         ${q("w", "dupes", "Duplicates to clear", shardW.filter((w) => w.c === "duplicate").length, "You keep a better copy of each")}
         ${q("w", "best-type-el", "Best of every type and element", new Set(DATA.weapons.map((w) => w.t + "|" + w.e)).size, "Like your best Solar auto rifle")}
         ${q("w", "god", "Wishlist god rolls", DATA.weapons.filter((w) => w.god).length, "Rolls the community wishlist marks as ideal")}
         ${q("a", "best-slot", "Best armor per class and slot", Object.values(DATA.armorBest).reduce((n, s) => n + Object.keys(s).length, 0), "Your strongest piece in every slot")}
         ${q("a", "delete", "Armor to shard", S.armorShard, "Weaker copies and outscored legacy armor")}
-      </div></div>`;
+      </div>`) +
+      sec("ov-elements", "Best by element", "Your strongest option for every damage type.", `<div class="elements">${elements}</div>`);
   };
 
   /* ---------- Weapons highlights ---------- */
@@ -926,18 +1029,18 @@ function vrMain() {
     typeCards.length = 0;
     for (const c of [...cards.values()].sort((a, b) => a.title.localeCompare(b.title))) { c.i = typeCards.push(c) - 1; c.sub = ""; (groups[c.ammo] ??= []).push(c); }
     const ammoSections = [...AMMO_ORDER, ...Object.keys(groups).filter((k) => !AMMO_ORDER.includes(k))].filter((k) => groups[k]).map((k) =>
-      `<div class="sub-head"><span class="cap">${esc(k)} ammo · ${groups[k].length} types</span></div><div class="types">${groups[k].map((c) => `<article class="tcard" id="tc${c.i}">${typeCardBody(c)}</article>`).join("")}</div>`).join("");
+      subsec("w-ammo-" + k, `${esc(k)} ammo`, `${groups[k].length} types`, `<div class="types">${groups[k].map((c) => `<article class="tcard" id="tc${c.i}">${typeCardBody(c)}</article>`).join("")}</div>`)).join("");
     const exotics = DATA.weapons.filter(isExotic).sort(by((w) => w.sc));
     const exBySlot = {};
     for (const w of exotics) (exBySlot[w.s] ??= []).push(w);
     const exItem = (w) => `<button class="exitem" data-w="${w.id}">${img(w.ic)}<div style="min-width:0"><div class="nm">${esc(w.n)}</div><div class="sm">${esc(w.t)} · <span class="el" style="color:var(--${esc(w.e)})"><i></i><span>${esc(w.e)}</span></span></div></div><div style="display:flex;gap:8px;align-items:center">${tierBadge(w)}<b class="num" style="font:700 16px var(--display)">${w.sc}</b></div></button>`;
     const gaps = DATA.gaps.length ? `<div class="elements">${DATA.gaps.map((g) => `<div class="elcard" style="color:var(--${esc(g.element) || "Unknown"})"><div class="head"><span>${esc(g.element || "—")}</span><span class="tier tS">S</span></div><div class="w"><div><div class="nm">${esc(g.name)}</div><div class="sm">${esc([g.frame, g.tab].filter(Boolean).join(" · "))}</div></div></div></div>`).join("")}</div>` : `<div class="empty">You own every S-tier weapon on the sheet.</div>`;
-    $("#p-weapons").innerHTML = `
-      <div><div class="sec-head"><h2>Legendary highlights by type</h2><p>Top three of every weapon type. Pick a frame or element to see the best in that sub-category.</p></div>${ammoSections}</div>
-      <div><div class="sec-head"><h2><span style="color:var(--gold)">Exotics</span></h2><p>Your best five exotics per slot, out of ${exotics.length}.</p></div>
-        ${["Kinetic", "Energy", "Power"].filter((s) => exBySlot[s]).map((s) => `<div class="sub-head"><span class="cap">${s} · best 5 of ${exBySlot[s].length}</span></div><div class="exotics">${exBySlot[s].slice(0, 5).map(exItem).join("")}</div>`).join("")}
-        <div style="margin-top:14px"><button class="btn" data-set="w" data-view="exotics">See all ${exotics.length} exotics in the full list →</button></div></div>
-      <div><div class="sec-head"><h2>Worth farming</h2><p>S-tier weapons on Aegis's sheet that you don't own yet.</p></div>${gaps}</div>`;
+    $("#p-weapons").innerHTML =
+      sec("w-types", "Legendary highlights by type", "Top three of every weapon type. Pick a frame or element to see the best in that sub-category.", ammoSections, { n: typeCards.length }) +
+      sec("w-exotics", '<span style="color:var(--gold)">Exotics</span>', `Your best five exotics per slot, out of ${exotics.length}.`,
+        ["Kinetic", "Energy", "Power"].filter((s) => exBySlot[s]).map((s) => subsec("w-ex-" + s, s, `best 5 of ${exBySlot[s].length}`, `<div class="exotics">${exBySlot[s].slice(0, 5).map(exItem).join("")}</div>`)).join("") +
+        `<div style="margin-top:16px"><button class="btn" data-set="w" data-view="exotics">See all ${exotics.length} exotics in the full list →</button></div>`, { n: exotics.length, tone: "gold" }) +
+      sec("w-gaps", "Worth farming", "S-tier weapons on Aegis's sheet that you don't own yet.", gaps, { n: DATA.gaps.length });
     $("#p-weapons").addEventListener("click", (e) => {
       const b = e.target.closest("[data-sub]"); if (!b) return;
       e.stopPropagation();
@@ -966,7 +1069,7 @@ function vrMain() {
   const SLOTS = ["Helmet", "Arms", "Chest", "Legs", "Class Item"];
   let armorClass = classes.includes(store.get("vr-class")) ? store.get("vr-class") : classes[0];
   RENDER.armor = () => {
-    $("#p-armor").innerHTML = `<div><div class="sec-head"><div class="seg" role="group" aria-label="Class" id="aclass">${classes.map((c) => `<button data-c="${esc(c)}" aria-pressed="${c === armorClass}">${esc(c)}</button>`).join("")}</div><p id="awant"></p></div><div id="abody" class="stack" style="gap:40px"></div></div>`;
+    $("#p-armor").innerHTML = `<div class="pagebar"><div class="seg" role="group" aria-label="Class" id="aclass">${classes.map((c) => `<button data-c="${esc(c)}" aria-pressed="${c === armorClass}">${esc(c)}</button>`).join("")}</div><p id="awant"></p></div><div id="abody" class="stack" style="gap:30px"></div>`;
     $("#aclass").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; armorClass = b.dataset.c; store.set("vr-class", armorClass); $$("#aclass button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); drawArmor(); });
     drawArmor();
   };
@@ -988,12 +1091,14 @@ function vrMain() {
       ${(x.def?.bonuses || x.si.bonuses).map((b) => bonusRow(b, x.slots.size)).join("") || `<p class="small muted">Not on Aegis's set list yet.</p>`}
       <button class="linkbtn" data-set="a" data-view="set:${esc(cls)}|${esc(x.name)}">See these ${x.pieces.length} pieces →</button></article>`;
     const rmini = (a, i) => `<button class="mini" data-a="${a.id}"><span class="rk">${i + 2}</span>${img(a.ic)}<div style="min-width:0"><div class="nm">${esc(a.n)}</div><div class="sm">${esc(a.arch || "Legacy")} · ${a.st.slice(0, 2).map(([n, v]) => `${esc(n)} ${v}`).join(" / ")}</div></div><div class="right"><b class="num">${a.sc}</b></div></button>`;
-    $("#abody").innerHTML = `
-      <div><div class="sec-head"><h2>Best legendary piece per slot</h2><p>${mine.length} ${esc(cls)} pieces rated. Green stats are the ones your builds use.</p></div><div class="armor-best">${bestLeg.map(([s, a]) => card(a, s)).join("")}</div></div>
-      ${runners.length ? `<div><div class="sec-head"><h2>Runners-up</h2><p>The next best legendary pieces in each slot.</p></div><div class="types">${runners.map(([s, l]) => `<article class="tcard"><header><h3>${esc(s)}</h3><span class="small">${mine.filter((a) => a.s === s).length} owned</span></header><div>${l.map(rmini).join("")}</div></article>`).join("")}</div></div>` : ""}
-      <div><div class="sec-head"><h2><span style="color:var(--gold)">Exotics</span></h2><p>${exo.length} exotic ${esc(cls)} pieces, best rolls first.</p></div>${exo.length ? `<div class="exotics">${exo.map(exItem).join("")}</div>` : `<div class="empty">No exotic armor for this class.</div>`}</div>
-      ${sets.length ? `<div><div class="sec-head"><h2>Armor sets</h2><p>Rated with Aegis's set bonus tiers. Green bonuses are active because you own enough slots of that set.</p></div><div class="setgrid">${sets.map(setCard).join("")}</div></div>` : ""}
-      <div><button class="btn" data-set="a" data-view="class:${esc(cls)}">Open all ${esc(cls)} armor in the full list →</button></div>`;
+    // Section ids don't include the class, so collapsing Exotics stays collapsed when switching class.
+    $("#abody").innerHTML =
+      sec("a-best", "Best legendary piece per slot", `${mine.length} ${esc(cls)} pieces rated. Green stats are the ones your builds use.`, `<div class="armor-best">${bestLeg.map(([s, a]) => card(a, s)).join("")}</div>`) +
+      (runners.length ? sec("a-runners", "Runners-up", "The next best legendary pieces in each slot.", `<div class="types">${runners.map(([s, l]) => `<article class="tcard"><header><h3>${esc(s)}</h3><span class="small">${mine.filter((a) => a.s === s).length} owned</span></header><div>${l.map(rmini).join("")}</div></article>`).join("")}</div>`) : "") +
+      sec("a-exotics", '<span style="color:var(--gold)">Exotics</span>', `${exo.length} exotic ${esc(cls)} pieces, best rolls first.`, exo.length ? `<div class="exotics">${exo.map(exItem).join("")}</div>` : `<div class="empty">No exotic armor for this class.</div>`, { n: exo.length, tone: "gold" }) +
+      (sets.length ? sec("a-sets", "Armor sets", "Rated with Aegis's set bonus tiers. Green bonuses are active because you own enough slots of that set.", `<div class="setgrid">${sets.map(setCard).join("")}</div>`, { n: sets.length }) : "") +
+      `<div><button class="btn" data-set="a" data-view="class:${esc(cls)}">Open all ${esc(cls)} armor in the full list →</button></div>`;
+    jumpBar($("#p-armor"));
   }
 
   /* ---------- RADS: raids and dungeons ---------- */
@@ -1002,11 +1107,11 @@ function vrMain() {
     const rads = DATA.rads || [];
     if (!rads.length) { $("#p-rads").innerHTML = '<div class="empty">Raid and dungeon loot has not been imported yet. Re-run the rater to add it.</div>'; return; }
     const chase = rads.reduce((n, r) => n + r.counts.chase, 0);
-    $("#p-rads").innerHTML = `<div>
-      <div class="sec-head"><h2>RADS: raids and dungeons</h2><p>${rads.filter((r) => r.kind === "raid").length} raids and ${rads.filter((r) => r.kind === "dungeon").length} dungeons, each ranked on its own by what it would add to your vault. ${chase} weapons across them are ones you don't own yet.</p></div>
-      <div class="rads-head"><div class="seg" role="group" aria-label="Activity type" id="radseg">${[["all", "All"], ["raid", "Raids"], ["dungeon", "Dungeons"]].map(([k, l]) => `<button data-k="${k}" aria-pressed="${k === radFilter}">${l}</button>`).join("")}</div>
-        <div class="rads-legend"><span><span class="st chase">Chase</span> you don't own it</span><span><span class="st upgrade">Upgrade</span> you own a weak roll</span><span><span class="st have">Got it</span> you own a good roll</span></div></div>
-      <div id="radlist" class="radgroups"></div></div>`;
+    $("#p-rads").innerHTML = `
+      <div class="pagebar"><div class="seg" role="group" aria-label="Activity type" id="radseg">${[["all", "All"], ["raid", "Raids"], ["dungeon", "Dungeons"]].map(([k, l]) => `<button data-k="${k}" aria-pressed="${k === radFilter}">${l}</button>`).join("")}</div>
+        <p>${rads.filter((r) => r.kind === "raid").length} raids and ${rads.filter((r) => r.kind === "dungeon").length} dungeons, each ranked on its own by what it would add to your vault. ${chase} weapons across them are ones you don't own yet.</p></div>
+      <div class="rads-legend"><span><span class="st chase">Chase</span> you don't own it</span><span><span class="st upgrade">Upgrade</span> you own a weak roll</span><span><span class="st have">Got it</span> you own a good roll</span></div>
+      <div id="radlist" class="stack" style="gap:30px"></div>`;
     $("#radseg").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; radFilter = b.dataset.k; $$("#radseg button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); drawRads(); };
     drawRads();
   };
@@ -1058,7 +1163,7 @@ function vrMain() {
       const bars = `<div class="parts3">${parts.map(([l, v]) => `<div><span>${l} <b class="num">${v}</b></span><div class="track"><span style="width:${v}%"></span></div></div>`).join("")}</div>`;
       const setsHtml = r.sets.map(setBox).join("");
       const note = `<p class="small muted">${r.counts.sTier ? `${r.counts.sTier} S-tier weapon${r.counts.sTier > 1 ? "s" : ""} in the loot pool. ` : ""}${r.counts.chase ? `${r.counts.chase} you don't own` : "You own everything here"}${r.counts.upgrade ? `, ${r.counts.upgrade} worth re-rolling` : ""}.</p>`;
-      return `<article class="rad${top ? " top" : ""}" id="rad-${esc(r.key)}">
+      return `<article class="rad glass${top ? " top" : ""}" id="rad-${esc(r.key)}">
         <div class="banner">${r.image && IMG[r.image] ? `<img src="${IMG[r.image]}" alt="" loading="lazy">` : ""}
           <div class="chips-tl"><span class="chip"><b>${r.kind === "raid" ? "Raid" : "Dungeon"}</b></span>${top ? `<span class="chip" style="color:var(--green)"><b>Best ${r.kind} to farm</b></span>` : ""}</div>
           <span class="verdict-tag ${vClass(r.verdict)}">${r.verdict}</span>
@@ -1069,7 +1174,8 @@ function vrMain() {
     $("#radlist").innerHTML = kinds.map((k) => {
       const list = (DATA.rads || []).filter((r) => r.kind === k).sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
       if (!list.length) return "";
-      return `<section class="radgroup"><div class="sub-head"><h3>${k === "raid" ? "Raids" : "Dungeons"}</h3><span class="small muted">${list.length} ranked</span></div><div class="rads">${list.map(card).join("")}</div></section>`;
+      const best = list[0];
+      return sec("rads-" + k, k === "raid" ? "Raids" : "Dungeons", `Ranked by farm score. Best to farm right now: <b style="color:var(--green)">${esc(best.name)}</b> (${best.score}).`, `<div class="rads">${list.map(card).join("")}</div>`, { n: list.length });
     }).join("");
   }
 
@@ -1081,7 +1187,7 @@ function vrMain() {
   const VERDICT = { keep: "Keep", shard: "Shard", review: "Review" };
   const SETS = {
     w: {
-      label: "Weapons", noun: "weapon", items: DATA.weapons, row: weaponRow,
+      label: "Weapons", noun: "weapon", items: DATA.weapons, row: weaponRow, tile: weaponTile,
       search: (w) => [w.n, w.t, w.f, w.e, w.mw, ...w.pk.flatMap((p) => p.o)].join(" "),
       facets: [
         ["t", "Type", (w) => w.t], ["e", "Element", (w) => w.e], ["f", "Frame", frameOf], ["s", "Slot", (w) => w.s], ["am", "Ammo", (w) => w.am],
@@ -1113,7 +1219,7 @@ function vrMain() {
       grouper: (k) => (k === "name" ? (w) => w.n : k === "f" ? (w) => frameOf(w) || "No frame" : k === "tier" ? (w) => tierLabel(tierOf(w)) : k === "c" ? (w) => (w.c ? CAT_LABEL[w.c] || w.c : "Not sharded") : k === "v" ? (w) => VERDICT[w.v] : (w) => w[k] ?? "Unknown"),
     },
     a: {
-      label: "Armor", noun: "piece", items: DATA.armor, row: armorRow,
+      label: "Armor", noun: "piece", items: DATA.armor, row: armorRow, tile: armorTile,
       search: (a) => [a.n, a.arch, a.set, a.s, a.cls].join(" "),
       facets: [
         ["cls", "Class", (a) => a.cls], ["s", "Slot", (a) => a.s], ["r", "Rarity", (a) => a.r], ["arch", "Archetype", (a) => a.arch || "Legacy"], ["set", "Set", (a) => a.si?.name || a.set],
@@ -1140,6 +1246,7 @@ function vrMain() {
   };
   const blank = () => ({ q: "", f: {}, sort: "score", dir: "desc", group: "", group2: "", top: "", view: "", limit: 150 });
   const ex = { set: "w", w: blank(), a: blank(), pass: () => true };
+  let layout = store.get("vr-layout") === "tiles" ? "tiles" : "rows";
 
   function openList(set, view) {
     ex.set = set;
@@ -1161,22 +1268,32 @@ function vrMain() {
     const cfg = SETS[ex.set], st = ex[ex.set];
     if (full) {
       const opt = (o, sel) => Object.entries(o).map(([k, l]) => `<option value="${esc(k)}"${k === sel ? " selected" : ""}>${esc(Array.isArray(l) ? l[0] : l)}</option>`).join("");
+      // Toolbar: what (kind, search, layout), then filters, then ordering; quick views sit above as presets.
       $("#explorer").innerHTML = `
-        <div class="sec-head"><div class="seg" role="group" aria-label="Item kind" id="exset">${Object.entries(SETS).map(([k, c]) => `<button data-s="${k}" aria-pressed="${k === ex.set}">${c.label}</button>`).join("")}</div><p>Filter, sort and group everything you own.</p></div>
-        <div class="toolbar">
-          <div class="tb-row"><span class="label">Quick views</span><div class="views">${Object.entries(cfg.views).map(([k, [l]]) => `<button class="view" data-v="${k}" aria-pressed="${st.view === k}">${esc(l)}</button>`).join("")}</div></div>
-          <div class="tb-row"><input type="search" id="exq" placeholder="${ex.set === "w" ? "Search name, type, perk or masterwork" : "Search name, set or archetype"}" aria-label="Search" value="${esc(st.q)}">${cfg.facets.map(([k, l]) => `<details class="ms" data-k="${k}"><summary>${esc(l)}</summary><div class="pop"></div></details>`).join("")}</div>
+        <div class="tb-row" style="margin-bottom:12px"><span class="label">Quick views</span><div class="views">${Object.entries(cfg.views).map(([k, [l]]) => `<button class="view" data-v="${k}" aria-pressed="${st.view === k}">${esc(l)}</button>`).join("")}</div></div>
+        <div class="toolbar glass">
           <div class="tb-row">
-            <span class="label">Sort by</span><select id="exsort" aria-label="Sort by">${opt(cfg.sorts, st.sort)}</select>
-            <div class="seg" id="exdir" role="group" aria-label="Sort direction"><button data-d="desc" aria-pressed="${st.dir === "desc"}">Best first</button><button data-d="asc" aria-pressed="${st.dir === "asc"}">Worst first</button></div>
-            <span class="label">Group by</span><select id="exgroup" aria-label="Group by">${opt(cfg.groups, st.group)}</select>
-            <span class="label">then by</span><select id="exgroup2" aria-label="Then group by">${opt(cfg.groups, st.group2)}</select>
-            <span class="label">Show</span><select id="extop" aria-label="Items per group">${opt({ "": "All", 1: "Best 1", 3: "Best 3", 5: "Best 5" }, st.top)}</select>
-            <button class="btn" id="exreset" style="padding:6px 12px">Reset</button>
+            <div class="seg" role="group" aria-label="Item kind" id="exset">${Object.entries(SETS).map(([k, c]) => `<button data-s="${k}" aria-pressed="${k === ex.set}">${c.label}</button>`).join("")}</div>
+            <label class="searchbox"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="exq" placeholder="${ex.set === "w" ? "Search name, type, perk or masterwork" : "Search name, set or archetype"}" aria-label="Search" value="${esc(st.q)}"></label>
+            <div class="seg icons" role="group" aria-label="Layout" id="exlayout">
+              <button data-l="rows" aria-pressed="${layout === "rows"}" title="Rows: one wide line per item, with perks" aria-label="Rows"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/></svg>Rows</button>
+              <button data-l="tiles" aria-pressed="${layout === "tiles"}" title="Tiles: a compact grid of icons, like an inventory" aria-label="Tiles"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="8" rx="1.2"/><rect x="9.5" y="3" width="5" height="8" rx="1.2"/><rect x="16" y="3" width="5" height="8" rx="1.2"/><rect x="3" y="13" width="5" height="8" rx="1.2"/><rect x="9.5" y="13" width="5" height="8" rx="1.2"/><rect x="16" y="13" width="5" height="8" rx="1.2"/></svg>Tiles</button>
+            </div>
           </div>
+          <details class="tb-more"${matchMedia("(max-width: 700px)").matches ? "" : " open"}><summary><span class="chev" aria-hidden="true"></span>Filters, sort and group</summary>
+          <div class="tb-row"><span class="label">Filter</span>${cfg.facets.map(([k, l]) => `<details class="ms" data-k="${k}"><summary>${esc(l)}</summary><div class="pop"></div></details>`).join("")}</div>
+          <div class="tb-split">
+            <div><span class="label">Sort</span><select id="exsort" aria-label="Sort by">${opt(cfg.sorts, st.sort)}</select>
+              <div class="seg" id="exdir" role="group" aria-label="Sort direction"><button data-d="desc" aria-pressed="${st.dir === "desc"}">Best first</button><button data-d="asc" aria-pressed="${st.dir === "asc"}">Worst first</button></div></div>
+            <div><span class="label">Group</span><select id="exgroup" aria-label="Group by">${opt(cfg.groups, st.group)}</select>
+              <span class="label">then</span><select id="exgroup2" aria-label="Then group by">${opt(cfg.groups, st.group2)}</select>
+              <span class="label">Show</span><select id="extop" aria-label="Items per group">${opt({ "": "All", 1: "Best 1", 3: "Best 3", 5: "Best 5" }, st.top)}</select></div>
+            <button class="btn ghost" id="exreset" style="padding:6px 12px">Reset</button>
+          </div></details>
           <div class="tb-row"><div class="active-chips" id="exchips"></div><span class="result num" id="excount"></span></div>
         </div>
         <div id="exlist"></div><div class="more" id="exmore"></div>`;
+      $("#exlayout").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; layout = b.dataset.l; store.set("vr-layout", layout); $$("#exlayout button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); drawExplorer(false); };
       const touch = () => { st.view = ""; st.limit = 150; $$("#explorer .view").forEach((b) => b.setAttribute("aria-pressed", "false")); drawExplorer(false); };
       $("#exset").onclick = (e) => { const b = e.target.closest("button"); if (b) { ex.set = b.dataset.s; drawExplorer(true); } };
       $("#explorer .views").onclick = (e) => { const b = e.target.closest("button"); if (b) applyView(ex.set, b.dataset.v); };
@@ -1223,18 +1340,19 @@ function vrMain() {
       for (const x of items) { const k = String(f(x)); g.set(k, [...(g.get(k) || []), x]); }
       return [...g].sort((a, b) => cmp(a[1][0], b[1][0]) || a[0].localeCompare(b[0]));
     };
-    const head = (k, shown, all) => `<div class="ghead"><h3>${esc(k)}</h3><span class="small num">${all.length}${shown < all.length ? `, showing ${shown}` : ""} · best ${Math.max(...all.map((x) => x.sc))}</span></div>`;
+    const head = (k, shown, all) => `<summary class="ghead"><span class="chev" aria-hidden="true"></span><h3>${esc(k)}</h3><span class="small num">${all.length}${shown < all.length ? `, showing ${shown}` : ""} · best ${Math.max(...all.map((x) => x.sc))}</span></summary>`;
+    const items = (xs) => `<div class="list ${layout === "tiles" ? "tilegrid" : "rows"}">${xs.map(layout === "tiles" ? cfg.tile : cfg.row).join("")}</div>`;
     let html, shown = 0;
     if (!list.length) html = `<div class="empty">Nothing matches these filters. Remove one above or press Reset.</div>`;
-    else if (!st.group) { const part = list.slice(0, Math.min(st.limit, top)); shown = part.length; html = `<div class="list">${part.map(cfg.row).join("")}</div>`; }
+    else if (!st.group) { const part = list.slice(0, Math.min(st.limit, top)); shown = part.length; html = items(part); }
     else {
       shown = list.length;
-      html = groupList(list, st.group).map(([k, items]) => {
+      html = groupList(list, st.group).map(([k, xs]) => {
         if (st.group2 && st.group2 !== st.group) {
-          const inner = groupList(items, st.group2).map(([k2, sub]) => `<div class="group">${head(k2, Math.min(top, sub.length), sub)}<div class="list">${sub.slice(0, top).map(cfg.row).join("")}</div></div>`).join("");
-          return `<div class="group">${head(k, items.length, items)}${inner}</div>`;
+          const inner = groupList(xs, st.group2).map(([k2, sub]) => `<details class="group" open>${head(k2, Math.min(top, sub.length), sub)}${items(sub.slice(0, top))}</details>`).join("");
+          return `<details class="group" open>${head(k, xs.length, xs)}${inner}</details>`;
         }
-        return `<div class="group">${head(k, Math.min(top, items.length), items)}<div class="list">${items.slice(0, top).map(cfg.row).join("")}</div></div>`;
+        return `<details class="group" open>${head(k, Math.min(top, xs.length), xs)}${items(xs.slice(0, top))}</details>`;
       }).join("");
     }
     $("#exlist").innerHTML = html;
@@ -1274,19 +1392,22 @@ function vrMain() {
     const order = ["d-tier", "trash-roll", "low-tier", "unrated", "outscored", "duplicate", "review"];
     const wGroups = order.filter((k) => groups.has(k)).map((k) => {
       const list = groups.get(k).sort((a, b) => a.sc - b.sc);
-      return `<div class="group"><div class="ghead"><h3>${CAT[k][0]}</h3><span class="small num">${list.length}</span></div><p class="small muted" style="padding:0 4px">${CAT[k][1]}</p><div class="list">${list.map(weaponRow).join("")}</div></div>`;
+      return subsec("sh-w-" + k, CAT[k][0], `${list.length}`, `<p class="reason">${CAT[k][1]}</p><div class="list rows">${list.map(weaponRow).join("")}</div>`, k !== "review");
     }).join("");
     const aList = DATA.armor.filter((a) => a.v !== "keep").sort((a, b) => a.cls.localeCompare(b.cls) || a.s.localeCompare(b.s) || a.sc - b.sc);
-    $("#p-shard").innerHTML = `
+    const aClasses = [...new Set(aList.map((a) => a.cls))];
+    const aGroups = aClasses.map((c) => { const l = aList.filter((a) => a.cls === c); return subsec("sh-a-" + c, c, `${l.length}`, `<div class="list rows">${l.map(armorRow).join("")}</div>`); }).join("");
+    const wCount = DATA.weapons.filter((w) => w.v !== "keep").length;
+    $("#p-shard").innerHTML = `<div class="actiongrid">
       <div class="dimbox"><div><h2 style="font-size:20px">Select all junk in DIM</h2><p class="muted small" style="margin-top:6px">Paste this into DIM's search bar to select all ${junkIds.length} items marked Shard, then review and dismantle. Nothing is unlocked in game until you approve the lock plan.</p></div>
-        <code id="dimsearch">${esc(search)}</code>
-        <div class="acts"><button class="btn primary" id="copysearch">Copy DIM search</button><span class="muted small" id="copied" aria-live="polite"></span></div></div>
-      ${planBox()}
-      <div><div class="sec-head"><h2>Weapons</h2><p>Worst reasons first, lowest scores at the top of each group.</p></div>${wGroups || `<div class="empty">No weapons to shard at this strictness.</div>`}</div>
-      <div><div class="sec-head"><h2>Armor</h2><p>${aList.length} lower scoring copies and outscored legacy pieces.</p></div><div class="list">${aList.map(armorRow).join("") || `<div class="empty">No armor to shard.</div>`}</div></div>`;
+        <div class="acts"><button class="btn primary" id="copysearch">Copy DIM search</button><span class="muted small" id="copied" aria-live="polite"></span></div>
+        <details class="full"><summary>Show the search text</summary><code id="dimsearch">${esc(search)}</code></details></div>
+      ${planBox()}</div>
+      ${sec("sh-weapons", "Weapons", "Worst reasons first, lowest scores at the top of each group. Review is collapsed: those are never unlocked.", wGroups || `<div class="empty">No weapons to shard at this strictness.</div>`, { n: wCount, tone: "red" })}
+      ${sec("sh-armor", "Armor", `${aList.length} lower scoring copies and outscored legacy pieces, by class.`, aGroups || `<div class="empty">No armor to shard.</div>`, { n: aList.length, tone: "red" })}`;
     $("#copysearch").onclick = async () => {
       try { await navigator.clipboard.writeText(search); $("#copied").textContent = "Copied. Paste it into DIM's search bar."; }
-      catch { const r = document.createRange(); r.selectNodeContents($("#dimsearch")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); $("#copied").textContent = "Selected. Press Ctrl+C to copy."; }
+      catch { $("#dimsearch").closest("details").open = true; const r = document.createRange(); r.selectNodeContents($("#dimsearch")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); $("#copied").textContent = "Selected. Press Ctrl+C to copy."; }
     };
   };
 
@@ -1533,8 +1654,9 @@ function vrMain() {
     if (rendered.rads) drawRads();
     const card = document.getElementById("rad-" + b.dataset.rad);
     if (!card) return;
+    reveal(card);
     setTimeout(() => {
-      scrollTo({ top: card.getBoundingClientRect().top + scrollY - $("nav.tabs").offsetHeight - 12 });
+      scrollTo({ top: card.getBoundingClientRect().top + scrollY - barH() - 12 });
       card.animate?.([{ boxShadow: "0 0 0 3px rgba(51,227,160,.9)" }, { boxShadow: "0 0 0 0 rgba(51,227,160,0)" }], { duration: 1800 });
     }, 0);
   });
