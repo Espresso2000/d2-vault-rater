@@ -21,7 +21,7 @@ import { buildReport, loggedIn, refreshSources, type ReportResult } from "./pipe
 import { applyDimActions, loadPlan, undoDimActions } from "./dim/actions.js";
 import { setDimTag, DIM_TAGS, type DimTagValue } from "./dim/sync.js";
 import { moveItems } from "./bungie/transfer.js";
-import { loadSettings, saveSettings, PRESETS, type Settings } from "./rating/settings.js";
+import { applyPageSettings, loadSettings, saveSettings } from "./rating/settings.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -121,15 +121,7 @@ async function serve(port: number) {
     }
     if (req.method === "POST" && req.url === "/api/settings") {
       const b = await readBody(req);
-      const st = loadSettings();
-      const d = (b.dim ?? {}) as { tags?: unknown; loadouts?: unknown; protectTagged?: unknown };
-      if (typeof d.tags === "boolean") st.dim.tags = d.tags;
-      if (typeof d.loadouts === "boolean") st.dim.loadouts = d.loadouts;
-      if (typeof d.protectTagged === "boolean") st.dim.protectTagged = d.protectTagged;
-      if (typeof b.preset === "string" && (PRESETS as readonly string[]).includes(b.preset)) st.preset = b.preset as Settings["preset"];
-      if (b.focus === "pve" || b.focus === "pvp" || b.focus === "both") st.focus = b.focus;
-      if (Array.isArray(b.protect)) st.protect = b.protect.filter((x): x is string => typeof x === "string");
-      if (b.byWeaponType && typeof b.byWeaponType === "object") st.byWeaponType = b.byWeaponType as Settings["byWeaponType"];
+      const st = applyPageSettings(loadSettings(), b);
       try {
         saveSettings(st);
       } catch (e) {

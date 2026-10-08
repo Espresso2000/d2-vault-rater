@@ -15,7 +15,7 @@ import { loadAegis } from "../../src/sources/aegis.js";
 import { loadWishlists } from "../../src/sources/wishlist.js";
 import { loadArmorSets } from "../../src/sources/armorSets.js";
 import { buildSourceLookup, loadActivityLoot } from "../../src/sources/activities.js";
-import { loadSettings, saveSettings, PRESETS, type Settings } from "../../src/rating/settings.js";
+import { applyPageSettings, loadSettings, saveSettings, type Settings } from "../../src/rating/settings.js";
 import { rateWeapons } from "../../src/rating/weapons.js";
 import { rateArmor } from "../../src/rating/armor.js";
 import { rateActivities } from "../../src/rating/activities.js";
@@ -197,13 +197,7 @@ window.VR_API = async (path, body) => {
         signOut();
         return { ok: true };
       case "/api/settings": {
-        const st = loadSettings();
-        const d = (body.dim ?? {}) as Partial<Settings["dim"]>;
-        for (const k of ["tags", "loadouts", "protectTagged"] as const) if (typeof d[k] === "boolean") st.dim[k] = d[k]!;
-        if (typeof body.preset === "string" && (PRESETS as readonly string[]).includes(body.preset)) st.preset = body.preset as Settings["preset"];
-        if (body.focus === "pve" || body.focus === "pvp" || body.focus === "both") st.focus = body.focus;
-        if (Array.isArray(body.protect)) st.protect = body.protect.filter((x): x is string => typeof x === "string");
-        if (body.byWeaponType && typeof body.byWeaponType === "object") st.byWeaponType = body.byWeaponType as Settings["byWeaponType"];
+        const st = applyPageSettings(loadSettings(), body);
         saveSettings(st);
         return { ok: true, dim: st.dim };
       }

@@ -189,7 +189,7 @@ server.registerTool(
       "Change how strict the rating is. preset: lenient | balanced | strict | ruthless. overrides: change single values (minTierKept, minRollKept, copiesPerArchetype, outscoredGap, unrated, armorCopies, legacyArmor, unlock). weapon_type + preset/overrides applies only to that weapon type (e.g. 'Submachine Gun'). Also sets focus, tone, protect list and build stats.",
     inputSchema: {
       preset: z.enum(PRESETS).optional(),
-      overrides: StrictnessOverride.optional(),
+      overrides: z.optional(StrictnessOverride),
       weapon_type: z.string().optional(),
       clear_weapon_type: z.boolean().optional(),
       focus: z.enum(["pve", "pvp", "both"]).optional(),

@@ -1,4 +1,5 @@
-import { z } from "zod";
+// zod/mini: the same validation as "zod" at a fraction of the size, since the web app bundles this file.
+import * as z from "zod/mini";
 import { paths, readJson, writeJson } from "../config.js";
 
 export const PRESETS = ["lenient", "balanced", "strict", "ruthless"] as const;
@@ -69,43 +70,47 @@ export const PRESET_VALUES: Record<Preset, Strictness> = {
   },
 };
 
-export const StrictnessOverride = z
-  .object({
+const between = (min: number, max: number) => z.number().check(z.minimum(min), z.maximum(max));
+const count = () => z.int().check(z.minimum(1), z.maximum(10));
+
+export const StrictnessOverride = z.partial(
+  z.object({
     minTierKept: z.enum(["S", "A", "B", "C", "D"]),
-    minRollKept: z.number().min(0).max(100),
-    copiesPerArchetype: z.number().int().min(1).max(10),
-    outscoredGap: z.number().min(0).max(100),
+    minRollKept: between(0, 100),
+    copiesPerArchetype: count(),
+    outscoredGap: between(0, 100),
     unrated: z.enum(["keep", "keep-flagged", "wishlist", "shard-unless-godroll"]),
-    armorCopies: z.number().int().min(1).max(10),
+    armorCopies: count(),
     legacyArmor: z.enum(["keep", "keep-if-better", "shard-if-outscored", "shard"]),
     unlock: z.array(z.enum(SHARD_CATEGORIES)),
-  })
-  .partial();
+  }),
+);
 
 export const SettingsSchema = z.object({
-  preset: z.enum(PRESETS).default("balanced"),
-  overrides: StrictnessOverride.default({}),
+  preset: z._default(z.enum(PRESETS), "balanced"),
+  overrides: z._default(StrictnessOverride, {}),
   /** Per weapon type ("Submachine Gun", "Rocket Launcher") preset or overrides. */
-  byWeaponType: z.record(z.string(), z.object({ preset: z.enum(PRESETS).optional(), overrides: StrictnessOverride.optional() })).default({}),
-  focus: z.enum(["pve", "pvp", "both"]).default("pve"),
+  byWeaponType: z._default(z.record(z.string(), z.object({ preset: z.optional(z.enum(PRESETS)), overrides: z.optional(StrictnessOverride) })), {}),
+  focus: z._default(z.enum(["pve", "pvp", "both"]), "pve"),
   /** Weapon or armor names (or instance ids) never marked for sharding. */
-  protect: z.array(z.string()).default([]),
+  protect: z._default(z.array(z.string()), []),
   /** Stats the player's builds want, e.g. {"Hunter": ["Grenade", "Weapons"]}. Inferred from equipped armor when empty. */
-  buildStats: z.record(z.string(), z.array(z.string())).default({}),
-  tone: z.enum(["short", "detailed"]).default("detailed"),
-  wishlists: z.array(z.string()).default([]),
-  aegisTabs: z.array(z.object({ name: z.string(), gid: z.string() })).default([]),
+  buildStats: z._default(z.record(z.string(), z.array(z.string())), {}),
+  tone: z._default(z.enum(["short", "detailed"]), "detailed"),
+  wishlists: z._default(z.array(z.string()), []),
+  aegisTabs: z._default(z.array(z.object({ name: z.string(), gid: z.string() })), []),
   /** Read DIM Sync data into the report. Each adds a request to DIM's API; turn off for faster reports. */
-  dim: z
-    .object({
-      tags: z.boolean().default(true),
-      loadouts: z.boolean().default(true),
+  dim: z._default(
+    z.object({
+      tags: z._default(z.boolean(), true),
+      loadouts: z._default(z.boolean(), true),
       /** Never mark items you tagged Favorite or Keep in DIM for sharding. */
-      protectTagged: z.boolean().default(true),
-    })
-    .default({ tags: true, loadouts: true, protectTagged: true }),
+      protectTagged: z._default(z.boolean(), true),
+    }),
+    { tags: true, loadouts: true, protectTagged: true },
+  ),
   /** Filled at rating time from DIM tags (never saved): instance ids tagged Favorite or Keep. */
-  dimKeep: z.array(z.string()).default([]),
+  dimKeep: z._default(z.array(z.string()), []),
 });
 export type Settings = z.infer<typeof SettingsSchema>;
 
@@ -117,6 +122,23 @@ export function saveSettings(s: Settings): Settings {
   const parsed = SettingsSchema.parse(s);
   writeJson(paths.settings, parsed);
   return parsed;
+}
+
+/**
+ * Apply what the report page's Settings panel sends (local server and web app alike).
+ * Only fields with the right type are taken; everything else is ignored.
+ */
+export function applyPageSettings(st: Settings, body: Record<string, unknown>): Settings {
+  const d = (body.dim ?? {}) as Partial<Record<keyof Settings["dim"], unknown>>;
+  for (const k of ["tags", "loadouts", "protectTagged"] as const) {
+    const v = d[k];
+    if (typeof v === "boolean") st.dim[k] = v;
+  }
+  if (typeof body.preset === "string" && (PRESETS as readonly string[]).includes(body.preset)) st.preset = body.preset as Preset;
+  if (body.focus === "pve" || body.focus === "pvp" || body.focus === "both") st.focus = body.focus;
+  if (Array.isArray(body.protect)) st.protect = body.protect.filter((x): x is string => typeof x === "string");
+  if (body.byWeaponType && typeof body.byWeaponType === "object") st.byWeaponType = body.byWeaponType as Settings["byWeaponType"];
+  return st;
 }
 
 /** Strictness for one weapon type: preset, then global overrides, then the type's own preset/overrides. */
