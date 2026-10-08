@@ -7,29 +7,15 @@ import { appConfig } from "../appConfig";
 import { bungieEnv, paths, readJson, writeJson } from "./config";
 import { accessToken, loadTokens } from "./client";
 import { primaryMembership } from "./oauth";
+import { DIM_API, readDimProfile, writeDimTag, type DimCall, type DimTagValue } from "../../../src/dim/common.js";
 
-const DIM = "https://api.destinyitemmanager.com";
+export { DIM_TAGS, keepIds, type DimData, type DimLoadout, type DimTagValue } from "../../../src/dim/common.js";
+
 const appFile = () => `${paths.home}/dim-app.json`;
 const TOKEN_KEY = "vr-dim-token";
 
-export const DIM_TAGS = ["favorite", "keep", "infuse", "junk", "archive"] as const;
-export type DimTagValue = (typeof DIM_TAGS)[number];
-
-export interface DimLoadout {
-  id: string;
-  name: string;
-  classType: number;
-  itemIds: string[];
-}
-
-export interface DimData {
-  tags: Record<string, { tag: DimTagValue | null; notes: string | null }>;
-  loadouts: DimLoadout[];
-  fetchedAt: string;
-}
-
 async function dimFetch<T>(path: string, init: { method?: string; body?: unknown; headers?: Record<string, string> } = {}): Promise<T> {
-  const res = await fetch(DIM + path, {
+  const res = await fetch(DIM_API + path, {
     method: init.method ?? (init.body ? "POST" : "GET"),
     headers: { ...(init.body ? { "Content-Type": "application/json" } : {}), ...(init.headers ?? {}) },
     body: init.body ? JSON.stringify(init.body) : undefined,
@@ -72,45 +58,12 @@ async function dimAuth(): Promise<{ apiKey: string; token: string }> {
 
 export const clearDimToken = () => sessionStorage.removeItem(TOKEN_KEY);
 
-export async function fetchDimData(want: { tags: boolean; loadouts: boolean }): Promise<DimData> {
-  const components = [want.tags && "tags", want.loadouts && "loadouts"].filter(Boolean).join(",");
-  const out: DimData = { tags: {}, loadouts: [], fetchedAt: new Date().toISOString() };
-  if (!components) return out;
-  const { apiKey, token } = await dimAuth();
-  const who = await primaryMembership();
-  const r = await dimFetch<{
-    tags?: { id: string; tag?: DimTagValue | null; notes?: string | null }[];
-    loadouts?: { id: string; name: string; classType: number; equipped?: { id?: string }[]; unequipped?: { id?: string }[] }[];
-  }>(`/profile?platformMembershipId=${who.membershipId}&destinyVersion=2&components=${components}`, {
-    headers: { "X-API-Key": apiKey, Authorization: `Bearer ${token}` },
-  });
-  for (const t of r.tags ?? []) if (t.tag || t.notes) out.tags[t.id] = { tag: t.tag ?? null, notes: t.notes ?? null };
-  out.loadouts = (r.loadouts ?? []).map((l) => ({
-    id: l.id,
-    name: l.name,
-    classType: l.classType,
-    itemIds: [...(l.equipped ?? []), ...(l.unequipped ?? [])].map((i) => i.id).filter((x): x is string => !!x && x !== "0"),
-  }));
-  return out;
-}
+export const fetchDimData = (want: { tags: boolean; loadouts: boolean }) => readDimProfile(dimCall, primaryMembership, want);
 
-export const keepIds = (d: DimData | null) => Object.entries(d?.tags ?? {}).filter(([, t]) => t.tag === "favorite" || t.tag === "keep").map(([id]) => id);
-
-export async function setDimTag(itemId: string, tag: DimTagValue | null, notes?: string | null): Promise<void> {
-  const { apiKey, token } = await dimAuth();
-  const who = await primaryMembership();
-  const payload: Record<string, unknown> = { id: itemId, tag };
-  if (notes !== undefined) payload.notes = notes;
-  const r = await dimFetch<{ results?: { status: string; message?: string }[] }>("/profile", {
-    body: { platformMembershipId: who.membershipId, destinyVersion: 2, updates: [{ action: "tag", payload }] },
-    headers: { "X-API-Key": apiKey, Authorization: `Bearer ${token}` },
-  });
-  const res = r.results?.[0];
-  if (res && res.status !== "Success") throw new Error(`DIM rejected the tag: ${res.message ?? res.status}`);
-}
+export const setDimTag = (itemId: string, tag: DimTagValue | null, notes?: string | null) => writeDimTag(dimCall, primaryMembership, itemId, tag, notes);
 
 /** Any DIM API call as the signed-in player (the Builds tab reads and saves loadouts with it). */
-export async function dimCall<T>(path: string, body?: unknown): Promise<T> {
+export const dimCall: DimCall = async (path, body) => {
   const { apiKey, token } = await dimAuth();
-  return dimFetch<T>(path, { body, headers: { "X-API-Key": apiKey, Authorization: `Bearer ${token}` } });
-}
+  return dimFetch(path, { body, headers: { "X-API-Key": apiKey, Authorization: `Bearer ${token}` } });
+};

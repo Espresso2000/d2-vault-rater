@@ -2,34 +2,20 @@ import { join } from "node:path";
 import { bungieEnv, paths, readJson, writeJson } from "../config.js";
 import { accessToken, loadTokens } from "../bungie/client.js";
 import { primaryMembership } from "../bungie/oauth.js";
+import { DIM_API, readDimProfile, writeDimTag, type DimCall, type DimTagValue } from "./common.js";
+
+export { DIM_TAGS, keepIds, type DimData, type DimLoadout, type DimTagValue } from "./common.js";
 
 /**
  * DIM Sync (api.destinyitemmanager.com): the tags, notes and loadouts DIM stores for you.
  * The rater registers itself once with your Bungie API key, then signs in with your Bungie login.
  */
-const DIM = "https://api.destinyitemmanager.com";
 const ORIGIN = "https://localhost:7777";
 const appFile = () => join(paths.home, "dim-app.json");
 const tokenFile = () => join(paths.home, "dim-token.json");
 
-export const DIM_TAGS = ["favorite", "keep", "infuse", "junk", "archive"] as const;
-export type DimTagValue = (typeof DIM_TAGS)[number];
-
-export interface DimLoadout {
-  id: string;
-  name: string;
-  classType: number;
-  itemIds: string[];
-}
-
-export interface DimData {
-  tags: Record<string, { tag: DimTagValue | null; notes: string | null }>;
-  loadouts: DimLoadout[];
-  fetchedAt: string;
-}
-
 async function dimFetch<T>(path: string, init: { method?: string; body?: unknown; headers?: Record<string, string> } = {}): Promise<T> {
-  const res = await fetch(DIM + path, {
+  const res = await fetch(DIM_API + path, {
     method: init.method ?? (init.body ? "POST" : "GET"),
     // DIM matches each app key to the origin it was registered with.
     headers: { "Content-Type": "application/json", Origin: ORIGIN, ...(init.headers ?? {}) },
@@ -69,42 +55,14 @@ async function dimAuth(): Promise<{ apiKey: string; token: string }> {
   return { apiKey, token: r.accessToken };
 }
 
-/** Read your DIM tags/notes and/or loadouts. */
-export async function fetchDimData(want: { tags: boolean; loadouts: boolean }): Promise<DimData> {
-  const components = [want.tags && "tags", want.loadouts && "loadouts"].filter(Boolean).join(",");
-  const out: DimData = { tags: {}, loadouts: [], fetchedAt: new Date().toISOString() };
-  if (!components) return out;
+/** Any DIM API call as the signed-in player. */
+const dimCall: DimCall = async (path, body) => {
   const { apiKey, token } = await dimAuth();
-  const who = await primaryMembership();
-  const r = await dimFetch<{
-    tags?: { id: string; tag?: DimTagValue | null; notes?: string | null }[];
-    loadouts?: { id: string; name: string; classType: number; equipped?: { id?: string }[]; unequipped?: { id?: string }[] }[];
-  }>(`/profile?platformMembershipId=${who.membershipId}&destinyVersion=2&components=${components}`, {
-    headers: { "X-API-Key": apiKey, Authorization: `Bearer ${token}` },
-  });
-  for (const t of r.tags ?? []) if (t.tag || t.notes) out.tags[t.id] = { tag: t.tag ?? null, notes: t.notes ?? null };
-  out.loadouts = (r.loadouts ?? []).map((l) => ({
-    id: l.id,
-    name: l.name,
-    classType: l.classType,
-    itemIds: [...(l.equipped ?? []), ...(l.unequipped ?? [])].map((i) => i.id).filter((x): x is string => !!x && x !== "0"),
-  }));
-  return out;
-}
+  return dimFetch(path, { body, headers: { "X-API-Key": apiKey, Authorization: `Bearer ${token}` } });
+};
 
-/** Instance ids tagged Favorite or Keep, which the rater then never marks for sharding. */
-export const keepIds = (d: DimData | null) => Object.entries(d?.tags ?? {}).filter(([, t]) => t.tag === "favorite" || t.tag === "keep").map(([id]) => id);
+/** Read your DIM tags/notes and/or loadouts. */
+export const fetchDimData = (want: { tags: boolean; loadouts: boolean }) => readDimProfile(dimCall, primaryMembership, want);
 
 /** Set (or clear, with tag null) one item's DIM tag, keeping or replacing its notes. */
-export async function setDimTag(itemId: string, tag: DimTagValue | null, notes?: string | null): Promise<void> {
-  const { apiKey, token } = await dimAuth();
-  const who = await primaryMembership();
-  const payload: Record<string, unknown> = { id: itemId, tag };
-  if (notes !== undefined) payload.notes = notes;
-  const r = await dimFetch<{ results?: { status: string; message?: string }[] }>("/profile", {
-    body: { platformMembershipId: who.membershipId, destinyVersion: 2, updates: [{ action: "tag", payload }] },
-    headers: { "X-API-Key": apiKey, Authorization: `Bearer ${token}` },
-  });
-  const res = r.results?.[0];
-  if (res && res.status !== "Success") throw new Error(`DIM rejected the tag: ${res.message ?? res.status}`);
-}
+export const setDimTag = (itemId: string, tag: DimTagValue | null, notes?: string | null) => writeDimTag(dimCall, primaryMembership, itemId, tag, notes);
