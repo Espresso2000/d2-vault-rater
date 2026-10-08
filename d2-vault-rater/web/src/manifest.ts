@@ -4,13 +4,11 @@
  * version, else straight from bungie.net in a Web Worker (needed after a game patch).
  */
 import { bungie } from "./shims/client";
-import { setManifest, type Manifest } from "./shims/manifest";
+import { setManifest, versionSlug, type Manifest } from "./shims/manifest";
 import { files, join } from "./shims/node";
 import { paths } from "./shims/config";
 import { idbGet, idbSet } from "./idb";
 import type { LiteManifest } from "./strip";
-
-const fileSafe = (v: string) => v.replace(/[^\w.-]/g, "_");
 
 export async function loadLiteManifest(log: (s: string) => void): Promise<LiteManifest> {
   const meta = await bungie<{ version: string; jsonWorldComponentContentPaths: Record<string, Record<string, string>> }>("/Destiny2/Manifest/", { auth: false });
@@ -18,7 +16,7 @@ export async function loadLiteManifest(log: (s: string) => void): Promise<LiteMa
   if (m?.version !== meta.version) {
     m = undefined;
     try {
-      const res = await fetch(`data/manifest-${fileSafe(meta.version)}.json`);
+      const res = await fetch(`data/manifest-${versionSlug(meta.version)}.json`);
       if (res.ok && res.headers.get("content-type")?.includes("json")) {
         log("Loading the Destiny item database…");
         const snap = (await res.json()) as LiteManifest;
@@ -42,7 +40,7 @@ export async function loadLiteManifest(log: (s: string) => void): Promise<LiteMa
   }
   setManifest(m as unknown as Manifest);
   // src/sources/activities.ts reads these two tables as files.
-  const dir = join(paths.manifestDir, fileSafe(m.version));
+  const dir = join(paths.manifestDir, versionSlug(m.version));
   files.set(join(dir, "DestinyCollectibleDefinition.json"), JSON.stringify(m.collectibles));
   files.set(join(dir, "DestinyActivityDefinition.json"), JSON.stringify(m.activities));
   return m;

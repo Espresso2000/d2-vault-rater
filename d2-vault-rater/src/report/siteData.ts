@@ -2,6 +2,7 @@ import type { WeaponRating, WeaponReport } from "../rating/weapons.js";
 import type { ArmorRating, ArmorReport } from "../rating/armor.js";
 import type { ReportOptions } from "./report.js";
 import { setKey, type ArmorSetData } from "../sources/armorSets.js";
+import { stripReissue } from "../bungie/defs.js";
 
 /**
  * The data the report page renders: every weapon and armor piece, highlights, RADS, Wrapped and DIM.
@@ -138,7 +139,7 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
         icon: imageKey(x.icon),
         src: o.sourceOf?.(x.hash ?? 0, x.name) ?? null,
         // Your best copy, so the page can open its details.
-        best: w.ratings.filter((r) => r.name.replace(/\s*\((adept|harrowed|timelost)\)\s*$/i, "") === x.name).sort((p, q) => q.score - p.score)[0]?.instanceId ?? null,
+        best: w.ratings.filter((r) => stripReissue(r.name) === x.name).sort((p, q) => q.score - p.score)[0]?.instanceId ?? null,
       })),
     })),
     encounters: o.encounters ?? {},

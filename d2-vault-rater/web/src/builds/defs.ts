@@ -5,6 +5,7 @@
  */
 import { bungie } from "../shims/client";
 import { idbGet, idbSet } from "../idb";
+import { versionSlug } from "../shims/manifest";
 import type { BuildDefs } from "./defs.strip";
 
 let cached: BuildDefs | null = null;
@@ -16,7 +17,7 @@ export async function loadBuildDefs(log: (s: string) => void): Promise<BuildDefs
   if (d?.version !== meta.version) {
     d = undefined;
     try {
-      const res = await fetch(`data/builds-${meta.version.replace(/[^\w.-]/g, "_")}.json`);
+      const res = await fetch(`data/builds-${versionSlug(meta.version)}.json`);
       if (res.ok && res.headers.get("content-type")?.includes("json")) d = await res.json();
     } catch {}
     if (d?.version !== meta.version) {

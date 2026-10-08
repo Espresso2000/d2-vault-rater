@@ -1,10 +1,9 @@
-import type { Manifest, ItemDef } from "../bungie/manifest.js";
+import { DAMAGE_TYPES as DAMAGE, type Manifest, type ItemDef } from "../bungie/defs.js";
 import { bungieUrl } from "../bungie/client.js";
-import type { ArmorRecord, ArmorSlot, ClassName, Element, PerkColumn, Vault, WeaponRecord, WeaponSlot } from "./types.js";
+import type { ArmorRecord, ArmorSlot, ClassName, PerkColumn, Vault, WeaponRecord, WeaponSlot } from "./types.js";
 
 export const PROFILE_COMPONENTS = [100, 102, 200, 201, 205, 300, 304, 305, 310];
 
-const DAMAGE: Record<number, Element> = { 1: "Kinetic", 2: "Arc", 3: "Solar", 4: "Void", 6: "Stasis", 7: "Strand" };
 const WEAPON_BUCKETS: Record<number, WeaponSlot> = { 1498876634: "Kinetic", 2465295065: "Energy", 953998645: "Power" };
 const ARMOR_BUCKETS: Record<number, ArmorSlot> = {
   3448274439: "Helmet",

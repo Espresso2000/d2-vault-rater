@@ -10,6 +10,7 @@ import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { TABLES, type LiteManifest, type TableKey } from "../src/strip";
 import { stripBuildDefs } from "../src/builds/defs.strip";
+import { versionSlug } from "../../src/bungie/defs.js";
 
 const here = resolve(import.meta.dirname, "..");
 const out = join(here, "public", "data");
@@ -27,7 +28,7 @@ const meta = (await (await fetch("https://www.bungie.net/Platform/Destiny2/Manif
   version: string;
   jsonWorldComponentContentPaths: Record<string, Record<string, string>>;
 };
-const file = `manifest-${meta.version.replace(/[^\w.-]/g, "_")}.json`;
+const file = `manifest-${versionSlug(meta.version)}.json`;
 if (existsSync(join(out, file))) console.log(`Manifest ${meta.version} snapshot is current.`);
 else {
   const lite = { version: meta.version } as LiteManifest;
@@ -43,7 +44,7 @@ else {
 }
 
 // The Builds tab's definitions (subclasses, aspects, fragments, mods), so browsers skip the 200 MB item table.
-const buildsFile = `builds-${meta.version.replace(/[^\w.-]/g, "_")}.json`;
+const buildsFile = `builds-${versionSlug(meta.version)}.json`;
 if (!existsSync(join(out, buildsFile))) {
   const get = async (t: string) => (await fetch("https://www.bungie.net" + meta.jsonWorldComponentContentPaths.en[t])).json();
   console.log("Downloading the Builds tab's definitions…");

@@ -1,4 +1,4 @@
-import { normalizeName } from "../bungie/manifest.js";
+import { baseName as base, normalizeName } from "../bungie/manifest.js";
 import type { AegisData, AegisWeapon } from "../sources/aegis.js";
 import type { ActivityData, LootWeapon } from "../sources/activities.js";
 import { SET_TIER_POINTS, setKey, type ArmorSetData, type SetTier } from "../sources/armorSets.js";
@@ -47,8 +47,6 @@ export interface RatedActivity {
   sets: RatedSet[];
   counts: { chase: number; upgrade: number; have: number; sTier: number };
 }
-
-const base = (n: string) => normalizeName(n.replace(/\s*\((adept|harrowed|timelost)\)\s*$/i, ""));
 
 /**
  * Ranks raids and dungeons (each kind on its own) by how much they would add to this vault:

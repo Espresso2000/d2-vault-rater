@@ -1,4 +1,4 @@
-import { normalizeName, type Manifest } from "../bungie/manifest.js";
+import { baseName, normalizeName, type Manifest } from "../bungie/manifest.js";
 import type { AegisData, AegisWeapon, ColumnKey } from "../sources/aegis.js";
 import type { WishlistData } from "../sources/wishlist.js";
 import type { WeaponRecord } from "../vault/types.js";
@@ -87,7 +87,7 @@ function aegisIndex(aegis: AegisData | null) {
   }
   return {
     find: (w: WeaponRecord) =>
-      byHash.get(w.itemHash) ?? byName.get(normalizeName(w.name.replace(/\s*\((adept|timelost|harrowed)\)\s*$/i, ""))) ?? null,
+      byHash.get(w.itemHash) ?? byName.get(baseName(w.name)) ?? null,
     tierPosition,
   };
 }
@@ -207,7 +207,7 @@ export function rateWeapons(
   // Duplicates: same weapon name, best copy first
   const sameName = new Map<string, WeaponRating[]>();
   for (const r of ratings) {
-    const k = normalizeName(r.name.replace(/\s*\((adept|timelost|harrowed)\)\s*$/i, ""));
+    const k = baseName(r.name);
     sameName.set(k, [...(sameName.get(k) ?? []), r]);
   }
   const duplicates: WeaponReport["duplicates"] = [];

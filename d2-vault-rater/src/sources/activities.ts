@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { paths, readJson, writeJson } from "../config.js";
 import { bungie, bungieUrl, BUNGIE } from "../bungie/client.js";
-import { normalizeName, type Manifest } from "../bungie/manifest.js";
+import { baseName, DAMAGE_TYPES as DAMAGE, normalizeName, stripReissue, versionSlug, type Manifest } from "../bungie/manifest.js";
 import { setKey, type ArmorSetData } from "./armorSets.js";
 import type { AegisData } from "./aegis.js";
 
@@ -45,8 +45,6 @@ const QUEST_EXOTICS: Record<string, string[]> = {
 /** Steps of an exotic quest that collections list as raid loot. */
 const QUEST_STEPS = new Set(["husk of the pit", "eidolon ally"]);
 
-const DAMAGE: Record<number, string> ={ 1: "Kinetic", 2: "Arc", 3: "Solar", 4: "Void", 6: "Stasis", 7: "Strand" };
-
 export interface LootWeapon {
   name: string;
   hash: number | null;
@@ -81,7 +79,7 @@ interface CollectibleDef { sourceString?: string; itemHash?: number }
 
 /** Download (once per game version) a manifest table the main loader does not keep in memory. */
 async function extraTable<T>(name: string, version: string): Promise<Record<string, T>> {
-  const dir = join(paths.manifestDir, version.replace(/[^\w.-]/g, "_"));
+  const dir = join(paths.manifestDir, versionSlug(version));
   mkdirSync(dir, { recursive: true });
   const file = join(dir, `${name}.json`);
   if (!existsSync(file)) {
@@ -117,7 +115,7 @@ export async function importActivityLoot(m: Manifest, aegis: AegisData | null, s
       const def = m.items[c.itemHash];
       if (!def?.displayProperties?.name) continue;
       if (def.itemType === 3) {
-        const name = def.displayProperties.name.replace(/\s*\((adept|harrowed|timelost)\)\s*$/i, "");
+        const name = stripReissue(def.displayProperties.name);
         const k = normalizeName(name);
         if (!weapons.has(k) && !QUEST_STEPS.has(k))
           weapons.set(k, {
@@ -202,7 +200,7 @@ export async function buildSourceLookup(m: Manifest, aegis: AegisData | null, lo
   for (const c of Object.values(collectibles)) {
     const def = c.itemHash ? m.items[c.itemHash] : null;
     if (def?.itemType !== 3 || !c.sourceString || /cannot be reacquired/i.test(c.sourceString)) continue;
-    const k = normalizeName(def.displayProperties.name.replace(/\s*\((adept|harrowed|timelost)\)\s*$/i, ""));
+    const k = baseName(def.displayProperties.name);
     // Fallback only (used when the item's own collectible has no source); keeps the first one found.
     if (!byName.has(k)) byName.set(k, clean(c.sourceString));
   }
@@ -210,7 +208,7 @@ export async function buildSourceLookup(m: Manifest, aegis: AegisData | null, lo
   const actByName = new Map<string, { key: string; name: string }>();
   for (const a of loot?.activities ?? []) for (const w of a.weapons) actByName.set(normalizeName(w.name), { key: a.key, name: a.name });
   return (hash, name) => {
-    const k = normalizeName(name.replace(/\s*\((adept|harrowed|timelost)\)\s*$/i, ""));
+    const k = baseName(name);
     const ch = m.items[hash]?.collectibleHash;
     const own = ch ? collectibles[String(ch)]?.sourceString : undefined;
     return {

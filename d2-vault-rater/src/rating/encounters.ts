@@ -1,4 +1,4 @@
-import { normalizeName } from "../bungie/manifest.js";
+import { baseName as base, normalizeName } from "../bungie/manifest.js";
 import { ENCOUNTERS, ROLE_META, ROLE_TYPES, type Encounter, type Role } from "../data/encounters.js";
 import type { WeaponRating } from "./weapons.js";
 
@@ -16,7 +16,6 @@ export interface EncounterPlan extends Encounter {
   missing: string[];
 }
 
-const base = (n: string) => normalizeName(n.replace(/\s*\((adept|harrowed|timelost)\)\s*$/i, ""));
 /** Boss roles want heavy grenade launchers, not the special ones. */
 const BOSS_ROLES = new Set<Role>(["boss-burst", "boss-sustained"]);
 const ROLE_WEIGHT = [1, 0.8, 0.6];
