@@ -80,11 +80,13 @@ button { cursor: pointer; }
 
 /* ---------- Top bar ---------- */
 .topbar { position: sticky; top: 0; z-index: 10; padding-top: env(safe-area-inset-top, 0px); background: rgba(5,8,22,.78); backdrop-filter: blur(18px) saturate(150%); }
-/* The bar ends in a wave that drifts slowly: ::after carries the bar's glass into the wave, ::before draws its gradient line. */
-.topbar::after, .topbar::before { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 16px; pointer-events: none; animation: wave 40s linear infinite; }
-.topbar::after { background: rgba(5,8,22,.78); backdrop-filter: blur(18px) saturate(150%); -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='16'%3E%3Cpath d='M0 0H320V8Q280 2 240 8T160 8T80 8T0 8Z'/%3E%3C/svg%3E") 0 0 / 320px 16px repeat-x; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='16'%3E%3Cpath d='M0 0H320V8Q280 2 240 8T160 8T80 8T0 8Z'/%3E%3C/svg%3E") 0 0 / 320px 16px repeat-x; }
-.topbar::before { z-index: 1; background: var(--grad); opacity: .75; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='16'%3E%3Cpath d='M0 8Q40 14 80 8T160 8T240 8T320 8' fill='none' stroke='%23000' stroke-width='1.2'/%3E%3C/svg%3E") 0 0 / 320px 16px repeat-x; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='16'%3E%3Cpath d='M0 8Q40 14 80 8T160 8T240 8T320 8' fill='none' stroke='%23000' stroke-width='1.2'/%3E%3C/svg%3E") 0 0 / 320px 16px repeat-x; }
-@keyframes wave { to { -webkit-mask-position: 320px 0; mask-position: 320px 0; } }
+/* The bar ends in a gentle wave of three strands drifting at different speeds: ::after carries the bar's glass
+   down to the first strand, ::before draws the strands in the gradient. */
+.topbar::after, .topbar::before { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 20px; pointer-events: none; }
+.topbar::after { background: rgba(5,8,22,.78); backdrop-filter: blur(18px) saturate(150%); -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='20'%3E%3Cpath d='M0 0H640V6Q560 3 480 6T320 6T160 6T0 6Z'/%3E%3C/svg%3E") 0 0 / 640px 20px repeat-x; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='20'%3E%3Cpath d='M0 0H640V6Q560 3 480 6T320 6T160 6T0 6Z'/%3E%3C/svg%3E") 0 0 / 640px 20px repeat-x; animation: wave-fill 80s linear infinite; }
+.topbar::before { z-index: 1; background: var(--grad); -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='20'%3E%3Cpath d='M0 6Q80 9 160 6T320 6T480 6T640 6' fill='none' stroke='%23000' stroke-opacity='1' stroke-width='2'/%3E%3C/svg%3E") 0 0 / 640px 20px repeat-x, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='960' height='20'%3E%3Cpath d='M0 10Q120 14 240 10T480 10T720 10T960 10' fill='none' stroke='%23000' stroke-opacity='0.7' stroke-width='1.5'/%3E%3C/svg%3E") 0 0 / 960px 20px repeat-x, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1280' height='20'%3E%3Cpath d='M0 14Q160 19 320 14T640 14T960 14T1280 14' fill='none' stroke='%23000' stroke-opacity='0.45' stroke-width='1'/%3E%3C/svg%3E") 0 0 / 1280px 20px repeat-x; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='20'%3E%3Cpath d='M0 6Q80 9 160 6T320 6T480 6T640 6' fill='none' stroke='%23000' stroke-opacity='1' stroke-width='2'/%3E%3C/svg%3E") 0 0 / 640px 20px repeat-x, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='960' height='20'%3E%3Cpath d='M0 10Q120 14 240 10T480 10T720 10T960 10' fill='none' stroke='%23000' stroke-opacity='0.7' stroke-width='1.5'/%3E%3C/svg%3E") 0 0 / 960px 20px repeat-x, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1280' height='20'%3E%3Cpath d='M0 14Q160 19 320 14T640 14T960 14T1280 14' fill='none' stroke='%23000' stroke-opacity='0.45' stroke-width='1'/%3E%3C/svg%3E") 0 0 / 1280px 20px repeat-x; animation: wave-lines 80s linear infinite; }
+@keyframes wave-fill { to { -webkit-mask-position: 640px 0; mask-position: 640px 0; } }
+@keyframes wave-lines { to { -webkit-mask-position: 640px 0, -960px 0, 1280px 0; mask-position: 640px 0, -960px 0, 1280px 0; } }
 .appbar { display: flex; align-items: center; gap: 16px; height: 62px; }
 .brand { display: flex; align-items: center; gap: 12px; color: var(--ink); text-decoration: none; min-width: 0; margin-right: auto; }
 .brand .emblem { width: 48px; height: 40px; flex: none; overflow: visible; transition: transform .3s ease, filter .3s ease; }
@@ -276,19 +278,21 @@ button.elcard:hover { border-color: color-mix(in srgb, currentColor 45%, transpa
 .qlink:hover::after { color: var(--ink); transform: translateX(3px); }
 
 /* ---------- Weapons ---------- */
-.types { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(330px, 100%), 1fr)); gap: 12px; }
-.tcard { border-radius: 3px 18px; background: var(--glass); border: 1px solid var(--line); padding: 14px; display: grid; gap: 10px; align-content: start; transition: border-color .2s ease; }
+/* At most three cards to a row, so each card has room to breathe */
+.types { --gap: 18px; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, max(360px, calc((100% - 2 * var(--gap)) / 3))), 1fr)); gap: var(--gap); }
+.tcard { border-radius: 3px 18px; background: var(--glass); border: 1px solid var(--line); padding: 20px; display: grid; gap: 14px; align-content: start; transition: border-color .2s ease; }
 .tcard:hover { border-color: var(--line-hi); }
 .tcard header { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
 .tcard h3 { font-size: 17px; font-weight: 600; }
 .tcard header .small { color: var(--faint); white-space: nowrap; }
-.mini { display: grid; grid-template-columns: 18px 40px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 10px; background: transparent; border: 0; text-align: left; width: 100%; transition: background .15s ease; }
+.mini { display: grid; grid-template-columns: 18px 48px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 8px 8px; border-radius: 10px; background: transparent; border: 0; text-align: left; width: 100%; transition: background .15s ease; }
 .mini:hover { background: var(--glass-hi); }
 .mini .rk { font: 600 13px var(--display); color: var(--faint); text-align: center; }
-.mini img, .mini .ph { width: 40px; height: 40px; border-radius: 8px; }
+.mini img, .mini .ph { width: 48px; height: 48px; border-radius: 9px; }
 .mini .right { display: flex; align-items: center; gap: 8px; }
 .mini .right b { font: 600 16px var(--display); min-width: 28px; text-align: right; }
-.subchips { display: flex; flex-wrap: wrap; gap: 5px; }
+.subchips { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+.subsep { flex: none; width: 1px; height: 16px; margin-inline: 4px; background: var(--line-hi); }
 /* One scrolling line per chip row keeps type cards short. */
 .tcard .subchips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent); mask-image: linear-gradient(90deg, #000 88%, transparent); padding-right: 24px; }
 .tcard .subchips::-webkit-scrollbar { display: none; }
@@ -385,10 +389,10 @@ details.ms summary .n { background: var(--grad); color: #04102a; border-radius: 
 .mini .perkline, .tc-art { display: none; }
 /* Large type cards: banner art of the top pick, bigger icons and trait perks */
 .cardsize { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-bottom: 14px; }
-.cards-big .types { grid-template-columns: repeat(auto-fill, minmax(min(460px, 100%), 1fr)); gap: 16px; }
-.cards-big .tcard { padding: 0 18px 16px; gap: 12px; overflow: hidden; border-radius: 3px 22px; }
+.cards-big .types { --gap: 22px; }
+.cards-big .tcard { padding: 0 22px 20px; gap: 12px; overflow: hidden; border-radius: 3px 22px; }
 .cards-big .tcard:not(:has(.tc-art)) { padding-top: 16px; }
-.cards-big .tc-art { display: block; position: relative; margin: 0 -18px -34px; aspect-ratio: 16 / 5; overflow: hidden; }
+.cards-big .tc-art { display: block; position: relative; margin: 0 -22px -34px; aspect-ratio: 16 / 5; overflow: hidden; }
 .cards-big .tc-art img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: .7; transition: transform .8s ease, opacity .3s ease; }
 .cards-big .tc-art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(5,8,22,.05), rgba(10,15,36,.96)); }
 .cards-big .tc-art.ic img { filter: blur(18px) saturate(1.4); transform: scale(1.4); opacity: .5; }
@@ -1164,7 +1168,7 @@ function vrMain() {
     const best = [...list].sort(by((w) => w.sc)).filter((w) => !seen.has(w.n) && seen.add(w.n)).slice(0, 3);
     const keep = c.leg.filter((w) => w.v === "keep").length;
     const chip = (sub, label, n) => `<button class="subchip" data-card="${c.i}" data-sub="${esc(sub)}" aria-pressed="${c.sub === sub}"${sub.startsWith("e:") ? ` style="--dot:var(--${esc(label)})"` : ""}>${sub.startsWith("e:") ? "<i></i>" : ""}${esc(label)}${n ? `<span>${n}</span>` : ""}</button>`;
-    const subs = c.leg.length > 1 ? `<div class="subchips">${chip("", "All")}${frames.length > 1 ? frames.map(([f, n]) => chip("f:" + f, f, n)).join("") : ""}</div>${els.length > 1 ? `<div class="subchips">${els.map(([e, n]) => chip("e:" + e, e, n)).join("")}</div>` : ""}` : "";
+    const subs = c.leg.length > 1 ? `<div class="subchips">${chip("", "All")}${frames.length > 1 ? frames.map(([f, n]) => chip("f:" + f, f, n)).join("") : ""}${els.length > 1 ? `<i class="subsep" aria-hidden="true"></i>${els.map(([e, n]) => chip("e:" + e, e, n)).join("")}` : ""}</div>` : "";
     const exo = c.all.length - c.leg.length;
     // Banner: a screenshot from this type when one exists, otherwise the top pick's icon, blurred.
     const withShot = [...best, ...c.all].find((w) => w.ss && IMG[w.ss]), icon = best[0]?.ic && IMG[best[0].ic];
