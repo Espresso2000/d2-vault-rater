@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { paths, readJsonCached, writeJson } from "../config.js";
+import { paths, readJsonCached, writeText } from "../config.js";
 
 export const DEFAULT_WISHLISTS = [
   "https://raw.githubusercontent.com/48klocs/dim-wish-list-sources/master/voltron.txt",
@@ -47,10 +47,12 @@ export async function importWishlists(urls: string[] = DEFAULT_WISHLISTS): Promi
     const res = await fetch(u);
     if (!res.ok) throw new Error(`Wishlist ${u} -> ${res.status}`);
     // A loop, not push(...rows): ~275k rolls overflow the call stack as spread arguments.
-    for (const roll of parseWishlist(await res.text())) rolls.push(roll);
+    // Notes are dropped: the rater only reads perks, and notes made the cache ~10x bigger.
+    for (const roll of parseWishlist(await res.text())) rolls.push({ ...roll, notes: "" });
   }
   const data = { importedAt: new Date().toISOString(), sources: urls, rolls };
-  writeJson(wishlistFile(), data);
+  // Unindented: this file is read on every rating, so its size is load time.
+  writeText(wishlistFile(), JSON.stringify(data));
   return data;
 }
 
