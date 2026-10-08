@@ -15,7 +15,7 @@ npm install
 npm run local
 ```
 
-On Windows you can double-click `Vault Rater Web.cmd` instead.
+On Windows you can double-click `Vault Rater Web.cmd` instead, next to `Vault Rater.cmd` in the folder above `d2-vault-rater`. It also opens the page for you.
 
 This builds the site and serves it over https on the port of your app's redirect URL, 7777 by default ([web/vite.config.ts:55-63](../../web/vite.config.ts#L55-L63), [web/local-server.ts:21-27](../../web/local-server.ts#L21-L27)). The certificate is self-signed, so your browser warns once: choose **Advanced**, then continue.
 

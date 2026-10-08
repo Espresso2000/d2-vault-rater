@@ -33,7 +33,7 @@ If an import finds no weapons at all, the previous import is kept ([src/sources/
 
 ## Armor sets or raid loot are missing
 
-Both imports are allowed to fail without stopping a report ([src/pipeline.ts:42-44](../../src/pipeline.ts#L42-L44)). Set bonus descriptions come from a second sheet; if it can't be read you get tiers without descriptions and a warning ([src/sources/armorSets.ts:107-111](../../src/sources/armorSets.ts#L107-L111)). Raid loot needs two extra manifest tables, downloaded on first use per game version ([src/sources/activities.ts:81-92](../../src/sources/activities.ts#L81-L92)).
+Both imports are allowed to fail without stopping a report ([src/pipeline.ts:42-44](../../src/pipeline.ts#L42-L44)). Set bonus descriptions come from a second sheet; if it can't be read you get tiers without descriptions and a warning ([src/sources/armorSets.ts:107-111](../../src/sources/armorSets.ts#L107-L111)). Raid loot needs two extra manifest tables, downloaded on first use per game version ([src/sources/activities.ts:85-91](../../src/sources/activities.ts#L85-L91)).
 
 ## Use other wishlists
 

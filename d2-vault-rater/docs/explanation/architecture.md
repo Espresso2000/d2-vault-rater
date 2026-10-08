@@ -15,8 +15,8 @@ The rating steps are the same everywhere: load the manifest, make sure the ratin
 ## The shared modules
 
 - **Vault decoding**: [src/vault/decode.ts:71](../../src/vault/decode.ts#L71) turns a Bungie `GetProfile` response into plain `WeaponRecord` and `ArmorRecord` objects ([src/vault/types.ts:23](../../src/vault/types.ts#L23), [src/vault/types.ts:46](../../src/vault/types.ts#L46)). Nothing after this step reads Bungie's raw shapes.
-- **Sources**: Aegis's tier list ([src/sources/aegis.ts:138](../../src/sources/aegis.ts#L138)), community wishlists ([src/sources/wishlist.ts:44](../../src/sources/wishlist.ts#L44)), armor set tiers ([src/sources/armorSets.ts:99](../../src/sources/armorSets.ts#L99)) and raid and dungeon loot ([src/sources/activities.ts:97](../../src/sources/activities.ts#L97)).
-- **Rating**: weapons ([src/rating/weapons.ts:137](../../src/rating/weapons.ts#L137)), armor ([src/rating/armor.ts:96](../../src/rating/armor.ts#L96)), activities ([src/rating/activities.ts:57](../../src/rating/activities.ts#L57)) and encounter loadouts ([src/rating/encounters.ts:79](../../src/rating/encounters.ts#L79)). These are pure functions of their inputs.
+- **Sources**: Aegis's tier list ([src/sources/aegis.ts:138](../../src/sources/aegis.ts#L138)), community wishlists ([src/sources/wishlist.ts:44](../../src/sources/wishlist.ts#L44)), armor set tiers ([src/sources/armorSets.ts:99](../../src/sources/armorSets.ts#L99)) and raid and dungeon loot ([src/sources/activities.ts:96](../../src/sources/activities.ts#L96)).
+- **Rating**: weapons ([src/rating/weapons.ts:145](../../src/rating/weapons.ts#L145)), armor ([src/rating/armor.ts:96](../../src/rating/armor.ts#L96)), activities ([src/rating/activities.ts:57](../../src/rating/activities.ts#L57)) and encounter loadouts ([src/rating/encounters.ts:82](../../src/rating/encounters.ts#L82)). These are pure functions of their inputs.
 - **Actions**: the dry-run lock plan, apply and undo ([src/dim/actions.ts:46](../../src/dim/actions.ts#L46)), item moves ([src/bungie/transfer.ts:46](../../src/bungie/transfer.ts#L46)) and DIM tags ([src/dim/common.ts:55](../../src/dim/common.ts#L55)).
 - **Report data**: [src/report/siteData.ts:12](../../src/report/siteData.ts#L12) shapes everything the report page draws. It does no file or network access, so the local report and the web app share it.
 
@@ -26,7 +26,7 @@ Most of `src/` only needs `fetch`, which browsers have. Five modules touch the f
 
 | Node module | Browser version | Difference |
 | --- | --- | --- |
-| [src/config.ts](../../src/config.ts) | [web/src/shims/config.ts](../../web/src/shims/config.ts) | "Files" live in memory and are saved to IndexedDB ([web/src/shims/config.ts:50-53](../../web/src/shims/config.ts#L50-L53)). |
+| [src/config.ts](../../src/config.ts) | [web/src/shims/config.ts](../../web/src/shims/config.ts) | "Files" live in memory and are saved to IndexedDB ([web/src/shims/config.ts:58-61](../../web/src/shims/config.ts#L58-L61)). |
 | [src/bungie/client.ts](../../src/bungie/client.ts) | [web/src/shims/client.ts](../../web/src/shims/client.ts) | Tokens in `localStorage`; a 401 or a Bungie auth error throws `LoginRequired` so the page can ask for sign-in again ([web/src/shims/client.ts:93-99](../../web/src/shims/client.ts#L93-L99)). |
 | [src/bungie/oauth.ts](../../src/bungie/oauth.ts) | [web/src/shims/oauth.ts](../../web/src/shims/oauth.ts) | Bungie redirects back to the page itself; the OAuth state lives in `sessionStorage` ([web/src/shims/oauth.ts:12](../../web/src/shims/oauth.ts#L12)). |
 | [src/bungie/manifest.ts](../../src/bungie/manifest.ts) | [web/src/shims/manifest.ts](../../web/src/shims/manifest.ts) | The page loads a stripped manifest itself and hands it over with `setManifest` ([web/src/manifest.ts:20](../../web/src/manifest.ts#L20)). |
@@ -35,6 +35,7 @@ Most of `src/` only needs `fetch`, which browsers have. Five modules touch the f
 The parts of those modules that are the same in both places live in browser-safe files that both versions re-export, so there is one copy of each:
 
 - [src/bungie/defs.ts](../../src/bungie/defs.ts): manifest types and name helpers.
+- [src/bungie/strip.ts](../../src/bungie/strip.ts): cutting manifest tables down to the fields the rater reads (the Node cache and the web app's item database).
 - [src/bungie/errors.ts](../../src/bungie/errors.ts): `BungieError`, the throttle retry and `bungieUrl`.
 - [src/dim/common.ts](../../src/dim/common.ts): DIM tag names, data shapes, reading a profile and writing a tag.
 

@@ -4,15 +4,15 @@ The RADS tab answers two questions: which raid or dungeon is most worth farming 
 
 ## Where the loot list comes from
 
-The activities are a fixed list of every raid and dungeon in the game, each with the names Bungie and Aegis use for it ([src/sources/activities.ts:14-35](../../src/sources/activities.ts#L14-L35)). `importActivityLoot` ([src/sources/activities.ts:97](../../src/sources/activities.ts#L97)) builds each activity's loot from three places:
+The activities are a fixed list of every raid and dungeon in the game, each with the names Bungie and Aegis use for it ([src/sources/activities.ts:16-37](../../src/sources/activities.ts#L16-L37)). `importActivityLoot` ([src/sources/activities.ts:96](../../src/sources/activities.ts#L96)) builds each activity's loot from three places:
 
-1. **Bungie's collections**: every collectible whose "Source:" text names the activity, leaving out Eververse, promotional and Guided Games sources ([src/sources/activities.ts:94-95](../../src/sources/activities.ts#L94-L95), [src/sources/activities.ts:113-134](../../src/sources/activities.ts#L113-L134)). Armor in those collectibles gives the activity's armor sets.
-2. **Aegis's sheet**: weapons whose source column names the activity ([src/sources/activities.ts:135-154](../../src/sources/activities.ts#L135-L154)).
-3. **Exotic quests** that collections credit to the quest rather than the activity, such as Xenophage in Pit of Heresy ([src/sources/activities.ts:39-44](../../src/sources/activities.ts#L39-L44), [src/sources/activities.ts:155](../../src/sources/activities.ts#L155)).
+1. **Bungie's collections**: every collectible whose "Source:" text names the activity, leaving out Eververse, promotional and Guided Games sources ([src/sources/activities.ts:93-94](../../src/sources/activities.ts#L93-L94), [src/sources/activities.ts:112-133](../../src/sources/activities.ts#L112-L133)). Armor in those collectibles gives the activity's armor sets.
+2. **Aegis's sheet**: weapons whose source column names the activity ([src/sources/activities.ts:134-153](../../src/sources/activities.ts#L134-L153)).
+3. **Exotic quests** that collections credit to the quest rather than the activity, such as Xenophage in Pit of Heresy ([src/sources/activities.ts:41-46](../../src/sources/activities.ts#L41-L46), [src/sources/activities.ts:154](../../src/sources/activities.ts#L154)).
 
-When the two disagree, collections win: a weapon only the sheet ties to an activity is dropped if collections credit it to another one ([src/sources/activities.ts:175-178](../../src/sources/activities.ts#L175-L178)). Each activity's art is the most common loading-screen image among its versions ([src/sources/activities.ts:102-107](../../src/sources/activities.ts#L102-L107)).
+When the two disagree, collections win: a weapon only the sheet ties to an activity is dropped if collections credit it to another one ([src/sources/activities.ts:174-177](../../src/sources/activities.ts#L174-L177)). Each activity's art is the most common loading-screen image among its versions ([src/sources/activities.ts:101-106](../../src/sources/activities.ts#L101-L106)).
 
-The two manifest tables this needs (activities and collectibles) are downloaded once per game version, separately from the main manifest ([src/sources/activities.ts:81](../../src/sources/activities.ts#L81)).
+The two manifest tables this needs (activities and collectibles) are downloaded and stripped once per game version, separately from the main manifest ([src/sources/activities.ts:85-91](../../src/sources/activities.ts#L85-L91)).
 
 ## Ranking activities
 
@@ -31,6 +31,6 @@ Each raid and dungeon encounter is described in [src/data/encounters.ts:55](../.
 `planEncounter` ([src/rating/encounters.ts:45](../../src/rating/encounters.ts#L45)) picks the best three-weapon loadout from your rated vault:
 
 - **Candidates per role**: your weapons scored by vault score times role fit, plus 30 when guides name the weapon for this encounter or 15 when they name it for the role; the top eight per role are kept ([src/rating/encounters.ts:24-42](../../src/rating/encounters.ts#L24-L42)). Special-ammo grenade launchers don't count for boss damage ([src/rating/encounters.ts:34](../../src/rating/encounters.ts#L34)).
-- **Roles nobody can fill** (often Support) fall back to add clear, precision, sustained damage or range ([src/rating/encounters.ts:22](../../src/rating/encounters.ts#L22), [src/rating/encounters.ts:46-51](../../src/rating/encounters.ts#L46-L51)).
-- **Combination search**: every pick is tried with one weapon per slot, no weapon twice and at most one exotic; the first role weighs 1, the second 0.8, the third 0.6 ([src/rating/encounters.ts:21](../../src/rating/encounters.ts#L21), [src/rating/encounters.ts:57-71](../../src/rating/encounters.ts#L57-L71)).
-- **Worth getting**: up to four meta picks for the encounter or its main role that you don't own ([src/rating/encounters.ts:74-75](../../src/rating/encounters.ts#L74-L75)).
+- **Roles nobody can fill** (often Support) fall back to add clear, precision, sustained damage or range ([src/rating/encounters.ts:22](../../src/rating/encounters.ts#L22), [src/rating/encounters.ts:49-54](../../src/rating/encounters.ts#L49-L54)).
+- **Combination search**: every pick is tried with one weapon per slot, no weapon twice and at most one exotic; the first role weighs 1, the second 0.8, the third 0.6 ([src/rating/encounters.ts:21](../../src/rating/encounters.ts#L21), [src/rating/encounters.ts:60-74](../../src/rating/encounters.ts#L60-L74)).
+- **Worth getting**: up to four meta picks for the encounter or its main role that you don't own ([src/rating/encounters.ts:77-78](../../src/rating/encounters.ts#L77-L78)).

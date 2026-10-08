@@ -12,7 +12,9 @@
 | [src/bungie/client.ts:66](../../src/bungie/client.ts#L66) | Tokens, OAuth token requests, `bungie()` for Platform calls. *Shimmed.* |
 | [src/bungie/errors.ts:16](../../src/bungie/errors.ts#L16) | `BungieError`, `retryThrottled`, `bungieUrl`. Browser-safe. |
 | [src/bungie/oauth.ts:9](../../src/bungie/oauth.ts#L9) | Login start and finish, the primary Destiny membership. *Shimmed.* |
-| [src/bungie/manifest.ts:18](../../src/bungie/manifest.ts#L18) | Downloads and caches manifest tables per game version. *Shimmed.* |
+| [src/bungie/manifest.ts:21](../../src/bungie/manifest.ts#L21) | Loads the manifest tables the rater needs, per game version. *Shimmed.* |
+| [src/bungie/tables.ts:11](../../src/bungie/tables.ts#L11) | `liteTable`: downloads one table, strips it and caches it as `<table>.lite.json`. |
+| [src/bungie/strip.ts:18](../../src/bungie/strip.ts#L18) | Cuts manifest tables down to the fields the rater reads. Browser-safe; the web app uses it too. |
 | [src/bungie/defs.ts:8](../../src/bungie/defs.ts#L8) | Manifest types and name helpers. Browser-safe. |
 | [src/bungie/transfer.ts:46](../../src/bungie/transfer.ts#L46) | Moving and equipping items. |
 | [src/vault/fetch.ts:9](../../src/vault/fetch.ts#L9) | Reads the profile and keeps the last vault. |
@@ -22,11 +24,11 @@
 | [src/sources/aegis.ts:138](../../src/sources/aegis.ts#L138) | Aegis's weapon tier tabs: tab list, CSV parsing, hash matching. |
 | [src/sources/armorSets.ts:99](../../src/sources/armorSets.ts#L99) | Aegis's armor set tab and the community bonus sheet. |
 | [src/sources/wishlist.ts:24](../../src/sources/wishlist.ts#L24) | DIM wishlist parsing and import. |
-| [src/sources/activities.ts:97](../../src/sources/activities.ts#L97) | Raid and dungeon loot; where each weapon comes from. |
+| [src/sources/activities.ts:96](../../src/sources/activities.ts#L96) | Raid and dungeon loot; where each weapon comes from. |
 | [src/sources/csv.ts:5](../../src/sources/csv.ts#L5) | RFC 4180 CSV parser and the Google Sheets CSV URL. |
 | [src/data/encounters.ts:55](../../src/data/encounters.ts#L55) | Every raid and dungeon encounter, roles and meta picks. |
 | [src/rating/settings.ts:89](../../src/rating/settings.ts#L89) | Settings schema, presets, `strictnessFor`. |
-| [src/rating/weapons.ts:137](../../src/rating/weapons.ts#L137) | Weapon scores and verdicts. |
+| [src/rating/weapons.ts:145](../../src/rating/weapons.ts#L145) | Weapon scores and verdicts. |
 | [src/rating/armor.ts:96](../../src/rating/armor.ts#L96) | Armor scores and verdicts. |
 | [src/rating/activities.ts:57](../../src/rating/activities.ts#L57) | Raid and dungeon ranking. |
 | [src/rating/encounters.ts:45](../../src/rating/encounters.ts#L45) | Encounter loadouts. |
@@ -48,7 +50,7 @@
 | [web/src/appConfig.ts:28](../../web/src/appConfig.ts#L28) | Which Bungie app the site uses. |
 | [web/src/shims/](../../web/src/shims/) | Browser versions of the five Node-only modules, plus `node:*` stand-ins. |
 | [web/src/versioned.ts:36](../../web/src/versioned.ts#L36) | IndexedDB → snapshot → worker loading for per-version data. |
-| [web/src/manifest.ts:8](../../web/src/manifest.ts#L8), [web/src/manifest.worker.ts:5](../../web/src/manifest.worker.ts#L5), [web/src/strip.ts:13](../../web/src/strip.ts#L13) | The stripped item database. |
+| [web/src/manifest.ts:8](../../web/src/manifest.ts#L8), [web/src/manifest.worker.ts:5](../../web/src/manifest.worker.ts#L5), [web/src/strip.ts:8](../../web/src/strip.ts#L8) | The stripped item database (the tables and strip functions it uses, from `src/bungie/strip.ts`). |
 | [web/src/sources.ts:26](../../web/src/sources.ts#L26) | Daily source refresh with snapshot fallback. |
 | [web/src/idb.ts:6](../../web/src/idb.ts#L6) | A small promise wrapper around one IndexedDB store. |
 | [web/src/html.ts:2](../../web/src/html.ts#L2) | `esc()` for HTML. |

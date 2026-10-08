@@ -35,7 +35,7 @@ The MCP server ([src/server.ts](../../src/server.ts)) talks over stdio ([src/ser
 
 ## Shapes
 
-`rate_weapons` and `rate_armor` return shortened items to keep the reply small: [src/server.ts:83-101](../../src/server.ts#L83-L101) for weapons (id, name, type, element, slot, tier, score, roll, verdict, label, category, perks, matched perks, reasons, Aegis notes, icon, screenshot) and [src/server.ts:102-116](../../src/server.ts#L102-L116) for armor (id, name, class, slot, archetype, gear tier, top stats, set, score, verdict, label, reasons, icon). The `verdict` is `keep`, `shard` or `review`; `label` says why it is kept: `best`, `backup`, `protected`, `unrated` or `set` ([src/rating/weapons.ts:45-46](../../src/rating/weapons.ts#L45-L46), [src/rating/armor.ts:30-31](../../src/rating/armor.ts#L30-L31)).
+`rate_weapons` and `rate_armor` return shortened items to keep the reply small: [src/server.ts:83-101](../../src/server.ts#L83-L101) for weapons (id, name, type, element, slot, tier, score, roll, verdict, label, category, perks, matched perks, reasons, Aegis notes, icon, screenshot) and [src/server.ts:102-116](../../src/server.ts#L102-L116) for armor (id, name, class, slot, archetype, gear tier, top stats, set, score, verdict, label, reasons, icon). The `verdict` is `keep`, `shard` or `review`; `label` says why it is kept: `best`, `backup`, `protected`, `unrated` (weapons) or `set` (armor), and is `shard` for everything marked shard or review ([src/rating/weapons.ts:45-46](../../src/rating/weapons.ts#L45-L46), [src/rating/armor.ts:30-31](../../src/rating/armor.ts#L30-L31)).
 
 ## Server state
 

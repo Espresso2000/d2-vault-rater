@@ -27,7 +27,7 @@ The first run opens the Bungie login; paste back the address your browser lands 
 
 ## Web app (no install)
 
-`web/` is the same rater as a static site that runs entirely in your browser: Bungie sign-in, your vault, every report tab (Overview, Weapons, Armor, RADS with encounter loadouts, Full list, Shard list, Wrapped, Settings), DIM tags and loadouts, item moves, and a lock plan you preview before anything changes. It reuses the rating code in `src/`; `web/vite.config.ts` swaps the few Node-only modules (`config`, `bungie/client`, `bungie/oauth`, `bungie/manifest`, `dim/sync`) for browser versions in `web/src/shims`.
+`web/` is the same rater as a static site that runs entirely in your browser: Bungie sign-in, your vault, every report tab (Overview, Weapons, Armor, RADS with encounter loadouts, Full list, Shard, Wrapped, Settings) plus a Builds tab, DIM tags and loadouts, item moves, and a lock plan you preview before anything changes. It reuses the rating code in `src/`; `web/vite.config.ts` swaps the few Node-only modules (`config`, `bungie/client`, `bungie/oauth`, `bungie/manifest`, `dim/sync`) for browser versions in `web/src/shims`.
 
 **On your own PC:** double-click `Vault Rater Web.cmd` (next to `Vault Rater.cmd`), or run `npm run local` in `web/`. It serves the site at https://localhost:7777 (the redirect URL the local app already registers) with a self-signed certificate, so your browser warns once: choose Advanced, then continue. It uses the keys in `.env`; a tiny relay in `web/local-server.ts` adds the client secret to Bungie token requests, so the secret never reaches the page, and you stay signed in (Confidential apps get refresh tokens).
 
@@ -43,7 +43,7 @@ Put its API key and client id in `web/app.config.json` before building (or paste
 ```
 cd web
 npm install
-npm run snapshot   # optional: ships a stripped manifest and a tier list snapshot in public/data
+npm run snapshot   # optional: ships a stripped manifest, the Builds tab's definitions and a tier list snapshot in public/data
 npm run build      # static files in web/dist
 ```
 
@@ -89,7 +89,7 @@ The main tools are below; [docs/reference/mcp-tools.md](docs/reference/mcp-tools
 | Tool | What it does | Changes anything in game? |
 | --- | --- | --- |
 | `login` | Bungie OAuth: returns the approval URL, then takes the URL you land on | No |
-| `refresh_sources` | Downloads the manifest, imports every weapon tab of Aegis's sheet and the voltron wishlist | No |
+| `refresh_sources` | Downloads the manifest, imports every weapon tab of Aegis's sheet, the voltron wishlist, armor set tiers and raid loot | No |
 | `get_vault` | Reads your vault and characters | No |
 | `get_settings` / `update_settings` | Strictness preset, per-setting and per-weapon-type overrides, protect list, build stats, tone | No |
 | `rate_weapons` | Scores, best per slot / element / archetype, duplicates, shard list, S-tier gaps | No |
@@ -119,7 +119,7 @@ The main tools are below; [docs/reference/mcp-tools.md](docs/reference/mcp-tools
 | Legacy armor | keep | keep if close | shard if outscored | shard |
 | Unlocked on apply | duplicates | duplicates | + D tier | every shard category |
 
-Never unlocked at any preset: equipped items, Adept/Timelost copies, items on the protect list, and your only weapon for a slot + element. Extra exotic copies are flagged for review, not unlocked.
+Never unlocked at any preset: equipped items, Adept/Timelost copies, items on the protect list or tagged Favorite/Keep in DIM, and your only weapon for a slot + element. Extra exotic copies are flagged for review, not unlocked.
 
 ## Development
 

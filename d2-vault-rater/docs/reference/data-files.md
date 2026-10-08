@@ -11,12 +11,12 @@ Everything lives in one folder, `~/.d2-vault-rater` unless `VAULT_RATER_HOME` sa
 | `settings.json` | [Settings](settings.md) | [src/rating/settings.ts:121-125](../../src/rating/settings.ts#L121-L125) |
 | `dim-app.json` | The DIM API key registered for the rater | [src/dim/sync.ts:14](../../src/dim/sync.ts#L14) |
 | `dim-token.json` | DIM Sync access token and expiry | [src/dim/sync.ts:15](../../src/dim/sync.ts#L15) |
-| `manifest/<version>/<table>.json` | Raw manifest tables, one folder per game version | [src/bungie/manifest.ts:24-33](../../src/bungie/manifest.ts#L24-L33), [src/sources/activities.ts:81-92](../../src/sources/activities.ts#L81-L92) |
+| `manifest/<version>/<table>.lite.json` | Manifest tables cut down to the fields the rater reads, one folder per game version (a full `<table>.json` from older versions is stripped once and can be deleted) | [src/bungie/tables.ts:11-25](../../src/bungie/tables.ts#L11-L25), [src/bungie/manifest.ts:27-31](../../src/bungie/manifest.ts#L27-L31), [src/sources/activities.ts:85-91](../../src/sources/activities.ts#L85-L91) |
 | `sources/aegis.json` | Imported tier list with matched item hashes | [src/sources/aegis.ts:35](../../src/sources/aegis.ts#L35) |
 | `sources/aliases.json` | Your own `{"Aegis name": "Manifest name"}` fixes, read on import | [src/sources/aegis.ts:36](../../src/sources/aegis.ts#L36), [src/sources/aegis.ts:124-128](../../src/sources/aegis.ts#L124-L128) |
-| `sources/wishlists.json` | Parsed wishlist rolls | [src/sources/wishlist.ts:21](../../src/sources/wishlist.ts#L21) |
+| `sources/wishlists.json` | Parsed wishlist rolls, without notes | [src/sources/wishlist.ts:21](../../src/sources/wishlist.ts#L21) |
 | `sources/armor-sets.json` | Armor set bonuses with Aegis's tiers | [src/sources/armorSets.ts:41](../../src/sources/armorSets.ts#L41) |
-| `sources/activities.json` | Raid and dungeon loot | [src/sources/activities.ts:75](../../src/sources/activities.ts#L75) |
+| `sources/activities.json` | Raid and dungeon loot | [src/sources/activities.ts:77](../../src/sources/activities.ts#L77) |
 | `plans/<id>.json` | A dry-run lock plan | [src/dim/actions.ts:39](../../src/dim/actions.ts#L39) |
 | `plans/<id>-dim-tags.csv` | DIM tags CSV for that plan | [src/dim/actions.ts:117](../../src/dim/actions.ts#L117) |
 | `snapshots/<id>.json` | Lock states before a plan was applied, for undo | [src/dim/actions.ts:40](../../src/dim/actions.ts#L40) |
@@ -27,11 +27,11 @@ Plan ids are a timestamp plus six random hex characters ([src/dim/actions.ts:70]
 
 ## In the browser (web app)
 
-The web app keeps the rater's "files" in memory and saves them to IndexedDB under `file:<path>` keys, restoring them on the next visit ([web/src/shims/config.ts:22-28](../../web/src/shims/config.ts#L22-L28), [web/src/shims/config.ts:45-53](../../web/src/shims/config.ts#L45-L53)). Report files and CSVs stay in memory only ([web/src/shims/config.ts:24](../../web/src/shims/config.ts#L24)). Paths start at `/vr` ([web/src/shims/config.ts:9-20](../../web/src/shims/config.ts#L9-L20)).
+The web app keeps the rater's "files" in memory and saves them to IndexedDB under `file:<path>` keys, restoring them on the next visit ([web/src/shims/config.ts:22-36](../../web/src/shims/config.ts#L22-L36), [web/src/shims/config.ts:53-61](../../web/src/shims/config.ts#L53-L61)). Report files and CSVs stay in memory only ([web/src/shims/config.ts:24](../../web/src/shims/config.ts#L24)). Lock plans that were never applied (no undo snapshot) are deleted on the next visit instead of loaded ([web/src/shims/config.ts:28-35](../../web/src/shims/config.ts#L28-L35)). Paths start at `/vr` ([web/src/shims/config.ts:9-20](../../web/src/shims/config.ts#L9-L20)).
 
 | Where | Key | Contents | Source |
 | --- | --- | --- | --- |
-| IndexedDB `vault-rater`, store `kv` | `file:/vr/...` | Settings, sources, plans, undo snapshots, saved builds | [web/src/idb.ts:2-3](../../web/src/idb.ts#L2-L3) |
+| IndexedDB `vault-rater`, store `kv` | `file:/vr/...` | Settings, sources, applied plans, undo snapshots, saved builds | [web/src/idb.ts:2-3](../../web/src/idb.ts#L2-L3) |
 | same | `manifest` | Stripped item database for one game version | [web/src/manifest.ts:10](../../web/src/manifest.ts#L10) |
 | same | `build-defs` | Builds tab definitions for one game version | [web/src/builds/defs.ts:13](../../web/src/builds/defs.ts#L13) |
 | `localStorage` | `vr-tokens` | Bungie tokens | [web/src/shims/client.ts:12](../../web/src/shims/client.ts#L12) |

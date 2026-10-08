@@ -40,7 +40,7 @@ npm run build
 npm run vault:serve
 ```
 
-On Windows you can double-click `Vault Rater.cmd` instead, which does the install, build and this step for you.
+On Windows you can double-click `Vault Rater.cmd` instead, in the folder above `d2-vault-rater`. It installs and builds the first time, then runs this step. It only builds when `dist/` is missing, so after updating the code run `npm run build` yourself.
 
 1. A browser window opens on bungie.net. Approve the app.
 2. The browser then goes to `https://localhost:7777/callback?code=...` and shows an error. That is expected. Copy the whole address from the address bar and paste it into the terminal ([src/cli.ts:56-65](../../src/cli.ts#L56-L65)).
@@ -53,12 +53,13 @@ The terminal ends with a summary like:
 Done. 412 weapons (57 to shard) and 233 armor pieces (41 to shard).
 Report: C:\Users\you\.d2-vault-rater\reports\vault-report-2026-10-08.html
 Dry-run lock plan: 2026-10-08T16-40-12-118Z-a3f9c1 (lock 180, unlock 12). Nothing was changed in game.
+To apply it: npm run vault -- apply 2026-10-08T16-40-12-118Z-a3f9c1
 ```
 
 ## 5. Read the report
 
 - **Overview**: how many weapons and armor pieces to keep and shard, and your best picks per slot.
-- **Weapons**: open any weapon to see its score, its Aegis tier, which perks matched, and the reasons behind its verdict. The reasons are the same sentences the rater writes while deciding ([src/rating/weapons.ts:244-307](../../src/rating/weapons.ts#L244-L307)).
+- **Weapons**: open any weapon to see its score, its Aegis tier, which perks matched, and the reasons behind its verdict. The reasons are the same sentences the rater writes while deciding ([src/rating/weapons.ts:252-315](../../src/rating/weapons.ts#L252-L315)).
 - **Armor**: best piece per class and slot, with stats and set bonuses.
 - **RADS**: raids and dungeons ranked by what they would add to your vault, with a loadout from your vault for every encounter.
 - **Shard**: everything marked for sharding, grouped by reason.
