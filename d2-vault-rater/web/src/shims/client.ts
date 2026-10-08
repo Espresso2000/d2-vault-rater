@@ -62,7 +62,7 @@ export async function tokenRequest(body: Record<string, string>): Promise<Tokens
     // Public client: the client id goes in the body and there is no secret.
     body: new URLSearchParams({ ...body, client_id: env.clientId }).toString(),
   });
-  if (!res.ok) throw new Error(`Bungie sign-in failed (${res.status}): ${(await res.text()).slice(0, 200)}`);
+  if (!res.ok) { const t = (await res.text()).slice(0, 200); throw new Error(/Confidential client/i.test(t) && !relay ? "Your Bungie app is Confidential, so sign-in needs its client secret. Put BUNGIE_API_KEY, BUNGIE_CLIENT_ID and BUNGIE_CLIENT_SECRET in d2-vault-rater/.env (copy .env.example), then restart the web app." : `Bungie sign-in failed (${res.status}): ${t}`); }
   return saveTokens(await res.json());
 }
 
