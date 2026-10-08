@@ -1,7 +1,8 @@
 import { randomBytes } from "node:crypto";
 import { join } from "node:path";
 import { paths, readJson, writeJson, writeText } from "../config.js";
-import { bungie, BungieError } from "../bungie/client.js";
+import { bungie } from "../bungie/client.js";
+import { retryThrottled, sleep } from "../bungie/errors.js";
 import type { Vault } from "../vault/types.js";
 import type { WeaponReport } from "../rating/weapons.js";
 import type { ArmorReport } from "../rating/armor.js";
@@ -118,25 +119,13 @@ export function exportCsv(planId: string): string {
   return file;
 }
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
 export type LockSetter = (args: { itemId: string; characterId: string; membershipType: number; state: boolean }) => Promise<void>;
 
 export const bungieSetLock: LockSetter = async (args) => {
   await bungie("/Destiny2/Actions/Items/SetLockState/", { body: args });
 };
 
-async function setWithRetry(set: LockSetter, args: Parameters<LockSetter>[0]): Promise<void> {
-  for (let attempt = 0; ; attempt++) {
-    try {
-      return await set(args);
-    } catch (e) {
-      const throttle = e instanceof BungieError && (e.throttleSeconds > 0 || /throttl/i.test(e.errorStatus));
-      if (!throttle || attempt >= 4) throw e;
-      await sleep(Math.max(1, (e as BungieError).throttleSeconds) * 1000 * (attempt + 1));
-    }
-  }
-}
+const setWithRetry = (set: LockSetter, args: Parameters<LockSetter>[0]) => retryThrottled(() => set(args));
 
 export interface ApplyResult {
   planId: string;

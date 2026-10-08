@@ -18,6 +18,7 @@ import { captureCharacter, charFor, fetchBuildProfile, subclassInstance, type Bu
 import { applyPlan, planEquip, type Plan } from "./equip";
 import { dimImportUrl, dimLoadouts, saveToDim, shareDimLoadout } from "./dim";
 import { loadBuilds, saveBuilds } from "./store";
+import { bungieUrl } from "../shims/client";
 
 export interface BuildsInput {
   vault: Vault;
@@ -27,8 +28,7 @@ export interface BuildsInput {
 }
 
 const esc = (s: unknown) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
-const url = (p?: string | null) => (!p ? "" : p.startsWith("http") ? p : "https://www.bungie.net" + p);
-const img = (p?: string | null, alt = "") => (p ? `<img src="${esc(url(p))}" alt="${esc(alt)}" loading="lazy">` : `<span class="ph"></span>`);
+const img = (p?: string | null, alt = "") => (p ? `<img src="${esc(bungieUrl(p))}" alt="${esc(alt)}" loading="lazy">` : `<span class="ph"></span>`);
 const tierChip = (t?: string | null, title = "") => (t ? `<span class="tier t${esc(t)}"${title ? ` title="${esc(title)}"` : ""}>${esc(t)}</span>` : "");
 const scoreTier = (n: number) => (n >= 90 ? "S" : n >= 80 ? "A" : n >= 65 ? "B" : n >= 50 ? "C" : "D");
 const GROUP_LABEL: Record<SocketGroup, string> = { super: "Super", class: "Class ability", movement: "Jump", melee: "Melee", grenade: "Grenade", aspects: "Aspect", fragments: "Fragment", other: "Passive" };

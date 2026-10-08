@@ -4,8 +4,10 @@
  */
 import { bungieEnv } from "./config";
 import { appConfig } from "../appConfig";
+import { BUNGIE, BungieError } from "../../../src/bungie/errors.js";
 
-export const BUNGIE = "https://www.bungie.net";
+export { BUNGIE, BungieError, bungieUrl } from "../../../src/bungie/errors.js";
+
 const PLATFORM = `${BUNGIE}/Platform`;
 const KEY = "vr-tokens";
 
@@ -77,12 +79,6 @@ export async function accessToken(): Promise<string> {
   return tokens.access_token;
 }
 
-export class BungieError extends Error {
-  constructor(public errorCode: number, public errorStatus: string, message: string, public throttleSeconds = 0) {
-    super(`${errorStatus} (${errorCode}): ${message}`);
-  }
-}
-
 /** Call a Bungie Platform endpoint and unwrap `Response`. */
 export async function bungie<T>(path: string, init: { method?: string; body?: unknown; auth?: boolean } = {}): Promise<T> {
   const env = bungieEnv();
@@ -104,5 +100,3 @@ export async function bungie<T>(path: string, init: { method?: string; body?: un
   if (json.ErrorCode !== 1) throw new BungieError(json.ErrorCode, json.ErrorStatus, json.Message, json.ThrottleSeconds);
   return json.Response;
 }
-
-export const bungieUrl = (path: string | undefined | null): string => (path ? (path.startsWith("http") ? path : BUNGIE + path) : "");

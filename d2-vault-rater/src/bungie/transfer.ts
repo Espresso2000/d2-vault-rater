@@ -1,4 +1,5 @@
-import { bungie, BungieError } from "./client.js";
+import { bungie } from "./client.js";
+import { retryThrottled, sleep } from "./errors.js";
 import { currentVault } from "../vault/fetch.js";
 import type { ArmorRecord, Vault, WeaponRecord } from "../vault/types.js";
 
@@ -17,20 +18,8 @@ export interface MoveResult {
   error?: string;
 }
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-/** Bungie throttles item actions; wait and retry like DIM does. */
-export async function action(path: string, body: Record<string, unknown>): Promise<unknown> {
-  for (let attempt = 0; ; attempt++) {
-    try {
-      return await bungie(path, { body });
-    } catch (e) {
-      const throttle = e instanceof BungieError && (e.throttleSeconds > 0 || /throttl/i.test(e.errorStatus));
-      if (!throttle || attempt >= 4) throw e;
-      await sleep(Math.max(1, (e as BungieError).throttleSeconds) * 1000 * (attempt + 1));
-    }
-  }
-}
+/** An item action (move, equip, insert plug...), retried while Bungie throttles it. */
+export const action = (path: string, body: Record<string, unknown>): Promise<unknown> => retryThrottled(() => bungie(path, { body }));
 
 const friendly = (e: unknown): string => {
   const m = (e as Error).message;
