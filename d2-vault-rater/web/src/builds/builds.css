@@ -1,4 +1,4 @@
-/* Builds tab. Uses the report's tokens (--glass, --grad, tier badges); everything here is prefixed bd-. */
+/* Builds tab. Uses the report's tokens (--glass, --line, --grad, tier badges) so it follows the report's look; everything here is prefixed bd-. */
 :root { --Prismatic: #ff8ad8; }
 .bd { display: grid; gap: 4px; }
 .bd-layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 18px; align-items: start; }
@@ -19,7 +19,7 @@
 .bd-bcard { position: relative; display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 12px; border: 1px solid var(--line); background: rgba(5,9,25,.4); text-align: left; transition: border-color .2s ease, background .2s ease; }
 .bd-bcard::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 2px; border-radius: 2px; background: var(--el); opacity: .7; }
 .bd-bcard:hover { border-color: rgba(51,227,160,.5); background: var(--glass-hi); }
-.bd-bcard.on { border-color: transparent; background: linear-gradient(rgba(20,31,74,.9), rgba(20,31,74,.9)) padding-box, var(--grad) border-box; box-shadow: 0 8px 26px -14px rgba(51,227,160,.8); }
+.bd-bcard.on { border-color: rgba(51,227,160,.45); background: rgba(51,227,160,.07); }
 .bd-bico { width: 40px; height: 40px; border-radius: 10px; overflow: hidden; background: rgba(5,9,25,.7); border: 1px solid var(--line); }
 .bd-bico img { width: 100%; height: 100%; display: block; }
 .bd-bmeta { display: grid; min-width: 0; }
@@ -32,9 +32,8 @@
 .bd-editor { display: grid; gap: 16px; min-width: 0; }
 .bd-empty, .bd-loading { display: grid; gap: 14px; justify-items: start; padding: clamp(22px, 4vw, 40px); border-radius: 22px; }
 .bd-empty h2, .bd-loading h2 { font-size: clamp(26px, 4vw, 38px); }
-.bd-hero { position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px 28px; align-items: center; padding: clamp(18px, 3vw, 28px); border-radius: 22px; border: 1px solid transparent;
-  background: radial-gradient(520px 260px at 0% 0%, color-mix(in srgb, var(--el) 22%, transparent), transparent 70%), radial-gradient(600px 300px at 100% 100%, rgba(77,125,255,.18), transparent 70%), linear-gradient(var(--glass), var(--glass)) padding-box,
-    linear-gradient(140deg, color-mix(in srgb, var(--el) 70%, transparent), rgba(60,82,160,.15) 45%, rgba(51,227,160,.35)) border-box; backdrop-filter: blur(8px); }
+.bd-hero { position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px 28px; align-items: center; padding: clamp(18px, 3vw, 28px); border-radius: 22px; border: 1px solid var(--line);
+  background: radial-gradient(520px 260px at 0% 0%, color-mix(in srgb, var(--el) 16%, transparent), transparent 70%), radial-gradient(600px 300px at 100% 100%, rgba(77,125,255,.10), transparent 70%), var(--glass); }
 .bd-hero-main { display: flex; gap: 18px; align-items: center; min-width: 0; }
 .bd-hero-ico { flex: none; width: 84px; height: 84px; border-radius: 20px; padding: 10px; background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--el) 40%, transparent), rgba(5,9,25,.8) 70%); border: 1px solid color-mix(in srgb, var(--el) 60%, transparent); box-shadow: 0 0 34px -10px var(--el); }
 .bd-hero-ico img { width: 100%; height: 100%; display: block; filter: drop-shadow(0 0 10px color-mix(in srgb, var(--el) 70%, transparent)); }
@@ -43,9 +42,9 @@
 .bd-name:hover { border-color: var(--line-hi); }
 .bd-name:focus { outline: none; border-color: var(--cyan); background: rgba(5,9,25,.5); }
 .bd-pills { display: flex; flex-wrap: wrap; gap: 6px; }
-.bd-pill { padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line-hi); background: rgba(5,9,25,.4); font: 600 12px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); transition: all .2s ease; }
-.bd-pill:hover { color: var(--ink); background: linear-gradient(rgba(20,31,74,.75), rgba(20,31,74,.75)) padding-box, var(--grad) border-box; border-color: transparent; }
-.bd-pill.on { color: #04102a; background: var(--grad); border-color: transparent; box-shadow: 0 6px 22px -8px rgba(51,227,160,.9), inset 0 1px 0 rgba(255,255,255,.35); }
+.bd-pill { padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--glass); font: 500 13px/1 var(--body); color: var(--muted); transition: all .2s ease; }
+.bd-pill:hover { color: var(--ink); border-color: var(--line-hi); }
+.bd-pill.on { color: #c3f7e1; background: rgba(51,227,160,.10); border-color: rgba(51,227,160,.45); }
 .bd-tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .bd-tags .chip { padding: 3px 6px 3px 10px; gap: 4px; }
 .bd-x { border: 0; background: none; color: var(--faint); font-size: 11px; padding: 2px 4px; }
@@ -161,7 +160,7 @@ aside.drawer.bd-drawer { z-index: 31; }
 .bd-pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr)); gap: 6px; }
 .bd-opt { display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 10px; align-items: center; padding: 7px; border-radius: 12px; border: 1px solid var(--line); background: rgba(5,9,25,.45); text-align: left; transition: border-color .15s ease, background .15s ease; min-width: 0; }
 .bd-opt:hover { border-color: rgba(51,227,160,.55); }
-.bd-opt.on { border-color: transparent; background: linear-gradient(rgba(20,31,74,.92), rgba(20,31,74,.92)) padding-box, var(--grad) border-box; }
+.bd-opt.on { border-color: rgba(51,227,160,.5); background: rgba(51,227,160,.08); }
 .bd-opt.locked { opacity: .45; }
 .bd-opt.exotic { background: linear-gradient(135deg, rgba(242,193,78,.10), rgba(5,9,25,.5) 60%); border-color: rgba(242,193,78,.3); }
 .bd-opt.exotic .bd-oico { border-color: rgba(242,193,78,.6); }
