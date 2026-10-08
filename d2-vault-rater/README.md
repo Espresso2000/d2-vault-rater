@@ -15,7 +15,7 @@ npm run vault:serve
 
 In the local app you can also **move items**: open any weapon or armor piece to pull it to a character (optionally equipping it) or send it to the vault, pull a whole encounter loadout from the RADS guides and equip it, or pull every item in a DIM loadout to its character. Moves go character → vault → character through Bungie's item actions; equipped items have to be swapped out in game first.
 
-The first run opens the Bungie login; paste back the address your browser lands on. It then reads your vault, rates it, and opens the report at <http://localhost:7780>. The page has a **Re-rate my vault** button that re-reads your vault and refreshes the page; keep the terminal window open while you use it. Other commands:
+The first run opens the Bungie login; paste back the address your browser lands on. It then reads your vault, rates it, and opens the report at <http://localhost:7780>. The page has a **Re-rate** button in its top bar that re-reads your vault and refreshes the page; keep the terminal window open while you use it. Other commands:
 
 | Command | What it does |
 | --- | --- |

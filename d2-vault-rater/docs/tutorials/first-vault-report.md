@@ -61,10 +61,11 @@ To apply it: npm run vault -- apply 2026-10-08T16-40-12-118Z-a3f9c1
 - **Overview**: how many weapons and armor pieces to keep and shard, and your best picks per slot.
 - **Weapons**: open any weapon to see its score, its Aegis tier, which perks matched, and the reasons behind its verdict. The reasons are the same sentences the rater writes while deciding ([src/rating/weapons.ts:252-315](../../src/rating/weapons.ts#L252-L315)).
 - **Armor**: best piece per class and slot, with stats and set bonuses.
-- **RADS**: raids and dungeons ranked by what they would add to your vault, with a loadout from your vault for every encounter.
 - **Shard**: everything marked for sharding, grouped by reason.
+- **Full list**: every item, with filters, sorting and grouping. Typing in the search box in the top bar (or pressing `/`) opens it filtered.
+- **RADS**: raids and dungeons ranked by what they would add to your vault, with a loadout from your vault for every encounter.
 
-If something you want to keep is on the shard list, [protect it](../how-to/protect-items.md); if the list is too long or too short, [change the strictness](../how-to/tune-strictness.md). Press **Re-rate my vault** to see the change ([src/cli.ts:151-165](../../src/cli.ts#L151-L165)).
+If something you want to keep is on the shard list, [protect it](../how-to/protect-items.md); if the list is too long or too short, [change the strictness](../how-to/tune-strictness.md). Press **Re-rate** in the top bar to see the change ([src/cli.ts:151-165](../../src/cli.ts#L151-L165)).
 
 ## Next
 

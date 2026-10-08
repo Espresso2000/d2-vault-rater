@@ -36,3 +36,4 @@ These docs follow [Diátaxis](https://diataxis.fr/): tutorials to learn by doing
 - [What is cached, where, and when it is thrown away](explanation/caching.md)
 - [Why nothing changes in game until you say so](explanation/safety.md)
 - [The Builds tab](explanation/builds-tab.md)
+- [UX review: what was messy, and what changed](explanation/ux-review.md)

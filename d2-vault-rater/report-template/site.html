@@ -678,6 +678,15 @@ footer details[open] > summary { margin-bottom: 14px; }
 .totop { position: fixed; z-index: 7; right: clamp(12px, 2vw, 24px); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); padding: 10px 16px; border-radius: 999px; font: 600 13px var(--display); letter-spacing: .06em;
   border: 1px solid var(--line-hi); background: rgba(11,18,46,.85); backdrop-filter: blur(10px); color: var(--ink); box-shadow: 0 10px 30px rgba(0,0,0,.45); }
 .totop:hover { border-color: var(--green); }
+/* Search in the app bar: typing opens the full list filtered by the text. */
+.gsearch { position: relative; display: flex; align-items: center; }
+.gsearch svg { position: absolute; left: 11px; width: 15px; height: 15px; fill: none; stroke: var(--cyan); stroke-width: 2; pointer-events: none; }
+.gsearch input { width: clamp(130px, 16vw, 230px); height: 40px; padding: 0 30px 0 34px; border-radius: 12px; border: 1px solid var(--line-hi); background: rgba(5,9,25,.55); }
+.gsearch input:focus { outline: none; border-color: var(--green); }
+.gsearch kbd { position: absolute; right: 9px; font: 500 11px var(--mono); color: var(--faint); border: 1px solid var(--line-hi); border-radius: 5px; padding: 0 5px; pointer-events: none; }
+.gsearch input:focus + kbd, .gsearch input:not(:placeholder-shown) + kbd { display: none; }
+.toast { position: fixed; z-index: 25; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); max-width: min(520px, calc(100% - 32px)); padding: 10px 16px; border-radius: 12px; background: var(--panel-hi); border: 1px solid var(--line-hi); box-shadow: 0 18px 50px rgba(0,0,0,.5); font-size: 14px; }
+.savebar { position: sticky; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); padding: 12px 14px; border-radius: 14px; background: var(--panel-hi); border: 1px solid var(--line-hi); box-shadow: 0 18px 50px -20px rgba(0,0,0,.9); }
 body.vr-booting > .topbar, body.vr-booting > main, body.vr-booting > footer { display: none; }
 
 /* ---------- Responsive ---------- */
@@ -695,6 +704,8 @@ body.vr-booting > .topbar, body.vr-booting > main, body.vr-booting > footer { di
 @media (max-width: 700px) { .kit { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 560px) {
   .brand small { display: none; }
+  .brand > span { display: none; }
+  .gsearch input { width: 120px; }
   .cards-big .tc-art { aspect-ratio: 16 / 7; }
   .cards-big .mini { grid-template-columns: 16px 48px minmax(0, 1fr) auto; gap: 10px; }
   .cards-big .mini img, .cards-big .mini .ph { width: 48px; height: 48px; }
@@ -743,7 +754,9 @@ body.vr-booting > .topbar, body.vr-booting > main, body.vr-booting > footer { di
       <span><b id="brand-name">Vault Report</b><small>Destiny 2 · Vault Rater</small></span>
     </a>
     <nav class="tabs" role="tablist" aria-label="Report sections" id="tabs"></nav>
-    <div class="bar-actions" id="bar-actions"></div>
+    <div class="bar-actions" id="bar-actions">
+      <label class="gsearch"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="gq" placeholder="Search your vault" aria-label="Search weapons and armor" autocomplete="off"><kbd aria-hidden="true">/</kbd></label>
+    </div>
   </div>
 </header>
 
@@ -791,6 +804,7 @@ body.vr-booting > .topbar, body.vr-booting > main, body.vr-booting > footer { di
   </div>
 </footer>
 <button class="totop" id="totop" type="button" aria-label="Back to top" hidden>↑ Top</button>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" aria-modal="true" role="dialog" aria-label="Item details"></aside>
@@ -883,10 +897,12 @@ function vrMain() {
   /* ---------- Hero ---------- */
   $("#h1").innerHTML = `${NAME ? esc(NAME) + "’s " : ""}<span class="grad-text">Vault Report</span>`;
   $("#lede").textContent = `${fmt(S.vaultSize)} items rated against Aegis's Endgame Analysis tier list and community god rolls. ${S.weaponShard + S.armorShard} can go, freeing that many vault slots.`;
-  const pill = (k, v, title = "") => `<span class="chip"${title ? ` title="${esc(title)}"` : ""}><span class="k">${k}</span><b>${v}</b></span>`;
+  // With Settings available, the strictness and focus chips open it.
+  const pill = (k, v, title = "", tab = "") => `<${tab ? `button type="button" data-tab="${tab}"` : "span"} class="chip"${title ? ` title="${esc(title)}"` : ""}><span class="k">${k}</span><b>${v}</b></${tab ? "button" : "span"}>`;
+  const setTab = window.VR_LOCAL ? "settings" : "";
   $("#hero-chips").innerHTML = [
-    pill("Strictness", esc(DATA.preset[0].toUpperCase() + DATA.preset.slice(1))),
-    pill("Focus", esc(DATA.focus.toUpperCase())),
+    pill("Strictness", esc(DATA.preset[0].toUpperCase() + DATA.preset.slice(1)), setTab && "Change in Settings", setTab),
+    pill("Focus", esc(DATA.focus.toUpperCase()), setTab && "Change in Settings", setTab),
     pill("Rated", esc(fmtDateTime(DATA.generated)), new Date(DATA.generated).toLocaleString()),
     // The offline report has no Settings, so it still shows the DIM state here.
     ...(!window.VR_LOCAL && DATA.dim ? ["tags", "loadouts"].map((k) => pill("DIM " + k, DATA.dim[k] ? (DATA.dim.loaded ? "On" : "Unavailable") : "Off", DATA.dim.error || "")) : []),
@@ -919,11 +935,14 @@ function vrMain() {
     settings: "",
     builds: "<svg viewBox='0 0 32 32' aria-hidden='true'><path d='M16 1 3 8.5v15L16 31l13-7.5v-15L16 1zm0 3.5 9.9 5.7L16 15.9 6.1 10.2 16 4.5zM5 12.4l10 5.8v10.5L5 22.9V12.4zm12 16.3V18.2l10-5.8v10.5l-10 5.8z'/></svg>",
   };
-  const TABS = [["overview", "Overview", null], ["weapons", "Weapons", S.weapons], ["armor", "Armor", S.armor], ["rads", "RADS", (DATA.rads || []).length || null], ["list", "Full list", null], ["shard", "Shard", S.weaponShard + S.armorShard], ["wrapped", "Wrapped", null], ...(window.VR_BUILDS ? [["builds", "Builds", window.VR_BUILDS.count()]] : []), ...(window.VR_LOCAL ? [["settings", "Settings", null]] : [])];
+  // Decision tabs first (what to keep, what to shard), then browsing, then the extras.
+  const TABS = [["overview", "Overview", null], ["weapons", "Weapons", S.weapons], ["armor", "Armor", S.armor], ["shard", "Shard", S.weaponShard + S.armorShard], ["list", "Full list", null], ["rads", "RADS", (DATA.rads || []).length || null], ["wrapped", "Wrapped", null], ...(window.VR_BUILDS ? [["builds", "Builds", window.VR_BUILDS.count()]] : []), ...(window.VR_LOCAL ? [["settings", "Settings", null]] : [])];
   if (!$("#p-settings")) $("main").insertAdjacentHTML("beforeend", '<section class="panel" id="p-settings" role="tabpanel" hidden></section>');
   if (window.VR_BUILDS && !$("#p-builds")) $("main").insertAdjacentHTML("beforeend", '<section class="panel" id="p-builds" role="tabpanel" hidden></section>');
   $("#tabs").innerHTML = TABS.map(([id, label, n]) => `<button role="tab" id="t-${id}" aria-controls="p-${id}" aria-selected="false"${id === "settings" ? " hidden" : ""}>${ICON[id]}${label}${n != null ? `<span class="count">${n}</span>` : ""}</button>`).join("");
   if (window.VR_LOCAL && !$("#gear")) {
+    $("#bar-actions").insertAdjacentHTML("beforeend", `<button class="btn rerate" id="rerate" type="button" title="Read your vault from Bungie again and re-rate it">Re-rate</button>`);
+    $("#rerate").onclick = rerate;
     $("#bar-actions").insertAdjacentHTML("beforeend", `<button class="gear" id="gear" type="button" aria-label="Settings" title="Settings" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.14 12.94a7.4 7.4 0 0 0 .05-.94 7.4 7.4 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.84a.5.5 0 0 0-.49.42l-.36 2.54c-.59.24-1.13.56-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.67 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.4 7.4 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.3.6.22l2.39-.96c.5.38 1.04.7 1.63.94l.36 2.54c.04.24.25.42.49.42h3.84c.24 0 .45-.18.49-.42l.36-2.54c.59-.24 1.13-.56 1.63-.94l2.39.96c.22.08.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2Z"/></svg></button>`);
     $("#gear").onclick = () => show(location.hash === "#settings" ? store.get("vr-last-tab") || "overview" : "settings", true);
   }
@@ -985,7 +1004,14 @@ function vrMain() {
   $("#totop").onclick = toTop;
   const onScroll = () => ($("#totop").hidden = scrollY < 900);
   addEventListener("scroll", onScroll, { passive: true }); onScroll();
-  document.addEventListener("click", (e) => { if (e.target.closest("[data-totop]")) toTop(); });
+  /** A short message at the bottom of the screen; sticky ones stay until replaced. */
+  let toastTimer = 0;
+  function toast(msg, sticky = false) {
+    const t = $("#toast");
+    t.textContent = msg || ""; t.hidden = !msg;
+    clearTimeout(toastTimer);
+    if (msg && !sticky) toastTimer = setTimeout(() => (t.hidden = true), 6000);
+  }
 
   /* ---------- Shared pieces ---------- */
   const lockIcon = (x) => (x.lk ? ' <span class="small muted" title="Locked in game">🔒</span>' : "");
@@ -1065,7 +1091,6 @@ function vrMain() {
         ${q("w", "best-type-el", "Best of every type and element", new Set(DATA.weapons.map((w) => w.t + "|" + w.e)).size, "Like your best Solar auto rifle")}
         ${q("w", "god", "Wishlist god rolls", DATA.weapons.filter((w) => w.god).length, "Rolls the community wishlist marks as ideal")}
         ${q("a", "best-slot", "Best armor per class and slot", Object.values(DATA.armorBest).reduce((n, s) => n + Object.keys(s).length, 0), "Your strongest piece in every slot")}
-        ${q("a", "delete", "Armor to shard", S.armorShard, "Weaker copies and outscored legacy armor")}
       </div>`) +
       sec("ov-elements", "Best by element", "Your strongest option for every damage type.", `<div class="elements">${elements}</div>`);
   };
@@ -1338,6 +1363,19 @@ function vrMain() {
     if (draw) drawExplorer(true);
   }
   RENDER.list = () => { $("#p-list").innerHTML = `<div id="explorer"></div>`; drawExplorer(true); };
+  // App bar search: opens the full list with that text, on armor when only armor matches. "/" focuses it.
+  $("#gq").oninput = () => {
+    const q = $("#gq").value, low = q.trim().toLowerCase();
+    const hits = (set) => SETS[set].items.some((x) => SETS[set].search(x).toLowerCase().includes(low));
+    ex.set = !low || hits("w") || !hits("a") ? "w" : "a";
+    Object.assign(ex[ex.set], blank(), { q });
+    if (rendered.list) drawExplorer(true);
+    show("list", false);
+  };
+  $("#gq").onkeydown = (e) => { if (e.key === "Escape") { e.target.value = ""; e.target.blur(); } };
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "/" && !e.ctrlKey && !e.metaKey && !e.target.closest?.("input, textarea, select, [contenteditable]")) { e.preventDefault(); $("#gq").focus(); }
+  });
 
   function drawExplorer(full) {
     const cfg = SETS[ex.set], st = ex[ex.set];
@@ -1432,7 +1470,7 @@ function vrMain() {
       }).join("");
     }
     $("#exlist").innerHTML = html;
-    $("#exmore").innerHTML = (!st.group && list.length > shown && shown < top ? `<button class="btn" id="exmorebtn">Show ${Math.min(300, list.length - shown)} more</button>` : "") + (list.length > 8 ? `<button class="btn ghost" type="button" data-totop>↑ Back to top</button>` : "");
+    $("#exmore").innerHTML = !st.group && list.length > shown && shown < top ? `<button class="btn" id="exmorebtn">Show ${Math.min(300, list.length - shown)} more</button>` : "";
     const mb = $("#exmorebtn"); if (mb) mb.onclick = () => { st.limit += 300; drawExplorer(false); };
   }
   function fillFacet(d) {
@@ -1495,7 +1533,7 @@ function vrMain() {
     return `<div class="planbox" id="planbox"><div><h2 style="font-size:20px">Lock plan (dry run)</h2>
         <p class="muted small" style="margin-top:6px">Locks every keeper that isn't locked yet${unlocks.length ? " and unlocks the junk your strictness allows" : ""}. Equipped, Adept and protected items are never unlocked. Nothing changes in game until you preview the list and confirm.</p></div>
       <div class="counts"><span class="chip">Lock <b>${locks.length}</b></span><span class="chip">Unlock <b>${unlocks.length}</b></span><span class="chip">Plan <b>${esc(P.id.slice(-6))}</b></span></div>
-      <div class="confirmrow"><button class="btn" id="planpreview" ${P.items.length ? "" : "disabled"}>${P.items.length ? "Preview changes" : "Nothing to change"}</button><span class="small muted" id="planmsg" aria-live="polite"></span></div>
+      <div class="confirmrow"><button class="btn primary" id="planpreview" ${P.items.length ? "" : "disabled"}>${P.items.length ? "Preview changes" : "Nothing to change"}</button><span class="small muted" id="planmsg" aria-live="polite"></span></div>
       <div id="plandetail" class="stack" hidden></div></div>`;
   }
   document.addEventListener("click", async (e) => {
@@ -1503,15 +1541,15 @@ function vrMain() {
     if (e.target.closest("#planpreview")) {
       const d = $("#plandetail");
       const row = (i) => `<div><span class="${i.lock ? "lk" : "ul"}">${i.lock ? "Lock" : "Unlock"}</span><span>${esc(i.n)}</span></div>`;
+      // The preview is the check; pressing Apply under it is the confirmation.
       d.innerHTML = `<div class="planlist">${P.items.filter((i) => i.lock).map(row).join("")}${P.items.filter((i) => i.lock === false).map(row).join("")}</div>
-        <label class="small"><input type="checkbox" id="planok"> I checked this list. Change these ${P.items.length} locks in game.</label>
-        <div class="confirmrow"><button class="btn danger" id="planapply" disabled>Apply ${P.items.length} lock changes</button><span class="small muted">You can undo afterwards.</span></div>`;
+        <div class="confirmrow"><button class="btn danger" id="planapply">Apply these ${P.items.length} lock changes</button><span class="small muted">You can undo afterwards.</span></div>`;
       d.hidden = false;
-      $("#planmsg").textContent = "Dry run only. Nothing has changed.";
+      $("#planpreview").hidden = true;
+      $("#planmsg").textContent = "Dry run only. Nothing changes until you press Apply.";
     }
-    if (e.target.closest("#planok")) $("#planapply").disabled = !$("#planok").checked;
     const apply = e.target.closest("#planapply");
-    if (apply && $("#planok")?.checked) {
+    if (apply) {
       apply.disabled = true; $("#planmsg").textContent = "Changing locks… keep this page open.";
       try {
         const r = await api("/api/locks/apply", { planId: P.id, confirm: true });
@@ -1529,6 +1567,14 @@ function vrMain() {
     }
   });
 
+  /** The app bar's Re-rate: reads the vault again, then reloads the page with the new ratings. */
+  async function rerate() {
+    const b = $("#rerate");
+    b.disabled = true; b.textContent = "Re-rating…"; toast("Reading your vault from Bungie. This takes a minute.", true);
+    try { const res = await api("/api/refresh"); if (!res.ok) throw new Error(res.error); location.reload(); }
+    catch (e) { b.disabled = false; b.textContent = "Re-rate"; toast("Re-rating failed: " + e.message); }
+  }
+
   /* ---------- Settings ---------- */
   const PRESET_INFO = {
     lenient: ["Lenient", "Keeps C tier and up, 3 copies per archetype. Unlocks duplicates only."],
@@ -1543,8 +1589,8 @@ function vrMain() {
     $("#p-settings").innerHTML = `<form class="setform" id="setform">
       <div class="sec-head" style="margin:0"><h2>Settings</h2><p>Saving re-rates your vault.</p></div>
       <fieldset><legend>Your vault</legend>
-        <p class="small muted">Rated ${esc(fmtDateTime(DATA.generated))}.${window.VR_SESSION ? " " + esc(window.VR_SESSION()) : ""}</p>
-        <div class="confirmrow"><button class="btn primary" type="button" id="rerate">Re-rate my vault</button>${window.VR_WEB ? '<button class="btn" type="button" id="signout">Sign out</button>' : ""}<span class="small muted" id="rerate-msg" aria-live="polite"></span></div></fieldset>
+        <p class="small muted">Rated ${esc(fmtDateTime(DATA.generated))}. <b>Re-rate</b> in the top bar reads it again.${window.VR_SESSION ? " " + esc(window.VR_SESSION()) : ""}</p>
+        ${window.VR_WEB ? '<div class="confirmrow"><button class="btn" type="button" id="signout">Sign out</button></div>' : ""}</fieldset>
       <fieldset><legend>Strictness</legend><div class="presets">${Object.entries(PRESET_INFO).map(([k, [l, d]]) => `<label><span><input type="radio" name="preset" value="${k}" ${st.preset === k ? "checked" : ""}> <b>${l}</b></span><span>${d}</span></label>`).join("")}</div>
         <div class="tablewrap"><table class="prestable"><tr><th></th><th>Lenient</th><th>Balanced</th><th>Strict</th><th>Ruthless</th></tr>
           <tr><td>Lowest tier kept</td><td>C</td><td>B</td><td>A</td><td>S</td></tr><tr><td>Roll score to keep a spare</td><td>50</td><td>70</td><td>80</td><td>90</td></tr>
@@ -1560,14 +1606,8 @@ function vrMain() {
         <label><input type="checkbox" name="dimtags" ${DATA.dim?.tags ? "checked" : ""}> <span>Read DIM tags and notes (and edit them here)</span></label>
         <label><input type="checkbox" name="dimloadouts" ${DATA.dim?.loadouts ? "checked" : ""}> <span>Read DIM loadouts (and pull them to a character)</span></label>
         <label><input type="checkbox" name="dimprotect" ${DATA.dim?.protectTagged !== false ? "checked" : ""}> <span>Protect DIM keeps: never mark items tagged Favorite or Keep to shard</span></label></div></fieldset>
-      <div class="confirmrow"><button class="btn primary" type="submit">Save and re-rate</button><span class="small muted" id="setmsg" aria-live="polite"></span></div></form>`;
+      <div class="confirmrow savebar"><button class="btn primary" type="submit">Save and re-rate</button><span class="small muted" id="setmsg" aria-live="polite"></span></div></form>`;
     if (window.VR_WEB) $("#signout").onclick = () => api("/api/signout");
-    $("#rerate").onclick = async () => {
-      const b = $("#rerate"), msg = $("#rerate-msg");
-      b.disabled = true; b.textContent = "Re-rating…"; msg.textContent = "Reading your vault from Bungie. This takes a minute.";
-      try { const res = await api("/api/refresh"); if (!res.ok) throw new Error(res.error); location.reload(); }
-      catch (e) { b.disabled = false; b.textContent = "Re-rate my vault"; msg.textContent = "Re-rating failed: " + e.message; }
-    };
     $("#setform").onsubmit = async (e) => {
       e.preventDefault();
       const f = e.target, byWeaponType = {};
@@ -1845,13 +1885,13 @@ function vrMain() {
         <div><div class="eyebrow" style="${isExotic(w) ? "color:var(--gold)" : ""}">${esc(w.s)} · ${esc(w.r)}</div><h2>${esc(w.n)}</h2>
           <div class="sub">${esc(typeLine(w))} ${elDot(w.e)} ${verdict(w.v)} ${w.lk ? '<span class="chip">🔒 Locked</span>' : ""} ${w.god ? '<span class="chip" style="color:var(--green)">Wishlist god roll</span>' : ""}</div></div>
         <div class="breakdown"><div><b class="num grad-text">${w.sc}</b><span>Vault score</span></div><div><b class="num">${w.ws}</b><span>${w.tier ? `Aegis ${w.tier}${w.rank ? " #" + w.rank : ""}` : "Wishlist tier"}</span></div><div><b class="num">${w.rs}</b><span>Roll score</span></div></div>
-        ${whereBox(w.src)}
+        <div><div class="cap" style="margin-bottom:8px">Why ${VERDICT[w.v].toLowerCase()}</div><ul class="reasons">${w.why.map((r) => `<li>${esc(r)}</li>`).join("")}</ul></div>
+        ${w.notes ? `<div class="notes"><b style="color:var(--ink)">Aegis:</b> ${esc(w.notes)}</div>` : ""}
+        <div class="perkcols">${w.pk.filter((p) => p.o.length).map((p) => `<div class="perkcol"><div class="cap">${COL[p.k] || esc(p.k)}</div><div class="perkopts">${p.o.map((o) => `<span class="perk${good.has(o) ? " good" : ""}">${esc(o)}</span>`).join("")}</div></div>`).join("")}</div>
+        <div class="facts">${fact("Ammo", w.am)}${fact("Power", w.pw)}${fact("Masterwork", w.mw)}${fact("Gear tier", w.gt ? "Tier " + w.gt : null)}${fact("Where", w.loc)}${fact("Crafted", w.cr ? "Yes" : null)}${fact("Adept", w.ad ? "Yes" : null)}${fact("Aegis list", w.tab)}</div>
         ${movePanel(w, false)}
         ${dimPanel(w)}
-        <div class="facts">${fact("Ammo", w.am)}${fact("Power", w.pw)}${fact("Masterwork", w.mw)}${fact("Gear tier", w.gt ? "Tier " + w.gt : null)}${fact("Where", w.loc)}${fact("Crafted", w.cr ? "Yes" : null)}${fact("Adept", w.ad ? "Yes" : null)}${fact("Aegis list", w.tab)}</div>
-        <div class="perkcols">${w.pk.filter((p) => p.o.length).map((p) => `<div class="perkcol"><div class="cap">${COL[p.k] || esc(p.k)}</div><div class="perkopts">${p.o.map((o) => `<span class="perk${good.has(o) ? " good" : ""}">${esc(o)}</span>`).join("")}</div></div>`).join("")}</div>
-        ${w.notes ? `<div class="notes"><b style="color:var(--ink)">Aegis:</b> ${esc(w.notes)}</div>` : ""}
-        <div><div class="cap" style="margin-bottom:8px">Why</div><ul class="reasons">${w.why.map((r) => `<li>${esc(r)}</li>`).join("")}</ul></div>
+        ${whereBox(w.src)}
         ${copies.length ? `<div><div class="cap" style="margin-bottom:8px">Other copies (${copies.length})</div><div class="list">${copies.map(weaponRow).join("")}</div></div>` : ""}
       </div>`);
   }
@@ -1864,13 +1904,13 @@ function vrMain() {
         <div><div class="eyebrow" style="${isExotic(a) ? "color:var(--gold)" : ""}">${esc(a.cls)} · ${esc(a.s)} · ${esc(a.r)}</div><h2>${esc(a.n)}</h2>
           <div class="sub">${esc(a.arch || "Legacy armor")}${setLine(a)} ${verdict(a.v)} ${a.lk ? '<span class="chip">🔒 Locked</span>' : ""}</div></div>
         <div class="breakdown"><div><b class="num grad-text">${a.sc}</b><span>Armor score</span></div><div><b class="num">${a.tot}</b><span>Stat total</span></div><div><b class="num">${gearTier(a)}</b><span>Gear tier</span></div></div>
+        <div><div class="cap" style="margin-bottom:8px">Why ${VERDICT[a.v].toLowerCase()}</div><ul class="reasons">${a.why.map((r) => `<li>${esc(r)}</li>`).join("")}</ul></div>
         <div><div class="cap" style="margin-bottom:8px">Stats</div>${statBars(a, true)}</div>
         <div class="breakdown" style="grid-template-columns:repeat(4,minmax(0,1fr))">${[["Stats", a.parts.stats], ["Build fit", a.parts.buildFit], ["Set", a.parts.set], ["Tier / exotic", a.parts.extras]].map(([l, v]) => `<div><b class="num" style="font-size:17px">${Math.round(v)}</b><span>${l}</span></div>`).join("")}</div>
         <div class="facts">${fact("Where", a.loc)}${fact("Archetype", a.arch || "Legacy")}</div>
         ${movePanel(a, true)}
         ${dimPanel(a)}
         ${a.si ? `<div><div class="cap" style="margin-bottom:10px">${esc(a.si.name)} set · ${a.si.ownedSlots} of 5 slots owned · rating ${a.si.value}</div><div class="stack">${(DATA.sets?.[a.si.name]?.bonuses || a.si.bonuses).map((b) => bonusRow(b, a.si.ownedSlots)).join("") || '<p class="small muted">Not on the set list yet.</p>'}</div></div>` : ""}
-        <div><div class="cap" style="margin-bottom:8px">Why</div><ul class="reasons">${a.why.map((r) => `<li>${esc(r)}</li>`).join("")}</ul></div>
         ${others.length ? `<div><div class="cap" style="margin-bottom:8px">Same slot and archetype</div><div class="list">${others.map(armorRow).join("")}</div></div>` : ""}
       </div>`);
   }

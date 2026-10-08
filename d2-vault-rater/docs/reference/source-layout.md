@@ -61,7 +61,7 @@
 
 | Path | What is in it |
 | --- | --- |
-| [report-template/site.html:799](../../report-template/site.html#L799) | The report page, shared by the local report and the web app. |
+| [report-template/site.html:813](../../report-template/site.html#L813) | The report page, shared by the local report and the web app. |
 | [skill/SKILL.md:1](../../skill/SKILL.md#L1) | Instructions for an AI running a vault review. |
 | [test/](../../test/) | Unit tests and fixtures. |
 | [scripts/check-doc-refs.mjs:1](../../scripts/check-doc-refs.mjs#L1) | Checks the code links in these docs. |
