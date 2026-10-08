@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { paths, readJson, writeJson } from "../config.js";
 import { normalizeName, weaponHashesByName, type Manifest } from "../bungie/manifest.js";
-import { parseCsv } from "./csv.js";
+import { gvizCsvUrl, parseCsv } from "./csv.js";
 
 export const AEGIS_SHEET_ID = "1JM-0SlxVDAi-C6rGVlLxa-J1WGewEeL8Qvq4htWZHhY";
 export const TIERS = ["S", "A", "B", "C", "D"] as const;
@@ -150,7 +150,7 @@ export async function importAegis(m: Manifest, extraTabs: { name: string; gid: s
   const used: AegisData["tabs"] = [];
   for (const t of tabs) {
     try {
-      const csv = await getText(`https://docs.google.com/spreadsheets/d/${AEGIS_SHEET_ID}/gviz/tq?tqx=out:csv&gid=${t.gid}`);
+      const csv = await getText(gvizCsvUrl(AEGIS_SHEET_ID, t.gid));
       const rows = parseAegisTab(t.name, csv);
       if (rows?.length) {
         weapons.push(...rows);

@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { paths, readJson, writeJson } from "../config.js";
 import { AEGIS_SHEET_ID } from "./aegis.js";
-import { parseCsv } from "./csv.js";
+import { gvizCsvUrl, parseCsv } from "./csv.js";
 
 /** Aegis's armor set bonus tab, and a community sheet with every set's full bonus text. */
 export const AEGIS_ARMOR_GID = "1665223292";
@@ -105,7 +105,7 @@ export async function importArmorSets(): Promise<ArmorSetData & { warnings: stri
   };
   const sets = parseAegisArmorTab(await get(`https://docs.google.com/spreadsheets/d/${AEGIS_SHEET_ID}/export?format=csv&gid=${AEGIS_ARMOR_GID}`));
   try {
-    mergeBonusSheet(sets, await get(`https://docs.google.com/spreadsheets/d/${BONUS_SHEET_ID}/gviz/tq?tqx=out:csv&gid=${BONUS_SHEET_GID}`));
+    mergeBonusSheet(sets, await get(gvizCsvUrl(BONUS_SHEET_ID, BONUS_SHEET_GID)));
   } catch (e) {
     warnings.push(`Set bonus descriptions not loaded: ${(e as Error).message}`);
   }

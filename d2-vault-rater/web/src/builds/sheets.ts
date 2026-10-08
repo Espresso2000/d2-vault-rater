@@ -5,23 +5,17 @@
  * Pure functions (no fetching) so they run in the tests.
  */
 import { parseCsv } from "../../../src/sources/csv.js";
+import { normalizeName as norm } from "../../../src/bungie/defs.js";
 
-export const AEGIS_ID = "1JM-0SlxVDAi-C6rGVlLxa-J1WGewEeL8Qvq4htWZHhY";
+export { norm };
+export { AEGIS_SHEET_ID as AEGIS_ID } from "../../../src/sources/aegis.js";
+/** The Destiny Data Compendium (also the armor set bonus sheet). */
+export { BONUS_SHEET_ID as COMPENDIUM_ID } from "../../../src/sources/armorSets.js";
 export const AEGIS_TABS = { aspects: "1426359048", fragments: "1402770816", subclasses: "895871604" };
-export const COMPENDIUM_ID = "1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4";
 /** Arc, Solar, Void, Stasis, Strand, Prismatic, Class Abilities, Armor Mods, Exotic Armors, Exotic Class. */
 export const COMPENDIUM_TABS = ["618967225", "1186062409", "1907852650", "1088259962", "1870531554", "1918152785", "527596209", "1934379638", "1500097863", "20898389"];
-export const gviz = (sheet: string, gid: string) => `https://docs.google.com/spreadsheets/d/${sheet}/gviz/tq?tqx=out:csv&gid=${gid}`;
 
 export const TIER_POINTS: Record<string, number> = { S: 100, A: 85, B: 70, C: 50, D: 30, E: 20, F: 10 };
-
-export const norm = (s: string): string =>
-  s
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[‘’“”'"]/g, "")
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim();
 
 export interface Rated {
   name: string;
