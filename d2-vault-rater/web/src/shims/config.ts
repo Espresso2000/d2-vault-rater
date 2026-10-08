@@ -4,7 +4,7 @@
  * Call hydrate() once at startup to load what earlier visits saved.
  */
 import { appConfig, redirectUrl } from "../appConfig";
-import { idbGet, idbKeys, idbSet } from "../idb";
+import { idbDel, idbEntries, idbSet } from "../idb";
 
 export const HOME = "/vr";
 
@@ -24,7 +24,15 @@ const mem = new Map<string, unknown>();
 const volatile = (file: string) => file.startsWith(paths.reportsDir) || file.endsWith(".csv");
 
 export async function hydrate(): Promise<void> {
-  for (const k of await idbKeys()) if (k.startsWith("file:")) mem.set(k.slice(5), await idbGet(k));
+  const saved = await idbEntries("file:");
+  // Every rating saves a lock plan; only plans that were applied (they have an undo snapshot) are
+  // ever read again. The rest are deleted rather than loaded on every visit from now on.
+  const applied = new Set(saved.map(([k]) => k.slice(5)).filter((f) => f.startsWith(`${paths.snapshotsDir}/`)).map((f) => f.slice(paths.snapshotsDir.length)));
+  for (const [k, value] of saved) {
+    const file = k.slice(5);
+    if (file.startsWith(`${paths.plansDir}/`) && !applied.has(file.slice(paths.plansDir.length))) void idbDel(k).catch(() => {});
+    else mem.set(file, value);
+  }
 }
 
 export function ensureDirs(): void {}
