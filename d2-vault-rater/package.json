@@ -14,7 +14,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node --import tsx --test test/*.test.ts",
     "vault": "node dist/cli.js",
-    "vault:serve": "node dist/cli.js serve"
+    "vault:serve": "node dist/cli.js serve",
+    "docs:check": "node scripts/check-doc-refs.mjs"
   },
   "engines": {
     "node": ">=20.12"
