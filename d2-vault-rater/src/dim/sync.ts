@@ -4,7 +4,7 @@ import { accessToken, loadTokens } from "../bungie/client.js";
 import { primaryMembership } from "../bungie/oauth.js";
 import { DIM_API, readDimProfile, writeDimTag, type DimCall, type DimTagValue } from "./common.js";
 
-export { DIM_TAGS, keepIds, type DimData, type DimLoadout, type DimTagValue } from "./common.js";
+export { DIM_TAGS, keepIds, withDimKeep, type DimData, type DimLoadout, type DimTagValue } from "./common.js";
 
 /**
  * DIM Sync (api.destinyitemmanager.com): the tags, notes and loadouts DIM stores for you.

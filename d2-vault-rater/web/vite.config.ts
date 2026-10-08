@@ -61,7 +61,7 @@ export default defineConfig(({ mode }) => {
     plugins: [shims(), reportPage(), ...(local ? [...(process.env.VR_NO_SSL ? [] : [basicSsl()]), localBungie()] : [])],
     server: { port: local ? localPort() : 5173, strictPort: true, fs: { allow: [resolve(here, "..")] } },
     preview: { port: local ? localPort() : 4173, strictPort: true },
-    build: { outDir: "dist", emptyOutDir: true, target: "es2022", chunkSizeWarningLimit: 1200 },
+    build: { outDir: "dist", emptyOutDir: true, target: "es2022" },
     worker: { format: "es" },
   };
 });

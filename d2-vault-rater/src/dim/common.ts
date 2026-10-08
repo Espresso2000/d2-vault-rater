@@ -2,6 +2,8 @@
  * DIM Sync pieces shared by the Node client (sync.ts) and the web app's shim: tag names, the data
  * shapes, and reading or writing a profile. Each side brings its own signed-in request function.
  */
+import type { Settings } from "../rating/settings.js";
+
 export const DIM_API = "https://api.destinyitemmanager.com";
 
 export const DIM_TAGS = ["favorite", "keep", "infuse", "junk", "archive"] as const;
@@ -45,6 +47,9 @@ export async function readDimProfile(call: DimCall, who: Who, want: { tags: bool
 
 /** Instance ids tagged Favorite or Keep, which the rater then never marks for sharding. */
 export const keepIds = (d: DimData | null) => Object.entries(d?.tags ?? {}).filter(([, t]) => t.tag === "favorite" || t.tag === "keep").map(([id]) => id);
+
+/** Settings for one rating run: items tagged Favorite or Keep in DIM are protected (setting dim.protectTagged). */
+export const withDimKeep = (s: Settings, d: DimData | null): Settings => ({ ...s, dimKeep: s.dim.tags && s.dim.protectTagged ? keepIds(d) : [] });
 
 /** Set (or clear, with tag null) one item's DIM tag, keeping or replacing its notes. */
 export async function writeDimTag(call: DimCall, who: Who, itemId: string, tag: DimTagValue | null, notes?: string | null): Promise<void> {

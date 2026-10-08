@@ -5,7 +5,7 @@
 import { hydrate, paths, readText } from "./shims/config";
 import { loadTokens, clearTokens, LoginRequired, minutesLeft } from "./shims/client";
 import { startLogin, finishLogin } from "./shims/oauth";
-import { clearDimToken, fetchDimData, keepIds, setDimTag, DIM_TAGS, type DimTagValue, type DimData } from "./shims/sync";
+import { clearDimToken, fetchDimData, withDimKeep, setDimTag, DIM_TAGS, type DimTagValue, type DimData } from "./shims/sync";
 import { appConfig, configured, loadServedConfig, redirectUrl, saveLocalConfig } from "./appConfig";
 import { loadLiteManifest } from "./manifest";
 import { ensureSources } from "./sources";
@@ -15,7 +15,7 @@ import { loadAegis } from "../../src/sources/aegis.js";
 import { loadWishlists } from "../../src/sources/wishlist.js";
 import { loadArmorSets } from "../../src/sources/armorSets.js";
 import { buildSourceLookup, loadActivityLoot } from "../../src/sources/activities.js";
-import { applyPageSettings, loadSettings, saveSettings, type Settings } from "../../src/rating/settings.js";
+import { applyPageSettings, loadSettings, saveSettings } from "../../src/rating/settings.js";
 import { rateWeapons } from "../../src/rating/weapons.js";
 import { rateArmor } from "../../src/rating/armor.js";
 import { rateActivities } from "../../src/rating/activities.js";
@@ -133,7 +133,7 @@ async function run() {
     log(`Reading DIM ${[settings.dim.tags && "tags", settings.dim.loadouts && "loadouts"].filter(Boolean).join(" and ")}…`);
     dim = await fetchDimData(settings.dim).catch((e) => ((dimError = (e as Error).message), null));
   }
-  const rated: Settings = { ...settings, dimKeep: settings.dim.tags && settings.dim.protectTagged ? keepIds(dim) : [] };
+  const rated = withDimKeep(settings, dim);
 
   log("Rating weapons and armor…");
   const w = rateWeapons(vault.weapons, { manifest: m, aegis, wishlists: loadWishlists() }, rated);

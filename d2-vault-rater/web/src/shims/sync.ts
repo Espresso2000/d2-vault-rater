@@ -9,7 +9,7 @@ import { accessToken, loadTokens } from "./client";
 import { primaryMembership } from "./oauth";
 import { DIM_API, readDimProfile, writeDimTag, type DimCall, type DimTagValue } from "../../../src/dim/common.js";
 
-export { DIM_TAGS, keepIds, type DimData, type DimLoadout, type DimTagValue } from "../../../src/dim/common.js";
+export { DIM_TAGS, keepIds, withDimKeep, type DimData, type DimLoadout, type DimTagValue } from "../../../src/dim/common.js";
 
 const appFile = () => `${paths.home}/dim-app.json`;
 const TOKEN_KEY = "vr-dim-token";

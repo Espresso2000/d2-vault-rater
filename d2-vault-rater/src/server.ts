@@ -18,7 +18,7 @@ import { rateActivities } from "./rating/activities.js";
 import { planEncounters } from "./rating/encounters.js";
 import { ROLE_LABEL } from "./data/encounters.js";
 import { moveItems } from "./bungie/transfer.js";
-import { fetchDimData, setDimTag, keepIds, DIM_TAGS, type DimData } from "./dim/sync.js";
+import { fetchDimData, setDimTag, withDimKeep, DIM_TAGS, type DimData } from "./dim/sync.js";
 import { loadSettings, saveSettings, strictnessFor, PRESETS, StrictnessOverride } from "./rating/settings.js";
 import { rateWeapons, type WeaponRating, type WeaponReport } from "./rating/weapons.js";
 import { rateArmor, type ArmorRating, type ArmorReport } from "./rating/armor.js";
@@ -69,7 +69,7 @@ async function rateAll() {
   const vault = await currentVault();
   const saved = loadSettings();
   const dim = await dimData(saved);
-  const settings = { ...saved, dimKeep: saved.dim.tags && saved.dim.protectTagged ? keepIds(dim.data) : [] };
+  const settings = withDimKeep(saved, dim.data);
   const src = await sources();
   if (!src.aegis) throw new Error("Aegis's tier list has not been imported yet. Call refresh_sources first.");
   const sets = loadArmorSets();

@@ -14,7 +14,7 @@ import { planDimActions, type DimPlan } from "./dim/actions.js";
 import { buildSourceLookup, importActivityLoot, loadActivityLoot } from "./sources/activities.js";
 import { rateActivities } from "./rating/activities.js";
 import { planEncounters } from "./rating/encounters.js";
-import { fetchDimData, keepIds } from "./dim/sync.js";
+import { fetchDimData, withDimKeep } from "./dim/sync.js";
 
 /** The same steps the AI runs through the MCP tools, as plain functions for the local app. */
 
@@ -68,8 +68,7 @@ export async function buildReport(log: (s: string) => void = () => {}): Promise<
     dim = await fetchDimData(saved.dim).catch((e) => ((dimError = (e as Error).message), null));
     if (dimError) log(`DIM data skipped: ${dimError}`);
   }
-  // Items tagged Favorite or Keep in DIM are protected from sharding (setting dim.protectTagged).
-  const settings = { ...saved, dimKeep: saved.dim.tags && saved.dim.protectTagged ? keepIds(dim) : [] };
+  const settings = withDimKeep(saved, dim);
   log("Rating weapons and armor...");
   const w = rateWeapons(vault.weapons, { manifest, aegis, wishlists: loadWishlists() }, settings);
   const a = rateArmor(vault, settings, loadArmorSets());
