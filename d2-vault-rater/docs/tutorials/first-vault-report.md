@@ -2,7 +2,7 @@
 
 In this tutorial you set up a Bungie app, run Vault Rater on your PC, and read the report it makes for your vault. You need Node.js 20.12 or newer ([package.json](../../package.json)) and a Destiny 2 account. It takes about ten minutes, most of it the first download of the game's item database.
 
-Nothing in game changes during this tutorial: the rater only reads your vault and writes a plan ([src/pipeline.ts:55-88](../../src/pipeline.ts#L55-L88)).
+Nothing in game changes during this tutorial: the rater only reads your vault and writes a plan ([src/pipeline.ts:55-90](../../src/pipeline.ts#L55-L90)).
 
 ## 1. Create a Bungie app
 
@@ -44,7 +44,7 @@ On Windows you can double-click `Vault Rater.cmd` instead, in the folder above `
 
 1. A browser window opens on bungie.net. Approve the app.
 2. The browser then goes to `https://localhost:7777/callback?code=...` and shows an error. That is expected. Copy the whole address from the address bar and paste it into the terminal ([src/cli.ts:56-65](../../src/cli.ts#L56-L65)).
-3. The terminal lists what it is doing: downloading the manifest, importing Aegis's tier list, the wishlist, armor set tiers and raid loot ([src/pipeline.ts:33-46](../../src/pipeline.ts#L33-L46)), then reading and rating your vault ([src/pipeline.ts:63-80](../../src/pipeline.ts#L63-L80)). The first run takes a few minutes; later runs reuse the downloads ([caching](../explanation/caching.md)).
+3. The terminal lists what it is doing: downloading the manifest, importing Aegis's tier list, the wishlist, armor set tiers and raid loot ([src/pipeline.ts:33-46](../../src/pipeline.ts#L33-L46)), then reading and rating your vault ([src/pipeline.ts:65-82](../../src/pipeline.ts#L65-L82)). The first run takes a few minutes; later runs reuse the downloads ([caching](../explanation/caching.md)).
 4. Your report opens at <http://localhost:7780>. Keep the terminal open while you use it ([src/cli.ts:173-178](../../src/cli.ts#L173-L178)).
 
 The terminal ends with a summary like:

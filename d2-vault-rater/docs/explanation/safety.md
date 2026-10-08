@@ -9,7 +9,7 @@ Vault Rater can lock and unlock items, move and equip them, set DIM tags and cha
 3. **Applying needs an explicit yes.**
    - MCP: `apply_dim_actions` requires `confirm: true` and is marked destructive ([src/server.ts:399-400](../../src/server.ts#L399-L400)).
    - CLI: you type "yes" ([src/cli.ts:221](../../src/cli.ts#L221)).
-   - Report page: only the plan the page previewed, with the confirmation flag ([src/cli.ts:133](../../src/cli.ts#L133), [web/src/main.ts:225](../../web/src/main.ts#L225)).
+   - Report page: only the plan the page previewed, with the confirmation flag ([src/cli.ts:133](../../src/cli.ts#L133), [web/src/main.ts:227](../../web/src/main.ts#L227)).
 4. **Protected items are never unlocked**, even if someone edits the plan file: apply skips them itself ([src/dim/actions.ts:139](../../src/dim/actions.ts#L139), [src/dim/actions.ts:148](../../src/dim/actions.ts#L148)). Protected means equipped, Adept/Timelost, on your protect list, tagged Favorite or Keep in DIM, or your only weapon of a slot and element ([src/rating/weapons.ts:201-209](../../src/rating/weapons.ts#L201-L209)).
 5. **Undo.** Before changing anything, apply saves every item's previous lock state ([src/dim/actions.ts:143-144](../../src/dim/actions.ts#L143-L144)); `undoDimActions` puts back exactly the locks that plan changed ([src/dim/actions.ts:163-188](../../src/dim/actions.ts#L163-L188)). DIM tags aren't undone this way.
 

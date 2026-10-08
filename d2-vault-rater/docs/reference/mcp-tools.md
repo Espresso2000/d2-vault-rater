@@ -39,4 +39,4 @@ The MCP server ([src/server.ts](../../src/server.ts)) talks over stdio ([src/ser
 
 ## Server state
 
-The server reads the vault once and reuses it until `get_vault` runs again ([src/vault/fetch.ts:19-22](../../src/vault/fetch.ts#L19-L22)), reuses ratings while nothing changed ([src/server.ts:65-81](../../src/server.ts#L65-L81)), and re-reads DIM data at most every five minutes ([src/server.ts:51-63](../../src/server.ts#L51-L63)); `set_dim_tag` clears that cache ([src/server.ts:352](../../src/server.ts#L352)).
+The server reads the vault once and reuses it until `get_vault` runs again ([src/vault/fetch.ts:18-21](../../src/vault/fetch.ts#L18-L21)), reuses ratings while nothing changed ([src/server.ts:65-81](../../src/server.ts#L65-L81)), and re-reads DIM data at most every five minutes ([src/server.ts:51-63](../../src/server.ts#L51-L63)); `set_dim_tag` clears that cache ([src/server.ts:352](../../src/server.ts#L352)).

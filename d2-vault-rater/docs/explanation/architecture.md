@@ -10,7 +10,7 @@ Vault Rater has one rating core and three ways to run it: an MCP tool server for
 | CLI and local server | [src/cli.ts:180](../../src/cli.ts#L180) | Runs the whole pipeline without an AI ([src/pipeline.ts:56](../../src/pipeline.ts#L56)) and serves the report on `127.0.0.1` ([src/cli.ts:173](../../src/cli.ts#L173)). |
 | Web app | [web/src/main.ts:119](../../web/src/main.ts#L119) | Signs in with Bungie in the browser, then runs the same steps and renders the same report template. |
 
-The rating steps are the same everywhere: load the manifest, make sure the rating sources are fresh, read the vault, optionally read DIM Sync data, rate weapons and armor, draft a lock plan, rate raids and dungeons, and build the report data. Compare [src/pipeline.ts:56-88](../../src/pipeline.ts#L56-L88) with [web/src/main.ts:119-172](../../web/src/main.ts#L119-L172).
+The rating steps are the same everywhere: load the manifest, make sure the rating sources are fresh, read the vault, optionally read DIM Sync data, rate weapons and armor, draft a lock plan, rate raids and dungeons, and build the report data. Compare [src/pipeline.ts:56-90](../../src/pipeline.ts#L56-L90) with [web/src/main.ts:119-174](../../web/src/main.ts#L119-L174).
 
 ## The shared modules
 
@@ -44,9 +44,9 @@ The parts of those modules that are the same in both places live in browser-safe
 The report is a single HTML file, [report-template/site.html](../../report-template/site.html), with its CSS and JavaScript inline.
 
 - The local app fills in the data, the image map and the title, then writes the page to the reports folder ([src/report/site.ts:58-71](../../src/report/site.ts#L58-L71)). Images are embedded as data URIs so the file works offline ([src/report/site.ts:19](../../src/report/site.ts#L19)).
-- The web build injects the sign-in shell and the app script into the same template ([web/vite.config.ts:37-53](../../web/vite.config.ts#L37-L53)). After rating, the app passes the data to `window.VR_START` ([web/src/main.ts:170](../../web/src/main.ts#L170)). There, images load straight from bungie.net ([web/src/main.ts:147-149](../../web/src/main.ts#L147-L149)).
-- The page's buttons call `/api/...` routes. The local server answers them over HTTP ([src/cli.ts:92](../../src/cli.ts#L92)); in the web app, `window.VR_API` answers the same routes in the browser ([web/src/main.ts:198](../../web/src/main.ts#L198)). Both read the Settings panel's changes with the same function ([src/rating/settings.ts:131](../../src/rating/settings.ts#L131)).
+- The web build injects the sign-in shell and the app script into the same template ([web/vite.config.ts:37-53](../../web/vite.config.ts#L37-L53)). After rating, the app passes the data to `window.VR_START` ([web/src/main.ts:172](../../web/src/main.ts#L172)). There, images load straight from bungie.net ([web/src/main.ts:149-151](../../web/src/main.ts#L149-L151)).
+- The page's buttons call `/api/...` routes. The local server answers them over HTTP ([src/cli.ts:92](../../src/cli.ts#L92)); in the web app, `window.VR_API` answers the same routes in the browser ([web/src/main.ts:200](../../web/src/main.ts#L200)). Both read the Settings panel's changes with the same function ([src/rating/settings.ts:131](../../src/rating/settings.ts#L131)).
 
 ## The Builds tab
 
-The web app also has a Builds tab (subclass, gear, mods and stat targets, rated and equippable). It lives in [web/src/builds/](../../web/src/builds/) and is loaded as its own chunk after the report draws ([web/src/main.ts:175-179](../../web/src/main.ts#L175-L179)). See [The Builds tab](builds-tab.md).
+The web app also has a Builds tab (subclass, gear, mods and stat targets, rated and equippable). It lives in [web/src/builds/](../../web/src/builds/) and is loaded as its own chunk after the report draws ([web/src/main.ts:177-181](../../web/src/main.ts#L177-L181)). See [The Builds tab](builds-tab.md).

@@ -125,6 +125,8 @@ async function run() {
   const aegis = loadAegis();
   if (!aegis) throw new Error("Aegis's tier list could not be loaded.");
 
+  // Wrapped only needs the manifest: fetch it alongside the vault instead of after rating.
+  const wrappedP = fetchWrapped(m).catch(() => null);
   log("Reading your vault…");
   const vault = await fetchVault();
   let dim: DimData | null = null;
@@ -142,7 +144,7 @@ async function run() {
   const loot = loadActivityLoot();
   const activities = loot ? rateActivities(loot, aegis, w.ratings, a.ratings, loadArmorSets()) : [];
   log("Reading your account stats for Wrapped…");
-  const wrapped = await fetchWrapped(m).catch(() => null);
+  const wrapped = await wrappedP;
 
   // Images load straight from bungie.net, so each key is just the URL.
   const images: Record<string, string> = {};

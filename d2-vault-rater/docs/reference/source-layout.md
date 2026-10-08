@@ -45,7 +45,7 @@
 | --- | --- |
 | [web/vite.config.ts:22](../../web/vite.config.ts#L22) | The shim plugin, the page plugin, local mode. |
 | [web/local-server.ts:35](../../web/local-server.ts#L35) | Local mode only: serves `app-config.json` from `.env` and relays token requests with the client secret. |
-| [web/src/main.ts:242](../../web/src/main.ts#L242) | Boot, sign-in screens, the rating run, the page's `/api` handlers. |
+| [web/src/main.ts:244](../../web/src/main.ts#L244) | Boot, sign-in screens, the rating run, the page's `/api` handlers. |
 | [web/src/shell.html:1](../../web/src/shell.html#L1) | Sign-in and progress markup injected into the report template. |
 | [web/src/appConfig.ts:28](../../web/src/appConfig.ts#L28) | Which Bungie app the site uses. |
 | [web/src/shims/](../../web/src/shims/) | Browser versions of the five Node-only modules, plus `node:*` stand-ins. |

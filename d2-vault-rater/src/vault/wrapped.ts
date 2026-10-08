@@ -50,66 +50,84 @@ export async function fetchWrapped(m: Manifest): Promise<Wrapped> {
   const who = await primaryMembership();
   const base = `/Destiny2/${who.membershipType}`;
   const out: Wrapped = { name: shortName(who.displayName), characters: [], pve: null, pvp: null, bestTypePve: null, weaponTypeKills: [], topWeapons: [], modes: [], triumphs: null, titles: [] };
+  // Every call is optional: a failed one just leaves its part out. Independent calls run together.
+  const get = <T>(path: string, auth = true) => bungie<T>(path, auth ? {} : { auth: false }).catch(() => null);
+  type Character = { classType: number; minutesPlayedTotal: string; light: number; dateLastPlayed: string; emblemBackgroundPath: string; titleRecordHash?: number };
+
+  const [me, p, account, byMode] = await Promise.all([
+    get<{ bungieNetUser: { displayName: string; uniqueName?: string } }>("/User/GetMembershipsForCurrentUser/"),
+    get<{ characters: { data: Record<string, Character> }; profileRecords?: { data?: { activeScore: number; lifetimeScore: number; legacyScore: number } } }>(
+      `${base}/Profile/${who.membershipId}/?components=200,900`,
+    ),
+    get<{ mergedAllCharacters: { results: Record<string, { allTime?: StatBlock }> } }>(`${base}/Account/${who.membershipId}/Stats/?groups=1`),
+    get<Record<string, { allTime?: StatBlock }>>(`${base}/Account/${who.membershipId}/Character/0/Stats/?groups=1&modes=${MODES.map((x) => x[1]).join(",")}`),
+  ]);
 
   try {
-    const me = await bungie<{ bungieNetUser: { displayName: string; uniqueName?: string } }>("/User/GetMembershipsForCurrentUser/");
-    out.name = shortName(me.bungieNetUser.uniqueName || me.bungieNetUser.displayName || out.name);
+    if (me) out.name = shortName(me.bungieNetUser.uniqueName || me.bungieNetUser.displayName || out.name);
   } catch {}
 
+  // Titles and per-weapon kills need the character list; fetch them all at once.
+  let chars: Character[] = [];
   let charIds: string[] = [];
+  let profileOk = false;
   try {
-    const p = await bungie<{
-      characters: { data: Record<string, { classType: number; minutesPlayedTotal: string; light: number; dateLastPlayed: string; emblemBackgroundPath: string; titleRecordHash?: number }> };
-      profileRecords?: { data?: { activeScore: number; lifetimeScore: number; legacyScore: number } };
-    }>(`${base}/Profile/${who.membershipId}/?components=200,900`);
-    charIds = Object.keys(p.characters.data);
-    const rec = p.profileRecords?.data;
-    if (rec) out.triumphs = { active: rec.activeScore, lifetime: rec.lifetimeScore, legacy: rec.legacyScore };
-    for (const c of Object.values(p.characters.data)) {
-      if (!c.titleRecordHash) continue;
-      try {
-        const r = await bungie<{ titleInfo?: { titlesByGender?: Record<string, string> } }>(`/Destiny2/Manifest/DestinyRecordDefinition/${c.titleRecordHash}/`, { auth: false });
-        const t = r.titleInfo?.titlesByGender && Object.values(r.titleInfo.titlesByGender)[0];
-        if (t) out.titles.push({ className: CLASSES[c.classType] ?? "Guardian", title: t });
-      } catch {}
-    }
-    out.characters = Object.values(p.characters.data).map((c) => ({
-      className: CLASSES[c.classType] ?? "Guardian",
-      minutes: Number(c.minutesPlayedTotal) || 0,
-      light: c.light,
-      lastPlayed: c.dateLastPlayed,
-      emblem: bungieUrl(c.emblemBackgroundPath),
-    }));
+    if (p) [charIds, chars, profileOk] = [Object.keys(p.characters.data), Object.values(p.characters.data), true];
   } catch {}
+  const [titles, unique] = await Promise.all([
+    Promise.all(chars.map((c) => (c.titleRecordHash ? get<{ titleInfo?: { titlesByGender?: Record<string, string> } }>(`/Destiny2/Manifest/DestinyRecordDefinition/${c.titleRecordHash}/`, false) : null))),
+    Promise.all(charIds.map((cid) => get<{ weapons?: { referenceId: number; values: StatBlock }[] }>(`${base}/Account/${who.membershipId}/Character/${cid}/Stats/UniqueWeapons/`))),
+  ]);
 
   try {
-    const s = await bungie<{ mergedAllCharacters: { results: Record<string, { allTime?: StatBlock }> } }>(`${base}/Account/${who.membershipId}/Stats/?groups=1`);
-    const pve = s.mergedAllCharacters.results.allPvE?.allTime;
-    out.pve = numbers(pve);
-    out.pvp = numbers(s.mergedAllCharacters.results.allPvP?.allTime);
-    out.bestTypePve = pve?.weaponBestType?.basic.displayValue ?? null;
-    if (out.pve) {
-      out.weaponTypeKills = Object.entries(TYPE_LABELS)
-        .map(([k, type]) => ({ type, kills: out.pve![`weaponKills${k}`] ?? 0, precision: out.pve![`weaponPrecisionKills${k}`] ?? 0 }))
-        .filter((t) => t.kills > 0)
-        .sort((a, b) => b.kills - a.kills);
+    if (p && profileOk) {
+      const rec = p.profileRecords?.data;
+      if (rec) out.triumphs = { active: rec.activeScore, lifetime: rec.lifetimeScore, legacy: rec.legacyScore };
+      chars.forEach((c, i) => {
+        try {
+          const r = titles[i];
+          const t = r?.titleInfo?.titlesByGender && Object.values(r.titleInfo.titlesByGender)[0];
+          if (t) out.titles.push({ className: CLASSES[c.classType] ?? "Guardian", title: t });
+        } catch {}
+      });
+      out.characters = chars.map((c) => ({
+        className: CLASSES[c.classType] ?? "Guardian",
+        minutes: Number(c.minutesPlayedTotal) || 0,
+        light: c.light,
+        lastPlayed: c.dateLastPlayed,
+        emblem: bungieUrl(c.emblemBackgroundPath),
+      }));
     }
   } catch {}
 
   try {
-    const s = await bungie<Record<string, { allTime?: StatBlock }>>(`${base}/Account/${who.membershipId}/Character/0/Stats/?groups=1&modes=${MODES.map((x) => x[1]).join(",")}`);
-    for (const [key, , label, pvp] of MODES) {
-      const stats = numbers(s[key]?.allTime);
-      if (stats && (stats.activitiesEntered ?? 0) > 0) out.modes.push({ key, label, pvp, stats });
+    if (account) {
+      const pve = account.mergedAllCharacters.results.allPvE?.allTime;
+      out.pve = numbers(pve);
+      out.pvp = numbers(account.mergedAllCharacters.results.allPvP?.allTime);
+      out.bestTypePve = pve?.weaponBestType?.basic.displayValue ?? null;
+      if (out.pve) {
+        out.weaponTypeKills = Object.entries(TYPE_LABELS)
+          .map(([k, type]) => ({ type, kills: out.pve![`weaponKills${k}`] ?? 0, precision: out.pve![`weaponPrecisionKills${k}`] ?? 0 }))
+          .filter((t) => t.kills > 0)
+          .sort((a, b) => b.kills - a.kills);
+      }
     }
   } catch {}
 
-  // Per-weapon kill counts (Bungie tracks these for exotics) merged across characters.
+  try {
+    if (byMode)
+      for (const [key, , label, pvp] of MODES) {
+        const stats = numbers(byMode[key]?.allTime);
+        if (stats && (stats.activitiesEntered ?? 0) > 0) out.modes.push({ key, label, pvp, stats });
+      }
+  } catch {}
+
+  // Per-weapon kill counts (Bungie tracks these for exotics) merged across characters, in character order.
   const kills = new Map<number, { kills: number; precision: number }>();
-  for (const cid of charIds) {
+  for (const u of unique) {
     try {
-      const u = await bungie<{ weapons?: { referenceId: number; values: StatBlock }[] }>(`${base}/Account/${who.membershipId}/Character/${cid}/Stats/UniqueWeapons/`);
-      for (const w of u.weapons ?? []) {
+      for (const w of u?.weapons ?? []) {
         const cur = kills.get(w.referenceId) ?? { kills: 0, precision: 0 };
         cur.kills += w.values.uniqueWeaponKills?.basic.value ?? 0;
         cur.precision += w.values.uniqueWeaponPrecisionKills?.basic.value ?? 0;

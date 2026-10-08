@@ -60,6 +60,8 @@ export async function buildReport(log: (s: string) => void = () => {}): Promise<
   const manifest = await loadManifest();
   const aegis = loadAegis();
   if (!aegis) throw new Error("Aegis's tier list could not be loaded.");
+  // Wrapped only needs the manifest: fetch it alongside the vault instead of after rating.
+  const wrappedP = fetchWrapped(manifest).catch(() => null);
   log("Reading your vault...");
   const vault = await fetchVault();
   let dim = null, dimError: string | null = null;
@@ -76,7 +78,7 @@ export async function buildReport(log: (s: string) => void = () => {}): Promise<
   const loot = loadActivityLoot();
   const activities = loot ? rateActivities(loot, aegis, w.ratings, a.ratings, loadArmorSets()) : [];
   log("Fetching your account stats for Wrapped...");
-  const wrapped = await fetchWrapped(manifest).catch(() => null);
+  const wrapped = await wrappedP;
   log("Writing the report (downloading images the first time)...");
   const { file } = await writeSite(w, a, { vaultSize: vault.weapons.length + vault.armor.length, settings, searches: plan.searches, vault, wrapped, activities, sourceOf: await buildSourceLookup(manifest, aegis, loot), encounters: planEncounters(w.ratings), dim, dimError, plan });
   return {

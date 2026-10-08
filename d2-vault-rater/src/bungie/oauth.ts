@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { bungieEnv, paths, readJson, writeJson } from "../config.js";
-import { bungie, tokenRequest } from "./client.js";
+import { bungie, loadTokens, tokenRequest } from "./client.js";
 import { join } from "node:path";
 
 const stateFile = () => join(paths.home, "oauth-state.json");
@@ -41,16 +41,23 @@ export interface DestinyMembership {
   displayName: string;
 }
 
-/** The Destiny account to read: the cross-save primary when there is one. */
-export async function primaryMembership(): Promise<DestinyMembership> {
-  const r = await bungie<{ destinyMemberships: DestinyMembership[]; primaryMembershipId?: string }>(
-    "/User/GetMembershipsForCurrentUser/",
-  );
-  const ms = r.destinyMemberships;
-  if (!ms.length) throw new Error("This Bungie account has no Destiny 2 profile.");
-  return (
-    ms.find((m) => m.membershipId === r.primaryMembershipId) ??
-    ms.find((m) => m.crossSaveOverride !== 0 && m.crossSaveOverride === m.membershipType) ??
-    ms[0]
-  );
+let cached: { account: string; who: Promise<DestinyMembership> } | null = null;
+
+/** The Destiny account to read: the cross-save primary when there is one. Asked once per Bungie account. */
+export function primaryMembership(): Promise<DestinyMembership> {
+  const account = loadTokens()?.membership_id ?? "";
+  if (cached?.account !== account) {
+    const who = bungie<{ destinyMemberships: DestinyMembership[]; primaryMembershipId?: string }>("/User/GetMembershipsForCurrentUser/").then((r) => {
+      const ms = r.destinyMemberships;
+      if (!ms.length) throw new Error("This Bungie account has no Destiny 2 profile.");
+      return (
+        ms.find((m) => m.membershipId === r.primaryMembershipId) ??
+        ms.find((m) => m.crossSaveOverride !== 0 && m.crossSaveOverride === m.membershipType) ??
+        ms[0]
+      );
+    });
+    cached = { account, who };
+    who.catch(() => cached?.who === who && (cached = null));
+  }
+  return cached.who;
 }

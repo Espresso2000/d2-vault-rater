@@ -32,9 +32,14 @@ The local report embeds every icon as a data URI so it works offline; each image
 
 ## In the page
 
-- The Builds tab is a separate JavaScript chunk, fetched in the background once the report is on screen ([web/src/main.ts:175-179](../../web/src/main.ts#L175-L179)).
+- The Builds tab is a separate JavaScript chunk, fetched in the background once the report is on screen ([web/src/main.ts:177-181](../../web/src/main.ts#L177-L181)).
 - Its score map, stat names and weapon tiers are worked out once per rating run, not on every redraw ([web/src/builds/ui.ts:49-59](../../web/src/builds/ui.ts#L49-L59)), and items are looked up through a per-vault index ([web/src/builds/model.ts:106-113](../../web/src/builds/model.ts#L106-L113)).
 - Your Destiny membership is asked for once per visit ([web/src/shims/oauth.ts:44-59](../../web/src/shims/oauth.ts#L44-L59)).
+
+## Fewer waits on Bungie
+
+- The Destiny membership lookup is shared: the Node rater asks once per Bungie account and process ([src/bungie/oauth.ts:44-63](../../src/bungie/oauth.ts#L44-L63)), the web app once per visit (above). Reading the vault checks the manifest version and the membership at the same time ([src/vault/fetch.ts:10](../../src/vault/fetch.ts#L10)).
+- Wrapped's account stats are fetched while the vault is read and rated, not after ([src/pipeline.ts:63-64](../../src/pipeline.ts#L63-L64), [web/src/main.ts:128-129](../../web/src/main.ts#L128-L129)). Its own requests go out together in two rounds: profile and stats first, then titles and per-weapon kills, which need the character list ([src/vault/wrapped.ts:57-80](../../src/vault/wrapped.ts#L57-L80)).
 
 ## Hosting
 

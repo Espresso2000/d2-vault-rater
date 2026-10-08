@@ -18,7 +18,7 @@ With DIM tags on and `dim.protectTagged` on (both are on by default, [src/rating
 
 To turn it off: `npm run vault -- dim protect off` ([src/cli.ts:200](../../src/cli.ts#L200)), `update_settings` with `dim_protect_tagged: false`, or the switch in the report's Settings panel.
 
-If DIM can't be reached, the rating goes ahead without DIM data, and nothing is protected by tags that run ([src/pipeline.ts:66-71](../../src/pipeline.ts#L66-L71)).
+If DIM can't be reached, the rating goes ahead without DIM data, and nothing is protected by tags that run ([src/pipeline.ts:68-73](../../src/pipeline.ts#L68-L73)).
 
 ## Equip it
 

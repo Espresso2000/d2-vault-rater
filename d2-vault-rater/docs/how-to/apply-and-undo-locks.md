@@ -13,14 +13,14 @@ Which shard categories get unlocked is your strictness's `unlock` list; at the d
 ## 2. Apply it
 
 - **CLI**: `npm run vault -- apply <plan-id>` and type `yes` ([src/cli.ts:216-227](../../src/cli.ts#L216-L227)).
-- **Report page**: confirm in the lock preview. Only the plan that page showed can be applied ([src/cli.ts:131-141](../../src/cli.ts#L131-L141), [web/src/main.ts:223-228](../../web/src/main.ts#L223-L228)).
+- **Report page**: confirm in the lock preview. Only the plan that page showed can be applied ([src/cli.ts:131-141](../../src/cli.ts#L131-L141), [web/src/main.ts:225-230](../../web/src/main.ts#L225-L230)).
 - **AI**: `apply_dim_actions` with the `plan_id` and `confirm: true` after you approve ([src/server.ts:394-406](../../src/server.ts#L394-L406)).
 
 Applying saves an undo snapshot, writes the DIM tags CSV, then changes locks one by one ([src/dim/actions.ts:140-160](../../src/dim/actions.ts#L140-L160)). Items that fail are listed in the result; the rest still go through ([src/dim/actions.ts:154-156](../../src/dim/actions.ts#L154-L156)). DIM shows the new locks after its next refresh.
 
 ## 3. Import the DIM tags (optional)
 
-The plan tags keepers `favorite` (best) or `keep`, junk `junk`, and items to review `archive`, each with a note starting with the score ([src/dim/actions.ts:48-66](../../src/dim/actions.ts#L48-L66)). In DIM: **Settings → Spreadsheets → Import tags/notes from CSV**, and pick the CSV the apply step reported ([src/server.ts:404](../../src/server.ts#L404)). The file has DIM's `Id`, `Hash`, `Tag` and `Notes` columns ([src/dim/actions.ts:108-113](../../src/dim/actions.ts#L108-L113)). In the web app the CSV comes back with the apply result ([web/src/main.ts:227](../../web/src/main.ts#L227)).
+The plan tags keepers `favorite` (best) or `keep`, junk `junk`, and items to review `archive`, each with a note starting with the score ([src/dim/actions.ts:48-66](../../src/dim/actions.ts#L48-L66)). In DIM: **Settings → Spreadsheets → Import tags/notes from CSV**, and pick the CSV the apply step reported ([src/server.ts:404](../../src/server.ts#L404)). The file has DIM's `Id`, `Hash`, `Tag` and `Notes` columns ([src/dim/actions.ts:108-113](../../src/dim/actions.ts#L108-L113)). In the web app the CSV comes back with the apply result ([web/src/main.ts:229](../../web/src/main.ts#L229)).
 
 To write the CSV without changing locks, use `export_dim_csv` ([src/server.ts:408-412](../../src/server.ts#L408-L412)).
 

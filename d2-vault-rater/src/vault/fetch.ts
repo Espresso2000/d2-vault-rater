@@ -7,8 +7,7 @@ import type { Vault } from "./types.js";
 let last: Vault | null = null;
 
 export async function fetchVault(): Promise<Vault> {
-  const m = await loadManifest();
-  const who = await primaryMembership();
+  const [m, who] = await Promise.all([loadManifest(), primaryMembership()]);
   const raw = await bungie<RawProfile>(
     `/Destiny2/${who.membershipType}/Profile/${who.membershipId}/?components=${PROFILE_COMPONENTS.join(",")}`,
   );
