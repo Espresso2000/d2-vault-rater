@@ -47,13 +47,23 @@ export const DAMAGE_TYPES: Record<number, Element> = { 1: "Kinetic", 2: "Arc", 3
 /** A game version as a file-name-safe string (manifest folders and snapshot files). */
 export const versionSlug = (version: string): string => version.replace(/[^\w.-]/g, "_");
 
-export const normalizeName = (s: string): string =>
-  s
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[‘’“”'"]/g, "")
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim();
+// ponytail: unbounded cache, fine while keys are game item and perk names (tens of thousands at most).
+const normalized = new Map<string, string>();
+
+/** Lower case, accents and quotes removed, everything else non-alphanumeric as single spaces. Cached: the rater asks for the same names constantly. */
+export function normalizeName(s: string): string {
+  let n = normalized.get(s);
+  if (n === undefined) {
+    n = s
+      .toLowerCase()
+      .normalize("NFKD")
+      .replace(/[‘’“”'"]/g, "")
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
+    normalized.set(s, n);
+  }
+  return n;
+}
 
 /** A weapon name without its "(Adept)", "(Timelost)" or "(Harrowed)" suffix. */
 export const stripReissue = (name: string): string => name.replace(/\s*\((adept|timelost|harrowed)\)\s*$/i, "");

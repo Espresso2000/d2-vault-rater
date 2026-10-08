@@ -88,12 +88,20 @@ function aegisIndex(aegis: AegisData | null) {
   };
 }
 
-/** perk hash -> name, for comparing wishlist rolls (hashes) to records (names). */
-function wishIndex(wl: WishlistData | null, m: Manifest | null) {
+/** Wishlist rolls for the weapons you own, with perk hashes turned into names to compare with records. */
+function wishIndex(wl: WishlistData | null, m: Manifest | null, owned: Set<number>) {
   const byItem = new Map<number, { names: string[]; trash: boolean }[]>();
   if (!wl || !m) return byItem;
+  const perkName = new Map<number, string>();
+  const nameOf = (h: number) => {
+    let n = perkName.get(h);
+    if (n === undefined) perkName.set(h, (n = normalizeName(m.items[h]?.displayProperties?.name ?? "")));
+    return n;
+  };
   for (const r of wl.rolls) {
-    const names = r.perks.map((h) => normalizeName(m.items[h]?.displayProperties?.name ?? "")).filter(Boolean);
+    // ~275k rolls; only those for items in the vault can match.
+    if (!owned.has(r.itemHash)) continue;
+    const names = r.perks.map(nameOf).filter(Boolean);
     const list = byItem.get(r.itemHash) ?? [];
     list.push({ names, trash: r.trash });
     byItem.set(r.itemHash, list);
@@ -140,7 +148,7 @@ export function rateWeapons(
   settings: Settings,
 ): WeaponReport {
   const ai = aegisIndex(sources.aegis);
-  const wi = wishIndex(sources.wishlists, sources.manifest);
+  const wi = wishIndex(sources.wishlists, sources.manifest, new Set(weapons.map((w) => w.itemHash)));
   const protect = new Set(settings.protect.map(normalizeName));
   const dimKeep = new Set(settings.dimKeep);
 

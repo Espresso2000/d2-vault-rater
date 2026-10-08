@@ -43,14 +43,17 @@ function candidates(role: Role, enc: Encounter, weapons: WeaponRating[]): { r: W
 
 /** Best three-weapon loadout from your vault: one per slot, at most one exotic, roles filled in priority order. */
 export function planEncounter(enc: Encounter, weapons: WeaponRating[]): EncounterPlan {
+  // Each role's candidates, worked out once: the fallback search below asks for the same roles repeatedly.
+  const byRole = new Map<Role, ReturnType<typeof candidates>>();
+  const cands = (r: Role) => byRole.get(r) ?? byRole.set(r, candidates(r, enc, weapons)).get(r)!;
   // A role nothing in the vault can fill (usually Support) falls back to the next useful one.
   const roles: Role[] = [];
   for (const role of enc.roles) {
-    const next = [role, ...FALLBACK].find((r) => !roles.includes(r) && candidates(r, enc, weapons).length);
+    const next = [role, ...FALLBACK].find((r) => !roles.includes(r) && cands(r).length);
     if (next) roles.push(next);
   }
   enc = { ...enc, roles };
-  const lists = enc.roles.map((role) => candidates(role, enc, weapons));
+  const lists = enc.roles.map(cands);
   type Pick = { c: (typeof lists)[number][number]; role: Role };
   let bestCombo: Pick[] = [];
   let bestScore = -1;
