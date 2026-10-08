@@ -22,6 +22,10 @@ Rating a vault needs a lot of data that rarely changes: Bungie's manifest (hundr
 
 The MCP server lives for a whole chat, and every rating call used to parse the source files again. `readJsonCached` ([src/config.ts:46-55](../../src/config.ts#L46-L55)) keeps the parsed Aegis list, wishlists, armor sets and raid loot, keyed by the file's modification time and size, and any write through the rater drops the cached copy ([src/config.ts:60](../../src/config.ts#L60)). Because an unchanged file gives back the *same object*, the server can tell cheaply whether anything changed.
 
+The wishlist cache is written without notes (the rater only reads perks) and without indentation, since it is read on every rating ([src/sources/wishlist.ts:51-55](../../src/sources/wishlist.ts#L51-L55)): about 28 MB for voltron's list instead of 267 MB.
+
+In the browser, the saved files are restored with one IndexedDB read at startup ([web/src/shims/config.ts:26-36](../../web/src/shims/config.ts#L26-L36), [web/src/idb.ts:30-44](../../web/src/idb.ts#L30-L44)). Every rating saves a lock plan; plans that were never applied are deleted there instead of being loaded on every later visit ([web/src/shims/config.ts:33](../../web/src/shims/config.ts#L33)).
+
 ## Ratings in the MCP server
 
 `rateAll` ([src/server.ts:68-81](../../src/server.ts#L68-L81)) reuses the last weapon and armor ratings while the vault object, the settings and the source objects are the same ([src/server.ts:77-79](../../src/server.ts#L77-L79)). Fetching the vault again (`get_vault`) or saving settings changes one of those, so the next call rates afresh. DIM Sync data is re-read at most every five minutes ([src/server.ts:51-63](../../src/server.ts#L51-L63)).
