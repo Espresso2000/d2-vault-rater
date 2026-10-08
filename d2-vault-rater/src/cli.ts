@@ -15,6 +15,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
 import { createInterface } from "node:readline/promises";
+import { parseEnv } from "node:util";
 import { ensureDirs } from "./config.js";
 import { startLogin, finishLogin } from "./bungie/oauth.js";
 import { buildReport, loggedIn, refreshSources, type ReportResult } from "./pipeline.js";
@@ -29,10 +30,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 function loadEnv() {
   const file = join(root, ".env");
   if (!existsSync(file)) return;
-  for (const line of readFileSync(file, "utf8").split(/\r?\n/)) {
-    const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/);
-    if (m && m[2] && process.env[m[1]] === undefined) process.env[m[1]] = m[2].replace(/^["']|["']$/g, "");
-  }
+  for (const [k, v] of Object.entries(parseEnv(readFileSync(file, "utf8")))) if (v && process.env[k] === undefined) process.env[k] = v;
 }
 
 function openInBrowser(target: string) {

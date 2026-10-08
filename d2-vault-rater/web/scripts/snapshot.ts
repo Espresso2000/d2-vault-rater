@@ -11,17 +11,16 @@ import { join, resolve } from "node:path";
 import { TABLES, type LiteManifest, type TableKey } from "../src/strip";
 import { stripBuildDefs } from "../src/builds/defs.strip";
 import { versionSlug } from "../../src/bungie/defs.js";
+import { readEnv } from "../local-server.ts";
 
 const here = resolve(import.meta.dirname, "..");
 const out = join(here, "public", "data");
 mkdirSync(out, { recursive: true });
 
 function apiKey(): string {
-  if (process.env.BUNGIE_API_KEY) return process.env.BUNGIE_API_KEY;
-  const env = join(here, "..", ".env");
-  const m = existsSync(env) && readFileSync(env, "utf8").match(/^\s*BUNGIE_API_KEY\s*=\s*(\S+)/m);
-  if (!m) throw new Error("Set BUNGIE_API_KEY (any Bungie API key works for the manifest).");
-  return m[1];
+  const key = readEnv().BUNGIE_API_KEY;
+  if (!key) throw new Error("Set BUNGIE_API_KEY (any Bungie API key works for the manifest).");
+  return key;
 }
 
 const meta = (await (await fetch("https://www.bungie.net/Platform/Destiny2/Manifest/", { headers: { "X-API-Key": apiKey() } })).json()).Response as {

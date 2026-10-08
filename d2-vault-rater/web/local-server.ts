@@ -8,16 +8,12 @@
  */
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { parseEnv } from "node:util";
 import type { Connect, Plugin } from "vite";
 
 export function readEnv(): Record<string, string> {
   const file = resolve(import.meta.dirname, "..", ".env");
-  const out: Record<string, string> = {};
-  if (existsSync(file))
-    for (const line of readFileSync(file, "utf8").split(/\r?\n/)) {
-      const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/);
-      if (m && m[2]) out[m[1]] = m[2].replace(/^["']|["']$/g, "");
-    }
+  const out = existsSync(file) ? Object.fromEntries(Object.entries(parseEnv(readFileSync(file, "utf8"))).filter(([, v]) => v)) : {};
   return { ...out, ...Object.fromEntries(Object.entries(process.env).filter(([k, v]) => k.startsWith("BUNGIE_") && v)) } as Record<string, string>;
 }
 

@@ -17,7 +17,7 @@
     "vault:serve": "node dist/cli.js serve"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20.12"
   },
   "license": "MIT",
   "dependencies": {
