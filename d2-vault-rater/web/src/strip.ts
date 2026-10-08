@@ -91,3 +91,11 @@ export interface LiteManifest {
   collectibles: Raw;
   activities: Raw;
 }
+
+/** In a worker: download one manifest table from bungie.net, telling the page which. */
+export async function downloadTable(paths: Record<string, string>, table: string): Promise<Raw> {
+  self.postMessage({ progress: `Downloading ${table.replace(/^Destiny|Definition$/g, "")} definitions…` });
+  const res = await fetch("https://www.bungie.net" + paths[table]);
+  if (!res.ok) throw new Error(`Manifest download failed for ${table}: ${res.status}`);
+  return res.json();
+}
