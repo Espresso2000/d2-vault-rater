@@ -18,9 +18,9 @@ export async function loadLiteManifest(log: (s: string) => void): Promise<LiteMa
     },
   });
   setManifest(m as unknown as Manifest);
-  // src/sources/activities.ts reads these two tables as files.
+  // src/sources/activities.ts reads these two (already stripped) tables as files.
   const dir = join(paths.manifestDir, versionSlug(m.version));
-  files.set(join(dir, "DestinyCollectibleDefinition.json"), JSON.stringify(m.collectibles));
-  files.set(join(dir, "DestinyActivityDefinition.json"), JSON.stringify(m.activities));
+  files.set(join(dir, "DestinyCollectibleDefinition.lite.json"), JSON.stringify(m.collectibles));
+  files.set(join(dir, "DestinyActivityDefinition.lite.json"), JSON.stringify(m.activities));
   return m;
 }

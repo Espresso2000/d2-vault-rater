@@ -1,20 +1,23 @@
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { paths } from "../config.js";
-import { bungie, BUNGIE } from "./client.js";
+import { bungie } from "./client.js";
 import { versionSlug, type Manifest } from "./defs.js";
+import { stripItems, stripNamed, type Raw } from "./strip.js";
+import { liteTable } from "./tables.js";
 
 export * from "./defs.js";
 
-const COMPONENTS = {
-  items: "DestinyInventoryItemDefinition",
-  stats: "DestinyStatDefinition",
-  itemSets: "DestinyEquipableItemSetDefinition",
-} as const;
+/** Every plug is kept so vault decoding sees what the full item table has. */
+const COMPONENTS: [keyof Omit<Manifest, "version">, string, (t: Raw) => Raw][] = [
+  ["items", "DestinyInventoryItemDefinition", (t) => stripItems(t, true)],
+  ["stats", "DestinyStatDefinition", stripNamed],
+  ["itemSets", "DestinyEquipableItemSetDefinition", stripNamed],
+];
 
 let cached: Manifest | null = null;
 
-/** Download (once per game version) and load the manifest tables the rater needs. */
+/** Download (once per game version), strip and load the manifest tables the rater needs. */
 export async function loadManifest(opts: { force?: boolean } = {}): Promise<Manifest> {
   const meta = await bungie<{ version: string; jsonWorldComponentContentPaths: Record<string, Record<string, string>> }>(
     "/Destiny2/Manifest/",
@@ -25,15 +28,7 @@ export async function loadManifest(opts: { force?: boolean } = {}): Promise<Mani
   mkdirSync(dir, { recursive: true });
   const en = meta.jsonWorldComponentContentPaths.en;
   const out: Partial<Manifest> = { version: meta.version };
-  for (const [key, table] of Object.entries(COMPONENTS)) {
-    const file = join(dir, `${table}.json`);
-    if (!existsSync(file) || opts.force) {
-      const res = await fetch(BUNGIE + en[table]);
-      if (!res.ok) throw new Error(`Manifest download failed for ${table}: ${res.status}`);
-      writeFileSync(file, await res.text());
-    }
-    (out as Record<string, unknown>)[key] = JSON.parse(readFileSync(file, "utf8"));
-  }
+  for (const [key, table, strip] of COMPONENTS) out[key] = await liteTable(dir, table, async () => en[table], strip, opts.force);
   cached = out as Manifest;
   return cached;
 }

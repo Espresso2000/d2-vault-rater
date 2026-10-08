@@ -1,7 +1,9 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { paths, readJsonCached, writeJson } from "../config.js";
-import { bungie, bungieUrl, BUNGIE } from "../bungie/client.js";
+import { bungie, bungieUrl } from "../bungie/client.js";
+import { stripActivities, stripCollectibles, type Raw } from "../bungie/strip.js";
+import { liteTable } from "../bungie/tables.js";
 import { baseName, DAMAGE_TYPES as DAMAGE, normalizeName, stripReissue, versionSlug, type Manifest } from "../bungie/manifest.js";
 import { setKey, type ArmorSetData } from "./armorSets.js";
 import type { AegisData } from "./aegis.js";
@@ -77,18 +79,15 @@ export const activitiesFile = () => join(paths.sourcesDir, "activities.json");
 interface ActivityDef { displayProperties?: { name?: string }; originalDisplayProperties?: { name?: string }; pgcrImage?: string }
 interface CollectibleDef { sourceString?: string; itemHash?: number }
 
+const EXTRA: Record<string, (t: Raw) => Raw> = { DestinyActivityDefinition: stripActivities, DestinyCollectibleDefinition: stripCollectibles };
+
 /** Download (once per game version) a manifest table the main loader does not keep in memory. */
-async function extraTable<T>(name: string, version: string): Promise<Record<string, T>> {
+async function extraTable<T>(name: keyof typeof EXTRA, version: string): Promise<Record<string, T>> {
   const dir = join(paths.manifestDir, versionSlug(version));
   mkdirSync(dir, { recursive: true });
-  const file = join(dir, `${name}.json`);
-  if (!existsSync(file)) {
-    const meta = await bungie<{ jsonWorldComponentContentPaths: Record<string, Record<string, string>> }>("/Destiny2/Manifest/", { auth: false });
-    const res = await fetch(BUNGIE + meta.jsonWorldComponentContentPaths.en[name]);
-    if (!res.ok) throw new Error(`Manifest download failed for ${name}: ${res.status}`);
-    writeFileSync(file, await res.text());
-  }
-  return JSON.parse(readFileSync(file, "utf8"));
+  const path = async () =>
+    (await bungie<{ jsonWorldComponentContentPaths: Record<string, Record<string, string>> }>("/Destiny2/Manifest/", { auth: false })).jsonWorldComponentContentPaths.en[name];
+  return liteTable(dir, name, path, EXTRA[name]);
 }
 
 const sourceMatches = (source: string, names: string[]) =>
