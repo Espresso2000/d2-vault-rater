@@ -103,9 +103,22 @@ export function trimFragments(b: Build, defs: BuildDefs): void {
 
 /* ---------- Items ---------- */
 
-export const weaponOf = (ctx: Ctx, id?: string) => (id ? ctx.vault.weapons.find((w) => w.instanceId === id) : undefined);
-export const armorOf = (ctx: Ctx, id?: string) => (id ? ctx.vault.armor.find((a) => a.instanceId === id) : undefined);
-export const itemOf = (ctx: Ctx, id?: string): WeaponRecord | ArmorRecord | undefined => weaponOf(ctx, id) ?? armorOf(ctx, id);
+/** instance id -> record, built once per vault (stat lines and pickers look items up constantly). */
+const byId = new WeakMap<Vault, Map<string, WeaponRecord | ArmorRecord>>();
+export const itemOf = (ctx: Ctx, id?: string): WeaponRecord | ArmorRecord | undefined => {
+  if (!id) return undefined;
+  let index = byId.get(ctx.vault);
+  if (!index) byId.set(ctx.vault, (index = new Map([...ctx.vault.armor, ...ctx.vault.weapons].map((x) => [x.instanceId, x]))));
+  return index.get(id);
+};
+export const weaponOf = (ctx: Ctx, id?: string) => {
+  const x = itemOf(ctx, id);
+  return x?.kind === "weapon" ? x : undefined;
+};
+export const armorOf = (ctx: Ctx, id?: string) => {
+  const x = itemOf(ctx, id);
+  return x?.kind === "armor" ? x : undefined;
+};
 export const CLASS_NAME = (cls: number) => CLASSES[cls] ?? "Titan";
 
 /** Another exotic of the same kind already in the build (only one exotic weapon and one exotic armor piece). */

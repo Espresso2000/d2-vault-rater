@@ -23,7 +23,9 @@ import { planEncounters } from "../../src/rating/encounters.js";
 import { planDimActions, applyDimActions, undoDimActions, type DimPlan } from "../../src/dim/actions.js";
 import { moveItems } from "../../src/bungie/transfer.js";
 import { buildSiteData } from "../../src/report/siteData.js";
-import { initBuilds } from "./builds/ui";
+import { loadBuilds } from "./builds/store";
+import { esc } from "./html";
+import type { BuildsInput } from "./builds/ui";
 
 declare global {
   interface Window {
@@ -36,7 +38,6 @@ declare global {
 }
 
 const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector<T>(s)!;
-const esc = (s: unknown) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
 /* ---------- Shell (sign-in, setup, progress) ---------- */
 function shell(html: string) {
@@ -165,9 +166,16 @@ async function run() {
   if (status.warnings.length) console.warn("Vault Rater sources:", status.warnings);
   const back = sessionStorage.getItem("vr-return-hash");
   if (back) (sessionStorage.removeItem("vr-return-hash"), history.replaceState(null, "", back));
-  initBuilds({ vault, data, manifest: m });
+  lazyBuilds({ vault, data, manifest: m });
   window.VR_START!(data, images);
   watchSession();
+}
+
+/** The Builds tab is its own chunk: the report draws first while the tab's code loads in the background. */
+function lazyBuilds(input: BuildsInput) {
+  // initBuilds swaps in the real VR_BUILDS, so render below reaches the loaded tab.
+  const ready = import("./builds/ui").then((b) => b.initBuilds(input));
+  window.VR_BUILDS = { count: () => loadBuilds().length || null, render: (el) => void ready.then(() => window.VR_BUILDS!.render(el)) };
 }
 
 /** Sign-in status for the Settings panel, and a banner once Bungie access really runs out. */

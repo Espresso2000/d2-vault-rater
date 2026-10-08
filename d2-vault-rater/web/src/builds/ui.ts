@@ -19,6 +19,7 @@ import { applyPlan, planEquip, type Plan } from "./equip";
 import { dimImportUrl, dimLoadouts, saveToDim, shareDimLoadout } from "./dim";
 import { loadBuilds, saveBuilds } from "./store";
 import { bungieUrl } from "../shims/client";
+import { esc } from "../html";
 
 export interface BuildsInput {
   vault: Vault;
@@ -27,7 +28,6 @@ export interface BuildsInput {
   manifest: { stats: Record<string, { displayProperties: { name: string } }> };
 }
 
-const esc = (s: unknown) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 const img = (p?: string | null, alt = "") => (p ? `<img src="${esc(bungieUrl(p))}" alt="${esc(alt)}" loading="lazy">` : `<span class="ph"></span>`);
 const tierChip = (t?: string | null, title = "") => (t ? `<span class="tier t${esc(t)}"${title ? ` title="${esc(title)}"` : ""}>${esc(t)}</span>` : "");
 const scoreTier = (n: number) => (n >= 90 ? "S" : n >= 80 ? "A" : n >= 65 ? "B" : n >= 50 ? "C" : "D");
@@ -46,20 +46,28 @@ const log: string[] = [];
 /** The character's gear before the last equip, to put it back. */
 let undo: { build: Build; charId: string } | null = null;
 
-const ctx = (): Ctx => {
+/** What ctx() needs from the rated vault, worked out once per rating run rather than on every draw. */
+let fixed: { scores: Map<string, number>; statNames: Record<number, string>; tiers: Map<string, string | null> } | null = null;
+function vaultData() {
+  if (fixed) return fixed;
   const scores = new Map<string, number>();
   for (const w of input!.data.weapons) scores.set(w.id, w.sc);
   for (const a of input!.data.armor) scores.set(a.id, a.sc);
   const statNames: Record<number, string> = {};
   for (const h of STAT_HASHES) statNames[h] = input!.manifest.stats[h]?.displayProperties?.name ?? String(h);
+  return (fixed = { scores, statNames, tiers: new Map(input!.data.weapons.map((w) => [w.id, w.tier])) });
+}
+const ctx = (): Ctx => {
+  const { scores, statNames } = vaultData();
   return { defs: defs!, ratings: cachedRatings(), vault: input!.vault, scores, statNames, sockets: profile?.sockets };
 };
-const weaponTier = (id?: string) => input!.data.weapons.find((w) => w.id === id)?.tier ?? null;
+const weaponTier = (id?: string) => (id ? vaultData().tiers.get(id) ?? null : null);
 
 /* ---------- Entry points (called by the report page) ---------- */
 
 export function initBuilds(i: BuildsInput) {
   input = i;
+  fixed = null;
   builds = loadBuilds();
   window.VR_BUILDS = { render, count: () => builds.length || null };
 }
