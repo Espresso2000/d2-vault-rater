@@ -2,6 +2,8 @@
 
 An MCP tool server that lets an AI assistant rate a Destiny 2 vault. It scores every weapon against [Aegis's Endgame Analysis tier list](https://docs.google.com/spreadsheets/d/1JM-0SlxVDAi-C6rGVlLxa-J1WGewEeL8Qvq4htWZHhY/htmlview) and its roll, scores armor by Armor 3.0 stats, tier, archetype and set, writes a keep/shard report with weapon images, and locks keepers and unlocks junk in game (DIM picks the locks up on its next refresh). DIM tags and notes go in through DIM's CSV import.
 
+Full documentation (tutorials, how-to guides, reference and explanation): [docs/](docs/README.md).
+
 ## Run it without an AI
 
 The rater also runs on its own. Put your Bungie app keys in `.env` (copy `.env.example`), then either double-click `Vault Rater.cmd` (Windows) or run:
@@ -82,6 +84,8 @@ Tokens, caches, settings, plans and reports live in `~/.d2-vault-rater` (overrid
 
 ## Tools
 
+The main tools are below; [docs/reference/mcp-tools.md](docs/reference/mcp-tools.md) lists all of them, including `rate_activities`, `plan_encounters`, `move_items` and `set_dim_tag`.
+
 | Tool | What it does | Changes anything in game? |
 | --- | --- | --- |
 | `login` | Bungie OAuth: returns the approval URL, then takes the URL you land on | No |
@@ -100,7 +104,7 @@ Tokens, caches, settings, plans and reports live in `~/.d2-vault-rater` (overrid
 
 **Weapons:** 60% Aegis tier (S 100, A 85, B 70, C 50, D 30, plus up to 5 for rank) and 40% roll: perk columns 35% each, barrel and magazine 10% each, origin and masterwork 5% each. A column counts if any selectable perk is on Aegis's list; enhanced perks get 10% more, and both trait columns matching adds 10. Weapons missing from the sheet fall back to the voltron wishlist (god roll = B tier, otherwise C).
 
-**Armor:** 50% stats (top three stats against a 30/25/20 Tier 5 roll), 30% fit to the stats your builds want (set in settings or read from equipped armor), 10% set bonus, 10% Tier 5 / exotic.
+**Armor:** 40% stats (top three stats against a 30/25/20 Tier 5 roll), 25% fit to the stats your builds want (set in settings or read from equipped armor), 25% set bonus (Aegis's set tiers, weighted by how many pieces you own), 10% Tier 5 / exotic.
 
 **Strictness presets**
 
@@ -122,6 +126,7 @@ Never unlocked at any preset: equipped items, Adept/Timelost copies, items on th
 ```
 npm test         # unit tests (fixtures, no network)
 npm run typecheck
+npm run docs:check # every code link in docs/ points at a real file and line
 npm run dev      # run the server from source
 ```
 
