@@ -2,10 +2,11 @@ import { baseName as base, normalizeName } from "../bungie/manifest.js";
 import type { AegisData, AegisWeapon } from "../sources/aegis.js";
 import type { ActivityData, LootWeapon } from "../sources/activities.js";
 import { SET_TIER_POINTS, setKey, type ArmorSetData, type SetTier } from "../sources/armorSets.js";
-import type { WeaponRating } from "./weapons.js";
+import { TIER_ORDER, TIER_POINTS, type WeaponRating } from "./weapons.js";
 import type { ArmorRating } from "./armor.js";
+import type { Tier } from "./settings.js";
+import { groupBy } from "../util.js";
 
-const TIER_POINTS: Record<string, number> = { S: 100, A: 85, B: 70, C: 50, D: 30 };
 const UNRATED_POINTS = 40;
 /** A copy with this roll score or better counts as a roll you already have. */
 const GOOD_ROLL = 70;
@@ -63,10 +64,9 @@ export function rateActivities(
   const byName = new Map<string, AegisWeapon>();
   for (const w of aegis?.weapons ?? []) {
     const k = normalizeName(w.name), old = byName.get(k);
-    if (!old || "SABCD".indexOf(w.tier) < "SABCD".indexOf(old.tier)) byName.set(k, w);
+    if (!old || TIER_ORDER.indexOf(w.tier) < TIER_ORDER.indexOf(old.tier)) byName.set(k, w);
   }
-  const mine = new Map<string, WeaponRating[]>();
-  for (const r of weapons) mine.set(base(r.name), [...(mine.get(base(r.name)) ?? []), r]);
+  const mine = groupBy(weapons, (r) => base(r.name));
   const slots = new Map<string, Map<string, Set<string>>>();
   for (const a of armor) {
     if (!a.setName) continue;
@@ -84,7 +84,7 @@ export function rateActivities(
       const status: LootStatus = !copies.length ? "chase" : (bestRoll ?? 0) >= GOOD_ROLL || copies.some((c) => c.godRoll) ? "have" : "upgrade";
       return { ...w, tier: ae?.tier ?? null, aegisRank: ae?.rank ?? null, tab: ae?.tab ?? null, frame: ae?.frame ?? "", notes: ae?.notes ?? "", owned: copies.length, bestScore, bestRoll, status };
     });
-    const pts = (w: RatedLoot) => (w.tier ? TIER_POINTS[w.tier] : UNRATED_POINTS);
+    const pts = (w: RatedLoot) => (w.tier ? TIER_POINTS[w.tier as Tier] : UNRATED_POINTS);
     ws.sort((a, b) => pts(b) - pts(a) || (a.aegisRank ?? 99) - (b.aegisRank ?? 99) || a.name.localeCompare(b.name));
 
     const top = ws.slice(0, 3).map(pts);

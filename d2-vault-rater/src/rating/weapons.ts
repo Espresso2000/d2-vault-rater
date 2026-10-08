@@ -3,9 +3,10 @@ import type { AegisData, AegisWeapon, ColumnKey } from "../sources/aegis.js";
 import type { WishlistData } from "../sources/wishlist.js";
 import type { WeaponRecord } from "../vault/types.js";
 import { strictnessFor, type Settings, type ShardCategory, type Tier } from "./settings.js";
+import { groupBy } from "../util.js";
 
 export const TIER_POINTS: Record<Tier, number> = { S: 100, A: 85, B: 70, C: 50, D: 30 };
-const TIER_ORDER: Tier[] = ["S", "A", "B", "C", "D"];
+export const TIER_ORDER: Tier[] = ["S", "A", "B", "C", "D"];
 export const COLUMN_WEIGHTS: Record<ColumnKey, number> = {
   perk1: 0.35,
   perk2: 0.35,
@@ -72,16 +73,11 @@ function aegisIndex(aegis: AegisData | null) {
   const tierPosition = new Map<AegisWeapon, number>(); // 0..1, 0 = top of its tier in its tab
   for (const w of aegis?.weapons ?? []) {
     // Reissue rows share a name with the original; keep the better-tiered row.
-    const better = (old?: AegisWeapon) => !old || "SABCD".indexOf(w.tier) < "SABCD".indexOf(old.tier);
+    const better = (old?: AegisWeapon) => !old || TIER_ORDER.indexOf(w.tier) < TIER_ORDER.indexOf(old.tier);
     for (const h of w.hashes) if (better(byHash.get(h))) byHash.set(h, w);
     if (better(byName.get(normalizeName(w.name)))) byName.set(normalizeName(w.name), w);
   }
-  const groups = new Map<string, AegisWeapon[]>();
-  for (const w of aegis?.weapons ?? []) {
-    const k = `${w.tab}|${w.tier}`;
-    groups.set(k, [...(groups.get(k) ?? []), w]);
-  }
-  for (const list of groups.values()) {
+  for (const list of groupBy(aegis?.weapons ?? [], (w) => `${w.tab}|${w.tier}`).values()) {
     list.sort((a, b) => (a.rank ?? 999) - (b.rank ?? 999));
     list.forEach((w, i) => tierPosition.set(w, list.length > 1 ? i / (list.length - 1) : 0));
   }
@@ -194,7 +190,7 @@ export function rateWeapons(
   // Protection
   const slotElementCount = new Map<string, number>();
   for (const r of ratings) slotElementCount.set(`${r.slot}|${r.element}`, (slotElementCount.get(`${r.slot}|${r.element}`) ?? 0) + 1);
-  const protectedReason = (r: WeaponRating): string | null => {
+  const reasonProtected = (r: WeaponRating): string | null => {
     const w = byId.get(r.instanceId)!;
     if (w.location.equipped) return "equipped on a character";
     if (w.adept) return "Adept/Timelost copy";
@@ -203,13 +199,12 @@ export function rateWeapons(
     if (slotElementCount.get(`${r.slot}|${r.element}`) === 1) return `your only ${r.element} ${r.slot.toLowerCase()} weapon`;
     return null;
   };
+  // Worked out once: the duplicate sort below asks for it on every comparison.
+  const protection = new Map(ratings.map((r) => [r, reasonProtected(r)]));
+  const protectedReason = (r: WeaponRating) => protection.get(r) ?? null;
 
   // Duplicates: same weapon name, best copy first
-  const sameName = new Map<string, WeaponRating[]>();
-  for (const r of ratings) {
-    const k = baseName(r.name);
-    sameName.set(k, [...(sameName.get(k) ?? []), r]);
-  }
+  const sameName = groupBy(ratings, (r) => baseName(r.name));
   const duplicates: WeaponReport["duplicates"] = [];
   const dupShard = new Set<string>();
   for (const list of sameName.values()) {
@@ -234,11 +229,7 @@ export function rateWeapons(
   }
 
   // Archetype groups: type + frame + element
-  const groups = new Map<string, WeaponRating[]>();
-  for (const r of ratings) {
-    const k = `${r.type}|${r.frame}|${r.element}`;
-    groups.set(k, [...(groups.get(k) ?? []), r]);
-  }
+  const groups = groupBy(ratings, (r) => `${r.type}|${r.frame}|${r.element}`);
   for (const list of groups.values()) list.sort(sortDesc);
 
   for (const r of ratings) {

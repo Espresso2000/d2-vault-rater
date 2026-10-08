@@ -2,6 +2,7 @@ import { normalizeName } from "../bungie/manifest.js";
 import type { ArmorRecord, Vault } from "../vault/types.js";
 import { strictnessFor, type Settings } from "./settings.js";
 import { SET_TIER_POINTS, setKey, type ArmorSetData, type SetTier } from "../sources/armorSets.js";
+import { groupBy } from "../util.js";
 
 /** Best possible primary + secondary + tertiary roll (Tier 5: 30 / 25 / 20). */
 export const MAX_TOP3 = 75;
@@ -163,11 +164,14 @@ export function rateArmor(vault: Vault, settings: Settings, setData: ArmorSetDat
   const sortDesc = (x: ArmorRating, y: ArmorRating) => y.score - x.score;
   const groupKey = (r: ArmorRating) =>
     r.rarity === "Exotic" ? `exotic|${r.itemHash}` : `${r.classType}|${r.slot}|${r.archetype}|${r.topStats[2]?.name ?? ""}`;
-  const groups = new Map<string, ArmorRating[]>();
-  for (const r of ratings.filter((r) => !r.legacy || r.rarity === "Exotic")) groups.set(groupKey(r), [...(groups.get(groupKey(r)) ?? []), r]);
+  const groups = groupBy(ratings.filter((r) => !r.legacy || r.rarity === "Exotic"), groupKey);
   for (const g of groups.values()) g.sort(sortDesc);
   const bestNew = new Map<string, number>();
   for (const r of ratings) if (!r.legacy) bestNew.set(`${r.classType}|${r.slot}`, Math.max(bestNew.get(`${r.classType}|${r.slot}`) ?? 0, r.score));
+  // Best score per set piece (set + class + slot), for "keep the best piece of a set worth running".
+  const setSlot = (r: ArmorRating) => `${r.setName}|${r.classType}|${r.slot}`;
+  const bestInSet = new Map<string, number>();
+  for (const r of ratings) if (r.setName) bestInSet.set(setSlot(r), Math.max(bestInSet.get(setSlot(r)) ?? 0, r.score));
 
   for (const r of ratings) {
     const a = byId.get(r.instanceId)!;
@@ -207,8 +211,7 @@ export function rateArmor(vault: Vault, settings: Settings, setData: ArmorSetDat
     const g = groups.get(groupKey(r))!;
     const rank = g.indexOf(r);
     // Keep the best piece per slot of a set whose bonus is worth running (C tier or better, 2+ slots owned).
-    const setNeeded = r.setName && (r.setInfo?.ownedSlots ?? 0) >= 2 && (r.setInfo?.value ?? 0) >= 50 &&
-      !ratings.some((o) => o !== r && o.setName === r.setName && o.slot === r.slot && o.classType === r.classType && o.score > r.score);
+    const setNeeded = r.setName && (r.setInfo?.ownedSlots ?? 0) >= 2 && (r.setInfo?.value ?? 0) >= 50 && r.score >= (bestInSet.get(setSlot(r)) ?? 0);
     if (rank === 0) {
       why(`best ${r.classType} ${r.slot} for ${r.archetype} + ${r.topStats[2]?.name ?? "?"}`);
     } else if (setNeeded) {

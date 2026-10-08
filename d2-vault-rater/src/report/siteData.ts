@@ -21,11 +21,19 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
   // DIM Sync: tag, notes and the loadouts each item is in.
   const inLoadouts = new Map<string, string[]>();
   for (const l of o.dim?.loadouts ?? []) for (const id of l.itemIds) inLoadouts.set(id, [...(inLoadouts.get(id) ?? []), l.name]);
+  // Your best copy of each weapon by name (first one on a tie), for RADS loot.
+  const bestCopy = new Map<string, WeaponRating>();
+  for (const r of w.ratings) {
+    const k = stripReissue(r.name);
+    if (r.score > (bestCopy.get(k)?.score ?? -Infinity)) bestCopy.set(k, r);
+  }
   const dimOf = (id: string) => {
     const rec = recW.get(id) ?? recA.get(id);
     return { tg: o.dim?.tags[id]?.tag ?? null, nt: o.dim?.tags[id]?.notes ?? null, lo: inLoadouts.get(id) ?? [], wh: rec?.location.where ?? null, eq: rec?.location.equipped ?? false };
   };
-  const weapons = w.ratings.map((r) => ({
+  const weapons = w.ratings.map((r) => {
+    const matched = new Set(Object.values(r.matched).flat());
+    return {
     ...dimOf(r.instanceId),
     id: r.instanceId,
     n: r.name,
@@ -43,7 +51,7 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
     sc: r.score,
     ws: r.weaponScore,
     rs: r.rollScore,
-    pk: r.perks.map((p) => ({ k: p.kind, o: p.options, m: p.options.filter((x) => Object.values(r.matched).flat().includes(x)) })),
+    pk: r.perks.map((p) => ({ k: p.kind, o: p.options, m: p.options.filter((x) => matched.has(x)) })),
     v: r.verdict,
     l: r.label,
     c: r.category,
@@ -59,7 +67,8 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
     ad: recW.get(r.instanceId)?.adept ?? false,
     mw: recW.get(r.instanceId)?.masterwork ?? null,
     loc: where(recW.get(r.instanceId)?.location),
-  }));
+    };
+  });
   const armor = a.ratings.map((r: ArmorRating) => ({
     ...dimOf(r.instanceId),
     id: r.instanceId,
@@ -139,7 +148,7 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
         icon: imageKey(x.icon),
         src: o.sourceOf?.(x.hash ?? 0, x.name) ?? null,
         // Your best copy, so the page can open its details.
-        best: w.ratings.filter((r) => stripReissue(r.name) === x.name).sort((p, q) => q.score - p.score)[0]?.instanceId ?? null,
+        best: bestCopy.get(x.name)?.instanceId ?? null,
       })),
     })),
     encounters: o.encounters ?? {},

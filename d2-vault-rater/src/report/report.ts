@@ -1,4 +1,5 @@
 import { writeSite } from "./site.js";
+import { groupBy } from "../util.js";
 import type { WeaponRating, WeaponReport } from "../rating/weapons.js";
 import type { ArmorReport } from "../rating/armor.js";
 import type { Settings } from "../rating/settings.js";
@@ -78,9 +79,7 @@ export function buildMarkdown(w: WeaponReport, a: ArmorReport, o: ReportOptions)
   }
 
   out.push(`## Shard list`);
-  const byCat = new Map<string, WeaponRating[]>();
-  for (const r of w.shard) byCat.set(r.verdict === "review" ? "review first" : r.category ?? "other", [...(byCat.get(r.verdict === "review" ? "review first" : r.category ?? "other") ?? []), r]);
-  for (const [cat, list] of byCat) {
+  for (const [cat, list] of groupBy(w.shard, (r) => (r.verdict === "review" ? "review first" : r.category ?? "other"))) {
     out.push(`**${cat}** (${list.length})`);
     for (const r of list) out.push(`- ![](${r.icon}) ${r.name}, ${r.element} ${r.type}, score ${r.score}: ${r.reasons.at(-1)}`);
   }
