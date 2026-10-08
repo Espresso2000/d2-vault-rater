@@ -4,15 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>__TITLE__</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 62 56'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%234d7dff'/%3E%3Cstop offset='.5' stop-color='%2336c4f2'/%3E%3Cstop offset='1' stop-color='%2333e3a0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M6 6h50L31 50z' fill='url(%23g)' stroke='url(%23g)' stroke-width='9' stroke-linejoin='round'/%3E%3Ctext x='31' y='28' text-anchor='middle' font-family='Segoe UI,Arial,sans-serif' font-weight='700' font-size='18' fill='%23fff'%3EEVR%3C/text%3E%3C/svg%3E">
+<link rel="icon" href='data:image/svg+xml,%3Csvg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"%3E%3Cdefs%3E%3ClinearGradient id="g" x1="0" y1="0" x2="1" y2="1"%3E%3Cstop offset="0" stop-color="%234d7dff"/%3E%3Cstop offset=".5" stop-color="%232fc8ea"/%3E%3Cstop offset="1" stop-color="%2333e3a0"/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d="M14 18H106L60 94Z" fill="none" stroke="url(%23g)" stroke-width="14"/%3E%3Cg font-family="Arial Black, Segoe UI, Arial, sans-serif" font-weight="700" font-size="44" text-anchor="middle" letter-spacing="-1"%3E%3Ctext x="62.6" y="66.6" fill="%234b5573"%3EEVR%3C/text%3E%3Ctext x="61.3" y="65.3" fill="%23a3abc0"%3EEVR%3C/text%3E%3Ctext x="60" y="64" fill="%23fff"%3EEVR%3C/text%3E%3C/g%3E%3C/svg%3E'>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&family=Space+Grotesk:wght@500;600;700&display=swap">
 <style>
-/* Layout: a quiet night sky. A slim glass top bar (brand, search, actions) sits over a row of underlined tabs.
-   Surfaces are flat and faintly lit; the blue-to-green gradient is kept for what matters (the brand, the
-   active tab, primary buttons, scores). The Overview opens with the vault's headline numbers; other tabs are
-   collapsible sections with a jump bar. Item details open in a drawer from the right (a sheet on phones). */
+/* Layout: a quiet night sky with a tactical HUD edge. A slim glass top bar (brand, search, actions) sits over a
+   row of underlined tabs and ends in a slowly drifting wave. Surfaces are flat and faintly lit, with green corner
+   ticks on the key panels and a soft light that follows the pointer; the blue-to-green gradient (weighted to green)
+   marks what matters. Small labels are mono capitals, like a readout. The Overview opens with the vault's headline
+   numbers; other tabs are collapsible sections with a jump bar. Item details open in a drawer (a sheet on phones). */
 :root {
   color-scheme: dark;
   --void: #050816;
@@ -30,10 +31,16 @@
   --cyan: #36c4f2;
   --green: #33e3a0;
   --gold: #f2c14e;
-  --grad: linear-gradient(110deg, #4d7dff 0%, #36c4f2 50%, #33e3a0 100%);
-  --grad-soft: linear-gradient(110deg, rgba(77,125,255,.16), rgba(51,227,160,.10));
+  --grad: linear-gradient(110deg, #4d7dff 0%, #2fc8ea 32%, #33e3a0 64%, #6af5b8 100%);
+  --grad-soft: linear-gradient(110deg, rgba(77,125,255,.12), rgba(51,227,160,.14));
   --glow-line: linear-gradient(90deg, transparent, rgba(77,125,255,.5) 25%, rgba(54,196,242,.6) 50%, rgba(51,227,160,.5) 75%, transparent);
-  --hover: rgba(54,196,242,.45);
+  --hover: rgba(51,227,160,.45);
+  /* HUD corner ticks (top left, bottom right) and the pointer light, as background layers */
+  --tick: rgba(51,227,160,.75);
+  --ticks: linear-gradient(var(--tick), var(--tick)) 0 0 / 14px 1.5px no-repeat, linear-gradient(var(--tick), var(--tick)) 0 0 / 1.5px 14px no-repeat,
+    linear-gradient(var(--tick), var(--tick)) 100% 100% / 14px 1.5px no-repeat, linear-gradient(var(--tick), var(--tick)) 100% 100% / 1.5px 14px no-repeat;
+  --spot: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(51,227,160,.10), transparent 70%);
+  --cut: 3px 18px;
   --S: #f2c14e; --A: #5b9bff; --B: #33d69a; --C: #8d97b8; --D: #ff6b6b; --U: #646e98;
   --Kinetic: #d9dde8; --Arc: #7bdcff; --Solar: #ff9c45; --Void: #b78bff; --Stasis: #5b8cff; --Strand: #3fe08a; --Unknown: #8d97b8;
   --keep: #33e3a0; --shard: #ff7a7a; --review: #f2c14e; --exotic: #f2c14e;
@@ -50,7 +57,7 @@ body { margin: 0; color: var(--ink); font: 15px/1.55 var(--body); font-feature-s
 /* One soft blue-green glow across the top of the sky; the starfield drifts over it. */
 body::before {
   content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
-  background: radial-gradient(70% 45% at 15% -5%, rgba(77,125,255,.16), transparent 70%), radial-gradient(55% 40% at 90% -10%, rgba(51,227,160,.10), transparent 70%), radial-gradient(60% 40% at 50% 110%, rgba(54,196,242,.06), transparent 70%);
+  background: radial-gradient(60% 45% at 10% -5%, rgba(77,125,255,.13), transparent 70%), radial-gradient(60% 45% at 85% -8%, rgba(51,227,160,.15), transparent 70%), radial-gradient(60% 40% at 50% 112%, rgba(51,227,160,.08), transparent 70%);
 }
 #stars { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: .75; }
 .wrap { position: relative; z-index: 1; max-width: 1600px; margin: 0 auto; padding-inline: clamp(16px, 3vw, 40px); }
@@ -58,12 +65,13 @@ h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; letter-
 p { margin: 0; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
-:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
 /* Panels use display:grid, which would override the hidden attribute and stack every tab. */
 [hidden] { display: none !important; }
 .num { font-variant-numeric: tabular-nums; }
-.eyebrow { font: 600 12px/1 var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--cyan); }
-.cap { font: 600 11px/1.2 var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--faint); }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: .18em; text-transform: uppercase; color: var(--green); }
+.eyebrow::before { content: "// "; opacity: .55; }
+.cap { font: 500 10.5px/1.2 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }
 .muted { color: var(--muted); }
 .small { font-size: 13px; }
 .grad-text { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
@@ -71,12 +79,16 @@ button { cursor: pointer; }
 .glass { background: var(--glass); border: 1px solid var(--line); }
 
 /* ---------- Top bar ---------- */
-.topbar { position: sticky; top: 0; z-index: 10; padding-top: env(safe-area-inset-top, 0px); background: rgba(5,8,22,.72); backdrop-filter: blur(18px) saturate(150%); border-bottom: 1px solid var(--line); }
+.topbar { position: sticky; top: 0; z-index: 10; padding-top: env(safe-area-inset-top, 0px); background: rgba(5,8,22,.78); backdrop-filter: blur(18px) saturate(150%); }
+/* The bar ends in a wave that drifts slowly: ::after carries the bar's glass into the wave, ::before draws its gradient line. */
+.topbar::after, .topbar::before { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 16px; pointer-events: none; animation: wave 40s linear infinite; }
+.topbar::after { background: rgba(5,8,22,.78); backdrop-filter: blur(18px) saturate(150%); -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='16'%3E%3Cpath d='M0 0H320V8Q280 2 240 8T160 8T80 8T0 8Z'/%3E%3C/svg%3E") 0 0 / 320px 16px repeat-x; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='16'%3E%3Cpath d='M0 0H320V8Q280 2 240 8T160 8T80 8T0 8Z'/%3E%3C/svg%3E") 0 0 / 320px 16px repeat-x; }
+.topbar::before { z-index: 1; background: var(--grad); opacity: .75; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='16'%3E%3Cpath d='M0 8Q40 14 80 8T160 8T240 8T320 8' fill='none' stroke='%23000' stroke-width='1.2'/%3E%3C/svg%3E") 0 0 / 320px 16px repeat-x; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='16'%3E%3Cpath d='M0 8Q40 14 80 8T160 8T240 8T320 8' fill='none' stroke='%23000' stroke-width='1.2'/%3E%3C/svg%3E") 0 0 / 320px 16px repeat-x; }
+@keyframes wave { to { -webkit-mask-position: 320px 0; mask-position: 320px 0; } }
 .appbar { display: flex; align-items: center; gap: 16px; height: 62px; }
 .brand { display: flex; align-items: center; gap: 12px; color: var(--ink); text-decoration: none; min-width: 0; margin-right: auto; }
-.brand .emblem { width: 34px; height: 31px; flex: none; overflow: visible; transition: transform .3s ease; }
-.brand .emblem text { font: 700 15.5px var(--display); letter-spacing: 1px; fill: #fff; }
-.brand:hover .emblem { transform: translateY(-1px) rotate(-4deg); }
+.brand .emblem { width: 48px; height: 40px; flex: none; overflow: visible; transition: transform .3s ease, filter .3s ease; }
+.brand:hover .emblem { transform: translateY(-1px); filter: drop-shadow(0 0 10px rgba(51,227,160,.55)); }
 .brand b { display: block; font: 600 16px/1.1 var(--display); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .brand small { display: block; margin-top: 2px; font-size: 12px; color: var(--faint); white-space: nowrap; }
 .tabrow { display: flex; }
@@ -88,9 +100,9 @@ nav.tabs button::after { content: ""; position: absolute; left: 12px; right: 12p
 nav.tabs button:hover { color: var(--ink); }
 nav.tabs button:hover svg { opacity: 1; }
 nav.tabs button[aria-selected="true"] { color: var(--ink); }
-nav.tabs button[aria-selected="true"] svg { opacity: 1; color: var(--cyan); }
+nav.tabs button[aria-selected="true"] svg { opacity: 1; color: var(--green); }
 nav.tabs button[aria-selected="true"]::after { transform: none; }
-nav.tabs .count { font: 500 11px/1 var(--body); padding: 3px 6px; border-radius: 999px; background: var(--glass-hi); color: var(--muted); }
+nav.tabs .count { font: 500 10.5px/1 var(--mono); padding: 3px 6px; border-radius: 999px; background: var(--glass-hi); color: var(--muted); }
 .bar-actions { display: flex; gap: 8px; align-items: center; }
 .gear { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; color: var(--muted); background: var(--glass); border: 1px solid var(--line); transition: color .2s ease, border-color .2s ease, background .2s ease; }
 .gear svg { width: 19px; height: 19px; fill: currentColor; transition: transform .6s cubic-bezier(.2,.8,.2,1); }
@@ -108,20 +120,20 @@ nav.tabs .count { font: 500 11px/1 var(--body); padding: 3px 6px; border-radius:
 .btn.rerate { height: 38px; padding-block: 0; }
 
 /* ---------- Hero (Overview only) ---------- */
-.hero { position: relative; margin-top: clamp(28px, 5vw, 56px); display: grid; gap: 28px; }
+.hero { position: relative; margin-top: clamp(40px, 6vw, 76px); display: grid; gap: 36px; }
 .hero-top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 18px 24px; }
 .hero h1 { font-size: clamp(36px, 5.6vw, 64px); line-height: 1; font-weight: 600; letter-spacing: -.03em; margin-top: 12px; }
 .hero .lede { margin-top: 14px; color: var(--muted); max-width: 62ch; font-size: 16px; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--glass); font-size: 13px; color: var(--muted); white-space: nowrap; }
-.chip .k { font-size: 12px; color: var(--faint); }
+.chip .k { font: 500 10.5px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--faint); }
 .chip b { color: var(--ink); font-weight: 600; }
 button.chip { cursor: pointer; transition: border-color .2s ease; }
 button.chip:hover { border-color: var(--hover); }
 .tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-.tile { position: relative; padding: 18px 20px; border-radius: 16px; background: var(--glass); border: 1px solid var(--line); text-align: left; display: grid; gap: 2px; transition: border-color .2s ease, background .2s ease, transform .2s ease; }
-button.tile:hover { border-color: var(--line-hi); background: var(--glass-hi); transform: translateY(-2px); }
-.tile .label { font-size: 13px; color: var(--muted); }
+.tile { position: relative; padding: 20px 22px; border-radius: var(--cut); background: var(--ticks), var(--glass); border: 1px solid var(--line); text-align: left; display: grid; gap: 2px; transition: border-color .2s ease, background .2s ease, transform .2s ease; }
+button.tile:hover { border-color: var(--line-hi); background: var(--spot), var(--ticks), var(--glass-hi); transform: translateY(-2px); }
+.tile .label { font: 500 11px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
 .tile .big { justify-self: start; font: 600 40px/1.1 var(--display); letter-spacing: -.02em; margin-top: 8px; }
 .tile.good .big { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .tile.bad .big { color: var(--shard); }
@@ -140,19 +152,21 @@ button.tile:hover .go { color: var(--ink); transform: translateX(3px); }
 
 /* ---------- Page structure ---------- */
 main { padding-block: 0 80px; }
-section.panel { display: grid; gap: 40px; padding-top: 32px; }
+section.panel { display: grid; gap: 68px; padding-top: 44px; }
 section.panel > *, details.sec, details.subsec { min-width: 0; }
-#p-overview { padding-top: 48px; }
+#p-overview { padding-top: 68px; }
 /* Section headers: static ones (div.sec-head) and collapsible ones (details.sec > summary.sec-head) look the same. */
-.sec-head { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; margin-bottom: 18px; }
-.sec-head h2 { font-size: 22px; font-weight: 600; }
-.sec-head p { color: var(--muted); font-size: 14px; flex-basis: 100%; }
+.sec-head { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; margin-bottom: 24px; }
+.sec-head h2 { font-size: 24px; font-weight: 600; }
+/* A thin line runs from the title to the edge, so each section reads as its own block */
+.sec-head::after { content: ""; flex: 1; order: 1; min-width: 40px; height: 1px; background: linear-gradient(90deg, rgba(51,227,160,.45), rgba(150,170,255,.08) 40%, transparent); }
+.sec-head p { order: 2; color: var(--muted); font-size: 14px; flex-basis: 100%; }
 details.sec > summary { list-style: none; cursor: pointer; user-select: none; }
 details.sec > summary::-webkit-details-marker { display: none; }
 details.sec > summary p { padding-left: 34px; }
 details.sec:not([open]) > summary { margin-bottom: 0; }
 details.sec:not([open]) > summary p { display: none; }
-.badge { font: 600 12px/1 var(--body); padding: 4px 9px; border-radius: 999px; background: rgba(51,227,160,.10); color: var(--green); }
+.badge { font: 500 11.5px/1 var(--mono); padding: 4px 9px; border-radius: 999px; background: rgba(51,227,160,.10); color: var(--green); }
 .badge.gold { background: rgba(242,193,78,.10); color: var(--gold); }
 .badge.red { background: rgba(255,122,122,.10); color: var(--shard); }
 /* Chevron: an arrow in a soft circle that turns when the section opens */
@@ -171,8 +185,10 @@ details.subsec > summary h3 { font: 600 15px var(--display); color: var(--ink); 
 details.subsec > summary .small { color: var(--faint); }
 details.subsec:not([open]) > summary { margin-bottom: 0; }
 /* Jump bar: section shortcuts plus collapse/expand all */
-.jumpbar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 6px; border-radius: 14px; }
+.jumpbar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 6px; border-radius: 3px 14px; }
 .jumpbar .cap { padding: 0 6px 0 8px; }
+/* The jump bar belongs to the tab it sits on, so it keeps closer than the gap between sections */
+section.panel > .jumpbar { margin-bottom: -36px; }
 .jumpbar button.j { border: 0; background: none; border-radius: 9px; padding: 6px 11px; font-size: 13px; color: var(--muted); transition: background .15s ease, color .15s ease; }
 .jumpbar button.j:hover { color: var(--ink); background: var(--glass-hi); }
 .jumpbar button.j span { font-size: 11px; color: var(--faint); margin-left: 6px; }
@@ -214,8 +230,8 @@ details.subsec:not([open]) > summary { margin-bottom: 0; }
 .btn.danger { background: rgba(255,122,122,.14); border-color: rgba(255,122,122,.5); color: #ffd9d9; }
 .btn.danger:hover { background: rgba(255,122,122,.22); border-color: var(--shard); }
 .btn:disabled { opacity: .5; cursor: default; }
-.linkbtn { background: none; border: 0; padding: 4px 0 0; color: var(--cyan); font-size: 13px; font-weight: 500; text-align: left; justify-self: start; }
-.linkbtn:hover { color: var(--green); }
+.linkbtn { background: none; border: 0; padding: 4px 0 0; color: var(--green); font-size: 13px; font-weight: 500; text-align: left; justify-self: start; }
+.linkbtn:hover { color: #9ff7cf; }
 /* Item icon with a tier (or gear tier) badge in the corner */
 .ico { position: relative; flex: none; width: 48px; height: 48px; }
 .ico img, .ico .ph { width: 100%; height: 100%; border-radius: 9px; display: block; }
@@ -224,7 +240,7 @@ details.subsec:not([open]) > summary { margin-bottom: 0; }
 
 /* ---------- Overview ---------- */
 .picks { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 16px; }
-.pick { position: relative; border-radius: 20px; overflow: hidden; cursor: pointer; display: flex; flex-direction: column; transition: transform .25s ease, border-color .25s ease; }
+.pick { position: relative; border-radius: 3px 22px; overflow: hidden; cursor: pointer; display: flex; flex-direction: column; transition: transform .25s ease, border-color .25s ease; }
 .pick:hover { transform: translateY(-3px); border-color: var(--line-hi); }
 .pick .art { position: relative; aspect-ratio: 16 / 7; background: var(--grad-soft); overflow: hidden; max-width: 100%; }
 .pick .art img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .8s ease; }
@@ -251,8 +267,8 @@ button.elcard:hover { border-color: color-mix(in srgb, currentColor 45%, transpa
 .elcard .w img { width: 40px; height: 40px; border-radius: 8px; flex: none; }
 .elcard .w > div { min-width: 0; }
 .quick { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr)); gap: 10px; }
-.qlink { position: relative; display: grid; gap: 4px; text-align: left; padding: 16px 18px; border-radius: var(--r); background: var(--glass); border: 1px solid var(--line); transition: border-color .2s ease, background .2s ease; }
-.qlink:hover { border-color: var(--line-hi); background: var(--glass-hi); }
+.qlink { position: relative; display: grid; gap: 4px; text-align: left; padding: 18px 20px; border-radius: 3px 14px; background: var(--glass); border: 1px solid var(--line); transition: border-color .2s ease, background .2s ease; }
+.qlink:hover { border-color: var(--line-hi); background: var(--spot), var(--glass-hi); }
 .qlink b { font: 600 15px var(--display); }
 .qlink span { font-size: 13px; color: var(--muted); }
 .qlink .n { font: 600 26px/1 var(--display); background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; justify-self: start; }
@@ -261,7 +277,7 @@ button.elcard:hover { border-color: color-mix(in srgb, currentColor 45%, transpa
 
 /* ---------- Weapons ---------- */
 .types { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(330px, 100%), 1fr)); gap: 12px; }
-.tcard { border-radius: 16px; background: var(--glass); border: 1px solid var(--line); padding: 14px; display: grid; gap: 10px; align-content: start; transition: border-color .2s ease; }
+.tcard { border-radius: 3px 18px; background: var(--glass); border: 1px solid var(--line); padding: 14px; display: grid; gap: 10px; align-content: start; transition: border-color .2s ease; }
 .tcard:hover { border-color: var(--line-hi); }
 .tcard header { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
 .tcard h3 { font-size: 17px; font-weight: 600; }
@@ -288,28 +304,39 @@ button.elcard:hover { border-color: color-mix(in srgb, currentColor 45%, transpa
 
 /* ---------- Full list: toolbar ---------- */
 /* One height (36px) and one flat look for every control in the toolbar */
-.toolbar { --h: 36px; display: grid; gap: 12px; padding: 14px; border-radius: 18px; margin-bottom: 18px; }
-.label { font-size: 12px; font-weight: 500; color: var(--faint); }
+.toolbar { --h: 36px; display: grid; gap: 0; padding: 6px 18px; border-radius: var(--cut); margin-bottom: 30px; background: var(--ticks), rgba(14,20,48,.55); }
+.viewstrip { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; min-width: 0; }
+.viewstrip .views { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-mask-image: linear-gradient(90deg, #000 92%, transparent); mask-image: linear-gradient(90deg, #000 92%, transparent); padding-right: 40px; }
+.viewstrip .views::-webkit-scrollbar { display: none; }
+.tb-top { padding-block: 10px; }
+/* Bands: a mono label on the left, the controls on the right, a hairline between bands */
+.tb-band { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 12px; align-items: start; padding-block: 12px; border-top: 1px solid var(--line); }
+.band { padding-top: 10px; font: 500 10.5px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--green); }
+.tb-sort { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.tb-sort .sep { width: 1px; height: 22px; background: var(--line-hi); margin-inline: 4px; }
+.tb-facets:not(.all) .ms.extra:not(.active) { display: none; }
+.morefac { height: 32px; padding: 0 12px; border: 1px dashed var(--line-hi); border-radius: 9px; background: none; color: var(--muted); font-size: 13px; }
+.morefac:hover { color: var(--ink); border-color: var(--hover); }
+.dirbtn { gap: 7px; padding: 0 13px; color: var(--ink); font-size: 14px; font-weight: 500; cursor: pointer; }
+.dirbtn svg { width: 15px; height: 15px; fill: none; stroke: var(--green); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.label { font: 500 10.5px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }
 .tb-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-.tb-more { display: grid; gap: 12px; }
-.tb-more > summary { list-style: none; cursor: pointer; display: none; align-items: center; gap: 10px; font-size: 13px; font-weight: 500; color: var(--muted); }
+.tb-more { display: grid; }
+.tb-more > summary { list-style: none; cursor: pointer; display: none; align-items: center; gap: 10px; padding-block: 10px; border-top: 1px solid var(--line); font-size: 13px; font-weight: 500; color: var(--muted); }
 .tb-more > summary::-webkit-details-marker { display: none; }
 .tb-more .chev { width: 20px; height: 20px; }
 .tb-more .chev::before { width: 5px; height: 5px; border-width: 1.5px; }
 @media (max-width: 700px) { .tb-more > summary { display: flex; } }
-.tb-facets { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding-top: 12px; border-top: 1px solid var(--line); }
-.tb-facets .label { margin-right: 6px; }
-.tb-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.tb-controls .sep { width: 1px; height: 22px; background: var(--line-hi); margin-inline: 4px; }
+.tb-facets { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .ctl { display: inline-flex; align-items: center; height: var(--h); border-radius: 10px; background: var(--glass); border: 1px solid var(--line); transition: border-color .15s ease; }
 .ctl:hover, .ctl:focus-within { border-color: var(--hover); }
-.ctl > span { padding: 0 2px 0 12px; font-size: 12px; color: var(--faint); }
+.ctl > span { padding: 0 2px 0 12px; font-size: 12.5px; color: var(--faint); white-space: nowrap; }
 .ctl select { appearance: none; -webkit-appearance: none; height: 100%; border: 0; background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5l3 3 3-3' fill='none' stroke='%239aa3c7' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 10px center / 12px; padding: 0 30px 0 6px; color: var(--ink); font-weight: 500; font-size: 14px; cursor: pointer; }
 .ctl select:focus { outline: none; }
 .ctl select option { background: var(--panel); }
-.resetbtn { height: var(--h); padding: 0 14px; border-radius: 10px; border: 0; background: none; color: var(--muted); font-weight: 500; font-size: 13px; margin-left: auto; }
+.resetbtn { height: 30px; padding: 0 12px; border-radius: 9px; border: 0; background: none; color: var(--muted); font-weight: 500; font-size: 13px; margin-left: auto; }
 .resetbtn:hover { color: var(--shard); }
-.tb-foot { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding-top: 10px; border-top: 1px solid var(--line); }
+.tb-foot { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding-block: 10px; border-top: 1px solid var(--line); }
 .searchbox { position: relative; flex: 1 1 280px; min-width: 0; display: flex; }
 .searchbox svg { position: absolute; left: 13px; top: 50%; width: 16px; height: 16px; transform: translateY(-50%); fill: none; stroke: var(--muted); stroke-width: 2; pointer-events: none; }
 .toolbar input[type=search] { width: 100%; height: var(--h); background: var(--glass); border: 1px solid var(--line); border-radius: 10px; padding: 0 12px 0 38px; }
@@ -318,7 +345,7 @@ button.elcard:hover { border-color: color-mix(in srgb, currentColor 45%, transpa
 .toolbar .seg { height: var(--h); }
 .seg button { background: transparent; border: 0; border-radius: 8px; padding: 6px 13px; color: var(--muted); font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; transition: color .15s ease, background .15s ease; }
 .seg button:hover { color: var(--ink); }
-.seg button[aria-pressed="true"] { background: var(--panel-hi); color: var(--ink); box-shadow: 0 1px 0 rgba(255,255,255,.06) inset, 0 4px 14px -6px rgba(0,0,0,.8); }
+.seg button[aria-pressed="true"] { background: var(--panel-hi); color: #c3f7e1; box-shadow: 0 1px 0 rgba(255,255,255,.06) inset, 0 4px 14px -6px rgba(0,0,0,.8); }
 .toolbar .seg button { padding-block: 0; }
 .seg.icons button { padding-inline: 10px; }
 .seg.icons svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
@@ -339,7 +366,7 @@ details.ms summary .n { background: var(--grad); color: #04102a; border-radius: 
 .ms .pop label span:last-child { font-size: 12px; color: var(--faint); }
 .ms .pop input { accent-color: var(--green); }
 .ms .pop .clear { justify-self: end; background: none; border: 0; color: var(--cyan); font-size: 12px; padding: 4px 8px; }
-.result { margin-left: auto; font-size: 13px; font-weight: 500; color: var(--muted); }
+.result { font: 500 11px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--green); }
 .active-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .active-chips:empty { display: none; }
 .fchip { display: inline-flex; gap: 6px; align-items: center; background: var(--glass-hi); border-radius: 999px; padding: 3px 6px 3px 11px; font-size: 12.5px; }
@@ -349,8 +376,8 @@ details.ms summary .n { background: var(--grad); color: #04102a; border-radius: 
 
 /* ---------- Rows: wide, one item per line ---------- */
 .list { display: grid; gap: 6px; }
-.row { position: relative; display: grid; grid-template-columns: 48px minmax(0, 1fr) auto auto; align-items: center; gap: 14px; padding: 9px 14px 9px 10px; border-radius: 14px; background: var(--glass); border: 1px solid var(--line); text-align: left; width: 100%; overflow: hidden; transition: border-color .15s ease, background .15s ease; }
-.row:hover { border-color: var(--line-hi); background: var(--glass-hi); }
+.row { position: relative; display: grid; grid-template-columns: 48px minmax(0, 1fr) auto auto; align-items: center; gap: 14px; padding: 9px 14px 9px 10px; border-radius: 3px 14px; background: var(--glass); border: 1px solid var(--line); text-align: left; width: 100%; overflow: hidden; transition: border-color .15s ease, background .15s ease; }
+.row:hover { border-color: var(--line-hi); background: var(--spot), var(--glass-hi); }
 .perkline { display: flex; gap: 4px; flex-wrap: nowrap; overflow: hidden; margin-top: 5px; }
 .perkline span { font-size: 11.5px; padding: 1px 8px; border-radius: 999px; background: var(--glass-hi); color: var(--muted); white-space: nowrap; }
 .perkline span.good { color: #c3f7e1; background: rgba(51,227,160,.10); }
@@ -359,7 +386,7 @@ details.ms summary .n { background: var(--grad); color: #04102a; border-radius: 
 /* Large type cards: banner art of the top pick, bigger icons and trait perks */
 .cardsize { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-bottom: 14px; }
 .cards-big .types { grid-template-columns: repeat(auto-fill, minmax(min(460px, 100%), 1fr)); gap: 16px; }
-.cards-big .tcard { padding: 0 18px 16px; gap: 12px; overflow: hidden; border-radius: 20px; }
+.cards-big .tcard { padding: 0 18px 16px; gap: 12px; overflow: hidden; border-radius: 3px 22px; }
 .cards-big .tcard:not(:has(.tc-art)) { padding-top: 16px; }
 .cards-big .tc-art { display: block; position: relative; margin: 0 -18px -34px; aspect-ratio: 16 / 5; overflow: hidden; }
 .cards-big .tc-art img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: .7; transition: transform .8s ease, opacity .3s ease; }
@@ -417,8 +444,8 @@ details.group > summary::-webkit-details-marker { display: none; }
 
 /* ---------- Armor ---------- */
 .armor-best { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
-.acard { padding: 14px; border-radius: 16px; background: var(--glass); border: 1px solid var(--line); display: grid; gap: 12px; text-align: left; align-content: start; transition: border-color .2s ease, background .2s ease; }
-.acard:hover { border-color: var(--line-hi); background: var(--glass-hi); }
+.acard { padding: 16px; border-radius: var(--cut); background: var(--ticks), var(--glass); border: 1px solid var(--line); display: grid; gap: 12px; text-align: left; align-content: start; transition: border-color .2s ease, background .2s ease; }
+.acard:hover { border-color: var(--line-hi); background: var(--spot), var(--ticks), var(--glass-hi); }
 .acard .top { display: flex; gap: 10px; align-items: center; min-width: 0; }
 .acard .top img, .acard .top .ph { width: 44px; height: 44px; border-radius: 9px; flex: none; }
 .acard .top > div { min-width: 0; }
@@ -429,7 +456,7 @@ details.group > summary::-webkit-details-marker { display: none; }
 .stat b { color: var(--ink); font: 500 12px var(--body); text-align: right; font-variant-numeric: tabular-nums; }
 .stat.want { color: var(--green); }
 .setgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr)); gap: 12px; }
-.setcard { padding: 16px 18px; border-radius: 16px; background: var(--glass); border: 1px solid var(--line); display: grid; gap: 12px; align-content: start; }
+.setcard { padding: 18px 20px; border-radius: var(--cut); background: var(--ticks), var(--glass); border: 1px solid var(--line); display: grid; gap: 12px; align-content: start; }
 .setcard.on { border-color: rgba(51,227,160,.3); }
 .setcard header { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
 .setcard h3 { font-size: 17px; font-weight: 600; }
@@ -450,7 +477,7 @@ details.full div { white-space: pre-line; color: var(--muted); font-size: 12.5px
 /* ---------- RADS ---------- */
 .rads-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--muted); }
 .rads { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(480px, 100%), 1fr)); gap: 16px; }
-.rad { border-radius: 22px; overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.rad { border-radius: 3px 24px; overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
 .rad.top { grid-column: 1 / -1; }
 .rad .banner { position: relative; aspect-ratio: 16 / 7; max-width: 100%; background: var(--grad-soft); overflow: hidden; }
 .rad.top .banner { aspect-ratio: 16 / 5; max-height: 340px; width: 100%; }
@@ -534,11 +561,11 @@ details.full div { white-space: pre-line; color: var(--muted); font-size: 12.5px
 
 /* ---------- Shard ---------- */
 .actiongrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 14px; align-items: start; }
-.dimbox { padding: 20px; border-radius: 18px; border: 1px solid var(--line); background: var(--grad-soft); display: grid; gap: 12px; }
+.dimbox { padding: 22px; border-radius: var(--cut); border: 1px solid var(--line); background: var(--ticks), var(--grad-soft); display: grid; gap: 12px; }
 .dimbox code { display: block; max-height: 90px; overflow: auto; font: 500 12px/1.5 var(--mono); color: var(--muted); background: rgba(5,8,22,.6); border-radius: 10px; padding: 10px; word-break: break-all; }
 .dimbox .acts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .reason { padding: 0 4px 10px; font-size: 13px; color: var(--muted); }
-.planbox { display: grid; gap: 12px; padding: 20px; border-radius: 18px; border: 1px solid rgba(242,193,78,.25); background: linear-gradient(120deg, rgba(242,193,78,.07), var(--glass) 60%); }
+.planbox { display: grid; gap: 12px; padding: 22px; border-radius: var(--cut); border: 1px solid rgba(242,193,78,.25); background: linear-gradient(120deg, rgba(242,193,78,.07), var(--glass) 60%); }
 .planbox .counts { display: flex; flex-wrap: wrap; gap: 8px; }
 .planlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 6px 14px; max-height: 420px; overflow: auto; padding: 4px; }
 .planlist div { display: flex; gap: 8px; align-items: baseline; font-size: 13.5px; min-width: 0; }
@@ -548,7 +575,7 @@ details.full div { white-space: pre-line; color: var(--muted); font-size: 12.5px
 
 /* ---------- Settings ---------- */
 .setform { display: grid; gap: 18px; max-width: 1040px; }
-.setform fieldset { border: 1px solid var(--line); border-radius: 18px; padding: 20px; margin: 0; display: grid; gap: 14px; background: var(--glass); min-width: 0; }
+.setform fieldset { border: 1px solid var(--line); border-radius: var(--cut); padding: 20px; margin: 0; display: grid; gap: 14px; background: var(--glass); min-width: 0; }
 .setform legend { font: 600 16px var(--display); padding: 0 6px; }
 .presets { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px; }
 .presets label { display: grid; gap: 4px; padding: 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--glass); cursor: pointer; transition: border-color .2s ease, background .2s ease; }
@@ -572,13 +599,13 @@ details.full div { white-space: pre-line; color: var(--muted); font-size: 12.5px
 
 /* ---------- Wrapped ---------- */
 .slides { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-auto-flow: row dense; gap: 14px; }
-.slide { grid-column: span 3; position: relative; overflow: hidden; border-radius: 22px; padding: 28px; min-height: 230px; display: grid; gap: 12px; align-content: start; border: 1px solid var(--line);
+.slide { grid-column: span 3; position: relative; overflow: hidden; border-radius: 3px 24px; padding: 28px; min-height: 230px; display: grid; gap: 12px; align-content: start; border: 1px solid var(--line);
   background: radial-gradient(500px 260px at 100% 0%, rgba(51,227,160,.12), transparent 70%), radial-gradient(500px 300px at 0% 100%, rgba(77,125,255,.16), transparent 70%), var(--glass); }
 .slide.wide { grid-column: span 6; }
 .slide.third { grid-column: span 2; }
 .slide.alt { background: radial-gradient(520px 280px at 0% 0%, rgba(54,196,242,.14), transparent 70%), radial-gradient(460px 300px at 100% 100%, rgba(51,227,160,.11), transparent 70%), var(--glass); }
 .slide.gold { background: radial-gradient(520px 280px at 100% 0%, rgba(242,193,78,.11), transparent 70%), radial-gradient(460px 300px at 0% 100%, rgba(77,125,255,.14), transparent 70%), var(--glass); }
-.slide .kicker { font: 600 12px/1 var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--cyan); }
+.slide .kicker { font: 500 11.5px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--cyan); }
 .slide.alt .kicker { color: var(--green); }
 .slide .huge { font: 600 clamp(44px, 7vw, 76px)/0.95 var(--display); letter-spacing: -.03em; }
 .slide .big { font: 600 clamp(26px, 3.6vw, 38px)/1.08 var(--display); letter-spacing: -.02em; }
@@ -610,7 +637,7 @@ details.full div { white-space: pre-line; color: var(--muted); font-size: 12.5px
 /* ---------- Drawer ---------- */
 .scrim { position: fixed; inset: 0; background: rgba(2,4,14,.55); backdrop-filter: blur(4px); z-index: 20; opacity: 0; pointer-events: none; transition: opacity .25s ease; }
 .scrim.open { opacity: 1; pointer-events: auto; }
-aside.drawer { position: fixed; z-index: 21; top: 10px; right: 10px; bottom: 10px; width: min(540px, calc(100% - 20px)); border-radius: 22px; background: rgba(10,15,36,.97); border: 1px solid var(--line-hi); box-shadow: -30px 0 80px -30px rgba(0,0,0,.9); transform: translateX(calc(100% + 20px)); transition: transform .32s cubic-bezier(.2,.8,.2,1); overflow-y: auto; overscroll-behavior: contain; padding-bottom: env(safe-area-inset-bottom, 0px); }
+aside.drawer { position: fixed; z-index: 21; top: 10px; right: 10px; bottom: 10px; width: min(540px, calc(100% - 20px)); border-radius: 4px 24px; background: rgba(10,15,36,.97); border: 1px solid var(--line-hi); box-shadow: -30px 0 80px -30px rgba(0,0,0,.9); transform: translateX(calc(100% + 20px)); transition: transform .32s cubic-bezier(.2,.8,.2,1); overflow-y: auto; overscroll-behavior: contain; padding-bottom: env(safe-area-inset-bottom, 0px); }
 aside.drawer.open { transform: none; }
 .d-art { position: relative; aspect-ratio: 16 / 8; background: var(--grad-soft); overflow: hidden; max-width: 100%; }
 .d-art img.shot { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -623,7 +650,7 @@ aside.drawer.open { transform: none; }
 .d-body h2 { font-size: 28px; font-weight: 600; margin-top: 6px; }
 .d-body .sub { color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; margin-top: 8px; }
 .breakdown { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.breakdown div { padding: 12px 14px; border-radius: 14px; background: var(--glass); border: 1px solid var(--line); }
+.breakdown div { padding: 12px 14px; border-radius: 3px 12px; background: var(--ticks), var(--glass); border: 1px solid var(--line); }
 .breakdown b { display: block; font: 600 24px/1.1 var(--display); }
 .breakdown span { font-size: 12px; color: var(--muted); }
 .facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 18px; font-size: 13.5px; }
@@ -638,8 +665,8 @@ aside.drawer.open { transform: none; }
 .wherebox .line span:first-child { color: var(--faint); font-size: 12.5px; padding-top: 1px; }
 .wherebox .go { justify-self: start; background: var(--grad); color: #04102a; border: 0; border-radius: 999px; padding: 6px 13px; font-weight: 600; font-size: 13px; }
 .reasons { margin: 0; padding-left: 18px; color: var(--ink); display: grid; gap: 5px; font-size: 14px; }
-.reasons li::marker { color: var(--cyan); }
-.notes { padding: 12px 14px; border-radius: 12px; border-left: 2px solid var(--cyan); background: var(--glass); color: var(--muted); font-size: 14px; }
+.reasons li::marker { color: var(--green); }
+.notes { padding: 12px 14px; border-radius: 3px 12px; border-left: 2px solid var(--green); background: var(--glass); color: var(--muted); font-size: 14px; }
 
 /* ---------- Footer, floating buttons and messages ---------- */
 footer { position: relative; padding-block: 32px 64px; color: var(--faint); font-size: 13px; border-top: 1px solid var(--line); }
@@ -649,7 +676,7 @@ footer details > summary:hover { color: var(--ink); }
 footer details > summary::-webkit-details-marker { display: none; }
 footer details[open] > summary { margin-bottom: 16px; }
 .foot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 14px; }
-.foot-grid section { padding: 18px 20px; border-radius: 16px; border: 1px solid var(--line); background: var(--glass); display: grid; gap: 8px; align-content: start; }
+.foot-grid section { padding: 18px 20px; border-radius: var(--cut); border: 1px solid var(--line); background: var(--glass); display: grid; gap: 8px; align-content: start; }
 .foot-grid h3 { font: 600 14px/1.2 var(--display); color: var(--ink); }
 .foot-grid p { font-size: 13px; color: var(--muted); }
 .foot-grid p b { color: var(--ink); font-weight: 600; }
@@ -685,10 +712,10 @@ body.vr-booting > .topbar, body.vr-booting > main, body.vr-booting > footer { di
   .gsearch kbd { display: none; }
   nav.tabs { margin-inline: calc(-1 * clamp(16px, 3vw, 40px)); padding-inline: clamp(8px, 3vw, 40px); }
   nav.tabs button { height: 46px; padding-inline: 10px; }
-  /* Quick views: one swipeable line instead of a tall stack */
-  #explorer > .tb-row > .label { display: none; }
-  .views { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: calc(-1 * clamp(16px, 3vw, 40px)); padding-inline: clamp(16px, 3vw, 40px); }
-  .views::-webkit-scrollbar { display: none; }
+  .viewstrip > .label { display: none; }
+  .tb-band { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .band { padding-top: 0; }
+  .seg.icons button span { display: none; }
 }
 @media (max-width: 560px) {
   .cards-big .tc-art { aspect-ratio: 16 / 7; }
@@ -726,10 +753,7 @@ body.vr-booting > .topbar, body.vr-booting > main, body.vr-booting > footer { di
 <header class="topbar">
   <div class="wrap appbar">
     <a class="brand" href="#overview" aria-label="Vault report overview">
-      <svg class="emblem" viewBox="0 0 64 58" aria-hidden="true"><defs>
-        <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4d7dff"/><stop offset=".5" stop-color="#36c4f2"/><stop offset="1" stop-color="#33e3a0"/></linearGradient></defs>
-        <path d="M6 6h50L31 50z" fill="url(#lg)" stroke="url(#lg)" stroke-width="7" stroke-linejoin="round"/>
-        <text x="31" y="27" text-anchor="middle">EVR</text></svg>
+      <svg class="emblem" viewBox="0 0 120 100" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4d7dff"/><stop offset=".5" stop-color="#2fc8ea"/><stop offset="1" stop-color="#33e3a0"/></linearGradient></defs><path d="M14 18H106L60 94Z" fill="none" stroke="url(#lg)" stroke-width="14"/><g font-family="Space Grotesk, Arial Black, Segoe UI, sans-serif" font-weight="700" font-size="44" text-anchor="middle" letter-spacing="-1"><text x="62.6" y="66.6" fill="#4b5573">EVR</text><text x="61.3" y="65.3" fill="#a3abc0">EVR</text><text x="60" y="64" fill="#fff">EVR</text></g></svg>
       <span><b id="brand-name">Vault Report</b><small>Destiny 2 · Vault Rater</small></span>
     </a>
     <div class="bar-actions" id="bar-actions">
@@ -845,7 +869,7 @@ function vrMain() {
       let sd = 7; const rnd = () => ((sd = (sd * 16807) % 2147483647) / 2147483647);
       list = Array.from({ length: Math.round((innerWidth * innerHeight) / 3200) }, () => {
         const z = rnd(); // depth: near stars are bigger, brighter and drift faster
-        return { x: rnd() * w, y: rnd() * h, r: (0.35 + z * 1.05) * dpr, a: 0.18 + z * 0.55, v: (0.6 + z * 2.4) * dpr, p: rnd() * 6.28, g: rnd() < 0.45 };
+        return { x: rnd() * w, y: rnd() * h, r: (0.35 + z * 1.05) * dpr, a: 0.18 + z * 0.55, v: (0.6 + z * 2.4) * dpr, p: rnd() * 6.28, g: rnd() < 0.6 };
       });
     };
     const draw = (t, dt) => {
@@ -872,6 +896,13 @@ function vrMain() {
     let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { seed(); if (still) draw(0, 0); }, 150); });
     document.addEventListener("visibilitychange", () => (document.hidden ? stop() : start()));
   })();
+
+  // Pointer light: cards with a --spot layer light up where the pointer is.
+  document.addEventListener("pointermove", (e) => {
+    const el = e.target.closest?.(".tile, .row, .acard, .qlink"); if (!el) return;
+    const r = el.getBoundingClientRect();
+    el.style.setProperty("--mx", `${e.clientX - r.left}px`); el.style.setProperty("--my", `${e.clientY - r.top}px`);
+  }, { passive: true });
 
   /* ---------- Hero ---------- */
   $("#h1").innerHTML = `${NAME ? esc(NAME) + "’s " : ""}<span class="grad-text">Vault Report</span>`;
@@ -997,7 +1028,7 @@ function vrMain() {
   // Trait perks for a row: the ones Aegis recommends first, marked.
   const traitChips = (w) => {
     const good = new Set(w.pk.flatMap((p) => p.m));
-    return w.pk.filter((p) => p.k === "perk1" || p.k === "perk2").flatMap((p) => p.o).sort((a, b) => good.has(b) - good.has(a)).slice(0, 4).map((o) => `<span${good.has(o) ? ' class="good"' : ""}>${esc(o)}</span>`).join("");
+    return w.pk.filter((p) => p.k === "perk1" || p.k === "perk2").flatMap((p) => p.o).sort((a, b) => good.has(b) - good.has(a)).slice(0, 3).map((o) => `<span${good.has(o) ? ' class="good"' : ""}>${esc(o)}</span>`).join("");
   };
   /** Row: one wide line per item, with perks on wide screens. */
   const weaponRow = (w) => `<button class="row v-${w.v}" data-w="${w.id}"><span class="ico${isExotic(w) ? " exotic" : ""}">${img(w.ic)}${tierBadge(w)}</span>
@@ -1051,7 +1082,7 @@ function vrMain() {
         <div class="body">
           <div class="title">${img(w.ic)}<div style="min-width:0"><h3>${esc(w.n)}</h3><div class="small muted">${esc(typeLine(w))} · ${esc(w.e)}</div></div></div>
           <div style="display:flex;gap:10px;align-items:center">${tierBadge(w)}<span class="small muted">${w.tier ? `Aegis #${w.rank ?? "?"} in ${esc(w.tab)}` : "Wishlist rated"}</span><span style="margin-left:auto">${scoreCell(w.sc)}</span></div>
-          <div class="perkopts">${traits.slice(0, 8).map((o) => `<span class="perk${good.has(o) ? " good" : ""}">${esc(o)}</span>`).join("")}</div>
+          <div class="perkopts">${traits.slice(0, 4).map((o) => `<span class="perk${good.has(o) ? " good" : ""}">${esc(o)}</span>`).join("")}</div>
           ${ids.length > 1 ? `<div class="runners">Runners-up ${ids.slice(1, 4).map((id) => `<button data-w="${id}">${esc(W.get(id).n)} · ${W.get(id).sc}</button>`).join("")}</div>` : ""}
         </div></div>`;
     }).join("");
@@ -1277,7 +1308,7 @@ function vrMain() {
         ...(DIMS.loadouts && DIMS.loaded ? [["dl", "DIM loadout", (w) => (w.lo?.length ? w.lo : ["Not in a loadout"])]] : []),
       ],
       sorts: { score: ["Vault score", (w) => w.sc], roll: ["Roll score", (w) => w.rs], tier: ["Aegis tier and rank", (w) => (w.tier ? (5 - TIERS.indexOf(w.tier)) * 100 - (w.rank ?? 50) : -1)], power: ["Power", (w) => w.pw ?? 0], name: ["Name", (w) => w.n.toLowerCase()], type: ["Type", (w) => w.t] },
-      groups: { "": "Nothing", ...(DIMS.tags && DIMS.loaded ? { dt: "DIM tag" } : {}), t: "Type", e: "Element", f: "Frame", s: "Slot", am: "Ammo", tier: "Aegis tier", v: "Verdict", c: "Shard reason", r: "Rarity", name: "Weapon name" },
+      groups: { "": "None", ...(DIMS.tags && DIMS.loaded ? { dt: "DIM tag" } : {}), t: "Type", e: "Element", f: "Frame", s: "Slot", am: "Ammo", tier: "Aegis tier", v: "Verdict", c: "Shard reason", r: "Rarity", name: "Weapon name" },
       views: {
         "best-type-el": ["Best of every type and element", { group: "t", group2: "e", top: "1" }],
         "solar-autos": ["Best Solar auto rifles", { f: { t: ["Auto Rifle"], e: ["Solar"] } }],
@@ -1309,7 +1340,7 @@ function vrMain() {
       ],
       sorts: Object.assign({ score: ["Armor score", (a) => a.sc], setv: ["Set rating", (a) => a.si?.value ?? -1], total: ["Stat total", (a) => a.tot], name: ["Name", (a) => a.n.toLowerCase()] },
         Object.fromEntries(uniqSorted(DATA.armor, (a) => Object.keys(a.all || {})).map((k) => ["stat:" + k, [k + " stat", (a) => a.all?.[k] ?? 0]]))),
-      groups: { "": "Nothing", ...(DIMS.tags && DIMS.loaded ? { dt: "DIM tag" } : {}), cls: "Class", s: "Slot", arch: "Archetype", set: "Set", stier: "Set tier", r: "Rarity", gt: "Gear tier", p: "Highest stat", v: "Verdict" },
+      groups: { "": "None", ...(DIMS.tags && DIMS.loaded ? { dt: "DIM tag" } : {}), cls: "Class", s: "Slot", arch: "Archetype", set: "Set", stier: "Set tier", r: "Rarity", gt: "Gear tier", p: "Highest stat", v: "Verdict" },
       views: {
         "best-slot": ["Best per class and slot", { group: "cls", group2: "s", top: "1" }],
         "best-sets": ["Best sets first", { group: "set", sort: "setv", f: { r: ["Legendary"] } }],
@@ -1323,6 +1354,7 @@ function vrMain() {
       grouper: (k) => (k === "arch" ? (a) => a.arch || "Legacy" : k === "gt" ? (a) => (a.gt ? "Tier " + a.gt : "No tier") : k === "p" ? (a) => a.st[0]?.[0] || "—" : k === "set" ? (a) => a.si?.name || a.set || "No set" : k === "stier" ? (a) => (bestSetTier(a) ? bestSetTier(a) + " tier set" : "Unrated or no set") : k === "v" ? (a) => VERDICT[a.v] : (a) => a[k] ?? "Unknown"),
     },
   };
+  const dirHtml = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${d === "desc" ? "M12 5v14M6 13l6 6 6-6" : "M12 19V5M6 11l6-6 6 6"}"/></svg>${d === "desc" ? "Best first" : "Worst first"}`;
   const blank = () => ({ q: "", f: {}, sort: "score", dir: "desc", group: "", group2: "", top: "", view: "", limit: 150 });
   const ex = { set: "w", w: blank(), a: blank(), pass: () => true };
   let layout = store.get("vr-layout") === "tiles" ? "tiles" : "rows";
@@ -1360,30 +1392,32 @@ function vrMain() {
     const cfg = SETS[ex.set], st = ex[ex.set];
     if (full) {
       const opt = (o, sel) => Object.entries(o).map(([k, l]) => `<option value="${esc(k)}"${k === sel ? " selected" : ""}>${esc(Array.isArray(l) ? l[0] : l)}</option>`).join("");
-      // Toolbar: what (kind, search, layout), then filters, then ordering; quick views sit above as presets.
+      // Toolbar in three bands: what (kind, search, layout), filter (the common facets, the rest behind "more"),
+      // and order (sort, direction, grouping). Quick views sit above as one line of presets.
+      const MAIN_FACETS = 6;
+      const extra = cfg.facets.length - MAIN_FACETS;
       $("#explorer").innerHTML = `
-        <div class="tb-row" style="margin-bottom:12px"><span class="label">Quick views</span><div class="views">${Object.entries(cfg.views).map(([k, [l]]) => `<button class="view" data-v="${k}" aria-pressed="${st.view === k}">${esc(l)}</button>`).join("")}</div></div>
-        <div class="toolbar glass">
-          <div class="tb-row">
+        <div class="viewstrip"><span class="label">Quick views</span><div class="views">${Object.entries(cfg.views).map(([k, [l]]) => `<button class="view" data-v="${k}" aria-pressed="${st.view === k}">${esc(l)}</button>`).join("")}</div></div>
+        <div class="toolbar glass hud">
+          <div class="tb-row tb-top">
             <div class="seg" role="group" aria-label="Item kind" id="exset">${Object.entries(SETS).map(([k, c]) => `<button data-s="${k}" aria-pressed="${k === ex.set}">${c.label}</button>`).join("")}</div>
             <label class="searchbox"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="exq" placeholder="${ex.set === "w" ? "Search name, type, perk or masterwork" : "Search name, set or archetype"}" aria-label="Search" value="${esc(st.q)}"></label>
             <div class="seg icons" role="group" aria-label="Layout" id="exlayout">
-              <button data-l="rows" aria-pressed="${layout === "rows"}" title="Rows: one wide line per item, with perks" aria-label="Rows"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/></svg>Rows</button>
-              <button data-l="tiles" aria-pressed="${layout === "tiles"}" title="Tiles: a compact grid of icons, like an inventory" aria-label="Tiles"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="8" rx="1.2"/><rect x="9.5" y="3" width="5" height="8" rx="1.2"/><rect x="16" y="3" width="5" height="8" rx="1.2"/><rect x="3" y="13" width="5" height="8" rx="1.2"/><rect x="9.5" y="13" width="5" height="8" rx="1.2"/><rect x="16" y="13" width="5" height="8" rx="1.2"/></svg>Tiles</button>
+              <button data-l="rows" aria-pressed="${layout === "rows"}" title="Rows: one wide line per item, with perks" aria-label="Rows"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/></svg><span>Rows</span></button>
+              <button data-l="tiles" aria-pressed="${layout === "tiles"}" title="Tiles: a compact grid of icons, like an inventory" aria-label="Tiles"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="8" rx="1.2"/><rect x="9.5" y="3" width="5" height="8" rx="1.2"/><rect x="16" y="3" width="5" height="8" rx="1.2"/><rect x="3" y="13" width="5" height="8" rx="1.2"/><rect x="9.5" y="13" width="5" height="8" rx="1.2"/><rect x="16" y="13" width="5" height="8" rx="1.2"/></svg><span>Tiles</span></button>
             </div>
           </div>
-          <details class="tb-more"${matchMedia("(max-width: 700px)").matches ? "" : " open"}><summary><span class="chev" aria-hidden="true"></span>Filters, sort and group</summary>
-          <div class="tb-facets"><span class="label">Filter</span>${cfg.facets.map(([k, l]) => `<details class="ms" data-k="${k}"><summary>${esc(l)}</summary><div class="pop"></div></details>`).join("")}</div>
-          <div class="tb-controls">
-            <label class="ctl"><span>Sort</span><select id="exsort">${opt(cfg.sorts, st.sort)}</select></label>
-            <div class="seg" id="exdir" role="group" aria-label="Sort direction"><button data-d="desc" aria-pressed="${st.dir === "desc"}">Best first</button><button data-d="asc" aria-pressed="${st.dir === "asc"}">Worst first</button></div>
+          <details class="tb-more"${matchMedia("(max-width: 700px)").matches ? "" : " open"}><summary><span class="chev" aria-hidden="true"></span>Filter and sort</summary>
+          <div class="tb-band"><span class="band">Filter</span><div class="tb-facets" id="exfacets">${cfg.facets.map(([k, l], i) => `<details class="ms${i >= MAIN_FACETS ? " extra" : ""}" data-k="${k}"><summary>${esc(l)}</summary><div class="pop"></div></details>`).join("")}${extra > 0 ? `<button class="morefac" id="exmorefac" type="button" aria-expanded="false">+ ${extra} more</button>` : ""}</div></div>
+          <div class="tb-band"><span class="band">Order</span><div class="tb-sort">
+            <label class="ctl"><span>Sort by</span><select id="exsort">${opt(cfg.sorts, st.sort)}</select></label>
+            <button class="ctl dirbtn" id="exdir" type="button" title="Flip the order">${dirHtml(st.dir)}</button>
             <i class="sep" aria-hidden="true"></i>
-            <label class="ctl"><span>Group</span><select id="exgroup">${opt(cfg.groups, st.group)}</select></label>
-            <label class="ctl"><span>Then</span><select id="exgroup2">${opt(cfg.groups, st.group2)}</select></label>
+            <label class="ctl"><span>Group by</span><select id="exgroup">${opt(cfg.groups, st.group)}</select></label>
+            <label class="ctl"${st.group ? "" : " hidden"}><span>then</span><select id="exgroup2">${opt(cfg.groups, st.group2)}</select></label>
             <label class="ctl"><span>Show</span><select id="extop">${opt({ "": "All", 1: "Best 1", 3: "Best 3", 5: "Best 5" }, st.top)}</select></label>
-            <button class="resetbtn" id="exreset" type="button" title="Clear search, filters, sort and grouping">↺ Reset</button>
-          </div></details>
-          <div class="tb-foot"><div class="active-chips" id="exchips"></div><span class="result num" id="excount"></span></div>
+          </div></div></details>
+          <div class="tb-foot"><span class="result num" id="excount"></span><div class="active-chips" id="exchips"></div><button class="resetbtn" id="exreset" type="button" title="Clear search, filters, sort and grouping">Reset</button></div>
         </div>
         <div id="exlist"></div><div class="more" id="exmore"></div>`;
       $("#exlayout").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; layout = b.dataset.l; store.set("vr-layout", layout); $$("#exlayout button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); drawExplorer(false); };
@@ -1392,10 +1426,18 @@ function vrMain() {
       $("#explorer .views").onclick = (e) => { const b = e.target.closest("button"); if (b) applyView(ex.set, b.dataset.v); };
       $("#exq").oninput = (e) => { st.q = e.target.value; touch(); };
       $("#exsort").onchange = (e) => { st.sort = e.target.value; touch(); };
-      $("#exgroup").onchange = (e) => { st.group = e.target.value; touch(); };
+      $("#exgroup").onchange = (e) => {
+        st.group = e.target.value;
+        // "then" only means something once there is a first grouping.
+        if (!st.group) { st.group2 = ""; $("#exgroup2").value = ""; }
+        $("#exgroup2").closest("label").hidden = !st.group;
+        touch();
+      };
       $("#exgroup2").onchange = (e) => { st.group2 = e.target.value; touch(); };
       $("#extop").onchange = (e) => { st.top = e.target.value; touch(); };
-      $("#exdir").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; st.dir = b.dataset.d; $$("#exdir button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); touch(); };
+      $("#exdir").onclick = () => { st.dir = st.dir === "desc" ? "asc" : "desc"; $("#exdir").innerHTML = dirHtml(st.dir); touch(); };
+      const mf = $("#exmorefac");
+      if (mf) mf.onclick = () => { const all = $("#exfacets").classList.toggle("all"); mf.setAttribute("aria-expanded", String(all)); mf.textContent = all ? "Fewer" : `+ ${extra} more`; };
       $("#exreset").onclick = () => { Object.assign(st, blank()); drawExplorer(true); };
       $("#exchips").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; const k = b.dataset.k; st.f[k] = st.f[k].filter((v) => v !== b.dataset.v); if (!st.f[k].length) delete st.f[k]; st.view = ""; drawExplorer(true); };
       for (const d of $$("#explorer details.ms")) {
