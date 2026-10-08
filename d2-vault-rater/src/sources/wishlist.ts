@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { paths, readJson, writeJson } from "../config.js";
+import { paths, readJsonCached, writeJson } from "../config.js";
 
 export const DEFAULT_WISHLISTS = [
   "https://raw.githubusercontent.com/48klocs/dim-wish-list-sources/master/voltron.txt",
@@ -55,5 +55,5 @@ export async function importWishlists(urls: string[] = DEFAULT_WISHLISTS): Promi
 }
 
 export function loadWishlists(): WishlistData | null {
-  return readJson<WishlistData | null>(wishlistFile(), null);
+  return readJsonCached<WishlistData | null>(wishlistFile(), null);
 }

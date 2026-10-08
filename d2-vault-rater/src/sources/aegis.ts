@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { paths, readJson, writeJson } from "../config.js";
+import { paths, readJson, readJsonCached, writeJson } from "../config.js";
 import { normalizeName, weaponHashesByName, type Manifest } from "../bungie/manifest.js";
 import { gvizCsvUrl, parseCsv } from "./csv.js";
 
@@ -172,5 +172,5 @@ export async function importAegis(m: Manifest, extraTabs: { name: string; gid: s
 }
 
 export function loadAegis(): AegisData | null {
-  return readJson<AegisData | null>(aegisFile(), null);
+  return readJsonCached<AegisData | null>(aegisFile(), null);
 }

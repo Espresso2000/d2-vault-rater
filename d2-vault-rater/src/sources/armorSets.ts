@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { paths, readJson, writeJson } from "../config.js";
+import { paths, readJsonCached, writeJson } from "../config.js";
 import { AEGIS_SHEET_ID } from "./aegis.js";
 import { gvizCsvUrl, parseCsv } from "./csv.js";
 
@@ -115,5 +115,5 @@ export async function importArmorSets(): Promise<ArmorSetData & { warnings: stri
 }
 
 export function loadArmorSets(): ArmorSetData | null {
-  return readJson<ArmorSetData | null>(armorSetsFile(), null);
+  return readJsonCached<ArmorSetData | null>(armorSetsFile(), null);
 }

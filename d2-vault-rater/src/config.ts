@@ -1,6 +1,6 @@
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
-import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync, existsSync, statSync } from "node:fs";
 
 export const HOME = process.env.VAULT_RATER_HOME || join(homedir(), ".d2-vault-rater");
 
@@ -37,9 +37,27 @@ export function readJson<T>(file: string, fallback: T): T {
   return JSON.parse(readFileSync(file, "utf8")) as T;
 }
 
+const parsed = new Map<string, { stamp: string; value: unknown }>();
+
+/**
+ * readJson for the big source files (Aegis, wishlists, armor sets, raid loot): parsed once, then
+ * reused until the file changes. Callers must not modify what it returns.
+ */
+export function readJsonCached<T>(file: string, fallback: T): T {
+  const st = statSync(file, { throwIfNoEntry: false });
+  if (!st) return fallback;
+  const stamp = `${st.mtimeMs}:${st.size}`;
+  const hit = parsed.get(file);
+  if (hit?.stamp === stamp) return hit.value as T;
+  const value = readJson(file, fallback);
+  parsed.set(file, { stamp, value });
+  return value;
+}
+
 export function writeText(file: string, text: string): void {
   mkdirSync(dirname(file), { recursive: true });
   writeFileSync(file, text);
+  parsed.delete(file);
 }
 
 export function writeJson(file: string, value: unknown): void {

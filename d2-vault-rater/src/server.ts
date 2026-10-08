@@ -43,9 +43,6 @@ const wrap =
     }
   };
 
-let weaponReport: WeaponReport | null = null;
-let armorReport: ArmorReport | null = null;
-
 async function sources() {
   const manifest = currentManifest() ?? (await loadManifest());
   return { manifest, aegis: loadAegis(), wishlists: loadWishlists() };
@@ -65,6 +62,9 @@ async function dimData(s: ReturnType<typeof loadSettings>) {
   return dimCache;
 }
 
+/** The last ratings, reused while the vault, settings and sources are unchanged (most tool calls in a session). */
+let rated: { inputs: unknown[]; weaponReport: WeaponReport; armorReport: ArmorReport } | null = null;
+
 async function rateAll() {
   const vault = await currentVault();
   const saved = loadSettings();
@@ -72,9 +72,12 @@ async function rateAll() {
   const settings = { ...saved, dimKeep: saved.dim.tags && saved.dim.protectTagged ? keepIds(dim.data) : [] };
   const src = await sources();
   if (!src.aegis) throw new Error("Aegis's tier list has not been imported yet. Call refresh_sources first.");
-  weaponReport = rateWeapons(vault.weapons, src, settings);
-  armorReport = rateArmor(vault, settings, loadArmorSets());
-  return { vault, settings, weaponReport, armorReport };
+  const sets = loadArmorSets();
+  // Sources come from readJsonCached, so the same object means the same file contents.
+  const inputs = [vault, JSON.stringify(settings), src.manifest, src.aegis, src.wishlists, sets];
+  if (!rated || inputs.some((x, i) => x !== rated!.inputs[i]))
+    rated = { inputs, weaponReport: rateWeapons(vault.weapons, src, settings), armorReport: rateArmor(vault, settings, sets) };
+  return { vault, settings, weaponReport: rated.weaponReport, armorReport: rated.armorReport };
 }
 
 const brief = (r: WeaponRating) => ({
@@ -159,7 +162,6 @@ server.registerTool(
   { description: "Fetch the player's vault and characters from Bungie (fresh every call) and summarise what is there.", inputSchema: {} },
   wrap(async () => {
     const v = await fetchVault();
-    weaponReport = armorReport = null;
     const count = (xs: string[]) => xs.reduce<Record<string, number>>((m, x) => ((m[x] = (m[x] ?? 0) + 1), m), {});
     return {
       characters: v.characters,
@@ -236,7 +238,6 @@ server.registerTool(
     if (a.dim_loadouts !== undefined) s.dim.loadouts = a.dim_loadouts;
     if (a.dim_protect_tagged !== undefined) s.dim.protectTagged = a.dim_protect_tagged;
     const saved = saveSettings(s);
-    weaponReport = armorReport = null;
     return { saved, resolved: strictnessFor(saved, a.weapon_type) };
   }),
 );

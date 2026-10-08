@@ -39,6 +39,9 @@ export function readJson<T>(file: string, fallback: T): T {
   return mem.has(file) ? (mem.get(file) as T) : fallback;
 }
 
+/** Files already live parsed in memory here, so the cached read is the plain one. */
+export const readJsonCached = readJson;
+
 export function writeText(file: string, text: string): void {
   mem.set(file, text);
   if (!volatile(file)) void idbSet("file:" + file, text);

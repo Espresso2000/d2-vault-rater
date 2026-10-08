@@ -267,3 +267,15 @@ test("moving items: destinations resolve by class name, id or vault", async () =
   assert.equal(resolveTarget(v, "Vault"), "vault");
   assert.throws(() => resolveTarget(v, "Titan"), /No character/);
 });
+
+test("readJsonCached parses a file once and re-reads it after a write", async () => {
+  const { paths, writeJson, readJsonCached } = await import("../src/config.js");
+  const f = `${paths.home}/cache-test.json`;
+  assert.equal(readJsonCached(f, null), null);
+  writeJson(f, { a: 1 });
+  const first = readJsonCached<{ a: number } | null>(f, null);
+  assert.equal(first?.a, 1);
+  assert.equal(readJsonCached(f, null), first);
+  writeJson(f, { a: 2 });
+  assert.equal(readJsonCached<{ a: number } | null>(f, null)?.a, 2);
+});

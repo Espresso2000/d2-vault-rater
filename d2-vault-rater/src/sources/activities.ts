@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { paths, readJson, writeJson } from "../config.js";
+import { paths, readJsonCached, writeJson } from "../config.js";
 import { bungie, bungieUrl, BUNGIE } from "../bungie/client.js";
 import { baseName, DAMAGE_TYPES as DAMAGE, normalizeName, stripReissue, versionSlug, type Manifest } from "../bungie/manifest.js";
 import { setKey, type ArmorSetData } from "./armorSets.js";
@@ -220,5 +220,5 @@ export async function buildSourceLookup(m: Manifest, aegis: AegisData | null, lo
 }
 
 export function loadActivityLoot(): ActivityData | null {
-  return readJson<ActivityData | null>(activitiesFile(), null);
+  return readJsonCached<ActivityData | null>(activitiesFile(), null);
 }
