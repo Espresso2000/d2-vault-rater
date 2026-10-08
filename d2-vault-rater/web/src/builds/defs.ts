@@ -8,7 +8,6 @@ import { idbGet, idbSet } from "../idb";
 import type { BuildDefs } from "./defs.strip";
 
 let cached: BuildDefs | null = null;
-export const currentDefs = () => cached;
 
 export async function loadBuildDefs(log: (s: string) => void): Promise<BuildDefs> {
   const meta = await bungie<{ version: string; jsonWorldComponentContentPaths: Record<string, Record<string, string>> }>("/Destiny2/Manifest/", { auth: false });

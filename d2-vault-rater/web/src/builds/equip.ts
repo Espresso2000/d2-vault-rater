@@ -105,7 +105,7 @@ export function planEquip(b: Build, ctx: Ctx, p: BuildProfile, opts: { loadoutSl
       });
     const now = p.sockets.get(inst.id) ?? [];
     const want = (i: number) => b.plugs[i] ?? sc.sockets[i].init;
-    const changes = sc.sockets.map((s, i) => i).filter((i) => sc.sockets[i].plugs.length > 1 && want(i) && want(i) !== now[i]);
+    const changes = [...sc.sockets.keys()].filter((i) => sc.sockets[i].plugs.length > 1 && want(i) && want(i) !== now[i]);
     // A plug can sit in only one socket: clear a socket first when what it holds is wanted elsewhere.
     const emptyOf = (i: number) => sc.sockets[i].plugs.find((h) => isEmptyPlug(ctx.defs.plugs[h]));
     const clears = changes.filter((j) => changes.some((i) => i !== j && sc.sockets[i].group === sc.sockets[j].group && want(i) === now[j]) && emptyOf(j));

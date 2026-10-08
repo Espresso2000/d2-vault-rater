@@ -20,7 +20,3 @@ export async function fetchVault(): Promise<Vault> {
 export async function currentVault(): Promise<Vault> {
   return last ?? fetchVault();
 }
-
-export function setVault(v: Vault): void {
-  last = v;
-}

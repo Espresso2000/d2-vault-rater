@@ -1,6 +1,6 @@
 import { writeSite } from "./site.js";
 import type { WeaponRating, WeaponReport } from "../rating/weapons.js";
-import type { ArmorRating, ArmorReport } from "../rating/armor.js";
+import type { ArmorReport } from "../rating/armor.js";
 import type { Settings } from "../rating/settings.js";
 import type { Vault } from "../vault/types.js";
 import type { Wrapped } from "../vault/wrapped.js";
