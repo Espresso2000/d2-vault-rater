@@ -48,7 +48,7 @@
   --body: "Inter", "Segoe UI", system-ui, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
   --r: 14px;
-  --bar-h: 112px;
+  --bar-h: 128px;
   --shadow: 0 24px 60px -30px rgba(0,0,0,.9);
 }
 * { box-sizing: border-box; }
@@ -79,7 +79,10 @@ button { cursor: pointer; }
 .glass { background: var(--glass); border: 1px solid var(--line); }
 
 /* ---------- Top bar ---------- */
-.topbar { position: sticky; top: 0; z-index: 10; padding-top: env(safe-area-inset-top, 0px); background: rgba(5,8,22,.78); backdrop-filter: blur(18px) saturate(150%); }
+.topbar { position: sticky; top: 0; z-index: 10; padding-top: env(safe-area-inset-top, 0px); backdrop-filter: blur(18px) saturate(150%);
+  /* A lit band: a green glow behind the brand, a blue one at the far end, a gradient hairline on top */
+  background: radial-gradient(420px 120px at 8% 0%, rgba(51,227,160,.16), transparent 70%), radial-gradient(520px 140px at 92% 0%, rgba(77,125,255,.14), transparent 70%),
+    linear-gradient(90deg, transparent, rgba(51,227,160,.55) 30%, rgba(54,196,242,.55) 70%, transparent) top / 100% 1px no-repeat, rgba(5,8,22,.78); }
 /* The bar ends in a gentle wave of three strands drifting at different speeds: ::after carries the bar's glass
    down to the first strand, ::before draws the strands in the gradient. */
 .topbar::after, .topbar::before { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 20px; pointer-events: none; }
@@ -87,26 +90,30 @@ button { cursor: pointer; }
 .topbar::before { z-index: 1; background: var(--grad); -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='20'%3E%3Cpath d='M0 6Q80 9 160 6T320 6T480 6T640 6' fill='none' stroke='%23000' stroke-opacity='1' stroke-width='2'/%3E%3C/svg%3E") 0 0 / 640px 20px repeat-x, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='960' height='20'%3E%3Cpath d='M0 10Q120 14 240 10T480 10T720 10T960 10' fill='none' stroke='%23000' stroke-opacity='0.7' stroke-width='1.5'/%3E%3C/svg%3E") 0 0 / 960px 20px repeat-x, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1280' height='20'%3E%3Cpath d='M0 14Q160 19 320 14T640 14T960 14T1280 14' fill='none' stroke='%23000' stroke-opacity='0.45' stroke-width='1'/%3E%3C/svg%3E") 0 0 / 1280px 20px repeat-x; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='20'%3E%3Cpath d='M0 6Q80 9 160 6T320 6T480 6T640 6' fill='none' stroke='%23000' stroke-opacity='1' stroke-width='2'/%3E%3C/svg%3E") 0 0 / 640px 20px repeat-x, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='960' height='20'%3E%3Cpath d='M0 10Q120 14 240 10T480 10T720 10T960 10' fill='none' stroke='%23000' stroke-opacity='0.7' stroke-width='1.5'/%3E%3C/svg%3E") 0 0 / 960px 20px repeat-x, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1280' height='20'%3E%3Cpath d='M0 14Q160 19 320 14T640 14T960 14T1280 14' fill='none' stroke='%23000' stroke-opacity='0.45' stroke-width='1'/%3E%3C/svg%3E") 0 0 / 1280px 20px repeat-x; animation: wave-lines 80s linear infinite; }
 @keyframes wave-fill { to { -webkit-mask-position: 640px 0; mask-position: 640px 0; } }
 @keyframes wave-lines { to { -webkit-mask-position: 640px 0, -960px 0, 1280px 0; mask-position: 640px 0, -960px 0, 1280px 0; } }
-.appbar { display: flex; align-items: center; gap: 16px; height: 62px; }
+.appbar { display: flex; align-items: center; gap: 16px; height: 70px; }
 .brand { display: flex; align-items: center; gap: 12px; color: var(--ink); text-decoration: none; min-width: 0; margin-right: auto; }
 .brand .emblem { width: 48px; height: 40px; flex: none; overflow: visible; transition: transform .3s ease, filter .3s ease; }
 .brand:hover .emblem { transform: translateY(-1px); filter: drop-shadow(0 0 10px rgba(51,227,160,.55)); }
-.brand b { display: block; font: 600 16px/1.1 var(--display); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.brand small { display: block; margin-top: 2px; font-size: 12px; color: var(--faint); white-space: nowrap; }
+.brand b { display: block; font: 600 19px/1.1 var(--display); letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.brand small { display: block; margin-top: 4px; font: 500 10.5px var(--mono); letter-spacing: .18em; text-transform: uppercase; color: var(--green); opacity: .8; white-space: nowrap; }
 .tabrow { display: flex; }
-nav.tabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; min-width: 0; }
+nav.tabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; min-width: 0; }
 nav.tabs::-webkit-scrollbar { display: none; }
-nav.tabs button { position: relative; display: inline-flex; align-items: center; gap: 8px; height: 48px; padding: 0 12px; border: 0; background: none; font: 500 14px/1 var(--body); color: var(--muted); white-space: nowrap; transition: color .2s ease; }
-nav.tabs button svg { width: 16px; height: 16px; fill: currentColor; opacity: .7; transition: opacity .2s ease; }
-nav.tabs button::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: -1px; height: 2px; border-radius: 2px; background: var(--grad); transform: scaleX(0); transition: transform .25s cubic-bezier(.2,.8,.2,1); }
+nav.tabs button { position: relative; display: inline-flex; align-items: center; gap: 9px; height: 56px; padding: 0 16px; border: 0; background: none; font: 500 15.5px/1 var(--display); letter-spacing: .01em; color: var(--muted); white-space: nowrap; transition: color .2s ease, background .2s ease; isolation: isolate; }
+nav.tabs button svg { width: 19px; height: 19px; fill: currentColor; opacity: .7; transition: opacity .2s ease, filter .2s ease, transform .2s ease; }
+nav.tabs button::after { content: ""; position: absolute; left: 14px; right: 14px; bottom: 0; height: 3px; border-radius: 3px 3px 0 0; background: var(--grad); box-shadow: 0 0 14px rgba(51,227,160,.7); transform: scaleX(0); transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+/* The active tab sits on a soft green light rising from its underline */
+nav.tabs button::before { content: ""; position: absolute; inset: 8px 4px 0; border-radius: 12px 12px 0 0; background: linear-gradient(0deg, rgba(51,227,160,.14), transparent 80%); z-index: -1; opacity: 0; transition: opacity .25s ease; }
 nav.tabs button:hover { color: var(--ink); }
-nav.tabs button:hover svg { opacity: 1; }
+nav.tabs button:hover::after { transform: scaleX(.35); }
+nav.tabs button:hover svg { opacity: 1; transform: translateY(-1px); }
 nav.tabs button[aria-selected="true"] { color: var(--ink); }
-nav.tabs button[aria-selected="true"] svg { opacity: 1; color: var(--green); }
+nav.tabs button[aria-selected="true"] svg { opacity: 1; color: var(--green); filter: drop-shadow(0 0 6px rgba(51,227,160,.7)); }
+nav.tabs button[aria-selected="true"]::before { opacity: 1; }
 nav.tabs button[aria-selected="true"]::after { transform: none; }
-nav.tabs .count { font: 500 10.5px/1 var(--mono); padding: 3px 6px; border-radius: 999px; background: var(--glass-hi); color: var(--muted); }
+nav.tabs .count { font: 500 11px/1 var(--mono); padding: 4px 7px; border-radius: 999px; background: var(--glass-hi); color: var(--muted); }
 .bar-actions { display: flex; gap: 8px; align-items: center; }
-.gear { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; color: var(--muted); background: var(--glass); border: 1px solid var(--line); transition: color .2s ease, border-color .2s ease, background .2s ease; }
+.gear { width: 42px; height: 42px; border-radius: 10px; display: grid; place-items: center; color: var(--muted); background: var(--glass); border: 1px solid var(--line); transition: color .2s ease, border-color .2s ease, background .2s ease; }
 .gear svg { width: 19px; height: 19px; fill: currentColor; transition: transform .6s cubic-bezier(.2,.8,.2,1); }
 .gear:hover { color: var(--ink); border-color: var(--line-hi); }
 .gear:hover svg { transform: rotate(90deg); }
@@ -114,12 +121,12 @@ nav.tabs .count { font: 500 10.5px/1 var(--mono); padding: 3px 6px; border-radiu
 /* Search: typing opens the full list filtered by the text. */
 .gsearch { position: relative; display: flex; align-items: center; }
 .gsearch svg { position: absolute; left: 12px; width: 15px; height: 15px; fill: none; stroke: var(--muted); stroke-width: 2; pointer-events: none; }
-.gsearch input { width: clamp(150px, 20vw, 280px); height: 38px; padding: 0 32px 0 36px; border-radius: 10px; border: 1px solid var(--line); background: var(--glass); transition: border-color .2s ease, background .2s ease, width .25s ease; }
+.gsearch input { width: clamp(150px, 22vw, 320px); height: 42px; font-size: 15px; padding: 0 32px 0 36px; border-radius: 10px; border: 1px solid var(--line); background: var(--glass); transition: border-color .2s ease, background .2s ease, width .25s ease; }
 .gsearch input::placeholder { color: var(--faint); }
 .gsearch input:focus { outline: none; border-color: var(--hover); background: var(--glass-hi); }
 .gsearch kbd { position: absolute; right: 10px; font: 500 11px/18px var(--mono); color: var(--faint); border: 1px solid var(--line-hi); border-radius: 5px; padding: 0 5px; pointer-events: none; }
 .gsearch input:focus + kbd, .gsearch input:not(:placeholder-shown) + kbd { display: none; }
-.btn.rerate { height: 38px; padding-block: 0; }
+.btn.rerate { height: 42px; padding-block: 0; padding-inline: 18px; }
 
 /* ---------- Hero (Overview only) ---------- */
 .hero { position: relative; margin-top: clamp(40px, 6vw, 76px); display: grid; gap: 36px; }
@@ -707,7 +714,7 @@ body.vr-booting > .topbar, body.vr-booting > main, body.vr-booting > footer { di
 }
 @media (max-width: 700px) { .kit { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 640px) {
-  :root { --bar-h: 104px; }
+  :root { --bar-h: 112px; }
   .appbar { height: 56px; gap: 8px; }
   .brand > span { display: none; }
   .bar-actions { flex: 1; min-width: 0; justify-content: flex-end; }
@@ -715,7 +722,7 @@ body.vr-booting > .topbar, body.vr-booting > main, body.vr-booting > footer { di
   .gsearch input { width: 100%; }
   .gsearch kbd { display: none; }
   nav.tabs { margin-inline: calc(-1 * clamp(16px, 3vw, 40px)); padding-inline: clamp(8px, 3vw, 40px); }
-  nav.tabs button { height: 46px; padding-inline: 10px; }
+  nav.tabs button { height: 50px; padding-inline: 12px; font-size: 15px; }
   .viewstrip > .label { display: none; }
   .tb-band { grid-template-columns: minmax(0, 1fr); gap: 8px; }
   .band { padding-top: 0; }
