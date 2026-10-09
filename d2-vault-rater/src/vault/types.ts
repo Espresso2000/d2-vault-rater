@@ -12,6 +12,8 @@ export interface PerkColumn {
   options: string[];
   /** Names of the options that are enhanced versions. */
   enhanced: string[];
+  /** Icon URL by option name, for options that have one. Missing in vault snapshots saved before icons were kept. */
+  icons?: Record<string, string>;
 }
 
 export interface Location {

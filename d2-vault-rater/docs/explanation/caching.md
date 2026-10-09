@@ -10,7 +10,7 @@ Rating a vault needs a lot of data that rarely changes: Bungie's manifest (hundr
   2. a snapshot shipped with the site, `data/<name>-<version>.json` ([web/src/versioned.ts:42](../../web/src/versioned.ts#L42)), made by `npm run snapshot` ([web/scripts/snapshot.ts:30-43](../../web/scripts/snapshot.ts#L30-L43));
   3. a Web Worker that downloads and strips the tables from bungie.net ([web/src/versioned.ts:52](../../web/src/versioned.ts#L52), [web/src/manifest.worker.ts](../../web/src/manifest.worker.ts)).
 
-  Whatever it got is saved back to IndexedDB under the same key ([web/src/versioned.ts:62](../../web/src/versioned.ts#L62)), replacing the old version. The item database uses the key `manifest` ([web/src/manifest.ts:10](../../web/src/manifest.ts#L10)) and the Builds tab's definitions use `build-defs` ([web/src/builds/defs.ts:13](../../web/src/builds/defs.ts#L13)). The manifest index itself is requested once per visit and shared by both ([web/src/versioned.ts:16-22](../../web/src/versioned.ts#L16-L22)).
+  Whatever it got is saved back to IndexedDB under the same key ([web/src/versioned.ts:62](../../web/src/versioned.ts#L62)), replacing the old version. The item database uses the key `manifest-v2` ([web/src/manifest.ts:11-12](../../web/src/manifest.ts#L11-L12)); the number is the strip format ([src/bungie/strip.ts:7-8](../../src/bungie/strip.ts#L7-L8)), raised when the stripped tables gain a field (2 added perk icons), so a copy in an older format is rebuilt once and the Builds tab's definitions use `build-defs` ([web/src/builds/defs.ts:13](../../web/src/builds/defs.ts#L13)). The manifest index itself is requested once per visit and shared by both ([web/src/versioned.ts:16-22](../../web/src/versioned.ts#L16-L22)).
 
 ## Rating sources: refreshed after 24 hours
 
@@ -36,8 +36,8 @@ The local report embeds every icon as a data URI so it works offline; each image
 
 ## In the page
 
-- Images load lazily and decode off the main thread; a remote image that fails is retried twice before the placeholder shows ([report-template/site.html:870-881](../../report-template/site.html#L870-L881)).
-- Rows and tiles in long lists skip layout and paint while off screen ([report-template/site.html:426-428](../../report-template/site.html#L426-L428)), so the full list and Shard tab stay smooth with hundreds of icons.
+- Images load lazily and decode off the main thread; a remote image that fails is retried twice before the placeholder shows ([report-template/site.html:877-888](../../report-template/site.html#L877-L888)).
+- Rows and tiles in long lists skip layout and paint while off screen ([report-template/site.html:433-435](../../report-template/site.html#L433-L435)), so the full list and Shard tab stay smooth with hundreds of icons.
 - The Builds tab is a separate JavaScript chunk, fetched in the background once the report is on screen ([web/src/main.ts:179-183](../../web/src/main.ts#L179-L183)).
 - Its score map, stat names and weapon tiers are worked out once per rating run, not on every redraw ([web/src/builds/ui.ts:49-59](../../web/src/builds/ui.ts#L49-L59)), and items are looked up through a per-vault index ([web/src/builds/model.ts:106-113](../../web/src/builds/model.ts#L106-L113)).
 - Your Destiny membership is asked for once per visit ([web/src/shims/oauth.ts:44-59](../../web/src/shims/oauth.ts#L44-L59)).

@@ -4,6 +4,9 @@
  * app ships and stores them (see web/src/strip.ts).
  */
 
+/** Bumped when stripped tables gain fields, so caches made by an older format are rebuilt. 2: plug icons. */
+export const STRIP_FORMAT = 2;
+
 /** Plug categories that never matter for rating: cosmetics, armor mods and the like. */
 const COSMETIC = /shader|ornament|skin|emote|ghost|transmat|vehicle|ship|memento|tracker|^enhancements|spawnfx|sparrow|projection|finisher|deprecated|crafting|hologram|social|events\./i;
 
@@ -46,7 +49,8 @@ export function stripItems(items: Raw, allPlugs = false): Raw {
     } else if (d.plug && (allPlugs || (dp.name && !COSMETIC.test(d.plug.plugCategoryIdentifier ?? "")))) {
       out[d.hash] = {
         hash: d.hash,
-        displayProperties: { name: dp.name },
+        // The icon is for showing perks as symbols in the report.
+        displayProperties: { name: dp.name, icon: dp.icon },
         itemType: d.itemType,
         itemTypeDisplayName: d.itemTypeDisplayName,
         plug: { plugCategoryIdentifier: d.plug.plugCategoryIdentifier },

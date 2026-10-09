@@ -5,7 +5,7 @@ Rating always writes a dry-run plan first; nothing changes in game until you app
 ## 1. Look at the plan
 
 - **CLI**: `npm run vault` prints the plan id and how many items it would lock and unlock ([src/cli.ts:69-74](../../src/cli.ts#L69-L74)).
-- **Report page**: the lock preview lists only the items whose lock would change ([src/report/siteData.ts:167-174](../../src/report/siteData.ts#L167-L174)).
+- **Report page**: the lock preview lists only the items whose lock would change ([src/report/siteData.ts:171-178](../../src/report/siteData.ts#L171-L178)).
 - **AI**: `plan_dim_actions` returns the counts, every unlock with its reason, the items to lock, and DIM search strings ([src/server.ts:375-392](../../src/server.ts#L375-L392)).
 
 Which shard categories get unlocked is your strictness's `unlock` list; at the default preset only duplicates are ([src/rating/settings.ts:41-50](../../src/rating/settings.ts#L41-L50)). To unlock more, see [Tune strictness](tune-strictness.md).

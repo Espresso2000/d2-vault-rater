@@ -272,6 +272,13 @@ img.broken { background: var(--grad-soft); }
 .perk { padding: 3px 10px; border-radius: 999px; background: var(--glass-hi); font-size: 13px; color: var(--muted); }
 .perk.good { background: rgba(51,227,160,.12); color: #c3f7e1; }
 .perk.good::before { content: "✓ "; color: var(--green); }
+/* Perks as symbols (the default): the icon alone, its name on hover; recommended ones glow green */
+.pico { display: inline-grid; place-items: center; flex: none; padding: 0 !important; background: none !important; }
+.pico::before { content: none !important; }
+/* !important: item icon rules like .mini img would otherwise size these too */
+.pico img { width: 30px !important; height: 30px !important; border-radius: 0 !important; display: block; }
+.perkline .pico img { width: 22px !important; height: 22px !important; }
+.pico.good img { filter: drop-shadow(0 0 2px var(--green)) drop-shadow(0 0 4px rgba(51,227,160,.6)); }
 .elements { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px; }
 .elcard { position: relative; overflow: hidden; padding: 14px; border-radius: var(--r); background: var(--glass); border: 1px solid var(--line); display: grid; gap: 12px; text-align: left; transition: border-color .2s ease, background .2s ease; }
 .elcard::before { content: ""; position: absolute; inset: -50% -30% auto auto; width: 140px; height: 140px; border-radius: 50%; background: currentColor; opacity: .08; filter: blur(30px); pointer-events: none; }
@@ -1068,10 +1075,18 @@ function vrMain() {
 
   /* ---------- Shared pieces ---------- */
   const lockIcon = (x) => (x.lk ? ' <span class="small muted" title="Locked in game">🔒</span>' : "");
-  // Trait perks for a row: the ones Aegis recommends first, marked.
+  // Perks show as their symbols unless Settings switched to names; a perk without an icon always shows its name.
+  const PERK_ICON = DATA.perkIcons || {};
+  let perkSymbols = store.get("vr-perks") !== "names";
+  const perk = (o, good, cls = "") => {
+    const c = [cls, good ? "good" : ""].filter(Boolean).join(" ");
+    const src = perkSymbols && IMG[PERK_ICON[o]];
+    return src ? `<span class="${c ? c + " " : ""}pico" title="${esc(o)}"><img src="${src}" alt="${esc(o)}" loading="lazy" decoding="async"></span>` : `<span${c ? ` class="${c}"` : ""}>${esc(o)}</span>`;
+  };
+  // Trait perks for a row: the ones Aegis recommends first, marked. Symbols are small, so more of them fit.
   const traitChips = (w) => {
     const good = new Set(w.pk.flatMap((p) => p.m));
-    return w.pk.filter((p) => p.k === "perk1" || p.k === "perk2").flatMap((p) => p.o).sort((a, b) => good.has(b) - good.has(a)).slice(0, 3).map((o) => `<span${good.has(o) ? ' class="good"' : ""}>${esc(o)}</span>`).join("");
+    return w.pk.filter((p) => p.k === "perk1" || p.k === "perk2").flatMap((p) => p.o).sort((a, b) => good.has(b) - good.has(a)).slice(0, perkSymbols ? 6 : 3).map((o) => perk(o, good.has(o))).join("");
   };
   /** Row: one wide line per item, with perks on wide screens. */
   const weaponRow = (w) => `<button class="row v-${w.v}" data-w="${w.id}"><span class="ico${isExotic(w) ? " exotic" : ""}">${img(w.ic)}${tierBadge(w)}</span>
@@ -1125,7 +1140,7 @@ function vrMain() {
         <div class="body">
           <div class="title">${img(w.ic)}<div style="min-width:0"><h3>${esc(w.n)}</h3><div class="small muted">${esc(typeLine(w))} · ${esc(w.e)}</div></div></div>
           <div style="display:flex;gap:10px;align-items:center">${tierBadge(w)}<span class="small muted">${w.tier ? `Aegis #${w.rank ?? "?"} in ${esc(w.tab)}` : "Wishlist rated"}</span><span style="margin-left:auto">${scoreCell(w.sc)}</span></div>
-          <div class="perkopts">${traits.slice(0, 4).map((o) => `<span class="perk${good.has(o) ? " good" : ""}">${esc(o)}</span>`).join("")}</div>
+          <div class="perkopts">${traits.slice(0, perkSymbols ? 8 : 4).map((o) => perk(o, good.has(o), "perk")).join("")}</div>
           ${ids.length > 1 ? `<div class="runners">Runners-up ${ids.slice(1, 4).map((id) => `<button data-w="${id}">${esc(W.get(id).n)} · ${W.get(id).sc}</button>`).join("")}</div>` : ""}
         </div></div>`;
     }).join("");
@@ -1656,6 +1671,9 @@ function vrMain() {
       <fieldset><legend>Your vault</legend>
         <p class="small muted">Rated ${esc(fmtDateTime(DATA.generated))}. <b>Re-rate</b> in the top bar reads it again.${window.VR_SESSION ? " " + esc(window.VR_SESSION()) : ""}</p>
         ${window.VR_WEB ? '<div class="confirmrow"><button class="btn" type="button" id="signout">Sign out</button></div>' : ""}</fieldset>
+      <fieldset><legend>Display</legend><p class="small muted">Changes the page straight away; nothing is re-rated.</p>
+        <div class="toggles" id="perkmode"><label><input type="radio" name="perkmode" value="symbols" ${perkSymbols ? "checked" : ""}> <span>Show perks as symbols, with the name on hover</span></label>
+        <label><input type="radio" name="perkmode" value="names" ${perkSymbols ? "" : "checked"}> <span>Show perk names</span></label></div></fieldset>
       <fieldset><legend>Strictness</legend><div class="presets">${Object.entries(PRESET_INFO).map(([k, [l, d]]) => `<label><span><input type="radio" name="preset" value="${k}" ${st.preset === k ? "checked" : ""}> <b>${l}</b></span><span>${d}</span></label>`).join("")}</div>
         <div class="tablewrap"><table class="prestable"><tr><th></th><th>Lenient</th><th>Balanced</th><th>Strict</th><th>Ruthless</th></tr>
           <tr><td>Lowest tier kept</td><td>C</td><td>B</td><td>A</td><td>S</td></tr><tr><td>Roll score to keep a spare</td><td>50</td><td>70</td><td>80</td><td>90</td></tr>
@@ -1673,6 +1691,10 @@ function vrMain() {
         <label><input type="checkbox" name="dimprotect" ${DATA.dim?.protectTagged !== false ? "checked" : ""}> <span>Protect DIM keeps: never mark items tagged Favorite or Keep to shard</span></label></div></fieldset>
       <div class="confirmrow savebar"><button class="btn primary" type="submit">Save and re-rate</button><span class="small muted" id="setmsg" aria-live="polite"></span></div></form>`;
     if (window.VR_WEB) $("#signout").onclick = () => api("/api/signout");
+    $("#perkmode").onchange = (e) => {
+      perkSymbols = e.target.value === "symbols"; store.set("vr-perks", perkSymbols ? "symbols" : "names");
+      for (const k of Object.keys(rendered)) if (k !== "settings") delete rendered[k];
+    };
     $("#setform").onsubmit = async (e) => {
       e.preventDefault();
       const f = e.target, byWeaponType = {};
@@ -1952,7 +1974,7 @@ function vrMain() {
         <div class="breakdown"><div><b class="num grad-text">${w.sc}</b><span>Vault score</span></div><div><b class="num">${w.ws}</b><span>${w.tier ? `Aegis ${w.tier}${w.rank ? " #" + w.rank : ""}` : "Wishlist tier"}</span></div><div><b class="num">${w.rs}</b><span>Roll score</span></div></div>
         <div><div class="cap" style="margin-bottom:8px">Why ${VERDICT[w.v].toLowerCase()}</div><ul class="reasons">${w.why.map((r) => `<li>${esc(r)}</li>`).join("")}</ul></div>
         ${w.notes ? `<div class="notes"><b style="color:var(--ink)">Aegis:</b> ${esc(w.notes)}</div>` : ""}
-        <div class="perkcols">${w.pk.filter((p) => p.o.length).map((p) => `<div class="perkcol"><div class="cap">${COL[p.k] || esc(p.k)}</div><div class="perkopts">${p.o.map((o) => `<span class="perk${good.has(o) ? " good" : ""}">${esc(o)}</span>`).join("")}</div></div>`).join("")}</div>
+        <div class="perkcols">${w.pk.filter((p) => p.o.length).map((p) => `<div class="perkcol"><div class="cap">${COL[p.k] || esc(p.k)}</div><div class="perkopts">${p.o.map((o) => perk(o, good.has(o), "perk")).join("")}</div></div>`).join("")}</div>
         <div class="facts">${fact("Ammo", w.am)}${fact("Power", w.pw)}${fact("Masterwork", w.mw)}${fact("Gear tier", w.gt ? "Tier " + w.gt : null)}${fact("Where", w.loc)}${fact("Crafted", w.cr ? "Yes" : null)}${fact("Adept", w.ad ? "Yes" : null)}${fact("Aegis list", w.tab)}</div>
         ${movePanel(w, false)}
         ${dimPanel(w)}

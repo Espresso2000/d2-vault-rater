@@ -102,7 +102,11 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
     : null;
   const shardW = w.ratings.filter((r) => r.verdict === "shard").length;
   const shardA = a.ratings.filter((r) => r.verdict === "shard").length;
+  // One icon per perk name across the vault, so the page can show perks as symbols.
+  const perkIcons: Record<string, string> = {};
+  for (const r of w.ratings) for (const p of r.perks) for (const [n, url] of Object.entries(p.icons ?? {})) perkIcons[n] ??= imageKey(url) ?? "";
   const data = {
+    perkIcons,
     generated: new Date().toISOString(),
     preset: o.settings.preset,
     focus: o.settings.focus,

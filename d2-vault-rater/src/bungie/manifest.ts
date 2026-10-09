@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { paths } from "../config.js";
 import { bungie } from "./client.js";
 import { versionSlug, type Manifest } from "./defs.js";
-import { stripItems, stripNamed, type Raw } from "./strip.js";
+import { STRIP_FORMAT, stripItems, stripNamed, type Raw } from "./strip.js";
 import { liteTable } from "./tables.js";
 
 export * from "./defs.js";
@@ -28,7 +28,8 @@ export async function loadManifest(opts: { force?: boolean } = {}): Promise<Mani
   mkdirSync(dir, { recursive: true });
   const en = meta.jsonWorldComponentContentPaths.en;
   const out: Partial<Manifest> = { version: meta.version };
-  for (const [key, table, strip] of COMPONENTS) out[key] = await liteTable(dir, table, async () => en[table], strip, opts.force);
+  // The item table's cache file names its strip format, so an older cache without plug icons is rebuilt.
+  for (const [key, table, strip] of COMPONENTS) out[key] = await liteTable(dir, table, async () => en[table], strip, opts.force, key === "items" ? `.v${STRIP_FORMAT}` : "");
   cached = out as Manifest;
   return cached;
 }

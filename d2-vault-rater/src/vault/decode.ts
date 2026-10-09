@@ -123,6 +123,7 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
           active: plugName(m, active),
           options: optionHashes.map((h) => plugName(m, h)).filter(Boolean),
           enhanced: optionHashes.filter((h) => isEnhanced(m, h)).map((h) => plugName(m, h)),
+          icons: Object.fromEntries(optionHashes.filter((h) => plugName(m, h) && m.items[h]?.displayProperties?.icon).map((h) => [plugName(m, h), bungieUrl(m.items[h].displayProperties.icon)])),
         });
       }
       for (const s of sockets) {
