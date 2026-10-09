@@ -141,7 +141,7 @@ button.chip { cursor: pointer; transition: border-color .2s ease; }
 button.chip:hover { border-color: var(--hover); }
 .tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
 .tile { position: relative; padding: 20px 22px; border-radius: var(--cut); background: var(--ticks), var(--glass); border: 1px solid var(--line); text-align: left; display: grid; gap: 2px; transition: border-color .2s ease, background .2s ease, transform .2s ease; }
-button.tile:hover { border-color: var(--line-hi); background: var(--spot), var(--ticks), var(--glass-hi); transform: translateY(-2px); }
+button.tile:hover { border-color: var(--line-hi); background: var(--ticks), var(--spot), var(--glass-hi); transform: translateY(-2px); }
 .tile .label { font: 500 11px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
 .tile .big { justify-self: start; font: 600 40px/1.1 var(--display); letter-spacing: -.02em; margin-top: 8px; }
 .tile.good .big { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
@@ -149,12 +149,12 @@ button.tile:hover { border-color: var(--line-hi); background: var(--spot), var(-
 .tile .sub { font-size: 13px; color: var(--faint); }
 .tile .go { position: absolute; right: 18px; top: 18px; color: var(--faint); font-size: 14px; transition: transform .2s ease, color .2s ease; }
 button.tile:hover .go { color: var(--ink); transform: translateX(3px); }
-/* Tier spread: one slim bar, one colour per tier, with the counts underneath. */
+/* Tier spread: one slim bar, one segment per tier drawn like the tier badges (outlined, dim fill), with the counts underneath. */
 .tierbar { display: grid; gap: 12px; }
-.tierbar .bar { display: flex; gap: 3px; height: 8px; }
-.tierbar .bar span { min-width: 4px; border-radius: 999px; background: var(--t); opacity: .85; transition: opacity .2s ease; }
-.tierbar .bar span:hover { opacity: 1; }
-.tierbar .bar span.tU { --t: #3a4370; }
+.tierbar .bar { display: flex; gap: 4px; height: 12px; }
+.tierbar .bar span { min-width: 6px; border-radius: 999px; background: color-mix(in srgb, var(--t) 16%, rgba(5,8,22,.85)); border: 1px solid color-mix(in srgb, var(--t) 60%, transparent); transition: background .2s ease; }
+.tierbar .bar span:hover { background: color-mix(in srgb, var(--t) 32%, rgba(5,8,22,.85)); }
+.tierbar .bar span.tU { --t: #646e98; }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted); }
 .legend > span { display: inline-flex; align-items: center; gap: 7px; }
 .legend > span b { color: var(--ink); font-weight: 600; }
@@ -463,7 +463,7 @@ details.group > summary::-webkit-details-marker { display: none; }
 /* ---------- Armor ---------- */
 .armor-best { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
 .acard { padding: 16px; border-radius: var(--cut); background: var(--ticks), var(--glass); border: 1px solid var(--line); display: grid; gap: 12px; text-align: left; align-content: start; transition: border-color .2s ease, background .2s ease; }
-.acard:hover { border-color: var(--line-hi); background: var(--spot), var(--ticks), var(--glass-hi); }
+.acard:hover { border-color: var(--line-hi); background: var(--ticks), var(--spot), var(--glass-hi); }
 .acard .top { display: flex; gap: 10px; align-items: center; min-width: 0; }
 .acard .top img, .acard .top .ph { width: 44px; height: 44px; border-radius: 9px; flex: none; }
 .acard .top > div { min-width: 0; }
@@ -1198,7 +1198,7 @@ function vrMain() {
     // Banner: a screenshot from this type when one exists, otherwise the top pick's icon, blurred.
     const withShot = [...best, ...c.all].find((w) => w.ss && IMG[w.ss]), icon = best[0]?.ic && IMG[best[0].ic];
     const art = withShot ? `<div class="tc-art"><img src="${IMG[withShot.ss]}" alt="" loading="lazy" decoding="async"></div>` : icon ? `<div class="tc-art ic"><img src="${icon}" alt="" loading="lazy" decoding="async"></div>` : "";
-    return `${art}<header><h3>${esc(c.title)}</h3><span class="small num">${c.leg.length} legendary${exo ? ` · ${exo} exotic` : ""} · ${keep} kept</span></header>${subs}
+    return `${art}<header><h3>Best ${esc(c.title.endsWith("s") ? c.title : c.title + "s")}</h3><span class="small num">${c.leg.length} legendary${exo ? ` · ${exo} exotic` : ""} · ${keep} kept</span></header>${subs}
       <div>${best.length ? best.map(mini).join("") : `<p class="small muted" style="padding:8px">${c.leg.length ? "None in this sub-category." : "You only own exotics of this type."}</p>`}</div>
       <button class="linkbtn" data-set="w" data-view="type:${esc(c.type)}${c.split ? "|" + esc(c.ammo) : ""}">See all ${c.all.length}, best first →</button>`;
   }
