@@ -32,11 +32,13 @@ In the browser, the saved files are restored with one IndexedDB read at startup 
 
 ## Images in the local report
 
-The local report embeds every icon as a data URI so it works offline; each image is downloaded once into the images folder and reused after that ([src/report/site.ts:22](../../src/report/site.ts#L22), [src/report/site.ts:41-45](../../src/report/site.ts#L41-L45)). Only the top pick per slot gets its full-size screenshot, since each is about 170 KB ([src/report/siteData.ts:14-15](../../src/report/siteData.ts#L14-L15)).
+The local report embeds every icon as a data URI so it works offline; each image is downloaded once into the images folder and reused after that ([src/report/site.ts:22](../../src/report/site.ts#L22), [src/report/site.ts:41-45](../../src/report/site.ts#L41-L45)). Only the top pick per slot gets its full-size screenshot, since each is about 170 KB ([src/report/siteData.ts:14-15](../../src/report/siteData.ts#L14-L15)). The web app loads images from bungie.net as they scroll into view, so there every weapon gets its screenshot ([web/src/main.ts:164-165](../../web/src/main.ts#L164-L165)).
 
 ## In the page
 
-- The Builds tab is a separate JavaScript chunk, fetched in the background once the report is on screen ([web/src/main.ts:177-181](../../web/src/main.ts#L177-L181)).
+- Images load lazily and decode off the main thread; a remote image that fails is retried twice before the placeholder shows ([report-template/site.html:856-867](../../report-template/site.html#L856-L867)).
+- Rows and tiles in long lists skip layout and paint while off screen ([report-template/site.html:423-425](../../report-template/site.html#L423-L425)), so the full list and Shard tab stay smooth with hundreds of icons.
+- The Builds tab is a separate JavaScript chunk, fetched in the background once the report is on screen ([web/src/main.ts:179-183](../../web/src/main.ts#L179-L183)).
 - Its score map, stat names and weapon tiers are worked out once per rating run, not on every redraw ([web/src/builds/ui.ts:49-59](../../web/src/builds/ui.ts#L49-L59)), and items are looked up through a per-vault index ([web/src/builds/model.ts:106-113](../../web/src/builds/model.ts#L106-L113)).
 - Your Destiny membership is asked for once per visit ([web/src/shims/oauth.ts:44-59](../../web/src/shims/oauth.ts#L44-L59)).
 

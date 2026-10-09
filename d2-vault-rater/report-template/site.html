@@ -246,6 +246,8 @@ section.panel > .jumpbar { margin-bottom: -36px; }
 .ico img, .ico .ph { width: 100%; height: 100%; border-radius: 9px; display: block; }
 .ico .tier { position: absolute; right: -5px; bottom: -5px; min-width: 20px; height: 18px; padding: 0 4px; font-size: 11px; border-radius: 6px; }
 .ico.exotic img { box-shadow: 0 0 0 1px rgba(242,193,78,.55); }
+/* An image that failed to load after its retries shows the soft placeholder instead of an empty box */
+img.broken { background: var(--grad-soft); }
 
 /* ---------- Overview ---------- */
 .picks { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 16px; }
@@ -402,9 +404,11 @@ details.ms summary .n { background: var(--grad); color: #04102a; border-radius: 
 .cards-big .tc-art { display: block; position: relative; margin: 0 -22px -34px; aspect-ratio: 16 / 5; overflow: hidden; }
 .cards-big .tc-art img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: .7; transition: transform .8s ease, opacity .3s ease; }
 .cards-big .tc-art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(5,8,22,.05), rgba(10,15,36,.96)); }
-.cards-big .tc-art.ic img { filter: blur(18px) saturate(1.4); transform: scale(1.4); opacity: .5; }
+/* No screenshot: the top pick's icon at its own size on a soft gradient, rather than stretched and blurred */
+.cards-big .tc-art.ic { display: flex; align-items: center; justify-content: flex-end; padding: 0 22px 34px; background: var(--grad-soft); }
+.cards-big .tc-art.ic img { width: auto; height: auto; max-height: 100%; border-radius: 12px; opacity: .55; }
 .cards-big .tcard:hover .tc-art img { transform: scale(1.04); opacity: .85; }
-.cards-big .tcard:hover .tc-art.ic img { transform: scale(1.45); }
+.cards-big .tcard:hover .tc-art.ic img { transform: none; }
 .cards-big .tcard header { position: relative; z-index: 1; }
 .cards-big .tcard h3 { font-size: 22px; }
 .cards-big .mini { grid-template-columns: 22px 56px minmax(0, 1fr) auto; gap: 12px; padding: 8px 10px; }
@@ -416,6 +420,9 @@ details.ms summary .n { background: var(--grad); color: #04102a; border-radius: 
 .row .c-verdict { min-width: 70px; display: flex; justify-content: flex-end; }
 .list.rows { grid-template-columns: repeat(auto-fill, minmax(min(520px, 100%), 1fr)); gap: 8px 12px; }
 #exlist .row { padding-block: 11px; }
+/* Long lists skip layout and paint for items off screen, so hundreds of rows and icons stay smooth to scroll */
+.list > .row { content-visibility: auto; contain-intrinsic-size: auto 66px; }
+.list > .itile { content-visibility: auto; contain-intrinsic-size: auto 200px; }
 /* Groups in the full list */
 .group { display: grid; gap: 10px; }
 .group + .group { margin-top: 24px; }
@@ -846,7 +853,18 @@ function vrMain() {
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-  const img = (k, cls = "") => (k && IMG[k] ? `<img ${cls ? `class="${cls}" ` : ""}src="${IMG[k]}" alt="" loading="lazy">` : `<span class="ph"></span>`);
+  const img = (k, cls = "") => (k && IMG[k] ? `<img ${cls ? `class="${cls}" ` : ""}src="${IMG[k]}" alt="" loading="lazy" decoding="async">` : `<span class="ph"></span>`);
+  // Remote images (the web app loads them from bungie.net) sometimes fail under load: retry twice, then show the
+  // soft placeholder in place of an empty box.
+  document.addEventListener("error", (e) => {
+    const el = e.target;
+    if (el.tagName !== "IMG" || !/^https?:/.test(el.src)) return;
+    const n = Number(el.dataset.retry || 0);
+    if (n >= 2) return el.classList.add("broken");
+    el.dataset.retry = n + 1;
+    const url = el.src.replace(/[?&]vr-retry=\d+$/, "");
+    setTimeout(() => (el.src = `${url}${url.includes("?") ? "&" : "?"}vr-retry=${n + 1}`), 1500 * (n + 1));
+  }, true);
   const fmt = (n) => Math.round(n || 0).toLocaleString();
   const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
   const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
@@ -1108,7 +1126,7 @@ function vrMain() {
       sec("ov-picks", "Top picks by slot", "The highest scoring weapon you own for each slot.", `<div class="picks">${picks}</div>`) +
       sec("ov-quick", "Jump in", "Each opens the full list with the filters already set.", `<div class="quick">
         ${q("w", "delete", "Delete these first", shardW.filter((w) => ["d-tier", "low-tier", "trash-roll"].includes(w.c)).length, "D tier, below your tier floor, or wishlist trash")}
-        ${q("w", "dupes", "Duplicates to clear", shardW.filter((w) => w.c === "duplicate").length, "You keep a better copy of each")}
+        ${q("w", "dupes", "Duplicates to clear", DATA.weapons.filter((w) => w.c === "duplicate").length, "You keep a better copy of each")}
         ${q("w", "best-type-el", "Best of every type and element", new Set(DATA.weapons.map((w) => w.t + "|" + w.e)).size, "Like your best Solar auto rifle")}
         ${q("w", "god", "Wishlist god rolls", DATA.weapons.filter((w) => w.god).length, "Rolls the community wishlist marks as ideal")}
         ${q("a", "best-slot", "Best armor per class and slot", Object.values(DATA.armorBest).reduce((n, s) => n + Object.keys(s).length, 0), "Your strongest piece in every slot")}
@@ -1156,15 +1174,15 @@ function vrMain() {
     $("#wsize").onclick = (e) => {
       const b = e.target.closest("button"); if (!b) return;
       bigCards = b.dataset.size === "big"; store.set("vr-cards", bigCards ? "big" : "small");
-      $("#wsize button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+      $$("#wsize button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
       $("#p-weapons").classList.toggle("cards-big", bigCards);
     };
-    $("#p-weapons").addEventListener("click", (e) => {
+    $("#p-weapons").onclick = (e) => {
       const b = e.target.closest("[data-sub]"); if (!b) return;
       e.stopPropagation();
       const c = typeCards[b.dataset.card]; c.sub = b.dataset.sub;
       $(`#tc${c.i}`).innerHTML = typeCardBody(c);
-    });
+    };
   };
   function typeCardBody(c) {
     const count = (f) => { const m = {}; for (const w of c.leg) { const k = f(w); if (k) m[k] = (m[k] || 0) + 1; } return Object.entries(m).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])); };
@@ -1179,7 +1197,7 @@ function vrMain() {
     const exo = c.all.length - c.leg.length;
     // Banner: a screenshot from this type when one exists, otherwise the top pick's icon, blurred.
     const withShot = [...best, ...c.all].find((w) => w.ss && IMG[w.ss]), icon = best[0]?.ic && IMG[best[0].ic];
-    const art = withShot ? `<div class="tc-art"><img src="${IMG[withShot.ss]}" alt="" loading="lazy"></div>` : icon ? `<div class="tc-art ic"><img src="${icon}" alt="" loading="lazy"></div>` : "";
+    const art = withShot ? `<div class="tc-art"><img src="${IMG[withShot.ss]}" alt="" loading="lazy" decoding="async"></div>` : icon ? `<div class="tc-art ic"><img src="${icon}" alt="" loading="lazy" decoding="async"></div>` : "";
     return `${art}<header><h3>${esc(c.title)}</h3><span class="small num">${c.leg.length} legendary${exo ? ` · ${exo} exotic` : ""} · ${keep} kept</span></header>${subs}
       <div>${best.length ? best.map(mini).join("") : `<p class="small muted" style="padding:8px">${c.leg.length ? "None in this sub-category." : "You only own exotics of this type."}</p>`}</div>
       <button class="linkbtn" data-set="w" data-view="type:${esc(c.type)}${c.split ? "|" + esc(c.ammo) : ""}">See all ${c.all.length}, best first →</button>`;
@@ -1285,7 +1303,7 @@ function vrMain() {
       const setsHtml = r.sets.map(setBox).join("");
       const note = `<p class="small muted">${r.counts.sTier ? `${r.counts.sTier} S-tier weapon${r.counts.sTier > 1 ? "s" : ""} in the loot pool. ` : ""}${r.counts.chase ? `${r.counts.chase} you don't own` : "You own everything here"}${r.counts.upgrade ? `, ${r.counts.upgrade} worth re-rolling` : ""}.</p>`;
       return `<article class="rad glass${top ? " top" : ""}" id="rad-${esc(r.key)}">
-        <div class="banner">${r.image && IMG[r.image] ? `<img src="${IMG[r.image]}" alt="" loading="lazy">` : ""}
+        <div class="banner">${r.image && IMG[r.image] ? `<img src="${IMG[r.image]}" alt="" loading="lazy" decoding="async">` : ""}
           <div class="chips-tl"><span class="chip"><b>${r.kind === "raid" ? "Raid" : "Dungeon"}</b></span>${top ? `<span class="chip" style="color:var(--green)"><b>Best ${r.kind} to farm</b></span>` : ""}</div>
           <span class="verdict-tag ${vClass(r.verdict)}">${r.verdict}</span>
           <div class="title"><span class="rk">${i + 1}</span><h3>${esc(r.name)}</h3><div class="farm"><b class="num">${r.score}</b><span>Farm score</span></div></div></div>
@@ -1478,7 +1496,6 @@ function vrMain() {
       d.classList.toggle("active", n > 0);
     }
     $("#exchips").innerHTML = Object.entries(st.f).flatMap(([k, vals]) => vals.map((v) => `<span class="fchip">${esc(cfg.facets.find((f) => f[0] === k)[1])}: ${esc(v)}<button data-k="${esc(k)}" data-v="${esc(v)}" aria-label="Remove ${esc(v)} filter">×</button></span>`)).join("");
-    $("#excount").textContent = plural(list.length, cfg.noun);
     // Render, with up to two grouping levels; groups are ordered by their first (best or worst) item
     const top = st.top ? Number(st.top) : Infinity;
     const groupList = (items, gk) => {
@@ -1492,15 +1509,17 @@ function vrMain() {
     if (!list.length) html = `<div class="empty">Nothing matches these filters. Remove one above or press Reset.</div>`;
     else if (!st.group) { const part = list.slice(0, Math.min(st.limit, top)); shown = part.length; html = items(part); }
     else {
-      shown = list.length;
       html = groupList(list, st.group).map(([k, xs]) => {
         if (st.group2 && st.group2 !== st.group) {
-          const inner = groupList(xs, st.group2).map(([k2, sub]) => `<details class="group" open>${head(k2, Math.min(top, sub.length), sub)}${items(sub.slice(0, top))}</details>`).join("");
+          const inner = groupList(xs, st.group2).map(([k2, sub]) => (shown += Math.min(top, sub.length), `<details class="group" open>${head(k2, Math.min(top, sub.length), sub)}${items(sub.slice(0, top))}</details>`)).join("");
           return `<details class="group" open>${head(k, xs.length, xs)}${inner}</details>`;
         }
+        shown += Math.min(top, xs.length);
         return `<details class="group" open>${head(k, Math.min(top, xs.length), xs)}${items(xs.slice(0, top))}</details>`;
       }).join("");
     }
+    const capped = top < Infinity && shown < list.length;
+    $("#excount").textContent = capped ? `${plural(shown, cfg.noun)} of ${fmt(list.length)}` : plural(list.length, cfg.noun);
     $("#exlist").innerHTML = html;
     $("#exmore").innerHTML = !st.group && list.length > shown && shown < top ? `<button class="btn" id="exmorebtn">Show ${Math.min(300, list.length - shown)} more</button>` : "";
     const mb = $("#exmorebtn"); if (mb) mb.onclick = () => { st.limit += 300; drawExplorer(false); };

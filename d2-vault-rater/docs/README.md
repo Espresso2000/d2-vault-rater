@@ -1,6 +1,6 @@
 # Vault Rater documentation
 
-Vault Rater rates every weapon and armor piece in a Destiny 2 vault against Aegis's tier list and community wishlists, says what to keep and what to shard, and can lock keepers, unlock junk, move items and tag them in DIM after you approve. It runs as an MCP tool server for an AI client ([src/server.ts:32](../src/server.ts#L32)), as a command-line app with a local report page ([src/cli.ts:180](../src/cli.ts#L180)), or as a static web app in the browser ([web/src/main.ts:244](../web/src/main.ts#L244)).
+Vault Rater rates every weapon and armor piece in a Destiny 2 vault against Aegis's tier list and community wishlists, says what to keep and what to shard, and can lock keepers, unlock junk, move items and tag them in DIM after you approve. It runs as an MCP tool server for an AI client ([src/server.ts:32](../src/server.ts#L32)), as a command-line app with a local report page ([src/cli.ts:180](../src/cli.ts#L180)), or as a static web app in the browser ([web/src/main.ts:246](../web/src/main.ts#L246)).
 
 These docs follow [Diátaxis](https://diataxis.fr/): tutorials to learn by doing, how-to guides for a specific job, reference to look things up, and explanation for how and why it works. Every statement about the code links to the lines it describes; `npm run docs:check` verifies those links ([scripts/check-doc-refs.mjs](../scripts/check-doc-refs.mjs)).
 

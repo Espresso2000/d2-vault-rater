@@ -33,7 +33,7 @@ The web app has its own scripts in [web/package.json](../../web/package.json): `
 
 ## Local server routes
 
-`serve` listens on `127.0.0.1` ([src/cli.ts:173](../../src/cli.ts#L173)). POST requests must come from the page itself ([src/cli.ts:94-95](../../src/cli.ts#L94-L95)). The web app answers the same routes in the browser ([web/src/main.ts:200-241](../../web/src/main.ts#L200-L241)).
+`serve` listens on `127.0.0.1` ([src/cli.ts:173](../../src/cli.ts#L173)). POST requests must come from the page itself ([src/cli.ts:94-95](../../src/cli.ts#L94-L95)). The web app answers the same routes in the browser ([web/src/main.ts:202-243](../../web/src/main.ts#L202-L243)).
 
 | Route | Body | Does | Source |
 | --- | --- | --- | --- |

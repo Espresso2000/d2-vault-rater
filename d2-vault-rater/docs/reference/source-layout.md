@@ -35,7 +35,7 @@
 | [src/dim/actions.ts:46](../../src/dim/actions.ts#L46) | Lock plan, apply, undo, DIM CSV. |
 | [src/dim/common.ts:30](../../src/dim/common.ts#L30) | DIM Sync shapes, profile read and tag write. Browser-safe. |
 | [src/dim/sync.ts:44](../../src/dim/sync.ts#L44) | DIM Sync auth for Node. *Shimmed.* |
-| [src/report/report.ts:45](../../src/report/report.ts#L45) | Markdown report and report options. |
+| [src/report/report.ts:47](../../src/report/report.ts#L47) | Markdown report and report options. |
 | [src/report/siteData.ts:12](../../src/report/siteData.ts#L12) | The data the report page draws. Pure. |
 | [src/report/site.ts:58](../../src/report/site.ts#L58) | Writes the HTML report with embedded images. |
 
@@ -45,7 +45,7 @@
 | --- | --- |
 | [web/vite.config.ts:22](../../web/vite.config.ts#L22) | The shim plugin, the page plugin, local mode. |
 | [web/local-server.ts:35](../../web/local-server.ts#L35) | Local mode only: serves `app-config.json` from `.env` and relays token requests with the client secret. |
-| [web/src/main.ts:244](../../web/src/main.ts#L244) | Boot, sign-in screens, the rating run, the page's `/api` handlers. |
+| [web/src/main.ts:246](../../web/src/main.ts#L246) | Boot, sign-in screens, the rating run, the page's `/api` handlers. |
 | [web/src/shell.html:1](../../web/src/shell.html#L1) | Sign-in and progress markup injected into the report template. |
 | [web/src/appConfig.ts:28](../../web/src/appConfig.ts#L28) | Which Bungie app the site uses. |
 | [web/src/shims/](../../web/src/shims/) | Browser versions of the five Node-only modules, plus `node:*` stand-ins. |
@@ -61,7 +61,7 @@
 
 | Path | What is in it |
 | --- | --- |
-| [report-template/site.html:827](../../report-template/site.html#L827) | The report page, shared by the local report and the web app. |
+| [report-template/site.html:834](../../report-template/site.html#L834) | The report page, shared by the local report and the web app. |
 | [skill/SKILL.md:1](../../skill/SKILL.md#L1) | Instructions for an AI running a vault review. |
 | [test/](../../test/) | Unit tests and fixtures. |
 | [scripts/check-doc-refs.mjs:1](../../scripts/check-doc-refs.mjs#L1) | Checks the code links in these docs. |

@@ -11,7 +11,7 @@ import { stripReissue } from "../bungie/defs.js";
  */
 export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions, imageKey: (url: string | null | undefined) => string | null, setData: ArmorSetData | null) {
   const ids = (list: WeaponRating[]) => list.map((r) => r.instanceId);
-  // Full-size screenshots are ~170 KB each, so only the top picks per slot get one.
+  // Full-size screenshots are ~170 KB each, so an embedded report gives only the top picks per slot one.
   const withShot = new Set(Object.values(w.bestBySlot).flatMap((l) => l.slice(0, 1).map((r) => r.instanceId)));
 
   const recW = new Map((o.vault?.weapons ?? []).map((x) => [x.instanceId, x]));
@@ -43,7 +43,7 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
     s: r.slot,
     r: r.rarity,
     ic: imageKey(r.icon),
-    ss: withShot.has(r.instanceId) ? imageKey(r.screenshot) : null,
+    ss: o.allScreenshots || withShot.has(r.instanceId) ? imageKey(r.screenshot) : null,
     tier: r.aegis?.tier ?? null,
     rank: r.aegis?.rank ?? null,
     tab: r.aegis?.tab ?? null,

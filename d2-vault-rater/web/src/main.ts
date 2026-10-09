@@ -161,6 +161,8 @@ async function run() {
     dim,
     dimError,
     plan,
+    // Images load lazily from bungie.net, so every weapon can have its screenshot (type card banners, the drawer).
+    allScreenshots: true,
   }, key, loadArmorSets());
 
   document.title = `${wrapped?.name ? wrapped.name + "’s" : "Your"} Vault Report`;

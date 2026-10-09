@@ -40,6 +40,8 @@ export interface ReportOptions {
   encounters?: Record<string, EncounterPlan[]>;
   /** Dry-run lock plan, so the page can preview and (after confirming) apply it. */
   plan?: DimPlan | null;
+  /** Give every weapon its screenshot, not just the top picks: for pages that load images by URL, on demand. */
+  allScreenshots?: boolean;
 }
 
 export function buildMarkdown(w: WeaponReport, a: ArmorReport, o: ReportOptions): string {
