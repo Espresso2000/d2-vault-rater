@@ -1,0 +1,20 @@
+{
+  "name": "vault-rater-web",
+  "version": "1.0.0",
+  "description": "Vault Rater as a static browser app",
+  "scripts": {
+    "dev": "vite",
+    "snapshot": "tsx scripts/snapshot.ts",
+    "build": "vite build",
+    "preview": "vite preview --port 4173",
+    "typecheck": "tsc --noEmit -p .",
+    "local": "vite build && vite preview --mode localhost"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@vitejs/plugin-basic-ssl": "^2.3.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.2"
+  },
+  "private": true
+}

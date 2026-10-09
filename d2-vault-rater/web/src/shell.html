@@ -1,0 +1,36 @@
+<style>
+/* Sign-in, setup and progress screen shown before the report renders. */
+.vr-shell { position: relative; z-index: 2; min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: 24px 16px; }
+.vr-card { width: min(600px, 100%); display: grid; gap: 18px; padding: clamp(22px, 4vw, 40px); border-radius: 24px; border: 1px solid var(--line);
+  background: radial-gradient(460px 220px at 100% 0%, rgba(51,227,160,.08), transparent 70%), radial-gradient(460px 260px at 0% 100%, rgba(77,125,255,.12), transparent 70%), rgba(10,15,36,.8); backdrop-filter: blur(16px); box-shadow: var(--shadow); }
+.vr-card h1 { font-size: clamp(32px, 6vw, 48px); line-height: 1.02; font-weight: 600; letter-spacing: -.03em; }
+.vr-card .lede { color: var(--muted); }
+.vr-card a { color: var(--cyan); }
+.vr-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.vr-err { padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(255,122,122,.35); background: rgba(255,122,122,.08); color: #ffd5d5; }
+.vr-log { margin: 0; padding-left: 20px; color: var(--muted); font-size: 13.5px; display: grid; gap: 4px; }
+.vr-log:empty { display: none; }
+.vr-log li:last-child { color: var(--ink); }
+.vr-setup { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 14px; margin: 0; font-size: 14px; }
+.vr-setup dt { color: var(--faint); }
+.vr-setup dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.vr-setup code, .vr-card code { font: 500 13px var(--mono); color: var(--green); }
+.vr-form { display: grid; gap: 10px; }
+.vr-form label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+.vr-form input { background: var(--glass); border: 1px solid var(--line-hi); border-radius: 10px; padding: 9px 12px; color: var(--ink); min-width: 0; }
+.vr-form input:focus { outline: none; border-color: var(--hover); }
+.vr-banner { position: fixed; z-index: 30; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(560px, calc(100% - 32px));
+  display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; justify-content: space-between; padding: 12px 16px; border-radius: 14px;
+  background: rgba(21,28,62,.95); backdrop-filter: blur(16px); border: 1px solid rgba(242,193,78,.5); box-shadow: var(--shadow); font-size: 14px; }
+body:not(.vr-booting) .vr-shell { display: none; }
+@media (max-width: 560px) { .vr-setup { grid-template-columns: minmax(0, 1fr); } .vr-setup dd { margin-bottom: 6px; } }
+</style>
+<div class="vr-shell" id="vr-shell">
+  <div class="vr-card">
+    <div class="eyebrow">Destiny 2 · Vault Rater</div>
+    <h1>Rate your <span class="grad-text">vault</span></h1>
+    <div id="vr-shell-body" class="stack"><p class="lede">Loading…</p></div>
+    <ol class="vr-log" id="vr-log" aria-live="polite"></ol>
+  </div>
+</div>
+<div class="vr-banner" id="vr-banner" role="alert" hidden></div>

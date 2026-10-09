@@ -1,0 +1,33 @@
+{
+  "name": "d2-vault-rater",
+  "version": "0.1.0",
+  "description": "MCP tool server that rates a Destiny 2 vault against Aegis's tier list and applies keep/junk locks and DIM tags.",
+  "type": "module",
+  "bin": {
+    "d2-vault-rater": "dist/server.js",
+    "vault-rater": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "dev": "tsx src/server.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --import tsx --test test/*.test.ts",
+    "vault": "node dist/cli.js",
+    "vault:serve": "node dist/cli.js serve",
+    "docs:check": "node scripts/check-doc-refs.mjs"
+  },
+  "engines": {
+    "node": ">=20.12"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.31.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.3",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}
