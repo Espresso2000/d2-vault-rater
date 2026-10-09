@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&family=Space+Grotesk:wght@500;600;700&display=swap">
 <style>
 /* Layout: a quiet night sky with a tactical HUD edge. A slim glass top bar (brand, search, actions) sits over a
-   row of underlined tabs and ends in a slowly drifting wave. Surfaces are flat and faintly lit, with green corner
+   row of overlined tabs and ends in a slowly drifting wave. Surfaces are flat and faintly lit, with green corner
    ticks on the key panels and a soft light that follows the pointer; the blue-to-green gradient (weighted to green)
    marks what matters. Small labels are mono capitals, like a readout. The Overview opens with the vault's headline
    numbers; other tabs are collapsible sections with a jump bar. Item details open in a drawer (a sheet on phones). */
@@ -101,9 +101,9 @@ nav.tabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; min
 nav.tabs::-webkit-scrollbar { display: none; }
 nav.tabs button { position: relative; display: inline-flex; align-items: center; gap: 9px; height: 56px; padding: 0 16px; border: 0; background: none; font: 500 15.5px/1 var(--display); letter-spacing: .01em; color: var(--muted); white-space: nowrap; transition: color .2s ease, background .2s ease; isolation: isolate; }
 nav.tabs button svg { width: 19px; height: 19px; fill: currentColor; opacity: .7; transition: opacity .2s ease, filter .2s ease, transform .2s ease; }
-nav.tabs button::after { content: ""; position: absolute; left: 14px; right: 14px; bottom: 0; height: 3px; border-radius: 3px 3px 0 0; background: var(--grad); box-shadow: 0 0 14px rgba(51,227,160,.7); transform: scaleX(0); transition: transform .3s cubic-bezier(.2,.8,.2,1); }
-/* The active tab sits on a soft green light rising from its underline */
-nav.tabs button::before { content: ""; position: absolute; inset: 8px 4px 0; border-radius: 12px 12px 0 0; background: linear-gradient(0deg, rgba(51,227,160,.14), transparent 80%); z-index: -1; opacity: 0; transition: opacity .25s ease; }
+nav.tabs button::after { content: ""; position: absolute; left: 14px; right: 14px; top: 0; height: 3px; border-radius: 0 0 3px 3px; background: var(--grad); box-shadow: 0 0 14px rgba(51,227,160,.7); transform: scaleX(0); transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+/* The active tab hangs under a soft green light falling from its overline */
+nav.tabs button::before { content: ""; position: absolute; inset: 0 4px 8px; border-radius: 0 0 12px 12px; background: linear-gradient(180deg, rgba(51,227,160,.14), transparent 80%); z-index: -1; opacity: 0; transition: opacity .25s ease; }
 nav.tabs button:hover { color: var(--ink); }
 nav.tabs button:hover::after { transform: scaleX(.35); }
 nav.tabs button:hover svg { opacity: 1; transform: translateY(-1px); }
