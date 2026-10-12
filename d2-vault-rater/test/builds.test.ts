@@ -1,7 +1,7 @@
 import "./env.js";
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseRatedTab, parseSubclassTab, parseInfoTab, elementFromSupers, norm } from "../web/src/builds/sheets.js";
+import { parseClarity, parseRatedTab, parseSubclassTab, parseInfoTab, elementFromSupers, norm } from "../web/src/builds/sheets.js";
 import { stripBuildDefs, type BuildDefs } from "../web/src/builds/defs.strip.js";
 import { buildScore, fragmentSlots, fromDimLoadout, newBuild, placeMod, statLines, toDimLoadout, trimFragments, defaultPlugs, type Ctx } from "../web/src/builds/model.js";
 import { planEquip } from "../web/src/builds/equip.js";
@@ -196,4 +196,12 @@ test("equip dry run: a weapon equipped on another character gets a stand-in equi
   const stand = texts.findIndex((t) => t === "Hunter: equip Spare in its place, so Gun can move");
   assert.ok(stand >= 0, texts.join("\n"));
   assert.ok(stand < texts.findIndex((t) => t.startsWith("Moves and equips")));
+});
+
+test("Destiny Clarity: description blocks become paragraphs, only for known plugs", () => {
+  const json = {
+    "21": { name: "Controlled Demolition", descriptions: { en: [{ linesContent: [{ text: "Volatile " }, { text: "on hit." }] }, { classNames: ["spacer"] }, { linesContent: [{ text: "Lasts 6s." }] }] } },
+    "99": { name: "Unknown", descriptions: { en: [{ linesContent: [{ text: "x" }] }] } },
+  };
+  assert.deepEqual(parseClarity(json, (h) => h === 21), { 21: ["Volatile on hit.", "Lasts 6s."] });
 });
