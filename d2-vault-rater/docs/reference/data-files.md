@@ -39,7 +39,7 @@ The web app keeps the rater's "files" in memory and saves them to IndexedDB unde
 | `sessionStorage` | `vr-oauth-state`, `vr-return-hash` | Login in progress; the tab to return to | [web/src/shims/oauth.ts:5](../../web/src/shims/oauth.ts#L5), [web/src/shims/oauth.ts:14](../../web/src/shims/oauth.ts#L14) |
 | `sessionStorage` | `vr-dim-token` | DIM Sync token | [web/src/shims/sync.ts:15](../../web/src/shims/sync.ts#L15) |
 
-Saved builds are the file `/vr/builds.json` ([web/src/builds/store.ts:5](../../web/src/builds/store.ts#L5)), and the Builds tab's sheet ratings are `/vr/sources/build-ratings.json` ([web/src/builds/ratings.ts:6](../../web/src/builds/ratings.ts#L6)).
+Saved builds are the file `/vr/builds.json` ([web/src/builds/store.ts:5](../../web/src/builds/store.ts#L5)), the Builds tab's sheet ratings are `/vr/sources/build-ratings.json` ([web/src/builds/ratings.ts:6](../../web/src/builds/ratings.ts#L6)), and its Destiny Clarity notes (only for the plugs the tab knows) are `/vr/sources/clarity.json` ([web/src/builds/ratings.ts:42](../../web/src/builds/ratings.ts#L42)).
 
 ## Shipped with the web app
 

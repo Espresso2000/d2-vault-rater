@@ -14,7 +14,29 @@ The web app's Builds tab lets you put together a subclass, three weapons, five a
 | [web/src/builds/profile.ts](../../web/src/builds/profile.ts) | Reads what equipping needs beyond the vault: subclasses, unlocked plugs, socket contents and in-game loadout slots ([web/src/builds/profile.ts:45](../../web/src/builds/profile.ts#L45)). |
 | [web/src/builds/equip.ts](../../web/src/builds/equip.ts) | Turns a build into a step-by-step plan and runs it ([web/src/builds/equip.ts:41](../../web/src/builds/equip.ts#L41), [web/src/builds/equip.ts:162](../../web/src/builds/equip.ts#L162)). |
 | [web/src/builds/dim.ts](../../web/src/builds/dim.ts) | Reads DIM loadouts, saves a build as one, and makes share and import links. |
-| [web/src/builds/ui.ts](../../web/src/builds/ui.ts) | The tab's HTML and event handling ([web/src/builds/ui.ts:68](../../web/src/builds/ui.ts#L68)). |
+| [web/src/builds/ui.ts](../../web/src/builds/ui.ts) | The tab's HTML and event handling ([web/src/builds/ui.ts:90](../../web/src/builds/ui.ts#L90)). |
+
+## The editor
+
+Three areas: the saved builds on the left, the build's sections in the middle, and a summary column on the right that stays in view (it moves above the sections on narrower screens).
+
+- **Subclass.** Elements switch with one click. Every ability, aspect and fragment slot opens a popover in place: on hover with a mouse, on keyboard focus (arrow down moves into it, arrows move between options, Escape closes) and on tap, where it opens as a bottom sheet ([web/src/builds/ui.ts:421](../../web/src/builds/ui.ts#L421), [web/src/builds/ui.ts:980](../../web/src/builds/ui.ts#L980)). Options are sorted by Aegis tier and show stat changes and fragment slots; pointing at one shows its description, Clarity's notes and Aegis's verdict. Abilities replace on click. Aspects and fragments toggle, so one popover fills every slot: a pick goes into a free slot, or replaces the slot you opened when all are full ([web/src/builds/ui.ts:534-560](../../web/src/builds/ui.ts#L534-L560)).
+- **Gear and mods.** One drawer picks weapons, armor and mods for every slot ([web/src/builds/ui.ts:680](../../web/src/builds/ui.ts#L680)). Weapons and armor come from one filterable list (slot, element, exotic, Tier 5; sorted by vault score, Aegis tier, stat total or a single stat, d2armorpicker style) with every armor stat in columns ([web/src/builds/ui.ts:728](../../web/src/builds/ui.ts#L728)). Clicking a row puts it in its slot, clicking again takes it out, and a second exotic of the same kind replaces the first. The mods tab adds to the armor piece you choose, into the first socket that takes the mod and has the energy. A tray shows every slot, every mod socket and the stats with your picks against the saved build; nothing changes until **Apply** ([web/src/builds/ui.ts:817](../../web/src/builds/ui.ts#L817), [web/src/builds/ui.ts:948](../../web/src/builds/ui.ts#L948)).
+- **Summary.** The rating ring and its parts, the six stats with your aims, the armor set bonuses your pieces turn on (from the report's set data), and the equip and DIM buttons ([web/src/builds/ui.ts:243](../../web/src/builds/ui.ts#L243), [web/src/builds/ui.ts:282](../../web/src/builds/ui.ts#L282)).
+- Each weapon links to its light.gg and D2 Foundry pages for rolls and perk numbers.
+
+## Sources
+
+| Source | What the tab uses | How |
+| --- | --- | --- |
+| Bungie manifest | Subclasses, abilities, aspects, fragments, armor mods, energy costs, stat bonuses | Stripped and cached per game version, see above |
+| Aegis's Endgame Analysis | Tiers for subclasses, aspects and fragments; the build rating | Google Sheet, daily |
+| Destiny Data Compendium | Descriptions for abilities, aspects, fragments, mods | Google Sheet, daily |
+| [Destiny Clarity](https://github.com/Database-Clarity) | Community-tested numbers for abilities, aspects, fragments and mods, by plug hash (the file DIM reads) | Open JSON, daily, kept only for the tab's plugs ([web/src/builds/sheets.ts:176](../../web/src/builds/sheets.ts#L176), [web/src/builds/ratings.ts:52](../../web/src/builds/ratings.ts#L52)) |
+| The rater | Vault scores and Aegis weapon tiers per item, armor set bonuses | The report's data |
+| light.gg, D2 Foundry | Weapon roll and perk pages | Links only |
+
+Nothing here needs a key or a sign-in beyond the Bungie sign-in the app already has.
 
 ## Stats
 

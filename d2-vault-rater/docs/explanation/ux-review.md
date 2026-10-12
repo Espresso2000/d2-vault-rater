@@ -48,12 +48,17 @@ The tabs ran Overview, Weapons, Armor, RADS, Full list, Shard, Wrapped. Deciding
 - **Blurry type card banners.** Without a screenshot, a card stretched the top pick's 96 px icon across the banner and blurred it. In the web app every weapon now has its screenshot; without one, the icon sits crisp at its own size ([site.html:446-448](../../report-template/site.html#L446-L448)).
 - **Images that never loaded and lag with many images**: see [caching](caching.md#in-the-page).
 
+### Builds took one drawer per slot
+
+Every socket, weapon, armor piece and mod opened its own drawer: pick, confirm, close, then the next slot. Filling a build meant twenty-odd round trips.
+
+Now subclass slots open a popover in place on hover, keyboard focus or tap, with the options, their Aegis tiers and Destiny Clarity's notes; aspects and fragments toggle, so one popover fills every slot ([web/src/builds/ui.ts:421](../../web/src/builds/ui.ts#L421), [web/src/builds/ui.ts:534](../../web/src/builds/ui.ts#L534)). Weapons, armor and mods for all slots come from one filterable list with a live stat preview, and **Apply** saves them in one go ([web/src/builds/ui.ts:680](../../web/src/builds/ui.ts#L680), [web/src/builds/ui.ts:948](../../web/src/builds/ui.ts#L948)). The rating, stats, set bonuses and the equip and DIM buttons sit in a summary column ([web/src/builds/ui.ts:243](../../web/src/builds/ui.ts#L243)). See [the Builds tab](builds-tab.md#the-editor).
+
 ## Left as they are
 
 - **Quick views in the full list and "Jump in" on the Overview overlap.** They do: Jump in is the handful you need first, quick views are the full set once you are browsing. Both open the same list, so there is one way the list works.
 - **Two ways into Settings** (the gear and the `#settings` address). The address is what makes Back and bookmarks work; there is still one control on screen.
 - **The CLI's copy-and-paste sign-in.** Pasting the callback address into the terminal is clumsy, but avoiding it needs a local https server for the redirect, which the web app already provides ([Run the web app on your PC](../tutorials/web-app-on-your-pc.md)).
-- **The Builds tab** has its own list, editor and drawer; it reads as one flow already and wasn't changed here.
 
 ## The look
 

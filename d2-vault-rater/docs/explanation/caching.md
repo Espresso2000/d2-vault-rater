@@ -16,7 +16,7 @@ Rating a vault needs a lot of data that rarely changes: Bungie's manifest (hundr
 
 - The local app re-imports every source when the oldest is more than a day old ([src/pipeline.ts:27-31](../../src/pipeline.ts#L27-L31), [src/pipeline.ts:58](../../src/pipeline.ts#L58)). The MCP server only re-imports when the AI calls `refresh_sources`.
 - The web app checks each source on its own and re-imports it after 24 hours ([web/src/sources.ts:28](../../web/src/sources.ts#L28)). If a sheet can't be read and nothing is cached, it falls back to `public/data/sources.json` shipped with the site ([web/src/sources.ts:41-43](../../web/src/sources.ts#L41-L43)). Like the local app ([src/sources/wishlist.ts:50-51](../../src/sources/wishlist.ts#L50-L51)), it drops wishlist notes, which would make the cache about ten times bigger ([web/src/sources.ts:57](../../web/src/sources.ts#L57)). Raid loot is also rebuilt when the game version changes ([web/src/sources.ts:81](../../web/src/sources.ts#L81)).
-- The Builds tab's rating sheets refresh daily the same way ([web/src/builds/ratings.ts:17](../../web/src/builds/ratings.ts#L17)).
+- The Builds tab's rating sheets refresh daily the same way ([web/src/builds/ratings.ts:17](../../web/src/builds/ratings.ts#L17)), and so do its Destiny Clarity notes; a failed Clarity refresh keeps the old copy ([web/src/builds/ratings.ts:52-63](../../web/src/builds/ratings.ts#L52-L63)).
 
 ## Parsed files in a long-running process
 
@@ -39,7 +39,7 @@ The local report embeds every icon as a data URI so it works offline; each image
 - Images load lazily and decode off the main thread; a remote image that fails is retried twice before the placeholder shows ([report-template/site.html:947-958](../../report-template/site.html#L947-L958)).
 - Rows and tiles in long lists skip layout and paint while off screen ([report-template/site.html:462-464](../../report-template/site.html#L462-L464)), so the full list and Shard tab stay smooth with hundreds of icons.
 - The Builds tab is a separate JavaScript chunk, fetched in the background once the report is on screen ([web/src/main.ts:179-183](../../web/src/main.ts#L179-L183)).
-- Its score map, stat names and weapon tiers are worked out once per rating run, not on every redraw ([web/src/builds/ui.ts:49-59](../../web/src/builds/ui.ts#L49-L59)), and items are looked up through a per-vault index ([web/src/builds/model.ts:106-113](../../web/src/builds/model.ts#L106-L113)).
+- Its score map, stat names and weapon tiers are worked out once per rating run, not on every redraw ([web/src/builds/ui.ts:65-75](../../web/src/builds/ui.ts#L65-L75)), and items are looked up through a per-vault index ([web/src/builds/model.ts:106-113](../../web/src/builds/model.ts#L106-L113)).
 - Your Destiny membership is asked for once per visit ([web/src/shims/oauth.ts:44-59](../../web/src/shims/oauth.ts#L44-L59)).
 
 ## Fewer waits on Bungie
