@@ -478,6 +478,39 @@ details.group > summary::-webkit-details-marker { display: none; }
 .itile.v-shard .vbar { background: var(--shard); }
 .itile.v-review .vbar { background: var(--review); }
 
+/* ---------- Vault mode: characters and vault side by side, like DIM ---------- */
+.vgrid { display: grid; grid-template-columns: repeat(var(--chars), minmax(0, 236px)) minmax(0, 1fr); gap: 10px 14px; align-items: start; }
+.vhead { position: sticky; top: var(--bar-h); z-index: 2; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 10px 14px; border-radius: 3px 12px; background: var(--ticks), rgba(14,20,48,.94); border: 1px solid var(--line); }
+.vhead b { font: 600 16px var(--display); }
+.vslot { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; margin-top: 14px; }
+.vslot::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(51,227,160,.45), transparent); }
+.vcell { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px; align-items: start; }
+.vdrop { min-height: 70px; padding: 4px; border-radius: 10px; border: 1px dashed transparent; transition: border-color .15s ease, background .15s ease; }
+.vdrop.over { border-color: var(--green); background: rgba(51,227,160,.08); }
+.vinv, .vbox { display: flex; flex-wrap: wrap; gap: 7px; align-content: flex-start; }
+.vbox { padding: 10px; background: var(--glass); border: 1px solid var(--line); border-radius: 3px 14px; }
+.vbox.over { border-style: solid; }
+.vitem { position: relative; flex: none; width: 56px; height: 56px; padding: 0; border-radius: 8px; border: 1px solid var(--line-hi); background: var(--grad-soft); transition: transform .15s ease, border-color .15s ease, opacity .15s ease; }
+.vitem:hover { transform: translateY(-2px); border-color: var(--hover); }
+.vitem[draggable="true"] { cursor: grab; }
+.vitem img { width: 100%; height: 100%; display: block; border-radius: 7px; }
+.vitem.big { width: 76px; height: 76px; border-color: rgba(51,227,160,.5); box-shadow: 0 0 14px -4px rgba(51,227,160,.6); }
+.vitem.exotic { border-color: rgba(242,193,78,.6); }
+.vitem .tier { position: absolute; left: -5px; top: -5px; min-width: 18px; height: 16px; padding: 0 3px; font-size: 10px; border-radius: 5px; }
+.vitem b { position: absolute; right: 4px; bottom: 3px; font: 600 12px/1 var(--display); text-shadow: 0 1px 4px #000, 0 0 2px #000; }
+.vitem.v-shard::after { content: ""; position: absolute; left: 6px; right: 6px; bottom: -4px; height: 2px; border-radius: 2px; background: var(--shard); }
+.vitem.dragging, .vitem.moving { opacity: .35; }
+.vempty { display: grid; place-items: center; width: 76px; height: 76px; border: 1px dashed var(--line-hi); border-radius: 8px; color: var(--faint); font-size: 11px; }
+@media (max-width: 900px) { .vwrap { overflow-x: auto; } .vgrid { min-width: 860px; } .vhead { position: static; } }
+/* Move progress: small messages stacked in the bottom corner */
+.mtoasts { position: fixed; z-index: 26; right: clamp(12px, 2vw, 24px); bottom: calc(70px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 8px; justify-items: end; pointer-events: none; }
+.mtoast { display: flex; align-items: center; gap: 10px; max-width: min(380px, calc(100vw - 32px)); padding: 10px 14px; border-radius: 3px 14px; background: rgba(21,28,62,.95); backdrop-filter: blur(16px); border: 1px solid var(--line-hi); box-shadow: var(--shadow); font-size: 13.5px; animation: slidein .25s ease; }
+.mtoast .spin { flex: none; width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line-hi); border-top-color: var(--green); animation: spin .8s linear infinite; }
+.mtoast.ok { border-color: rgba(51,227,160,.45); } .mtoast.ok .spin { animation: none; border-color: var(--green); background: var(--green); }
+.mtoast.bad { border-color: rgba(255,122,122,.5); } .mtoast.bad .spin { animation: none; border-color: var(--shard); background: var(--shard); }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes slidein { from { opacity: 0; transform: translateX(14px); } }
+
 /* ---------- Armor ---------- */
 .armor-best { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
 .acard { padding: 16px; border-radius: var(--cut); background: var(--ticks), var(--glass); border: 1px solid var(--line); display: grid; gap: 12px; text-align: left; align-content: start; transition: border-color .2s ease, background .2s ease; }
@@ -1004,7 +1037,7 @@ function vrMain() {
     builds: "<svg viewBox='0 0 32 32' aria-hidden='true'><path d='M16 1 3 8.5v15L16 31l13-7.5v-15L16 1zm0 3.5 9.9 5.7L16 15.9 6.1 10.2 16 4.5zM5 12.4l10 5.8v10.5L5 22.9V12.4zm12 16.3V18.2l10-5.8v10.5l-10 5.8z'/></svg>",
   };
   // Decision tabs first (what to keep, what to shard), then browsing, then the extras.
-  const TABS = [["overview", "Overview", null], ["weapons", "Weapons", S.weapons], ["armor", "Armor", S.armor], ["shard", "Shard", S.weaponShard + S.armorShard], ["list", "Full list", null], ["rads", "RADS", (DATA.rads || []).length || null], ["wrapped", "Wrapped", null], ...(window.VR_BUILDS ? [["builds", "Builds", window.VR_BUILDS.count()]] : []), ...(window.VR_LOCAL ? [["settings", "Settings", null]] : [])];
+  const TABS = [["overview", "Overview", null], ["weapons", "Weapons", S.weapons], ["armor", "Armor", S.armor], ["shard", "Shard", S.weaponShard + S.armorShard], ["list", "Vault", null], ["rads", "RADS", (DATA.rads || []).length || null], ["wrapped", "Wrapped", null], ...(window.VR_BUILDS ? [["builds", "Builds", window.VR_BUILDS.count()]] : []), ...(window.VR_LOCAL ? [["settings", "Settings", null]] : [])];
   if (!$("#p-settings")) $("main").insertAdjacentHTML("beforeend", '<section class="panel" id="p-settings" role="tabpanel" hidden></section>');
   if (window.VR_BUILDS && !$("#p-builds")) $("main").insertAdjacentHTML("beforeend", '<section class="panel" id="p-builds" role="tabpanel" hidden></section>');
   $("#tabs").innerHTML = TABS.map(([id, label, n]) => `<button role="tab" id="t-${id}" aria-controls="p-${id}" aria-selected="false"${id === "settings" ? " hidden" : ""}>${ICON[id]}${label}${n != null ? `<span class="count">${n}</span>` : ""}</button>`).join("");
@@ -1432,6 +1465,7 @@ function vrMain() {
     else if (view?.startsWith("class:")) Object.assign(ex[set], blank(), { f: { cls: [view.slice(6)] }, group: "s" });
     else if (view) applyView(set, view, false);
     if (rendered.list) drawExplorer(true);
+    setListMode("list");
     show("list", true);
   }
   function applyView(set, id, draw = true) {
@@ -1439,14 +1473,80 @@ function vrMain() {
     Object.assign(ex[set], blank(), JSON.parse(JSON.stringify(v[1])), { view: id });
     if (draw) drawExplorer(true);
   }
-  RENDER.list = () => { $("#p-list").innerHTML = `<div id="explorer"></div>`; drawExplorer(true); };
-  // App bar search: opens the full list with that text, on armor when only armor matches. "/" focuses it.
+  // The Vault tab has two modes: Vault (characters and vault side by side, like DIM, drag to move) and Full list.
+  let listMode = store.get("vr-listmode") === "list" ? "list" : "vault";
+  RENDER.list = () => {
+    $("#p-list").innerHTML = `<div class="stack" style="gap:26px"><div class="pagebar"><div class="seg" role="group" aria-label="View" id="listmode">${[["vault", "Vault"], ["list", "Full list"]].map(([k, l]) => `<button data-m="${k}" aria-pressed="${k === listMode}">${l}</button>`).join("")}</div><p id="vmnote"></p></div>
+      <div id="vaultview" class="vwrap"></div><div id="explorer"></div></div>`;
+    $("#listmode").onclick = (e) => { const b = e.target.closest("button"); if (b) setListMode(b.dataset.m); };
+    drawExplorer(true); drawVault(); setListMode(listMode);
+  };
+  function setListMode(m) {
+    listMode = m; store.set("vr-listmode", m);
+    if (!$("#listmode")) return;
+    $$("#listmode button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.m === m)));
+    $("#vaultview").hidden = m !== "vault"; $("#explorer").hidden = m !== "list";
+    $("#vmnote").textContent = m !== "vault" ? "" : window.VR_LOCAL && DATA.chars?.length ? "Drag a weapon onto a character or the vault to move it, or onto the big slot to equip it. Click one for details." : "Moving items needs the app (Vault Rater.cmd or the web app). Click a weapon for details.";
+  }
+  const VSLOTS = ["Kinetic", "Energy", "Power"];
+  function drawVault() {
+    const el = $("#vaultview"); if (!el) return;
+    const chars = DATA.chars || [], can = !!window.VR_LOCAL && chars.length > 0;
+    const where = (x) => x.wh || "vault";
+    const at = (to, s) => DATA.weapons.filter((w) => where(w) === to && w.s === s).sort(by((w) => w.sc));
+    const tile = (w, big) => `<button class="vitem${big ? " big" : ""}${isExotic(w) ? " exotic" : ""} v-${w.v}" data-w="${w.id}"${can && !w.eq ? ' draggable="true"' : ""} title="${esc(w.n)} · ${esc(typeLine(w))} · ${w.sc} · ${VERDICT[w.v]}${w.eq ? " · equipped" : ""}">${img(w.ic)}${tierBadge(w)}<b class="num">${w.sc}</b></button>`;
+    const inVault = DATA.weapons.filter((w) => where(w) === "vault").length, armorInVault = DATA.armor.filter((a) => where(a) === "vault").length;
+    el.innerHTML = `<div class="vgrid" style="--chars:${chars.length}">
+      ${chars.map((c) => `<div class="vhead"><b>${esc(c.cls)}</b><span class="small muted">${DATA.weapons.filter((w) => w.wh === c.id).length} weapons</span></div>`).join("")}
+      <div class="vhead"><b>Vault</b><span class="small muted">${plural(inVault, "weapon")} · ${plural(armorInVault, "armor piece")}</span></div>
+      ${VSLOTS.map((s) => `<div class="vslot"><span class="cap">${s}</span></div>` +
+        chars.map((c) => { const items = at(c.id, s), eq = items.find((w) => w.eq); return `<div class="vcell"><div class="vdrop" data-to="${c.id}" data-equip="1" title="Drop here to equip">${eq ? tile(eq, true) : '<span class="vempty">Empty</span>'}</div><div class="vdrop vinv" data-to="${c.id}">${items.filter((w) => !w.eq).map((w) => tile(w)).join("")}</div></div>`; }).join("") +
+        `<div class="vdrop vbox" data-to="vault">${at("vault", s).map((w) => tile(w)).join("") || '<span class="small muted">No weapons</span>'}</div>`).join("")}
+    </div>`;
+  }
+  // Drag and drop: a weapon dropped on another place moves there; on the big slot it is equipped.
+  let dragId = null;
+  document.addEventListener("dragstart", (e) => {
+    const t = e.target.closest?.(".vitem[draggable=true]"); if (!t) return;
+    dragId = t.dataset.w; e.dataTransfer.setData("text/plain", dragId); e.dataTransfer.effectAllowed = "move"; t.classList.add("dragging");
+  });
+  document.addEventListener("dragend", (e) => { e.target.closest?.(".vitem")?.classList.remove("dragging"); $$(".vdrop.over").forEach((d) => d.classList.remove("over")); dragId = null; });
+  document.addEventListener("dragover", (e) => {
+    const d = dragId && e.target.closest?.(".vdrop"); if (!d) return;
+    e.preventDefault(); e.dataTransfer.dropEffect = "move";
+    $$(".vdrop.over").forEach((x) => x !== d && x.classList.remove("over")); d.classList.add("over");
+  });
+  document.addEventListener("drop", (e) => {
+    const d = dragId && e.target.closest?.(".vdrop"); if (!d) return;
+    e.preventDefault(); d.classList.remove("over");
+    const id = dragId; dragId = null;
+    dropMove(id, d.dataset.to, !!d.dataset.equip);
+  });
+  async function dropMove(id, to, equip) {
+    const w = W.get(id); if (!w || ((w.wh || "vault") === to && !equip)) return;
+    const name = to === "vault" ? "the vault" : `your ${clsOf(to) || "character"}`;
+    const t = cornerToast(`${equip ? "Equipping" : "Moving"} ${w.n} ${equip ? "on" : "to"} ${name}…`);
+    $(`.vitem[data-w="${id}"]`)?.classList.add("moving");
+    const m = (await doMove([id], to, equip, null))?.[0];
+    const ok = !!m?.ok && !m.error;
+    t.done(ok ? `${w.n} ${equip ? "equipped on" : "moved to"} ${name}` : `${m?.ok ? `${w.n} moved, but` : `Couldn't move ${w.n}`}${m?.error ? ": " + m.error : ""}`, ok);
+  }
+  /** A small message in the bottom corner that turns green or red when its move finishes. */
+  function cornerToast(text) {
+    if (!$("#mtoasts")) document.body.insertAdjacentHTML("beforeend", '<div class="mtoasts" id="mtoasts" role="status" aria-live="polite"></div>');
+    $("#mtoasts").insertAdjacentHTML("beforeend", '<div class="mtoast"><span class="spin" aria-hidden="true"></span><span></span></div>');
+    const el = $("#mtoasts").lastElementChild, label = el.lastElementChild;
+    label.textContent = text;
+    return { done(msg, ok) { el.classList.add(ok ? "ok" : "bad"); label.textContent = msg; setTimeout(() => el.remove(), ok ? 3500 : 8000); } };
+  }
+  // App bar search: opens the Vault tab's full list with that text, on armor when only armor matches. "/" focuses it.
   $("#gq").oninput = () => {
     const q = $("#gq").value, low = q.trim().toLowerCase();
     const hits = (set) => SETS[set].items.some((x) => SETS[set].search(x).toLowerCase().includes(low));
     ex.set = !low || hits("w") || !hits("a") ? "w" : "a";
     Object.assign(ex[ex.set], blank(), { q });
     if (rendered.list) drawExplorer(true);
+    setListMode("list");
     show("list", false);
   };
   $("#gq").onkeydown = (e) => { if (e.key === "Escape") { e.target.value = ""; e.target.blur(); } };
@@ -1908,6 +2008,7 @@ function vrMain() {
       return res.results;
     } catch (err) {
       if (msgEl) msgEl.textContent = "Couldn't move: " + err.message;
+      return ids.map((id) => ({ id, name: (W.get(id) || A.get(id))?.n || id, ok: false, error: err.message }));
     }
   }
   function movePanel(x, isArmor) {
