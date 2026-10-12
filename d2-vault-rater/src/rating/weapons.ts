@@ -39,7 +39,7 @@ export interface WeaponRating {
   score: number;
   /** Rolled options that match Aegis's picks, by column. */
   matched: Partial<Record<ColumnKey, string[]>>;
-  perks: { kind: string; options: string[]; icons?: Record<string, string> }[];
+  perks: { kind: string; active: string; options: string[]; icons?: Record<string, string> }[];
   godRoll: boolean;
   trashRoll: boolean;
   verdict: "keep" | "shard" | "review";
@@ -182,7 +182,7 @@ export function rateWeapons(
       rollScore,
       score: Math.round(WEAPON_WEIGHT * weaponScore + ROLL_WEIGHT * rollScore),
       matched,
-      perks: w.columns.map((c) => ({ kind: c.kind, options: c.options, icons: c.icons })),
+      perks: w.columns.map((c) => ({ kind: c.kind, active: c.active, options: c.options, icons: c.icons })),
       godRoll,
       trashRoll,
       verdict: "keep",

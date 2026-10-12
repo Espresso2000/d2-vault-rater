@@ -273,11 +273,19 @@ img.broken { background: var(--grad-soft); }
 .perk.good { background: rgba(51,227,160,.12); color: #c3f7e1; }
 .perk.good::before { content: "✓ "; color: var(--green); }
 /* Perks as symbols (the default): the icon alone, its name on hover; recommended ones glow green */
-.pico { display: inline-grid; place-items: center; flex: none; padding: 0 !important; background: none !important; }
+/* Each symbol sits in a round socket, like the game's perk sockets; the equipped one in the drawer gets a bright ring */
+.pico { display: inline-grid; place-items: center; flex: none; padding: 3px !important; border-radius: 50% !important; background: radial-gradient(circle at 50% 35%, rgba(150,170,255,.16), rgba(5,8,22,.85) 70%) !important; border: 1px solid var(--line-hi); }
 .pico::before { content: none !important; }
+.pico.good { border-color: rgba(51,227,160,.55); }
+.pico.on { border-color: rgba(238,241,255,.85); box-shadow: 0 0 0 2px rgba(238,241,255,.18); }
+.perkcols .pico:not(.on) { opacity: .55; transition: opacity .15s ease; }
+.perkcols .pico:hover { opacity: 1; }
+.perk.on { color: var(--ink); box-shadow: inset 0 0 0 1px rgba(238,241,255,.6); }
 /* !important: item icon rules like .mini img would otherwise size these too */
-.pico img { width: 30px !important; height: 30px !important; border-radius: 0 !important; display: block; }
-.perkline .pico img { width: 22px !important; height: 22px !important; }
+.pico img { width: 34px !important; height: 34px !important; border-radius: 50% !important; display: block; }
+.perkline .pico img { width: 26px !important; height: 26px !important; }
+.perkline .pico { padding: 2px !important; }
+.perkline { align-items: center; }
 .pico.good img { filter: drop-shadow(0 0 2px var(--green)) drop-shadow(0 0 4px rgba(51,227,160,.6)); }
 .elements { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px; }
 .elcard { position: relative; overflow: hidden; padding: 14px; border-radius: var(--r); background: var(--glass); border: 1px solid var(--line); display: grid; gap: 12px; text-align: left; transition: border-color .2s ease, background .2s ease; }
@@ -1083,11 +1091,13 @@ function vrMain() {
     const src = perkSymbols && IMG[PERK_ICON[o]];
     return src ? `<span class="${c ? c + " " : ""}pico" title="${esc(o)}"><img src="${src}" alt="${esc(o)}" loading="lazy" decoding="async"></span>` : `<span${c ? ` class="${c}"` : ""}>${esc(o)}</span>`;
   };
-  // Trait perks for a row: the ones Aegis recommends first, marked. Symbols are small, so more of them fit.
-  const traitChips = (w) => {
-    const good = new Set(w.pk.flatMap((p) => p.m));
-    return w.pk.filter((p) => p.k === "perk1" || p.k === "perk2").flatMap((p) => p.o).sort((a, b) => good.has(b) - good.has(a)).slice(0, perkSymbols ? 6 : 3).map((o) => perk(o, good.has(o))).join("");
-  };
+  // Perk columns in the game's order: barrel, magazine, the two traits, then the origin (foundry) trait.
+  const PERK_ORDER = ["barrel", "magazine", "perk1", "perk2", "origin"];
+  const rank = (k) => (PERK_ORDER.includes(k) ? PERK_ORDER.indexOf(k) : 99);
+  const perkCols = (w) => w.pk.filter((p) => p.o.length).sort((a, b) => rank(a.k) - rank(b.k));
+  /** The perks equipped on the gun, in column order. Names are wide, so they show only the two traits. Older reports have no `a`: the first option stands in. */
+  const equipped = (w) => perkCols(w).filter((p) => (perkSymbols ? PERK_ORDER.includes(p.k) : p.k === "perk1" || p.k === "perk2")).map((p) => { const o = p.a || p.o[0]; return [o, p.m.includes(o)]; });
+  const traitChips = (w) => equipped(w).map(([o, good]) => perk(o, good)).join("");
   /** Row: one wide line per item, with perks on wide screens. */
   const weaponRow = (w) => `<button class="row v-${w.v}" data-w="${w.id}"><span class="ico${isExotic(w) ? " exotic" : ""}">${img(w.ic)}${tierBadge(w)}</span>
       <div style="min-width:0"><div class="nm">${esc(w.n)}${dtag(w)}${lochip(w)}${lockIcon(w)}</div><div class="sm">${isExotic(w) ? '<span class="exo">Exotic</span> · ' : ""}${esc(typeLine(w))} · ${elDot(w.e)}${w.loc && w.loc !== "Vault" ? " · " + esc(w.loc) : ""}</div><div class="perkline">${traitChips(w)}</div></div>
@@ -1133,14 +1143,12 @@ function vrMain() {
   RENDER.overview = () => {
     const picks = Object.entries(DATA.bestBySlot).map(([slot, ids]) => {
       const w = W.get(ids[0]);
-      const good = new Set(w.pk.flatMap((p) => p.m));
-      const traits = w.pk.filter((p) => p.k === "perk1" || p.k === "perk2").flatMap((p) => p.o);
       return `<div class="pick glass" data-w="${w.id}" role="button" tabindex="0">
         <div class="art">${w.ss && IMG[w.ss] ? `<img src="${IMG[w.ss]}" alt="">` : ""}<span class="chip slot"><b>${esc(slot)}</b></span></div>
         <div class="body">
           <div class="title">${img(w.ic)}<div style="min-width:0"><h3>${esc(w.n)}</h3><div class="small muted">${esc(typeLine(w))} · ${esc(w.e)}</div></div></div>
           <div style="display:flex;gap:10px;align-items:center">${tierBadge(w)}<span class="small muted">${w.tier ? `Aegis #${w.rank ?? "?"} in ${esc(w.tab)}` : "Wishlist rated"}</span><span style="margin-left:auto">${scoreCell(w.sc)}</span></div>
-          <div class="perkopts">${traits.slice(0, perkSymbols ? 8 : 4).map((o) => perk(o, good.has(o), "perk")).join("")}</div>
+          <div class="perkopts">${equipped(w).map(([o, g]) => perk(o, g, "perk")).join("")}</div>
           ${ids.length > 1 ? `<div class="runners">Runners-up ${ids.slice(1, 4).map((id) => `<button data-w="${id}">${esc(W.get(id).n)} · ${W.get(id).sc}</button>`).join("")}</div>` : ""}
         </div></div>`;
     }).join("");
@@ -1839,7 +1847,7 @@ function vrMain() {
   scrim.onclick = closeDrawer;
   drawer.addEventListener("click", (e) => { if (e.target.closest(".d-close")) closeDrawer(); });
   addEventListener("keydown", (e) => { if (e.key === "Escape" && drawer.classList.contains("open")) closeDrawer(); });
-  const COL = { barrel: "Barrel", magazine: "Magazine", perk1: "Trait 1", perk2: "Trait 2", origin: "Origin", masterwork: "Masterwork", other: "Other" };
+  const COL = { barrel: "Barrel", magazine: "Magazine", perk1: "Trait 1", perk2: "Trait 2", origin: "Origin trait", masterwork: "Masterwork", other: "Other" };
   const fact = (k, v) => (v === null || v === undefined || v === "" ? "" : `<div><span>${k}</span><b>${esc(v)}</b></div>`);
 
   const whereBox = (src) => {
@@ -1974,7 +1982,7 @@ function vrMain() {
         <div class="breakdown"><div><b class="num grad-text">${w.sc}</b><span>Vault score</span></div><div><b class="num">${w.ws}</b><span>${w.tier ? `Aegis ${w.tier}${w.rank ? " #" + w.rank : ""}` : "Wishlist tier"}</span></div><div><b class="num">${w.rs}</b><span>Roll score</span></div></div>
         <div><div class="cap" style="margin-bottom:8px">Why ${VERDICT[w.v].toLowerCase()}</div><ul class="reasons">${w.why.map((r) => `<li>${esc(r)}</li>`).join("")}</ul></div>
         ${w.notes ? `<div class="notes"><b style="color:var(--ink)">Aegis:</b> ${esc(w.notes)}</div>` : ""}
-        <div class="perkcols">${w.pk.filter((p) => p.o.length).map((p) => `<div class="perkcol"><div class="cap">${COL[p.k] || esc(p.k)}</div><div class="perkopts">${p.o.map((o) => perk(o, good.has(o), "perk")).join("")}</div></div>`).join("")}</div>
+        <div class="perkcols">${perkCols(w).map((p) => `<div class="perkcol"><div class="cap">${COL[p.k] || esc(p.k)}</div><div class="perkopts">${p.o.map((o) => perk(o, good.has(o), (p.a || p.o[0]) === o ? "perk on" : "perk")).join("")}</div></div>`).join("")}</div>
         <div class="facts">${fact("Ammo", w.am)}${fact("Power", w.pw)}${fact("Masterwork", w.mw)}${fact("Gear tier", w.gt ? "Tier " + w.gt : null)}${fact("Where", w.loc)}${fact("Crafted", w.cr ? "Yes" : null)}${fact("Adept", w.ad ? "Yes" : null)}${fact("Aegis list", w.tab)}</div>
         ${movePanel(w, false)}
         ${dimPanel(w)}
