@@ -114,6 +114,21 @@ nav.tabs button[aria-selected="true"] { color: var(--ink); }
 nav.tabs button[aria-selected="true"] svg { opacity: 1; color: var(--green); filter: drop-shadow(0 0 6px rgba(51,227,160,.7)); }
 nav.tabs button[aria-selected="true"]::before { opacity: 1; }
 nav.tabs button[aria-selected="true"]::after { transform: none; }
+nav.tabs button.tgroup[aria-current="true"] { color: var(--ink); }
+nav.tabs button.tgroup[aria-current="true"] svg { opacity: 1; color: var(--green); filter: drop-shadow(0 0 6px rgba(51,227,160,.7)); }
+nav.tabs button.tgroup[aria-current="true"]::before { opacity: 1; }
+nav.tabs button.tgroup[aria-current="true"]::after { transform: none; }
+nav.tabs button.tgroup[aria-expanded="true"] { color: var(--ink); }
+.tgroup .caret { width: 7px; height: 7px; margin: -4px 0 0 -2px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); opacity: .7; transition: transform .2s ease; }
+.tgroup[aria-expanded="true"] .caret { transform: rotate(225deg); margin-top: 4px; }
+.tmenu { position: fixed; z-index: 30; display: grid; gap: 2px; min-width: 220px; padding: 6px; border-radius: 3px 14px; background: rgba(14,20,48,.97); border: 1px solid var(--line-hi); box-shadow: var(--shadow); backdrop-filter: blur(16px); }
+.tmenu[hidden] { display: none; }
+.tmenu button { display: flex; align-items: center; gap: 10px; padding: 11px 12px; border: 0; border-radius: 9px; background: none; color: var(--muted); font: 500 15px/1 var(--display); text-align: left; }
+.tmenu button svg { width: 18px; height: 18px; fill: currentColor; opacity: .75; }
+.tmenu button:hover, .tmenu button:focus-visible { color: var(--ink); background: var(--glass-hi); outline: none; }
+.tmenu button[aria-selected="true"] { color: var(--ink); background: rgba(51,227,160,.10); box-shadow: inset 2px 0 0 var(--green); }
+.tmenu button[aria-selected="true"] svg { color: var(--green); opacity: 1; }
+.tmenu .count { margin-left: auto; font: 500 11px/1 var(--mono); padding: 4px 7px; border-radius: 999px; background: var(--glass-hi); color: var(--muted); }
 nav.tabs .count { font: 500 11px/1 var(--mono); padding: 4px 7px; border-radius: 999px; background: var(--glass-hi); color: var(--muted); }
 .bar-actions { display: flex; gap: 8px; align-items: center; }
 .gear { width: 42px; height: 42px; border-radius: 10px; display: grid; place-items: center; color: var(--muted); background: var(--glass); border: 1px solid var(--line); transition: color .2s ease, border-color .2s ease, background .2s ease; }
@@ -922,7 +937,7 @@ body.vr-booting > .topbar, body.vr-booting > main, body.vr-booting > footer { di
           <p><b>Armor</b> 40% stats vs a Tier 5 roll · 25% fit to your build stats · 25% set bonus (Aegis S–F) · 10% Tier 5 or exotic.</p></section>
         <section><h3>Encounter loadouts</h3>
           <p>One weapon per slot, at most one exotic, ranked by vault score and fit for each role. Guide picks get extra weight (Shacknews, Destructoid, Grindout, Deltia's Gaming, Game Rant).</p></section>
-        <section><h3>RADS farm score</h3>
+        <section><h3>R&amp;Ds farm score</h3>
           <p>Raids and dungeons are ranked separately. 40% loot quality (the three best weapons on Aegis's sheet) · 40% need (S–B loot you lack or own with a weak roll) · 20% armor set you haven't completed.</p></section>
       </div>
     </details>
@@ -1080,10 +1095,42 @@ function vrMain() {
     builds: "<svg viewBox='0 0 32 32' aria-hidden='true'><path d='M16 1 3 8.5v15L16 31l13-7.5v-15L16 1zm0 3.5 9.9 5.7L16 15.9 6.1 10.2 16 4.5zM5 12.4l10 5.8v10.5L5 22.9V12.4zm12 16.3V18.2l10-5.8v10.5l-10 5.8z'/></svg>",
   };
   // Decision tabs first (what to keep, what to shard), then browsing, then the extras.
-  const TABS = [["overview", "Overview", null], ["weapons", "Weapons", S.weapons], ["armor", "Armor", S.armor], ["shard", "Shard", S.weaponShard + S.armorShard], ["list", "Vault", null], ["rads", "RADS", (DATA.rads || []).length || null], ["wrapped", "Wrapped", null], ...(window.VR_BUILDS ? [["builds", "Builds", window.VR_BUILDS.count()]] : []), ...(window.VR_LOCAL ? [["settings", "Settings", null]] : [])];
+  const TABS = [["overview", "Overview", null], ["weapons", "Weapon Report", S.weapons], ["armor", "Armor Report", S.armor], ["shard", "Shard", S.weaponShard + S.armorShard], ["list", "Vault", null], ["rads", "R&amp;Ds", (DATA.rads || []).length || null], ["wrapped", "Wrapped", null], ...(window.VR_BUILDS ? [["builds", "Builds", window.VR_BUILDS.count()]] : []), ...(window.VR_LOCAL ? [["settings", "Settings", null]] : [])];
   if (!$("#p-settings")) $("main").insertAdjacentHTML("beforeend", '<section class="panel" id="p-settings" role="tabpanel" hidden></section>');
   if (window.VR_BUILDS && !$("#p-builds")) $("main").insertAdjacentHTML("beforeend", '<section class="panel" id="p-builds" role="tabpanel" hidden></section>');
-  $("#tabs").innerHTML = TABS.map(([id, label, n]) => `<button role="tab" id="t-${id}" aria-controls="p-${id}" aria-selected="false"${id === "settings" ? " hidden" : ""}>${ICON[id]}${label}${n != null ? `<span class="count">${n}</span>` : ""}</button>`).join("");
+  const tabBtn = ([id, label, n]) => `<button role="tab" id="t-${id}" aria-controls="p-${id}" aria-selected="false"${id === "settings" ? " hidden" : ""}>${ICON[id]}${label}${n != null ? `<span class="count">${n}</span>` : ""}</button>`;
+  // Weapon Report and Armor Report sit in a "Reports" menu that opens on hover, click or keyboard.
+  const REPORTS = ["weapons", "armor"];
+  $("#tabs").innerHTML = TABS.filter(([id]) => !REPORTS.includes(id)).map((t) => tabBtn(t) + (t[0] === "overview" ? `<button class="tgroup" id="t-reports" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="tmenu">${ICON.weapons}Reports<span class="caret" aria-hidden="true"></span></button>` : "")).join("");
+  if (!$("#tmenu")) document.body.insertAdjacentHTML("beforeend", '<div class="tmenu" id="tmenu" role="tablist" aria-label="Reports" hidden></div>');
+  $("#tmenu").innerHTML = TABS.filter(([id]) => REPORTS.includes(id)).map(tabBtn).join("");
+  const tgroup = $("#t-reports"), tmenu = $("#tmenu");
+  let tmenuTimer = 0;
+  const menuItems = () => $$("#tmenu button[role=tab]");
+  function openMenu(focus) {
+    clearTimeout(tmenuTimer);
+    const r = tgroup.getBoundingClientRect();
+    tmenu.hidden = false; tgroup.setAttribute("aria-expanded", "true");
+    tmenu.style.left = `${Math.max(8, Math.min(r.left, innerWidth - tmenu.offsetWidth - 8))}px`; tmenu.style.top = `${r.bottom}px`;
+    if (focus) (menuItems().find((b) => b.getAttribute("aria-selected") === "true") || menuItems()[0]).focus();
+  }
+  function closeMenu(refocus) { clearTimeout(tmenuTimer); if (tmenu.hidden) return; tmenu.hidden = true; tgroup.setAttribute("aria-expanded", "false"); if (refocus) tgroup.focus(); }
+  const closeSoon = (e) => { if (e.pointerType !== "mouse") return; clearTimeout(tmenuTimer); tmenuTimer = setTimeout(() => closeMenu(), 200); };
+  tgroup.addEventListener("pointerenter", (e) => e.pointerType === "mouse" && openMenu(false));
+  tgroup.addEventListener("pointerleave", closeSoon);
+  tmenu.addEventListener("pointerenter", () => clearTimeout(tmenuTimer));
+  tmenu.addEventListener("pointerleave", closeSoon);
+  tgroup.addEventListener("click", (e) => (tmenu.hidden || e.detail === 0 ? openMenu(e.detail === 0) : e.pointerType === "mouse" ? openMenu(false) : closeMenu()));
+  tgroup.addEventListener("keydown", (e) => { if (e.key === "ArrowDown") { e.preventDefault(); openMenu(true); } if (e.key === "Escape") closeMenu(); });
+  tmenu.addEventListener("keydown", (e) => {
+    const items = menuItems(), at = items.indexOf(document.activeElement);
+    if (e.key === "Escape") { e.preventDefault(); closeMenu(true); }
+    else if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); items[(at + (e.key === "ArrowDown" ? 1 : items.length - 1)) % items.length].focus(); }
+  });
+  tmenu.addEventListener("click", (e) => { const b = e.target.closest("button[role=tab]"); if (b) { closeMenu(); show(b.id.slice(2), true); } });
+  for (const el of [tgroup, tmenu]) el.addEventListener("focusout", (e) => { if (!tgroup.contains(e.relatedTarget) && !tmenu.contains(e.relatedTarget)) closeMenu(); });
+  document.addEventListener("pointerdown", (e) => { if (!tmenu.hidden && !tmenu.contains(e.target) && !tgroup.contains(e.target)) closeMenu(); });
+  addEventListener("scroll", () => closeMenu(), { passive: true });
   if (window.VR_LOCAL && !$("#gear")) {
     $("#bar-actions").insertAdjacentHTML("beforeend", `<button class="btn rerate" id="rerate" type="button" title="Read your vault from Bungie again and re-rate it">Re-rate</button>`);
     $("#rerate").onclick = rerate;
@@ -1099,7 +1146,8 @@ function vrMain() {
     store.set("vr-tab", id);
     if (id !== "settings") store.set("vr-last-tab", id);
     $("#gear")?.setAttribute("aria-pressed", String(id === "settings"));
-    $(`#t-${id}`).scrollIntoView?.({ block: "nearest", inline: "nearest" });
+    tgroup.setAttribute("aria-current", String(REPORTS.includes(id)));
+    (REPORTS.includes(id) ? tgroup : $(`#t-${id}`)).scrollIntoView?.({ block: "nearest", inline: "nearest" });
     // Clicking a tab adds a history entry (Back returns to the previous tab); restoring one does not.
     try { if (location.hash.slice(1) !== id) history[scroll ? "pushState" : "replaceState"](null, "", "#" + id); } catch {}
     if (scroll) scrollTo({ top: 0, behavior: "smooth" });
@@ -2050,7 +2098,7 @@ function vrMain() {
       ${src.activity ? `<div class="line"><span>${(DATA.rads || []).find((r) => r.key === src.activity.key)?.kind === "dungeon" ? "Dungeon" : "Raid"}</span><b>${esc(src.activity.name)}</b></div>` : ""}
       ${src.bungie ? `<div class="line"><span>Bungie</span><span>${esc(src.bungie)}</span></div>` : ""}
       ${src.aegis && src.aegis !== "?" ? `<div class="line"><span>Aegis's sheet</span><span>${esc(src.aegis)}</span></div>` : ""}
-      ${src.activity && DATA.rads?.length ? `<button class="go" data-rad="${esc(src.activity.key)}">See ${esc(src.activity.name)} in RADS →</button>` : ""}</div>`;
+      ${src.activity && DATA.rads?.length ? `<button class="go" data-rad="${esc(src.activity.key)}">See ${esc(src.activity.name)} in R&amp;Ds →</button>` : ""}</div>`;
   };
   document.addEventListener("click", (e) => {
     const b = e.target.closest("[data-rad]"); if (!b) return;
