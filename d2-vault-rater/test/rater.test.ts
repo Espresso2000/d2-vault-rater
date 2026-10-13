@@ -213,6 +213,19 @@ test("report markdown has images and every section", () => {
   assert.match(md, /\*\*Attrition Orbs\*\*/);
 });
 
+test("the report embeds only the best raid's and best dungeon's banner art", async () => {
+  const { buildSiteData } = await import("../src/report/siteData.js");
+  const v = vault();
+  const settings = SettingsSchema.parse({});
+  const w = rateWeapons(v.weapons, { aegis: aegis(), wishlists: null, manifest: m }, settings);
+  const act = (key: string, kind: string, score: number) => ({ key, name: key, kind, score, image: `art:${key}`, weapons: [] });
+  const embeds: Record<string, boolean> = {};
+  const key = (url: string | null | undefined, embed = true) => (url?.startsWith("art:") && (embeds[url] = embed), url ?? null);
+  const activities = [act("r1", "raid", 50), act("r2", "raid", 80), act("d1", "dungeon", 10)] as unknown as NonNullable<Parameters<typeof buildSiteData>[2]["activities"]>;
+  buildSiteData(w, rateArmor(v, settings), { vaultSize: 9, settings, activities }, key, null);
+  assert.deepEqual(embeds, { "art:r1": false, "art:r2": true, "art:d1": true });
+});
+
 test("armor set tiers: Aegis tab and bonus sheet parse, and owning more of a strong set scores higher", async () => {
   const { parseAegisArmorTab, mergeBonusSheet, setKey } = await import("../src/sources/armorSets.js");
   const { setValue } = await import("../src/rating/armor.js");

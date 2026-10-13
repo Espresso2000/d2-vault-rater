@@ -3,13 +3,15 @@ import type { ArmorRating, ArmorReport } from "../rating/armor.js";
 import type { ReportOptions } from "./report.js";
 import { setKey, type ArmorSetData } from "../sources/armorSets.js";
 import { stripReissue } from "../bungie/defs.js";
+import { groupBy } from "../util.js";
 
 /**
  * The data the report page renders: every weapon and armor piece, highlights, RADS, Wrapped and DIM.
  * Pure (no file or network access) so the local report and the browser app share it.
- * `imageKey` turns an image URL into the key the page looks up in its image map.
+ * `imageKey` turns an image URL into the key the page looks up in its image map; `embed` false marks
+ * big art the local report may leave as a URL instead of embedding.
  */
-export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions, imageKey: (url: string | null | undefined) => string | null, setData: ArmorSetData | null) {
+export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions, imageKey: (url: string | null | undefined, embed?: boolean) => string | null, setData: ArmorSetData | null) {
   const ids = (list: WeaponRating[]) => list.map((r) => r.instanceId);
   // Full-size screenshots are ~170 KB each, so an embedded report gives only the top picks per slot one.
   const withShot = new Set(Object.values(w.bestBySlot).flatMap((l) => l.slice(0, 1).map((r) => r.instanceId)));
@@ -105,6 +107,8 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
   // One icon per perk name across the vault, so the page can show perks as symbols.
   const perkIcons: Record<string, string> = {};
   for (const r of w.ratings) for (const p of r.perks) for (const [n, url] of Object.entries(p.icons ?? {})) perkIcons[n] ??= imageKey(url) ?? "";
+  // The page's top card per kind (raid, dungeon): highest farm score, then name, as the R&Ds tab sorts them.
+  const bestRads = new Set([...groupBy(o.activities ?? [], (x) => x.kind).values()].map((l) => l.sort((x, y) => y.score - x.score || x.name.localeCompare(y.name))[0]));
   const perkDescs: Record<string, string> = {};
   for (const r of w.ratings) for (const p of r.perks) for (const [n, d] of Object.entries(p.descriptions ?? {})) perkDescs[n] ??= d;
   const data = {
@@ -146,10 +150,11 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
       }),
     ),
     wrapped,
-    // Raids and dungeons ranked for farming, with their loading-screen art.
+    // Raids and dungeons ranked for farming, with their loading-screen art (~130 KB each, so only the
+    // best raid's and best dungeon's is embedded; the rest load by URL).
     rads: (o.activities ?? []).map((act) => ({
       ...act,
-      image: imageKey(act.image),
+      image: imageKey(act.image, bestRads.has(act)),
       weapons: act.weapons.map((x) => ({
         ...x,
         icon: imageKey(x.icon),
