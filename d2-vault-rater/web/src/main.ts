@@ -26,6 +26,7 @@ import { buildSiteData } from "../../src/report/siteData.js";
 import { loadBuilds } from "./builds/store";
 import { esc } from "./html";
 import type { BuildsInput } from "./builds/ui";
+import type { VendorsInput } from "./vendors/ui";
 
 declare global {
   interface Window {
@@ -182,6 +183,7 @@ async function run() {
   const back = sessionStorage.getItem("vr-return-hash");
   if (back) (sessionStorage.removeItem("vr-return-hash"), history.replaceState(null, "", back));
   lazyBuilds({ vault, data, manifest: m });
+  lazyVendors({ vault, manifest: m, aegis, settings });
   window.VR_START!(data, images);
   watchSession();
 }
@@ -191,6 +193,12 @@ function lazyBuilds(input: BuildsInput) {
   // initBuilds swaps in the real VR_BUILDS, so render below reaches the loaded tab.
   const ready = import("./builds/ui").then((b) => b.initBuilds(input));
   window.VR_BUILDS = { count: () => loadBuilds().length || null, render: (el) => void ready.then(() => window.VR_BUILDS!.render(el)) };
+}
+
+/** The Vendors tab is its own chunk too; it reads vendor stock from Bungie only when first opened. */
+function lazyVendors(input: VendorsInput) {
+  const ready = import("./vendors/ui").then((v) => v.initVendors(input));
+  window.VR_VENDORS = { count: () => null, render: (el) => void ready.then(() => window.VR_VENDORS!.render(el)) };
 }
 
 /** Sign-in status for the Settings panel, and a banner once Bungie access really runs out. */
