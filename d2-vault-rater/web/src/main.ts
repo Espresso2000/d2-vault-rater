@@ -33,6 +33,7 @@ declare global {
     VR_WEB?: boolean;
     VR_API?: (path: string, body: Record<string, unknown>) => Promise<Record<string, unknown>>;
     VR_START?: (data: unknown, images: Record<string, string>) => void;
+    VR_RELOAD?: () => Promise<{ data: unknown; images: Record<string, string> }>;
     VR_SESSION?: () => string;
   }
 }
@@ -127,43 +128,53 @@ async function run() {
 
   // Wrapped only needs the manifest: fetch it alongside the vault instead of after rating.
   const wrappedP = fetchWrapped(m).catch(() => null);
-  log("Reading your vault…");
-  const vault = await fetchVault();
-  let dim: DimData | null = null;
-  let dimError: string | null = null;
-  if (settings.dim.tags || settings.dim.loadouts) {
-    log(`Reading DIM ${[settings.dim.tags && "tags", settings.dim.loadouts && "loadouts"].filter(Boolean).join(" and ")}…`);
-    dim = await fetchDimData(settings.dim).catch((e) => ((dimError = (e as Error).message), null));
-  }
-  const rated = withDimKeep(settings, dim);
+  /** Reads the vault (and DIM) and rates it. Runs again for the Vault tab's Refresh, reusing what's loaded above. */
+  const rate = async () => {
+    log("Reading your vault…");
+    const vault = await fetchVault();
+    let dim: DimData | null = null;
+    let dimError: string | null = null;
+    if (settings.dim.tags || settings.dim.loadouts) {
+      log(`Reading DIM ${[settings.dim.tags && "tags", settings.dim.loadouts && "loadouts"].filter(Boolean).join(" and ")}…`);
+      dim = await fetchDimData(settings.dim).catch((e) => ((dimError = (e as Error).message), null));
+    }
+    const rated = withDimKeep(settings, dim);
 
-  log("Rating weapons and armor…");
-  const w = rateWeapons(vault.weapons, { manifest: m, aegis, wishlists: loadWishlists() }, rated);
-  const a = rateArmor(vault, rated, loadArmorSets());
-  const plan = (currentPlan = planDimActions(vault, w, a, rated));
-  const loot = loadActivityLoot();
-  const activities = loot ? rateActivities(loot, aegis, w.ratings, a.ratings, loadArmorSets()) : [];
-  log("Reading your account stats for Wrapped…");
-  const wrapped = await wrappedP;
+    log("Rating weapons and armor…");
+    const w = rateWeapons(vault.weapons, { manifest: m, aegis, wishlists: loadWishlists() }, rated);
+    const a = rateArmor(vault, rated, loadArmorSets());
+    const plan = (currentPlan = planDimActions(vault, w, a, rated));
+    const loot = loadActivityLoot();
+    const activities = loot ? rateActivities(loot, aegis, w.ratings, a.ratings, loadArmorSets()) : [];
+    log("Reading your account stats for Wrapped…");
+    const wrapped = await wrappedP;
 
-  // Images load straight from bungie.net, so each key is just the URL.
-  const images: Record<string, string> = {};
-  const key = (url: string | null | undefined) => (url ? (images[url] = url) : null);
-  const data = buildSiteData(w, a, {
-    vaultSize: vault.weapons.length + vault.armor.length,
-    settings: rated,
-    searches: plan.searches,
-    vault,
-    wrapped,
-    activities,
-    sourceOf: await buildSourceLookup(m, aegis, loot),
-    encounters: planEncounters(w.ratings),
-    dim,
-    dimError,
-    plan,
-    // Images load lazily from bungie.net, so every weapon can have its screenshot (type card banners, the drawer).
-    allScreenshots: true,
-  }, key, loadArmorSets());
+    // Images load straight from bungie.net, so each key is just the URL.
+    const images: Record<string, string> = {};
+    const key = (url: string | null | undefined) => (url ? (images[url] = url) : null);
+    const data = buildSiteData(w, a, {
+      vaultSize: vault.weapons.length + vault.armor.length,
+      settings: rated,
+      searches: plan.searches,
+      vault,
+      wrapped,
+      activities,
+      sourceOf: await buildSourceLookup(m, aegis, loot),
+      encounters: planEncounters(w.ratings),
+      dim,
+      dimError,
+      plan,
+      // Images load lazily from bungie.net, so every weapon can have its screenshot (type card banners, the drawer).
+      allScreenshots: true,
+    }, key, loadArmorSets());
+    return { vault, wrapped, data, images };
+  };
+  const { vault, wrapped, data, images } = await rate();
+  window.VR_RELOAD = () =>
+    rate().catch((e) => {
+      if (e instanceof LoginRequired) expiredBanner(e.message);
+      throw e;
+    });
 
   document.title = `${wrapped?.name ? wrapped.name + "’s" : "Your"} Vault Report`;
   $("#vr-shell").hidden = true;

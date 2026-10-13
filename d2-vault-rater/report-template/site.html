@@ -558,6 +558,12 @@ details.group > summary::-webkit-details-marker { display: none; }
 .vitem b { position: absolute; right: 4px; bottom: 3px; font: 600 12px/1 var(--display); text-shadow: 0 1px 4px #000, 0 0 2px #000; }
 .vitem.v-shard::after { content: ""; position: absolute; left: 6px; right: 6px; bottom: -4px; height: 2px; border-radius: 2px; background: var(--shard); }
 .vitem.dragging, .vitem.moving { opacity: .35; }
+/* "New" since the last read of the vault: inline after a name, pinned to the corner of a tile */
+.newb { display: inline-flex; align-items: center; font: 700 10px/1.5 var(--body); letter-spacing: .04em; text-transform: uppercase; padding: 0 6px; border-radius: 999px; margin-left: 6px; vertical-align: 2px; color: #04140d; background: var(--green); box-shadow: 0 0 10px -2px var(--green); }
+.vitem .newb, .itile .art .newb { position: absolute; z-index: 1; margin: 0; font-size: 8.5px; padding: 0 4px; }
+.vitem .newb { right: -5px; top: -5px; }
+.itile .art .newb { right: 26px; top: 7px; font-size: 10px; padding: 0 6px; }
+.vrefresh { display: inline-flex; align-items: center; gap: 12px; margin-left: auto; }
 .vempty { display: grid; place-items: center; width: 76px; height: 76px; border: 1px dashed var(--line-hi); border-radius: 8px; color: var(--faint); font-size: 11px; }
 @media (max-width: 900px) { .vwrap { overflow-x: auto; } .vgrid { min-width: 860px; } .vhead { position: static; } }
 /* Move progress: small messages stacked in the bottom corner */
@@ -990,6 +996,18 @@ function vrMain() {
   const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
   const W = new Map(DATA.weapons.map((w) => [w.id, w]));
   const A = new Map(DATA.armor.map((a) => [a.id, a]));
+  // "New": items this browser hadn't seen on an earlier read of the vault. Each stays new until it's opened.
+  const NEW = new Set(JSON.parse(store.get("vr-new") || "[]"));
+  const saveNew = () => store.set("vr-new", JSON.stringify([...NEW]));
+  function noteNew() {
+    const ids = [...W.keys(), ...A.keys()], seen = store.get("vr-seen");
+    if (seen) { const s = new Set(JSON.parse(seen)); for (const id of ids) if (!s.has(id)) NEW.add(id); }
+    for (const id of NEW) if (!W.has(id) && !A.has(id)) NEW.delete(id);
+    store.set("vr-seen", JSON.stringify(ids)); saveNew();
+  }
+  noteNew();
+  const newBadge = (x) => (NEW.has(x.id) ? '<span class="newb">New</span>' : "");
+  const markSeen = (id) => { if (NEW.delete(id)) { saveNew(); $$(`[data-w="${id}"] .newb, [data-a="${id}"] .newb`).forEach((b) => b.remove()); } };
   const TIERS = ["S", "A", "B", "C", "D"];
   const tierOf = (w) => w.tier || "U";
   const tierLabel = (t) => (t === "U" ? "Not on sheet" : `${t} tier`);
@@ -1230,11 +1248,11 @@ function vrMain() {
   const traitChips = (w) => equipped(w).map(([o, good]) => perk(o, good)).join("");
   /** Row: one wide line per item, with perks on wide screens. */
   const weaponRow = (w) => `<button class="row v-${w.v}" data-w="${w.id}"><span class="ico${isExotic(w) ? " exotic" : ""}">${img(w.ic)}${tierBadge(w)}</span>
-      <div style="min-width:0"><div class="nm">${esc(w.n)}${dtag(w)}${lochip(w)}${lockIcon(w)}</div><div class="sm">${isExotic(w) ? '<span class="exo">Exotic</span> · ' : ""}${esc(typeLine(w))} · ${elDot(w.e)}${w.loc && w.loc !== "Vault" ? " · " + esc(w.loc) : ""}</div><div class="perkline">${traitChips(w)}</div></div>
+      <div style="min-width:0"><div class="nm">${esc(w.n)}${newBadge(w)}${dtag(w)}${lochip(w)}${lockIcon(w)}</div><div class="sm">${isExotic(w) ? '<span class="exo">Exotic</span> · ' : ""}${esc(typeLine(w))} · ${elDot(w.e)}${w.loc && w.loc !== "Vault" ? " · " + esc(w.loc) : ""}</div><div class="perkline">${traitChips(w)}</div></div>
       ${scoreCell(w.sc)}<div class="c-verdict">${verdict(w.v)}</div></button>`;
   /** Tile: tall and narrow, icon first, like an inventory grid. */
   const weaponTile = (w) => `<button class="itile v-${w.v}${isExotic(w) ? " exotic" : ""}" data-w="${w.id}" title="${esc(w.n)} · ${esc(typeLine(w))} · ${VERDICT[w.v]}">
-      <div class="art">${img(w.ic)}${tierBadge(w)}<span class="elc" style="color:var(--${esc(w.e)})" title="${esc(w.e)}"></span><span class="flags">${w.lk ? "🔒" : ""}${w.god ? '<span title="Wishlist god roll" style="color:var(--green)">★</span>' : ""}</span><b class="sc num${w.sc >= 90 ? " hi" : ""}">${w.sc}</b></div>
+      <div class="art">${img(w.ic)}${tierBadge(w)}${newBadge(w)}<span class="elc" style="color:var(--${esc(w.e)})" title="${esc(w.e)}"></span><span class="flags">${w.lk ? "🔒" : ""}${w.god ? '<span title="Wishlist god roll" style="color:var(--green)">★</span>' : ""}</span><b class="sc num${w.sc >= 90 ? " hi" : ""}">${w.sc}</b></div>
       <div class="tb"><div class="nm">${esc(w.n)}</div><div class="sm">${esc(frameOf(w) || w.t)}</div><div class="sm">${esc(w.t)}</div></div><span class="vbar"></span></button>`;
   const statBars = (a, full) => {
     const want = new Set(DATA.buildStats[a.cls] || []);
@@ -1252,10 +1270,10 @@ function vrMain() {
   const setLine = (a) => (a.si ? " · " + esc(a.si.name) + stier(bestSetTier(a)) : a.set ? " · " + esc(a.set) : "");
   const bonusRow = (b, owned) => `<div class="bonus${owned >= b.pieces ? " active" : ""}"><span class="pc">${b.pieces}PC</span><div><div class="bn">${esc(b.name)}</div>${b.effect || b.notes ? `<p>${esc([b.effect, b.notes].filter(Boolean).join(". "))}</p>` : ""}${b.description ? `<details class="full"><summary>Full bonus text</summary><div>${esc(b.description)}</div></details>` : ""}</div>${b.tier ? `<span class="tier t${b.tier}" title="Aegis rank #${b.rank ?? "?"}">${b.tier}</span>` : `<span class="tier tU">—</span>`}</div>`;
   const armorRow = (a) => `<button class="row v-${a.v}" data-a="${a.id}"><span class="ico${isExotic(a) ? " exotic" : ""}">${img(a.ic)}<span class="tier tU" title="Gear tier">${gearTier(a)}</span></span>
-      <div style="min-width:0"><div class="nm">${esc(a.n)}${dtag(a)}${lochip(a)}${lockIcon(a)}</div><div class="sm">${isExotic(a) ? '<span class="exo">Exotic</span> · ' : ""}${esc(a.cls)} ${esc(a.s)} · ${esc(a.arch || "Legacy")}${setLine(a)}</div><div class="perkline">${ordered(a.st).map(([n, v]) => `<span>${esc(n)} ${v}</span>`).join("")}${a.tot ? `<span>Total ${a.tot}</span>` : ""}</div></div>
+      <div style="min-width:0"><div class="nm">${esc(a.n)}${newBadge(a)}${dtag(a)}${lochip(a)}${lockIcon(a)}</div><div class="sm">${isExotic(a) ? '<span class="exo">Exotic</span> · ' : ""}${esc(a.cls)} ${esc(a.s)} · ${esc(a.arch || "Legacy")}${setLine(a)}</div><div class="perkline">${ordered(a.st).map(([n, v]) => `<span>${esc(n)} ${v}</span>`).join("")}${a.tot ? `<span>Total ${a.tot}</span>` : ""}</div></div>
       ${scoreCell(a.sc)}<div class="c-verdict">${verdict(a.v)}</div></button>`;
   const armorTile = (a) => `<button class="itile v-${a.v}${isExotic(a) ? " exotic" : ""}" data-a="${a.id}" title="${esc(a.n)} · ${esc(a.cls)} ${esc(a.s)} · ${VERDICT[a.v]}">
-      <div class="art">${img(a.ic)}<span class="tier tU" title="Gear tier">${gearTier(a)}</span><span class="flags">${a.lk ? "🔒" : ""}</span><b class="sc num${a.sc >= 90 ? " hi" : ""}">${a.sc}</b></div>
+      <div class="art">${img(a.ic)}<span class="tier tU" title="Gear tier">${gearTier(a)}</span>${newBadge(a)}<span class="flags">${a.lk ? "🔒" : ""}</span><b class="sc num${a.sc >= 90 ? " hi" : ""}">${a.sc}</b></div>
       <div class="tb"><div class="nm">${esc(a.n)}</div><div class="sm">${esc(a.cls)} ${esc(a.s)}</div><div class="sm">${esc(a.arch || "Legacy")}${a.tot ? " · " + a.tot : ""}</div></div><span class="vbar"></span></button>`;
   const copiesOf = (w) => DATA.weapons.filter((x) => x.n === w.n).length;
   const mini = (w, i) => `<button class="mini" data-w="${w.id}"><span class="rk">${i + 1}</span>${img(w.ic)}<div style="min-width:0"><div class="nm">${esc(w.n)}${copiesOf(w) > 1 ? ` <span class="small muted">×${copiesOf(w)}</span>` : ""}</div><div class="sm">${esc(frameOf(w) || w.t)} · <span class="el" style="color:var(--${esc(w.e)})"><i></i><span>${esc(w.e)}</span></span></div><div class="perkline">${traitChips(w)}</div></div><div class="right">${tierBadge(w)}<b class="num">${w.sc}</b></div></button>`;
@@ -1578,9 +1596,10 @@ function vrMain() {
   // The Vault tab has two modes: Vault (characters and vault side by side, like DIM, drag to move) and Full list.
   let listMode = store.get("vr-listmode") === "list" ? "list" : "vault";
   RENDER.list = () => {
-    $("#p-list").innerHTML = `<div class="stack" style="gap:26px"><div class="pagebar"><div class="seg" role="group" aria-label="View" id="listmode">${[["vault", "Vault"], ["list", "Full list"]].map(([k, l]) => `<button data-m="${k}" aria-pressed="${k === listMode}">${l}</button>`).join("")}</div><p id="vmnote"></p></div>
+    $("#p-list").innerHTML = `<div class="stack" style="gap:26px"><div class="pagebar"><div class="seg" role="group" aria-label="View" id="listmode">${[["vault", "Vault"], ["list", "Full list"]].map(([k, l]) => `<button data-m="${k}" aria-pressed="${k === listMode}">${l}</button>`).join("")}</div><p id="vmnote"></p>${window.VR_RELOAD ? '<div class="vrefresh"><span class="small muted" id="vrstamp"></span><button class="btn" id="vrefresh" type="button" title="Read your vault from Bungie again. It also refreshes by itself every 3 minutes and when you come back to this page.">Refresh</button></div>' : ""}</div>
       <div style="min-width:0"><div id="explorer"></div><div id="vaultview" class="vwrap"></div></div></div>`;
     $("#listmode").onclick = (e) => { const b = e.target.closest("button"); if (b) setListMode(b.dataset.m); };
+    if ($("#vrefresh")) { $("#vrefresh").onclick = () => refreshVault(true); stampRefresh(); }
     drawExplorer(true); setListMode(listMode);
   };
   // Split the vault column into one group per weapon type (on unless turned off).
@@ -1595,6 +1614,35 @@ function vrMain() {
     // Vault mode shows weapons only, through the same filters and sort as the full list.
     if (m === "vault" && ex.set !== "w") { ex.set = "w"; drawExplorer(true); } else drawExplorer(false);
   }
+  // Refresh (web app): reads the vault again in place, by hand, every 3 minutes, and on coming back to the page.
+  let lastRefresh = Date.now(), refreshing = null, refreshErr = "";
+  function stampRefresh() {
+    const el = $("#vrstamp"); if (!el) return;
+    el.textContent = refreshing ? "Refreshing…" : refreshErr ? `Couldn't refresh: ${refreshErr}` : `Updated ${new Date(lastRefresh).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`;
+    $("#vrefresh").disabled = !!refreshing;
+  }
+  function refreshVault(byHand) {
+    if (!window.VR_RELOAD || refreshing) return;
+    // Not mid-drag or mid-move: the new read could put the item back where it was.
+    if (!byHand && (dragId || $(".vitem.moving"))) return;
+    lastRefresh = Date.now();
+    refreshing = window.VR_RELOAD().then(({ data, images }) => {
+      Object.assign(IMG, images);
+      // Same arrays, new contents: the list's filters and sorts hold on to them.
+      DATA.weapons.splice(0, Infinity, ...data.weapons); DATA.armor.splice(0, Infinity, ...data.armor);
+      Object.assign(DATA, data, { weapons: DATA.weapons, armor: DATA.armor });
+      W.clear(); A.clear(); for (const w of DATA.weapons) W.set(w.id, w); for (const a of DATA.armor) A.set(a.id, a);
+      const before = NEW.size; noteNew();
+      refreshErr = ""; lastRefresh = Date.now();
+      if (rendered.list) drawExplorer(false);
+      if (NEW.size > before) toast(`${plural(NEW.size - before, "new item")} in your vault`);
+    }).catch((e) => { refreshErr = e.message; }).finally(() => { refreshing = null; stampRefresh(); });
+    stampRefresh();
+  }
+  const autoRefresh = (minAge) => { if (!document.hidden && !$("#p-list").hidden && Date.now() - lastRefresh > minAge) refreshVault(false); };
+  setInterval(() => autoRefresh(170_000), 10_000);
+  addEventListener("focus", () => autoRefresh(20_000));
+  document.addEventListener("visibilitychange", () => autoRefresh(20_000));
   const VSLOTS = ["Kinetic", "Energy", "Power"];
   function drawVault() {
     const el = $("#vaultview"); if (!el) return;
@@ -1603,7 +1651,7 @@ function vrMain() {
     // ex.shown is the full list's filtered, sorted weapons; equipped weapons always show, dimmed when filtered out.
     const shown = ex.shown && ex.set === "w" ? ex.shown : DATA.weapons, match = new Set(shown.map((w) => w.id));
     const at = (to, s) => shown.filter((w) => where(w) === to && w.s === s);
-    const tile = (w, big) => `<button class="vitem${big ? " big" : ""}${match.has(w.id) ? "" : " nomatch"}${isExotic(w) ? " exotic" : ""} v-${w.v}" data-w="${w.id}"${can && !w.eq ? ' draggable="true"' : ""} title="${esc(w.n)} · ${esc(typeLine(w))} · ${w.sc} · ${VERDICT[w.v]}${w.eq ? " · equipped" : ""}">${img(w.ic)}${tierBadge(w)}<b class="num">${w.sc}</b></button>`;
+    const tile = (w, big) => `<button class="vitem${big ? " big" : ""}${match.has(w.id) ? "" : " nomatch"}${isExotic(w) ? " exotic" : ""} v-${w.v}" data-w="${w.id}"${can && !w.eq ? ' draggable="true"' : ""} title="${esc(w.n)} · ${esc(typeLine(w))} · ${w.sc} · ${VERDICT[w.v]}${w.eq ? " · equipped" : ""}">${img(w.ic)}${tierBadge(w)}${newBadge(w)}<b class="num">${w.sc}</b></button>`;
     const inVault = DATA.weapons.filter((w) => where(w) === "vault").length, armorInVault = DATA.armor.filter((a) => where(a) === "vault").length;
     el.innerHTML = `<div class="vgrid" style="--chars:${chars.length}">
       ${chars.map((c) => `<div class="vhead"><b>${esc(c.cls)}</b><span class="small muted">${DATA.weapons.filter((w) => w.wh === c.id).length} weapons</span></div>`).join("")}
@@ -1616,7 +1664,7 @@ function vrMain() {
   /** Every armor piece, by slot, then set; inside a set by class (border colour), tier, then archetype. */
   const ASLOTS = ["Helmet", "Arms", "Chest", "Legs", "Class Item"], ACLS = ["Hunter", "Titan", "Warlock"];
   function armorSection() {
-    const atile = (a) => `<button class="vitem varmor c-${esc(a.cls)}${isExotic(a) ? " exotic" : ""} v-${a.v}" data-a="${a.id}" title="${esc(a.n)} · ${esc(a.cls)} · ${esc(a.arch || "Legacy")}${a.gt ? ` · Tier ${a.gt}` : ""} · ${a.tot} total · ${a.sc} · ${VERDICT[a.v]}${a.loc ? " · " + esc(a.loc) : ""}">${img(a.ic)}${a.gt ? `<span class="tier tU">T${a.gt}</span>` : ""}<b class="num">${a.sc}</b></button>`;
+    const atile = (a) => `<button class="vitem varmor c-${esc(a.cls)}${isExotic(a) ? " exotic" : ""} v-${a.v}" data-a="${a.id}" title="${esc(a.n)} · ${esc(a.cls)} · ${esc(a.arch || "Legacy")}${a.gt ? ` · Tier ${a.gt}` : ""} · ${a.tot} total · ${a.sc} · ${VERDICT[a.v]}${a.loc ? " · " + esc(a.loc) : ""}">${img(a.ic)}${a.gt ? `<span class="tier tU">T${a.gt}</span>` : ""}${newBadge(a)}<b class="num">${a.sc}</b></button>`;
     const order = (x, y) => ACLS.indexOf(x.cls) - ACLS.indexOf(y.cls) || (y.gt || 0) - (x.gt || 0) || (x.arch || "~").localeCompare(y.arch || "~") || y.sc - x.sc;
     const groupOf = (a) => (isExotic(a) ? "Exotic" : a.set || "No set");
     const rank = (g) => (g === "Exotic" ? 0 : g === "No set" ? 2 : 1);
@@ -2222,7 +2270,7 @@ function vrMain() {
     save.disabled = false;
   });
   function openWeapon(id) {
-    const w = W.get(id); if (!w) return;
+    const w = W.get(id); if (!w) return; markSeen(id);
     drawer.dataset.item = id;
     const good = new Set(w.pk.flatMap((p) => p.m));
     const art = w.ss && IMG[w.ss] ? `<img class="shot" src="${IMG[w.ss]}" alt="">` : `<div class="bigicon">${img(w.ic)}</div>`;
@@ -2243,7 +2291,7 @@ function vrMain() {
       </div>`);
   }
   function openArmor(id) {
-    const a = A.get(id); if (!a) return;
+    const a = A.get(id); if (!a) return; markSeen(id);
     drawer.dataset.item = id;
     const others = DATA.armor.filter((x) => x.id !== a.id && x.cls === a.cls && x.s === a.s && (x.arch || "") === (a.arch || "")).sort((x, y) => y.sc - x.sc).slice(0, 6);
     openDrawer(`<button class="d-close" aria-label="Close">✕</button><div class="d-art"><div class="bigicon">${img(a.ic)}</div></div>
