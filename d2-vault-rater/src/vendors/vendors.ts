@@ -4,7 +4,8 @@
  * the player's sign-in: it returns each sale item's actual rolled perks and stats for one character.
  */
 import { bungie, bungieUrl } from "../bungie/client.js";
-import { loadManifest, type Manifest } from "../bungie/manifest.js";
+import { loadManifest, versionSlug, type Manifest } from "../bungie/manifest.js";
+import { paths, readJson, writeJson } from "../config.js";
 import { primaryMembership } from "../bungie/oauth.js";
 import { decodeProfile, type RawProfile } from "../vault/decode.js";
 import type { ArmorRecord, WeaponRecord } from "../vault/types.js";
@@ -176,17 +177,24 @@ export function decodeVendors(
   return out.sort((a, b) => b.weapons.length - a.weapons.length || a.name.localeCompare(b.name));
 }
 
-/** Manifest entities the stripped manifest leaves out (vendors, currencies), fetched one at a time and kept for the session. */
+/**
+ * Manifest entities the stripped manifest leaves out (vendors, currencies, cosmetics), keyed "Type/hash".
+ * Each is fetched once per manifest version and saved with only the fields the tab shows, so later visits
+ * make no requests for them.
+ */
 type EntityDef = { displayProperties?: { name?: string; subtitle?: string; icon?: string; largeIcon?: string; smallTransparentIcon?: string }; itemTypeDisplayName?: string };
-const entityCache = new Map<string, Promise<EntityDef | null>>();
-function entity(type: string, hash: number | string) {
-  const key = `${type}/${hash}`;
-  let p = entityCache.get(key);
-  if (!p) {
-    p = bungie<EntityDef>(`/Destiny2/Manifest/${type}/${hash}/`, { auth: false }).catch(() => null);
-    entityCache.set(key, p);
-  }
-  return p;
+async function entities(version: string, keys: string[]): Promise<Record<string, EntityDef>> {
+  const file = `${paths.manifestDir}/entities-${versionSlug(version)}.json`;
+  const saved = { ...readJson<Record<string, EntityDef>>(file, {}) };
+  const missing = [...new Set(keys)].filter((k) => !saved[k]);
+  const got = await Promise.all(missing.map((k) => bungie<EntityDef>(`/Destiny2/Manifest/${k}/`, { auth: false }).catch(() => null)));
+  missing.forEach((k, i) => {
+    const d = got[i];
+    // Failures aren't saved, so they're asked again next time.
+    if (d) saved[k] = { displayProperties: d.displayProperties, itemTypeDisplayName: d.itemTypeDisplayName };
+  });
+  if (got.some(Boolean)) writeJson(file, saved);
+  return saved;
 }
 
 /** Every vendor's current stock for one character (the most recently played by default). */
@@ -207,26 +215,23 @@ export async function fetchVendors(characterId: string): Promise<VendorStock[]> 
     ),
   ];
   const costHashes = [...new Set(selling.flatMap((h) => Object.values(raw.sales?.data?.[h]?.saleItems ?? {}).flatMap((s) => (s.costs ?? []).map((c) => c.itemHash))))];
-  const [vendorDefs, costs, cosmeticDefs] = await Promise.all([
-    Promise.all(selling.map((h) => entity("DestinyVendorDefinition", h))),
-    Promise.all(costHashes.map((h) => entity("DestinyInventoryItemDefinition", h))),
-    Promise.all(cosmetics.map((h) => entity("DestinyInventoryItemDefinition", h))),
-  ]);
+  const vendorKey = (h: number | string) => `DestinyVendorDefinition/${h}`, itemKey = (h: number | string) => `DestinyInventoryItemDefinition/${h}`;
+  const ent = await entities(m.version, [...selling.map(vendorKey), ...costHashes.map(itemKey), ...cosmetics.map(itemKey)]);
   const defs: Record<string, VendorDef> = {};
-  selling.forEach((h, i) => {
-    const dp = vendorDefs[i]?.displayProperties;
+  for (const h of selling) {
+    const dp = ent[vendorKey(h)]?.displayProperties;
     if (dp) defs[h] = { name: dp.name ?? "", subtitle: dp.subtitle ?? "", icon: bungieUrl(dp.smallTransparentIcon || dp.icon || dp.largeIcon) };
-  });
+  }
   const costDefs: Record<string, { name: string; icon: string }> = {};
-  costHashes.forEach((h, i) => {
-    const dp = costs[i]?.displayProperties;
+  for (const h of costHashes) {
+    const dp = ent[itemKey(h)]?.displayProperties;
     if (dp) costDefs[h] = { name: dp.name ?? "", icon: bungieUrl(dp.icon) };
-  });
+  }
   const itemDefs: Record<string, { name: string; icon: string; type: string }> = {};
-  cosmetics.forEach((h, i) => {
-    const d = cosmeticDefs[i];
+  for (const h of cosmetics) {
+    const d = ent[itemKey(h)];
     if (d?.displayProperties?.name) itemDefs[h] = { name: d.displayProperties.name, icon: bungieUrl(d.displayProperties.icon), type: d.itemTypeDisplayName ?? "" };
-  });
+  }
   // GetVendors leaves out item components (no perks or stats), but the one-vendor call includes them:
   // ask each gear vendor on its own for its items' rolls.
   const sellsGear = gearFilter(raw, defs);
