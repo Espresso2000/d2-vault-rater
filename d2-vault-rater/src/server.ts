@@ -221,7 +221,11 @@ server.registerTool(
     const s = loadSettings();
     if (a.weapon_type) {
       if (a.clear_weapon_type) delete s.byWeaponType[a.weapon_type];
-      else s.byWeaponType[a.weapon_type] = { preset: a.preset, overrides: { ...(s.byWeaponType[a.weapon_type]?.overrides ?? {}), ...(a.overrides ?? {}) } };
+      else {
+        // Changing only the overrides keeps the type's preset.
+        const prev = s.byWeaponType[a.weapon_type];
+        s.byWeaponType[a.weapon_type] = { preset: a.preset ?? prev?.preset, overrides: { ...(prev?.overrides ?? {}), ...(a.overrides ?? {}) } };
+      }
     } else {
       if (a.preset) {
         s.preset = a.preset;
