@@ -313,6 +313,16 @@ function summary(b: Build, c: Ctx) {
   </aside>`;
 }
 
+/** Bar pieces for a stat line: armor, mods, Fonts, fragments (positive parts only), cut off at the total. */
+function segments(l: { armor: number; mods: number; fonts: number; fragments: number; total: number }): [string, number][] {
+  let left = Math.max(0, l.total);
+  return ([["a", l.armor], ["m", l.mods], ["o", l.fonts], ["f", l.fragments]] as [string, number][]).map(([k, v]) => {
+    const w = Math.min(left, Math.max(0, v));
+    left -= w;
+    return [k, w];
+  });
+}
+
 function statsBlock(b: Build, c: Ctx) {
   const lines = statLines(b, c);
   const pct = (n: number) => `${(Math.max(0, n) / STAT_MAX) * 100}%`;
@@ -321,10 +331,11 @@ function statsBlock(b: Build, c: Ctx) {
     <div class="bd-slines">${lines
       .map((l) => {
         const met = l.target > 0 && l.total >= l.target;
-        const parts = [`Armor ${l.armor}`, l.mods ? `mods ${l.mods > 0 ? "+" : ""}${l.mods}` : "", l.fragments ? `fragments ${l.fragments > 0 ? "+" : ""}${l.fragments}` : ""].filter(Boolean).join(" · ");
+        const sign = (n: number) => `${n > 0 ? "+" : ""}${n}`;
+        const parts = [`Armor ${l.armor}`, l.mods ? `mods ${sign(l.mods)}` : "", l.fonts ? `Font ${sign(l.fonts)} (with Armor Charge)` : "", l.fragments ? `fragments ${sign(l.fragments)}` : ""].filter(Boolean).join(" · ");
         return `<div class="bd-sline" title="${esc(parts)}">
           <span class="bd-sname">${esc(l.name)}</span>
-          <span class="bd-sbarwrap"><span class="bd-sbar"><i class="a" style="width:${pct(Math.min(l.total, l.armor))}"></i><i class="m" style="width:${pct(Math.min(Math.max(0, l.total - l.armor), Math.max(0, l.mods)))}"></i><i class="f" style="width:${pct(Math.max(0, l.total - Math.max(0, l.armor) - Math.max(0, l.mods)))}"></i>
+          <span class="bd-sbarwrap"><span class="bd-sbar">${segments(l).map(([k, v]) => `<i class="${k}" style="width:${pct(v)}"></i>`).join("")}
             <s style="left:50%"></s></span>
             <input class="bd-aim${l.target ? " set" : ""}" type="range" min="0" max="${STAT_MAX}" step="10" value="${l.target}" data-target="${l.hash}" aria-label="${esc(l.name)} aim" aria-valuetext="${l.target ? `Aim ${l.target}` : "No aim"}" title="Drag to set an aim for ${esc(l.name)}; drag to 0 to clear"></span>
           <b class="num bd-stot${met ? " met" : l.target ? " short" : ""}${l.total < 0 ? " neg" : ""}">${l.total}</b>
@@ -332,7 +343,7 @@ function statsBlock(b: Build, c: Ctx) {
         </div>`;
       })
       .join("")}</div>
-    <div class="bd-legend small muted"><span><i class="a"></i>Armor</span><span><i class="m"></i>Mods</span><span><i class="f"></i>Fragments</span><span><u></u>Your aim: drag on a bar</span></div></section>`;
+    <div class="bd-legend small muted"><span><i class="a"></i>Armor</span><span><i class="m"></i>Mods</span><span><i class="o"></i>Fonts</span><span><i class="f"></i>Fragments</span><span><u></u>Your aim: drag on a bar</span></div></section>`;
 }
 
 /** Armor set bonuses the build's armor pieces turn on (bonus details from the report's set data). */
@@ -377,21 +388,36 @@ function subclassCard(b: Build, sc: SubclassDef | null, c: Ctx) {
   const r = subclassRating(c.ratings, sc);
   const slots = fragmentSlots(b, defs!);
   const group = (g: SocketGroup) => socketsOf(sc, g);
-  const chips = (is: number[]) => is.map((i) => socketChip(b, sc, i, c, slots)).join("");
-  const abilities = (["super", "class", "movement", "melee", "grenade", "other"] as SocketGroup[]).flatMap(group);
-  const fragsIn = group("fragments").filter((i, k) => k < slots && !isEmptyPlug(defs!.plugs[b.plugs[i]])).length;
+  const chip = (i: number, kind: ChipKind) => socketChip(b, sc, i, c, slots, kind);
+  const frags = group("fragments");
+  const fragsIn = frags.filter((i, k) => k < slots && !isEmptyPlug(defs!.plugs[b.plugs[i]])).length;
+  // Class ability and jump, then anything else the subclass has (Prismatic's Transcendence and its grenade).
+  const small = [...group("class"), ...group("movement"), ...group("other")];
+  const extras = group("other").length;
   return `<section class="bd-card glass bd-subclass" style="--el:var(--${sc.el})">
     <div class="bd-card-head"><h3>Subclass</h3>${r ? `<span class="small muted">Aegis ${tierChip(r.tier)} ${r.total !== null ? `${r.total}/40` : ""}</span>` : ""}</div>
     ${picker}
     ${r ? `<div class="bd-roles">${ROLES.map(([k, label, why]) => `<div tabindex="0" data-tip="" data-tiptext="${esc(why)}" aria-label="${esc(`${label} ${r.scores[k] ?? "unrated"} of 10. ${why}`)}"><span>${label}</span><b class="num">${r.scores[k] ?? "—"}</b><i style="width:${(r.scores[k] ?? 0) * 10}%"></i></div>`).join("")}</div>
       ${r.usage ? `<p class="small muted bd-usage">“${esc(r.usage)}”</p>` : ""}` : ""}
-    <div class="bd-group"><div class="cap">Abilities</div><div class="bd-chips">${chips(abilities)}</div></div>
-    <div class="bd-group"><div class="cap">Aspects <span class="bd-capnote">open ${slots} fragment slot${slots === 1 ? "" : "s"}</span></div><div class="bd-chips">${chips(group("aspects"))}</div></div>
-    <div class="bd-group"><div class="cap">Fragments <span class="bd-capnote">${fragsIn} of ${slots}</span></div><div class="bd-chips">${chips(group("fragments"))}</div></div>
+    <div class="bd-sclayout">
+      <div class="bd-sc-left">
+        ${group("super").map((i) => chip(i, "super")).join("")}
+        <div class="bd-sc-aspects"><div class="cap">Aspects <span class="bd-capnote">open ${slots} fragment slot${slots === 1 ? "" : "s"}</span></div>${group("aspects").map((i) => chip(i, "wide")).join("")}</div>
+      </div>
+      <div class="bd-sc-right">
+        <div class="bd-sc-row">${[...group("grenade"), ...group("melee")].map((i) => chip(i, "wide")).join("")}</div>
+        <div class="bd-sc-small">${small.map((i) => chip(i, "square")).join("")}</div>
+        ${extras ? `<div class="bd-sc-extra"><span>${esc(sc.el === "Prismatic" ? "Prismatic" : sc.el)} extras: ${group("other").map((i) => esc(defs!.plugs[b.plugs[i]]?.t ?? GROUP_LABEL.other)).join(" · ")}</span></div>` : ""}
+      </div>
+    </div>
+    <div class="bd-group"><div class="cap">Fragments <span class="bd-capnote">${fragsIn} of ${slots}</span></div><div class="bd-frags">${frags.map((i) => chip(i, "pill")).join("")}</div>
+      ${slots ? `<div class="bd-fragbtn"><button class="btn bd-sm" data-pop="${frags[0]}" aria-haspopup="dialog">Modify fragments</button></div>` : ""}</div>
   </section>`;
 }
 
-function socketChip(b: Build, sc: SubclassDef, i: number, c: Ctx, slots: number) {
+type ChipKind = "super" | "wide" | "square" | "pill";
+
+function socketChip(b: Build, sc: SubclassDef, i: number, c: Ctx, slots: number, kind: ChipKind = "wide") {
   const s = sc.sockets[i];
   const p = defs!.plugs[b.plugs[i] ?? s.init];
   const locked = s.plugs.length < 2;
@@ -399,12 +425,22 @@ function socketChip(b: Build, sc: SubclassDef, i: number, c: Ctx, slots: number)
   const empty = isEmptyPlug(p);
   const rated = s.group === "aspects" ? aspectRating(c.ratings, p) : s.group === "fragments" ? fragmentRating(c.ratings, p) : null;
   const label = s.group === "other" ? p?.t ?? GROUP_LABEL.other : GROUP_LABEL[s.group];
-  const inner = `<span class="bd-sico">${empty ? `<span class="bd-plus">${off ? "🔒" : "+"}</span>` : img(p?.i)}${rated ? tierChip(rated.tier) : ""}</span>
-    <span class="bd-cmeta"><span class="cap">${esc(label)}</span><b>${empty ? (off ? "Locked" : "Empty") : esc(p?.n)}</b>${(p?.st ?? []).map(([h, v]) => statChip(h, v)).join("")}</span>`;
+  const name = empty ? (off ? "Locked" : kind === "pill" ? "Empty slot" : "Empty") : p?.n ?? "";
+  const icon = empty ? `<span class="bd-plus">${off ? LOCK : "+"}</span>` : img(p?.i);
+  const inner =
+    kind === "square"
+      ? `<span class="bd-sico">${icon}</span><span class="bd-sqlabel">${esc(label)}</span>`
+      : kind === "super"
+        ? `<span class="cap">Super</span><span class="bd-sico">${icon}</span><b>${esc(name)}</b>`
+        : `<span class="bd-sico">${icon}${rated ? tierChip(rated.tier) : ""}</span>
+    <span class="bd-cmeta">${kind === "pill" ? "" : `<span class="cap">${esc(label)}</span>`}<b>${esc(name)}</b>${(p?.st ?? []).map(([h, v]) => statChip(h, v)).join("")}</span>`;
+  const cls = `bd-chip bd-k-${kind}${empty ? " is-empty" : ""}`;
   if (locked || off)
-    return `<span class="bd-chip${empty ? " empty" : ""} ${off ? "off" : "fixed"}" title="${esc(off ? "Pick aspects with more fragment slots to use this one" : `${label}: ${p?.n ?? ""} (fixed)`)}">${inner}</span>`;
-  return `<button class="bd-chip${empty ? " empty" : ""}${pop?.i === i ? " open" : ""}" data-pop="${i}" aria-haspopup="dialog" aria-expanded="${pop?.i === i}" aria-label="${esc(`${label}: ${empty ? "empty" : p?.n}. Change`)}">${inner}</button>`;
+    return `<span class="${cls} ${off ? "off" : "fixed"}" ${off ? `title="Pick aspects with more fragment slots to use this one"` : `data-tip="" data-tiptext="${esc(`${label}: ${p?.n ?? ""}. Fixed for this subclass.`)}" tabindex="0"`}>${inner}</span>`;
+  return `<button class="${cls}${pop?.i === i ? " open" : ""}" data-pop="${i}" aria-haspopup="dialog" aria-expanded="${pop?.i === i}" aria-label="${esc(`${label}: ${empty ? "empty" : p?.n}. Change`)}">${inner}</button>`;
 }
+
+const LOCK = `<svg class="bd-lock" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V7a5 5 0 0 1 10 0v3h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1h1zm2 0h6V7a3 3 0 0 0-6 0v3z"/></svg>`;
 
 /* ---------- Subclass hover card ---------- */
 
@@ -439,7 +475,8 @@ function tipEl(): HTMLElement {
 }
 function showTip(t: HTMLElement) {
   const el = tipEl();
-  const html = t.dataset.tiptext ? `<p>${esc(t.dataset.tiptext)}</p>` : subclassTip(Number(t.dataset.tip));
+  const plug = t.dataset.tipplug ? defs!.plugs[Number(t.dataset.tipplug)] : undefined;
+  const html = plug ? plugDetail(plug, "other", null, true) : t.dataset.tiptext ? `<p>${esc(t.dataset.tiptext)}</p>` : subclassTip(Number(t.dataset.tip));
   if (!html) return;
   el.innerHTML = html;
   el.hidden = false;
@@ -668,21 +705,31 @@ function gearCard(b: Build, c: Ctx) {
   return `<section class="bd-card glass bd-gear">
     <div class="bd-card-head"><h3>Gear and mods</h3><button class="btn primary bd-sm" data-act="gear">Choose gear and mods</button></div>
     <div class="bd-gearcols">
-      <div class="bd-rows"><div class="cap">Weapons</div>${WEAPON_SLOTS.map((slot) => weaponRow(b, c, slot)).join("")}</div>
-      <div class="bd-rows"><div class="cap">Armor <span class="bd-capnote">${ARMOR_ENERGY} mod energy each</span></div>${ARMOR_SLOTS.map((slot) => armorRow(b, c, slot)).join("")}</div>
+      <div class="bd-rows"><div class="cap">Weapons</div><div class="bd-wlist">${WEAPON_SLOTS.map((slot) => weaponRow(b, c, slot)).join("")}</div></div>
+      <div class="bd-rows"><div class="cap">Armor <span class="bd-capnote">${ARMOR_ENERGY} mod energy each · point at a mod to see what it does</span></div>${ARMOR_SLOTS.map((slot) => armorRow(b, c, slot)).join("")}</div>
     </div>
   </section>`;
 }
 
+const PERK_KIND: Record<string, string> = { barrel: "Barrel", magazine: "Magazine", perk1: "Trait 1", perk2: "Trait 2", origin: "Origin trait", other: "Perk" };
+
 function weaponRow(b: Build, c: Ctx, slot: (typeof WEAPON_SLOTS)[number]) {
   const w = weaponOf(c, b.items[slot]?.id);
   const sc = w ? c.scores.get(w.instanceId) : undefined;
-  return `<div class="bd-row${w?.rarity === "Exotic" ? " exotic" : ""}">
+  // Equipped perks: the two traits with names, barrel, magazine and origin as icons (names on hover).
+  const cols = (w?.columns ?? []).filter((k) => k.active && k.kind !== "other");
+  const perk = (k: (typeof cols)[number], named: boolean) =>
+    `<span class="bd-perk${named ? " named" : ""}" tabindex="0" data-tip="" data-tiptext="${esc(`${PERK_KIND[k.kind] ?? "Perk"}: ${k.active}${k.enhanced.includes(k.active) ? " (enhanced)" : ""}`)}">${k.icons?.[k.active] ? img(k.icons[k.active], k.active) : `<span class="ph"></span>`}${named ? `<span>${esc(k.active)}</span>` : ""}</span>`;
+  const traits = cols.filter((k) => k.kind === "perk1" || k.kind === "perk2");
+  const rest = cols.filter((k) => !traits.includes(k));
+  const facts = w ? [w.frame, w.ammo !== "Unknown" ? `${w.ammo} ammo` : "", w.masterwork ? `MW ${w.masterwork}` : "", w.crafted ? "Crafted" : "", w.adept ? "Adept" : "", w.gearTier ? `Tier ${w.gearTier}` : "", w.power ? `Power ${w.power}` : ""].filter(Boolean) : [];
+  return `<div class="bd-row bd-wrow${w?.rarity === "Exotic" ? " exotic" : ""}">
     <button class="bd-rowbtn" data-act="gear" data-slot="${slot}" aria-label="${esc(`${slot}: ${w ? w.name : "empty"}. Change`)}">
       <span class="bd-iico">${w ? img(w.icon) : `<span class="bd-plus">+</span>`}${tierChip(weaponTier(w?.instanceId))}</span>
       <span class="bd-imeta"><span class="cap">${slot}</span><b>${w ? esc(w.name) : b.items[slot] ? "Missing item" : "Choose a weapon"}</b>${w ? `<span class="sm">${esc(w.type)} · <span class="el" style="color:var(--${esc(w.element)})"><i></i><span>${esc(w.element)}</span></span></span>` : ""}</span>
       ${sc !== undefined ? `<span class="bd-iscore" title="Vault score">${sc}</span>` : ""}</button>
-    ${w ? `<span class="bd-links">${weaponLinks(w)}</span>` : ""}
+    ${cols.length ? `<div class="bd-wperks">${traits.map((k) => perk(k, true)).join("")}${rest.map((k) => perk(k, false)).join("")}</div>` : ""}
+    ${facts.length || w ? `<div class="bd-wfacts">${facts.map((f) => `<span>${esc(f)}</span>`).join("")}${w ? `<span class="bd-links">${weaponLinks(w)}</span>` : ""}</div>` : ""}
   </div>`;
 }
 
@@ -691,19 +738,25 @@ function armorRow(b: Build, c: Ctx, slot: GearSlot) {
   const mods = b.mods[slot] ?? Array(MOD_SOCKETS).fill(0);
   const used = modEnergy(mods, defs!);
   const sc = a ? c.scores.get(a.instanceId) : undefined;
+  const meta = a ? [a.archetype ?? "Legacy", a.gearTier ? `Tier ${a.gearTier}` : "", a.setName ?? (a.rarity === "Exotic" ? "Exotic" : ""), `${a.statTotal} total`].filter(Boolean).join(" · ") : "";
   return `<div class="bd-row bd-arow${a?.rarity === "Exotic" ? " exotic" : ""}">
-    <button class="bd-rowbtn" data-act="gear" data-slot="${slot}" aria-label="${esc(`${slot}: ${a ? a.name : "empty"}. Change`)}">
-      <span class="bd-iico">${a ? img(a.icon) : `<span class="bd-plus">+</span>`}${a?.gearTier ? `<span class="tier tU">T${a.gearTier}</span>` : ""}</span>
-      <span class="bd-imeta"><span class="cap">${slot}</span><b>${a ? esc(a.name) : b.items[slot] ? "Missing item" : `Choose ${slot === "Arms" ? "arms" : slot.toLowerCase()}`}</b>${a ? `<span class="sm">${esc(a.archetype ?? "Legacy")} · ${a.statTotal} total</span>` : ""}</span>
-      ${sc !== undefined ? `<span class="bd-iscore" title="Vault score">${sc}</span>` : ""}</button>
-    ${a ? `<span class="bd-astats">${STAT_HASHES.map((h) => {
-      const v = a.stats[c.statNames[h]] ?? 0;
-      return `<span class="${v >= 25 ? "hi" : v <= 0 ? "lo" : ""}" title="${esc(c.statNames[h])}"><i>${esc((c.statNames[h] ?? "").slice(0, 3))}</i>${v}</span>`;
-    }).join("")}</span>` : ""}
-    <div class="bd-mods">${mods
+    <div class="bd-arow-top">
+      <button class="bd-rowbtn" data-act="gear" data-slot="${slot}" aria-label="${esc(`${slot}: ${a ? a.name : "empty"}. Change`)}">
+        <span class="bd-iico">${a ? img(a.icon) : `<span class="bd-plus">+</span>`}${a?.gearTier ? `<span class="tier tU">T${a.gearTier}</span>` : ""}</span>
+        <span class="bd-imeta"><span class="cap">${slot}</span><b>${a ? esc(a.name) : b.items[slot] ? "Missing item" : `Choose ${slot === "Arms" ? "arms" : slot.toLowerCase()}`}</b>${a ? `<span class="sm">${esc(meta)}</span>` : ""}</span>
+        ${sc !== undefined ? `<span class="bd-iscore" title="Vault score">${sc}</span>` : ""}</button>
+      ${a ? `<span class="bd-astats">${STAT_HASHES.map((h) => {
+        const v = a.stats[c.statNames[h]] ?? 0;
+        return `<span class="${v >= 25 ? "hi" : v <= 0 ? "lo" : ""}" title="${esc(c.statNames[h])}"><i>${esc((c.statNames[h] ?? "").slice(0, 3))}</i>${v}</span>`;
+      }).join("")}</span>` : ""}
+    </div>
+    <div class="bd-amods">${mods
       .map((h, k) => {
         const p = h ? defs!.plugs[h] : undefined;
-        return `<button class="bd-mod${p ? "" : " empty"}" data-act="gear" data-tab="mods" data-slot="${slot}" title="${esc(p ? `${p.n} (${p.cost ?? 0} energy)` : k === 0 ? "General mod" : `${slot} mod`)}" aria-label="${esc(p ? `${slot} mod: ${p.n}` : `Add a ${k === 0 ? "general" : slot} mod`)}">${p ? img(p.i) : `<span class="bd-plus">${k === 0 ? "G" : "+"}</span>`}${p?.cost ? `<i>${p.cost}</i>` : ""}</button>`;
+        const kind = k === 0 ? "General" : slot;
+        return p
+          ? `<button class="bd-amod" data-act="gear" data-gt="mods" data-slot="${slot}" data-tip="" data-tipplug="${p.h}" aria-label="${esc(`${kind} mod: ${p.n}, ${p.cost ?? 0} energy. Change`)}">${img(p.i)}<span><b>${esc(p.n)}</b><i>${esc(kind)} · ${p.cost ?? 0} energy</i></span></button>`
+          : `<button class="bd-amod is-none" data-act="gear" data-gt="mods" data-slot="${slot}" aria-label="${esc(`Add a ${kind.toLowerCase()} mod`)}"><span class="bd-plus">+</span><span><b>Add mod</b><i>${esc(kind)}</i></span></button>`;
       })
       .join("")}<span class="bd-energy${used > ARMOR_ENERGY ? " over" : ""}" title="Mod energy used"><span style="width:${Math.min(100, (used / ARMOR_ENERGY) * 100)}%"></span><b class="num">${used}/${ARMOR_ENERGY}</b></span></div>
   </div>`;
@@ -794,7 +847,7 @@ function openGear(tab: GearTab = "weapons", slot = "all") {
       <p class="small muted">Pick for as many slots as you like. Nothing changes until you apply.</p></header>
     <div class="bd-gp-body">
       <div class="bd-gp-pick">
-        <div class="bd-tabs" role="tablist" aria-label="What to pick">${(["weapons", "armor", "mods"] as GearTab[]).map((t) => `<button class="bd-tab" role="tab" data-dact="gtab" data-tab="${t}">${t[0].toUpperCase() + t.slice(1)}</button>`).join("")}</div>
+        <div class="bd-tabs" role="tablist" aria-label="What to pick">${(["weapons", "armor", "mods"] as GearTab[]).map((t) => `<button class="bd-tab" role="tab" data-dact="gtab" data-gt="${t}">${t[0].toUpperCase() + t.slice(1)}</button>`).join("")}</div>
         <div class="bd-gp-tools"><input class="bd-input" id="bd-gq" type="search" placeholder="Search" aria-label="Search"><label class="bd-sortl"><span class="sr">Sort by</span><select id="bd-gsort" title="Sort by"></select></label></div>
         <div class="subchips" id="bd-gslots"></div>
         <div class="subchips" id="bd-gfilters"></div>
@@ -809,7 +862,7 @@ function openGear(tab: GearTab = "weapons", slot = "all") {
 
 function drawGear() {
   if (!gear) return;
-  for (const t of document.querySelectorAll<HTMLElement>("#bd-drawer [data-dact=gtab]")) t.setAttribute("aria-selected", String(t.dataset.tab === gear.tab));
+  for (const t of document.querySelectorAll<HTMLElement>("#bd-drawer [data-dact=gtab]")) t.setAttribute("aria-selected", String(t.dataset.gt === gear.tab));
   const sorts: [string, string][] =
     gear.tab === "weapons" ? [["score", "Vault score"], ["tier", "Aegis tier"], ["name", "Name"]]
     : gear.tab === "armor" ? [["score", "Vault score"], ["total", "Stat total"], ...STAT_HASHES.map((h): [string, string] => [`s${h}`, `${ctx().statNames[h]} stat`]), ["name", "Name"]]
@@ -946,7 +999,7 @@ function drawTray() {
       const p = mods[k] ? defs!.plugs[mods[k]] : undefined;
       return p
         ? `<button class="bd-mod" data-dact="gunmod" data-slot="${s}" data-k="${k}" title="${esc(`${p.n}: click to remove`)}" aria-label="Remove ${esc(p.n)}">${img(p.i)}${p.cost ? `<i>${p.cost}</i>` : ""}</button>`
-        : `<button class="bd-mod empty" data-dact="gtarget" data-slot="${s}" aria-label="Add a mod to ${s}"><span class="bd-plus">${k === 0 ? "G" : "+"}</span></button>`;
+        : `<button class="bd-mod is-empty" data-dact="gtarget" data-slot="${s}" aria-label="Add a mod to ${s}"><span class="bd-plus">${k === 0 ? "G" : "+"}</span></button>`;
     }).join("")}<span class="bd-energy${used > ARMOR_ENERGY ? " over" : ""}"><span style="width:${Math.min(100, (used / ARMOR_ENERGY) * 100)}%"></span><b class="num">${used}/${ARMOR_ENERGY}</b></span></div>`;
   };
   const before = new Map(statLines(b, c).map((l) => [l.hash, l.total]));
@@ -972,7 +1025,7 @@ function drawTray() {
 Object.assign(DRAWER_ACTIONS, {
   gtab: (t: HTMLElement) => {
     if (!gear) return;
-    gear.tab = t.dataset.tab as GearTab;
+    gear.tab = t.dataset.gt as GearTab;
     gear.slot = "all";
     gear.filter = "all";
     gear.shown = LIST_PAGE;
@@ -1087,6 +1140,7 @@ function plugDetail(p: PlugDef, group: SocketGroup, sc: SubclassDef | null, comp
 function wire(el: HTMLElement) {
   el.dataset.wired = "1";
   el.addEventListener("click", (e) => {
+    hideTip();
     const p = (e.target as HTMLElement).closest<HTMLElement>("[data-pop]");
     if (p) {
       const i = Number(p.dataset.pop);
@@ -1258,7 +1312,7 @@ const ACTIONS: Record<string, (t: HTMLElement) => void> = {
     setSubclass(sc);
     touch();
   },
-  gear: (t) => openGear(t.dataset.tab === "mods" ? "mods" : t.dataset.slot && isArmorSlot(t.dataset.slot) ? "armor" : "weapons", t.dataset.slot ?? "all"),
+  gear: (t) => openGear(t.dataset.gt === "mods" ? "mods" : t.dataset.slot && isArmorSlot(t.dataset.slot) ? "armor" : "weapons", t.dataset.slot ?? "all"),
   equip: () => void equipFlow(),
   dim: () => dimFlow(),
   import: () => importFlow(),

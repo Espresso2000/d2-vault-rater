@@ -60,6 +60,7 @@ const items: Record<number, object> = {
   42: { hash: 42, displayProperties: { name: "Health Mod" }, plug: { plugCategoryIdentifier: "enhancements.v2_general", energyCost: { energyCost: 1 } }, investmentStats: [{ statTypeHash: 392767087, value: 10 }] },
   50: { hash: 50, displayProperties: { name: "Empty Mod Socket" }, plug: { plugCategoryIdentifier: "enhancements.v2_head" } },
   51: { hash: 51, displayProperties: { name: "Heavy Ammo Finder" }, plug: { plugCategoryIdentifier: "enhancements.v2_head", energyCost: { energyCost: 3 } } },
+  53: { hash: 53, displayProperties: { name: "Grenade Font" }, plug: { plugCategoryIdentifier: "enhancements.v2_arms", energyCost: { energyCost: 3 } } },
 };
 const sets = {
   1: { reusablePlugItems: [{ plugItemHash: 10 }, { plugItemHash: 11 }] },
@@ -67,6 +68,7 @@ const sets = {
   3: { reusablePlugItems: [{ plugItemHash: 30 }, { plugItemHash: 31 }, { plugItemHash: 32 }] },
   4: { reusablePlugItems: [{ plugItemHash: 40 }, { plugItemHash: 41 }, { plugItemHash: 42 }] },
   5: { reusablePlugItems: [{ plugItemHash: 50 }, { plugItemHash: 51 }] },
+  6: { reusablePlugItems: [{ plugItemHash: 53 }] },
 };
 const defs: BuildDefs = stripBuildDefs("v1", items, sets, {});
 
@@ -217,4 +219,15 @@ test("builds: stats read Health, Melee, Grenade, Super, Class, Weapons and go be
   assert.deepEqual(lines.map((l) => l.name), ["Health", "Melee", "Grenade", "Super", "Class", "Weapons"]);
   // No armor: two -10 Class fragments leave Class at -20, not 0 (Bungie's character stats and DIM show the negative).
   assert.equal(lines.find((l) => l.name === "Class")!.total, -20);
+});
+
+test("builds: Font mods add 20 / 40 / 50 to their stat, as DIM counts them", () => {
+  const b = newBuild(0);
+  const grenade = (n: number) => {
+    b.mods.Arms = [0, ...Array(3).fill(0).map((_, i) => (i < n ? 53 : 0))];
+    return statLines(b, ctx()).find((l) => l.name === "Grenade")!;
+  };
+  assert.equal(grenade(1).fonts, 20);
+  assert.equal(grenade(2).fonts, 40);
+  assert.equal(grenade(3).total, 50);
 });

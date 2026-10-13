@@ -136,17 +136,23 @@ export interface StatLine {
   name: string;
   armor: number;
   mods: number;
+  /** Font mods: a bonus while you have Armor Charge, which DIM counts in its totals too. */
+  fonts: number;
   fragments: number;
   total: number;
   target: number;
 }
 
+/** "<Stat> Font" armor mods: +20 / +40 / +50 to that stat with 1 / 2 / 3 equipped, while you have Armor Charge (Destiny Clarity's numbers). */
+export const FONT_BONUS = [0, 20, 40, 50];
+export const fontStat = (p?: PlugDef) => p?.n.match(/^(\w+) Font$/)?.[1];
+
 const modStats = (hashes: number[], defs: BuildDefs, hash: number) =>
   hashes.reduce((n, h) => n + (defs.plugs[h]?.st?.find(([s]) => s === hash)?.[1] ?? 0), 0);
 
 /**
- * Character stats for the build. Armor stats from the API already include the mods in the armor now;
- * those are taken out and the build's mods added instead.
+ * Character stats for the build, as DIM shows them. Armor stats from the API already include the mods in
+ * the armor now; those are taken out and the build's mods added instead, plus Font bonuses and fragments.
  */
 export function statLines(b: Build, ctx: Ctx): StatLine[] {
   return STAT_HASHES.map((hash) => {
@@ -161,8 +167,10 @@ export function statLines(b: Build, ctx: Ctx): StatLine[] {
     const sc = b.subclass ? ctx.defs.subclasses[b.subclass] : null;
     const fragments = sc ? sc.sockets.reduce((n, s, i) => (s.group === "fragments" ? n + modStats([b.plugs[i]], ctx.defs, hash) : n), 0) : 0;
     // Capped at 200 but not floored: a -10 fragment on a 0 stat shows -10, as in the game and DIM.
-    const total = Math.min(STAT_MAX, armor + mods + fragments);
-    return { hash, name, armor, mods, fragments, total, target: b.targets[hash] ?? 0 };
+    const fontCount = ARMOR_SLOTS.reduce((n, slot) => n + (b.mods[slot] ?? []).filter((h) => fontStat(ctx.defs.plugs[h]) === name).length, 0);
+    const fonts = FONT_BONUS[Math.min(3, fontCount)];
+    const total = Math.min(STAT_MAX, armor + mods + fonts + fragments);
+    return { hash, name, armor, mods, fonts, fragments, total, target: b.targets[hash] ?? 0 };
   });
 }
 

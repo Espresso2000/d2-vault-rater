@@ -108,7 +108,8 @@
 .bd-sbar i { height: 100%; }
 .bd-sbar i.a, .bd-legend i.a { background: linear-gradient(90deg, #4d7dff, #36c4f2); }
 .bd-sbar i.m, .bd-legend i.m { background: #36c4f2; opacity: .75; }
-.bd-sbar i.f, .bd-legend i.f { background: var(--green); }
+.bd-sbar i.o, .bd-legend i.o { background: var(--green); }
+.bd-sbar i.f, .bd-legend i.f { background: #b48cff; }
 .bd-sbar s { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(255,255,255,.35); }
 .bd-sbar u, .bd-legend u { position: absolute; top: -1px; bottom: -1px; width: 2px; background: var(--gold); box-shadow: 0 0 8px var(--gold); }
 .bd-stot { font: 700 16px var(--display); text-align: right; }
@@ -195,7 +196,7 @@ button.bd-chip { cursor: pointer; }
 button.bd-chip::after { content: ""; position: absolute; right: 7px; top: 7px; width: 5px; height: 5px; border-right: 1.5px solid var(--faint); border-bottom: 1.5px solid var(--faint); transform: rotate(45deg); opacity: .7; }
 button.bd-chip:hover, button.bd-chip.open { border-color: color-mix(in srgb, var(--el, var(--green)) 70%, transparent); background: var(--glass-hi); }
 button.bd-chip:focus-visible { outline: 2px solid var(--cyan); outline-offset: 1px; }
-.bd-chip.empty { border-style: dashed; }
+.bd-chip.is-empty { border-style: dashed; }
 .bd-chip.off { opacity: .4; }
 .bd-chip.fixed { opacity: .8; }
 .bd-sico, .bd-iico { position: relative; flex: none; width: 40px; height: 40px; border-radius: 9px; background: rgba(5,9,25,.75); border: 1px solid var(--line-hi); display: grid; place-items: center; }
@@ -245,7 +246,7 @@ button.bd-chip:focus-visible { outline: 2px solid var(--cyan); outline-offset: 1
 .bd-clarity p { color: var(--muted); }
 
 /* Gear and mods card */
-.bd-gearcols { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 14px; align-items: start; }
+.bd-gearcols { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-items: start; }
 .bd-rows { display: grid; gap: 6px; }
 .bd-rows > .cap { margin: 0 0 2px; }
 .bd-row { display: grid; gap: 6px; padding: 6px; border-radius: 12px; border: 1px solid var(--line); background: rgba(5,9,25,.4); }
@@ -258,8 +259,6 @@ button.bd-chip:focus-visible { outline: 2px solid var(--cyan); outline-offset: 1
 .bd-iscore { font: 700 17px var(--display); background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .bd-links { display: flex; gap: 6px; padding-left: 50px; }
 /* Armor rows: piece, its six stats, then the mod sockets, on one line when there is room */
-.bd-arow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; }
-.bd-arow .bd-rowbtn { flex: 1 1 230px; width: auto; min-width: 0; }
 .bd-astats { display: grid; grid-template-columns: repeat(6, 30px); gap: 2px; font: 500 12px var(--mono); text-align: center; }
 .bd-astats span { display: grid; color: var(--muted); }
 .bd-astats i { font: 600 8.5px var(--display); font-style: normal; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
@@ -270,7 +269,7 @@ button.bd-chip:focus-visible { outline: 2px solid var(--cyan); outline-offset: 1
 .bd-mods { display: flex; gap: 5px; align-items: center; }
 .bd-mod { position: relative; flex: none; width: 32px; height: 32px; padding: 0; border-radius: 8px; border: 1px solid var(--line-hi); background: rgba(5,9,25,.7); display: grid; place-items: center; transition: border-color .2s ease, box-shadow .2s ease; color: inherit; }
 .bd-mod img { width: 100%; height: 100%; border-radius: inherit; display: block; }
-.bd-mod.empty { border-style: dashed; }
+.bd-mod.is-empty { border-style: dashed; }
 .bd-mod .bd-plus { font-size: 12px; }
 .bd-mod i { position: absolute; right: -5px; top: -5px; min-width: 15px; height: 15px; padding: 0 3px; border-radius: 50%; display: grid; place-items: center; font: 600 9.5px var(--mono); font-style: normal; color: #04102a; background: var(--cyan); }
 .bd-mod:hover { border-color: var(--green); box-shadow: 0 0 16px -6px rgba(51,227,160,.9); }
@@ -408,7 +407,73 @@ aside.drawer.bd-drawer { z-index: 31; }
 .bd-oico { position: relative; flex: none; width: 48px; height: 48px; border-radius: 10px; background: rgba(5,9,25,.75); border: 1px solid var(--line-hi); display: grid; place-items: center; }
 .bd-oico img { width: 100%; height: 100%; border-radius: inherit; display: block; }
 
+/* ---------- Subclass layout: super and aspects | grenade, melee and the small slots | fragments ---------- */
+.bd-sclayout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px 18px; align-items: start; }
+.bd-sc-left { display: grid; grid-template-columns: 124px minmax(0, 1fr); gap: 12px; align-items: start; }
+.bd-sc-aspects { display: grid; gap: 8px; align-content: start; }
+.bd-sc-aspects .cap { margin: 0; }
+.bd-sc-right { display: grid; gap: 10px; align-content: start; padding-left: 18px; border-left: 1px solid var(--line-hi); }
+.bd-sc-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 1fr)); gap: 8px; }
+.bd-sc-small { display: flex; flex-wrap: wrap; gap: 10px; }
+.bd-sc-extra { font-size: 11.5px; color: var(--faint); display: flex; align-items: center; gap: 8px; }
+.bd-sc-extra::before, .bd-sc-extra::after { content: ""; flex: 1; height: 1px; background: var(--line-hi); }
+/* Super: one big square */
+.bd-k-super { grid-template-columns: 1fr; justify-items: center; gap: 6px; padding: 8px 8px 10px; text-align: center; }
+.bd-k-super .cap { margin: 0; }
+.bd-k-super .bd-sico { width: 84px; height: 84px; border-radius: 14px; }
+.bd-k-super .bd-plus { font-size: 34px; }
+.bd-k-super b { font-size: 12.5px; line-height: 1.2; }
+.bd-k-super::after { display: none; }
+/* Small squares: class ability, jump, Prismatic extras */
+.bd-k-square { grid-template-columns: 1fr; justify-items: center; gap: 4px; padding: 6px; width: 76px; }
+.bd-k-square .bd-sico { width: 52px; height: 52px; }
+.bd-sqlabel { font: 600 9.5px var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); text-align: center; line-height: 1.2; }
+button.bd-k-square::after { display: none; }
+/* Fragments: pills across the full width */
+.bd-frags { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(140px, 100%), 1fr)); gap: 8px; }
+.bd-k-pill { grid-template-columns: 30px minmax(0, 1fr); gap: 8px; padding: 6px 12px 6px 6px; border-radius: 999px; }
+.bd-k-pill .bd-sico { width: 30px; height: 30px; border-radius: 50%; }
+.bd-k-pill .bd-sico img { border-radius: 50%; }
+.bd-k-pill .bd-sico .tier { right: -7px; bottom: -6px; }
+.bd-k-pill b { font-size: 13px; }
+.bd-k-pill.is-empty b { color: var(--muted); font-weight: 500; }
+.bd-k-pill.off b { color: var(--faint); }
+button.bd-k-pill::after { display: none; }
+.bd-lock { width: 14px; height: 14px; fill: currentColor; }
+.bd-fragbtn { display: flex; justify-content: center; margin-top: 10px; }
+/* Weapons: perks and facts under the name */
+.bd-wrow { gap: 8px; align-content: start; }
+/* Weapons side by side, each a narrow card */
+.bd-wlist { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr)); gap: 8px; }
+.bd-wlist .bd-wperks, .bd-wlist .bd-wfacts { padding-left: 0; }
+.bd-wperks { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding-left: 50px; }
+.bd-perk { display: inline-flex; align-items: center; gap: 6px; height: 30px; border-radius: 999px; outline: none; }
+.bd-perk img, .bd-perk .ph { width: 28px; height: 28px; border-radius: 50%; background: rgba(5,9,25,.8); border: 1px solid var(--line-hi); }
+.bd-perk.named { padding-right: 10px; background: rgba(5,9,25,.55); border: 1px solid var(--line); }
+.bd-perk.named span { font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+.bd-perk:focus-visible { box-shadow: 0 0 0 2px var(--cyan); }
+.bd-wfacts { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding-left: 50px; font-size: 11.5px; color: var(--muted); }
+.bd-wfacts .bd-links { padding-left: 0; margin-left: auto; }
+/* Armor: piece and stats on top, labelled mods underneath */
+.bd-arow { gap: 10px; }
+.bd-arow-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+.bd-arow-top .bd-rowbtn { flex: 1 1 260px; width: auto; min-width: 0; }
+.bd-amods { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)) 70px; gap: 8px; align-items: center; }
+.bd-amod { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 8px; align-items: center; min-width: 0; padding: 5px 8px 5px 5px; border-radius: 10px; border: 1px solid var(--line-hi); background: rgba(5,9,25,.6); color: inherit; font: inherit; text-align: left; }
+.bd-amod img { width: 40px; height: 40px; border-radius: 8px; display: block; }
+.bd-amod span { display: grid; min-width: 0; }
+.bd-amod b { font-size: 12.5px; font-weight: 600; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.bd-amod i { font-style: normal; font-size: 10.5px; color: var(--muted); }
+.bd-amod:hover, .bd-amod:focus-visible { border-color: var(--green); box-shadow: 0 0 14px -6px rgba(51,227,160,.9); outline: none; }
+.bd-amod.is-none { border-style: dashed; background: none; }
+.bd-amod.is-none .bd-plus { width: 40px; text-align: center; }
+.bd-amods .bd-energy { width: auto; }
+
 /* ---------- Narrower screens ---------- */
+@media (max-width: 1100px) {
+  .bd-sclayout { grid-template-columns: minmax(0, 1fr); }
+  .bd-sc-right { padding-left: 0; border-left: 0; padding-top: 12px; border-top: 1px solid var(--line-hi); }
+}
 @media (max-width: 1280px) {
   .bd-main { grid-template-columns: minmax(0, 1fr); }
   .bd-summary, .bd-col { grid-column: 1; grid-row: auto; }
@@ -466,4 +531,12 @@ aside.drawer.bd-drawer { z-index: 31; }
   .bd-pick, .bd-gp-head { padding: 18px 16px 0; }
   .bd-gp-body, .bd-gp .bd-pfoot { padding-left: 12px; padding-right: 12px; }
   .bd-gp-tools select { max-width: 44%; }
+}
+
+@media (max-width: 700px) {
+  .bd-amods { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bd-amods .bd-energy { grid-column: 1 / -1; }
+  .bd-sc-left { grid-template-columns: 100px minmax(0, 1fr); }
+  .bd-k-super .bd-sico { width: 64px; height: 64px; }
+  .bd-wperks, .bd-wfacts { padding-left: 0; }
 }
