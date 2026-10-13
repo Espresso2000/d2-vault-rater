@@ -21,7 +21,7 @@ import { startLogin, finishLogin } from "./bungie/oauth.js";
 import { buildReport, loggedIn, refreshSources, type ReportResult } from "./pipeline.js";
 import { applyDimActions, loadPlan, undoDimActions } from "./dim/actions.js";
 import { setDimTag, DIM_TAGS, type DimTagValue } from "./dim/sync.js";
-import { moveItems } from "./bungie/transfer.js";
+import { insertPerk, moveItems } from "./bungie/transfer.js";
 import { applyPageSettings, loadSettings, saveSettings } from "./rating/settings.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -113,6 +113,17 @@ async function serve(port: number) {
         const results = await moveItems(ids, b.to, { equip: b.equip === true });
         for (const m of results) console.log(`  Move: ${m.name} -> ${m.where}${m.equipped ? " (equipped)" : ""}${m.error ? ` [${m.error}]` : ""}`);
         return json(res, 200, { ok: true, results });
+      } catch (e) {
+        return json(res, 500, { ok: false, error: (e as Error).message });
+      }
+    }
+    if (req.method === "POST" && req.url === "/api/perk") {
+      const b = await readBody(req);
+      if (typeof b.id !== "string" || typeof b.socket !== "number" || typeof b.perk !== "string") return json(res, 400, { ok: false, error: "Send a weapon id, socket index and perk name." });
+      try {
+        await insertPerk(b.id, b.socket, b.perk);
+        console.log(`  Perk: ${b.perk} on ${b.id}`);
+        return json(res, 200, { ok: true });
       } catch (e) {
         return json(res, 500, { ok: false, error: (e as Error).message });
       }

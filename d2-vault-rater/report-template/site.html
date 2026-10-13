@@ -808,6 +808,7 @@ aside.drawer.open { transform: none; }
 .pinfo p { margin: 2px 0 0; font-size: 12.5px; line-height: 1.45; color: var(--muted); white-space: pre-line; }
 /* Options can be clicked to preview them; the previewed one gets a dashed gold ring, the equipped one keeps its solid ring */
 .perkcol .perkopts > * { cursor: pointer; }
+.papply { grid-column: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
 .perkcols .pico.pv, .perk.pv { opacity: 1; box-shadow: 0 0 0 2px var(--gold); outline: 2px dashed rgba(0,0,0,.5); outline-offset: -2px; }
 .wherebox { display: grid; gap: 8px; padding: 14px 16px; border-radius: 14px; border: 1px solid rgba(51,227,160,.2); background: linear-gradient(120deg, rgba(51,227,160,.07), var(--glass) 60%); }
 .wherebox .line { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; font-size: 14px; }
@@ -897,7 +898,7 @@ body.vr-booting > .topbar, body.vr-booting > main, body.vr-booting > footer { di
   .breakdown b { font-size: 19px; }
   .perkcol { grid-template-columns: minmax(0, 1fr); gap: 4px; }
   .perkcol .cap { padding-top: 0; }
-  .pinfo { grid-column: 1; }
+  .pinfo, .papply { grid-column: 1; }
   .facts { grid-template-columns: minmax(0, 1fr); }
   .rad .rk, .rad.top .rk { font-size: 36px; }
   .rad .title h3, .rad.top .title h3 { font-size: 20px; }
@@ -1135,7 +1136,7 @@ function vrMain() {
     vendors: "<svg viewBox='0 0 32 32' aria-hidden='true'><path d='M4 6h24l-2 7H6L4 6zm2.5 9h19v13h-19V15zm4 3v7h4v-7h-4zm7 0v3h4.5v-3H17.5zM9 2h14l2 3H7l2-3z'/></svg>",
   };
   // Decision tabs first (what to keep, what to shard), then browsing, then the extras.
-  const TABS = [["overview", "Overview", null], ["weapons", "Weapon Report", S.weapons], ["armor", "Armor Report", S.armor], ["shard", "Shard", S.weaponShard + S.armorShard], ["list", "Vault", null], ["rads", "R&amp;Ds", (DATA.rads || []).length || null], ["wrapped", "Wrapped", null], ...(window.VR_BUILDS ? [["builds", "Builds", window.VR_BUILDS.count()]] : []), ...(window.VR_VENDORS ? [["vendors", "Vendors", window.VR_VENDORS.count()]] : []), ...(window.VR_LOCAL ? [["settings", "Settings", null]] : [])];
+  const TABS = [["overview", "Overview", null], ["weapons", "Weapon Report", S.weapons], ["armor", "Armor Report", S.armor], ["shard", "Shard", S.weaponShard + S.armorShard], ["list", "Vault", null], ...(window.VR_VENDORS ? [["vendors", "Vendors", window.VR_VENDORS.count()]] : []), ["rads", "R&amp;Ds", (DATA.rads || []).length || null], ["wrapped", "Wrapped", null], ...(window.VR_BUILDS ? [["builds", "Builds", window.VR_BUILDS.count()]] : []), ...(window.VR_LOCAL ? [["settings", "Settings", null]] : [])];
   if (!$("#p-settings")) $("main").insertAdjacentHTML("beforeend", '<section class="panel" id="p-settings" role="tabpanel" hidden></section>');
   if (window.VR_BUILDS && !$("#p-builds")) $("main").insertAdjacentHTML("beforeend", '<section class="panel" id="p-builds" role="tabpanel" hidden></section>');
   if (window.VR_VENDORS && !$("#p-vendors")) $("main").insertAdjacentHTML("beforeend", '<section class="panel" id="p-vendors" role="tabpanel" hidden></section>');
@@ -2335,8 +2336,29 @@ function vrMain() {
     if (!opt || !w) return;
     const p = perkCols(w)[Number(colEl.dataset.col)], o = p?.o[[...opt.parentNode.children].indexOf(opt)];
     if (!o) return;
-    for (const x of opt.parentNode.children) x.classList.toggle("pv", x === opt && o !== (p.a || p.o[0]));
-    colEl.querySelector(".pinfo").outerHTML = perkInfo(o);
+    const eq = p.a || p.o[0], ci = colEl.dataset.col;
+    for (const x of opt.parentNode.children) x.classList.toggle("pv", x === opt && o !== eq);
+    colEl.querySelector(".papply")?.remove();
+    // Apply switches the perk in game; only through the local app, and only for columns that know their socket.
+    colEl.querySelector(".pinfo").outerHTML = perkInfo(o) + (o !== eq && window.VR_LOCAL && p.si != null
+      ? `<div class="papply"><button class="movebtn" data-apply="${ci}" data-perk="${esc(o)}">Apply ${esc(o)}</button><span class="small muted" aria-live="polite">Switches it on the weapon in game. You need to be in orbit, a social space or offline.</span></div>` : "");
+  });
+  drawer.addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-apply]"), id = drawer.dataset.item, w = W.get(id);
+    if (!b || !w) return;
+    const p = perkCols(w)[Number(b.dataset.apply)], o = b.dataset.perk, msg = b.nextElementSibling;
+    b.disabled = true; msg.textContent = `Switching to ${o}…`;
+    try {
+      const res = await api("/api/perk", { id, socket: p.si, perk: o });
+      if (!res.ok) throw new Error(res.error);
+      p.a = o;
+      for (const k of Object.keys(rendered)) delete rendered[k];
+      show(location.hash.slice(1) || "overview", false);
+      openWeapon(id);
+      $(`.perkcol[data-col="${b.dataset.apply}"] .pinfo`, drawer)?.insertAdjacentHTML("afterend", `<div class="papply"><span class="small" style="color:var(--green)">Switched to ${esc(o)} in game.</span></div>`);
+    } catch (err) {
+      b.disabled = false; msg.textContent = "Couldn't switch: " + err.message;
+    }
   });
   function openArmor(id) {
     const a = A.get(id); if (!a) return; markSeen(id);

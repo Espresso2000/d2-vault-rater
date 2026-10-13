@@ -21,7 +21,7 @@ import { rateArmor } from "../../src/rating/armor.js";
 import { rateActivities } from "../../src/rating/activities.js";
 import { planEncounters } from "../../src/rating/encounters.js";
 import { planDimActions, applyDimActions, undoDimActions, type DimPlan } from "../../src/dim/actions.js";
-import { moveItems } from "../../src/bungie/transfer.js";
+import { insertPerk, moveItems } from "../../src/bungie/transfer.js";
 import { buildSiteData } from "../../src/report/siteData.js";
 import { loadBuilds } from "./builds/store";
 import { esc } from "./html";
@@ -235,6 +235,10 @@ window.VR_API = async (path, body) => {
         if (!ids.length || typeof body.to !== "string") return { ok: false, error: "Send item ids and a destination." };
         return { ok: true, results: await moveItems(ids, body.to, { equip: body.equip === true }) };
       }
+      case "/api/perk":
+        if (typeof body.id !== "string" || typeof body.socket !== "number" || typeof body.perk !== "string") return { ok: false, error: "Send a weapon id, socket index and perk name." };
+        await insertPerk(body.id, body.socket, body.perk);
+        return { ok: true };
       case "/api/locks/apply": {
         // Only the plan the page previewed, and only with the explicit confirmation.
         if (body.confirm !== true || !currentPlan || body.planId !== currentPlan.id) return { ok: false, error: "Preview the current plan and confirm it first." };
