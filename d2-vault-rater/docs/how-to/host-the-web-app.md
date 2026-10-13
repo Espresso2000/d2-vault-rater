@@ -22,10 +22,13 @@ If you leave the file empty, each visitor sees a setup screen and their keys are
 ## 3. Ship snapshots (optional, recommended)
 
 ```bash
+npm install
 cd web
 npm install
 npm run snapshot
 ```
+
+The first `npm install`, in the package folder, is for the shared rating code the web app imports from `src/`.
 
 This writes a stripped manifest and the Builds tab's definitions for the live game version, plus a copy of Aegis's tier list and armor set tiers, into `public/data` ([web/scripts/snapshot.ts:1-7](../../web/scripts/snapshot.ts#L1-L7)). With them, a first visit loads a few MB instead of building the item database from 200 MB of Bungie tables ([web/src/versioned.ts:1-6](../../web/src/versioned.ts#L1-L6)). The sources copy comes from your local app's cache, so run its `refresh` first if it is old ([web/scripts/snapshot.ts:56-61](../../web/scripts/snapshot.ts#L56-L61)). Re-run after each game patch; a snapshot for an older version is simply skipped ([web/src/versioned.ts:42-46](../../web/src/versioned.ts#L42-L46)).
 

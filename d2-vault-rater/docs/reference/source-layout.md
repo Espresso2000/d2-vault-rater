@@ -16,7 +16,7 @@
 | [src/bungie/tables.ts:11](../../src/bungie/tables.ts#L11) | `liteTable`: downloads one table, strips it and caches it as `<table>.lite.json`. |
 | [src/bungie/strip.ts:21](../../src/bungie/strip.ts#L21) | Cuts manifest tables down to the fields the rater reads. Browser-safe; the web app uses it too. |
 | [src/bungie/defs.ts:8](../../src/bungie/defs.ts#L8) | Manifest types and name helpers. Browser-safe. |
-| [src/bungie/transfer.ts:47](../../src/bungie/transfer.ts#L47) | Moving and equipping items. |
+| [src/bungie/transfer.ts:47](../../src/bungie/transfer.ts#L47) | Moving and equipping items; switching a weapon's perk ([src/bungie/transfer.ts:135](../../src/bungie/transfer.ts#L135)). |
 | [src/vault/fetch.ts:9](../../src/vault/fetch.ts#L9) | Reads the profile and keeps the last vault. |
 | [src/vault/decode.ts:71](../../src/vault/decode.ts#L71) | Profile response → `Vault`. |
 | [src/vault/types.ts:74](../../src/vault/types.ts#L74) | `Vault`, `WeaponRecord`, `ArmorRecord`, `PerkColumn`. |
@@ -26,6 +26,8 @@
 | [src/sources/wishlist.ts:24](../../src/sources/wishlist.ts#L24) | DIM wishlist parsing and import. |
 | [src/sources/activities.ts:96](../../src/sources/activities.ts#L96) | Raid and dungeon loot; where each weapon comes from. |
 | [src/sources/csv.ts:5](../../src/sources/csv.ts#L5) | RFC 4180 CSV parser and the Google Sheets CSV URL. |
+| [src/vendors/vendors.ts:193](../../src/vendors/vendors.ts#L193) | Vendor stock for one character: GetVendors plus one call per gear vendor, decoded like vault items. |
+| [src/vendors/rate.ts:41](../../src/vendors/rate.ts#L41) | Rates each sale item against the vault: Worth buying, Maybe or Skip. |
 | [src/data/encounters.ts:55](../../src/data/encounters.ts#L55) | Every raid and dungeon encounter, roles and meta picks. |
 | [src/rating/settings.ts:89](../../src/rating/settings.ts#L89) | Settings schema, presets, `strictnessFor`. |
 | [src/rating/weapons.ts:145](../../src/rating/weapons.ts#L145) | Weapon scores and verdicts. |
@@ -46,6 +48,7 @@
 | [web/vite.config.ts:22](../../web/vite.config.ts#L22) | The shim plugin, the page plugin, local mode. |
 | [web/local-server.ts:36](../../web/local-server.ts#L36) | Local mode only: serves `app-config.json` from `.env` and relays token requests with the client secret. |
 | [web/src/main.ts:269](../../web/src/main.ts#L269) | Boot, sign-in screens, the rating run, the page's `/api` handlers. |
+| [web/src/background.html:1](../../web/src/background.html#L1) | The animated nebula background injected into the web build. |
 | [web/src/shell.html:1](../../web/src/shell.html#L1) | Sign-in and progress markup injected into the report template. |
 | [web/src/appConfig.ts:28](../../web/src/appConfig.ts#L28) | Which Bungie app the site uses. |
 | [web/src/shims/](../../web/src/shims/) | Browser versions of the five Node-only modules, plus `node:*` stand-ins. |
@@ -54,6 +57,8 @@
 | [web/src/sources.ts:26](../../web/src/sources.ts#L26) | Daily source refresh with snapshot fallback. |
 | [web/src/idb.ts:6](../../web/src/idb.ts#L6) | A small promise wrapper around one IndexedDB store. |
 | [web/src/html.ts:2](../../web/src/html.ts#L2) | `esc()` for HTML. |
+| [web/src/vendors/ui.ts:55](../../web/src/vendors/ui.ts#L55) | The Vendors tab ([explanation](../explanation/vendors.md)). |
+| [web/src/vendors/capture.ts:15](../../web/src/vendors/capture.ts#L15) | Local mode only: saves raw vendor data through the local server for checking. |
 | [web/src/builds/](../../web/src/builds/) | The Builds tab ([explanation](../explanation/builds-tab.md)). |
 | [web/scripts/snapshot.ts:26](../../web/scripts/snapshot.ts#L26) | Writes the snapshots shipped in `public/data`. |
 
@@ -63,5 +68,7 @@
 | --- | --- |
 | [report-template/site.html:986](../../report-template/site.html#L986) | The report page, shared by the local report and the web app. |
 | [skill/SKILL.md:1](../../skill/SKILL.md#L1) | Instructions for an AI running a vault review. |
-| [test/](../../test/) | Unit tests and fixtures. |
+| [test/](../../test/) | Unit tests ([list](../how-to/develop-and-check.md#what-each-one-covers)) and fixtures: a fake manifest and profile ([test/fixtures/build.ts](../../test/fixtures/build.ts)) and one Aegis tab ([test/fixtures/aegis-smg.csv](../../test/fixtures/aegis-smg.csv)). |
+| [Vault Rater.cmd](../../../Vault%20Rater.cmd), [Vault Rater Web.cmd](../../../Vault%20Rater%20Web.cmd) | Windows launchers, one folder up ([reference](cli-and-local-server.md#windows-launchers)). |
+| [assets/logo/emblem.svg](../../../assets/logo/emblem.svg) | The emblem, one folder up; the report page inlines a copy. |
 | [scripts/check-doc-refs.mjs:1](../../scripts/check-doc-refs.mjs#L1) | Checks the code links in these docs. |

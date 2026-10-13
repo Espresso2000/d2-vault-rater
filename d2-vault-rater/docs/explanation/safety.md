@@ -23,9 +23,17 @@ Lock changes are spaced out (250 ms by default) and retried while Bungie throttl
 
 In the Builds tab, equipping a build first shows every step it would take ("Dry run · nothing has changed yet") and runs them only when you confirm ([web/src/builds/ui.ts:1445](../../web/src/builds/ui.ts#L1445), [web/src/builds/equip.ts:41](../../web/src/builds/equip.ts#L41)).
 
+## Perk switches
+
+Switching a weapon's perk is a single change you start by pressing **Apply** on a perk you previewed, so it has no separate dry run. It is limited to the weapon's own selectable options: the perk must be in that column, and its plug hash comes from the vault read, never from the page ([src/bungie/transfer.ts:123-133](../../src/bungie/transfer.ts#L123-L133)). Bungie only allows these "free" plug changes, and only in orbit, a social space or offline ([src/bungie/transfer.ts:118-122](../../src/bungie/transfer.ts#L118-L122)). See [Preview and switch a weapon's perks](../how-to/switch-weapon-perks.md).
+
+## Vendors are read-only
+
+The Vendors tab only reads stock and rates it; nothing is bought or changed ([web/src/vendors/ui.ts:1-5](../../web/src/vendors/ui.ts#L1-L5)).
+
 ## The local server only takes requests from its own page
 
-The CLI's server listens on `127.0.0.1` only ([src/cli.ts:184](../../src/cli.ts#L184)) and rejects any POST whose `Origin` isn't the page it serves ([src/cli.ts:94-95](../../src/cli.ts#L94-L95)). The web app's local token relay does the same check ([web/local-server.ts:57-60](../../web/local-server.ts#L57-L60)) and keeps the client secret out of the page by adding it on the server side ([web/local-server.ts:71](../../web/local-server.ts#L71)).
+The CLI's server listens on `127.0.0.1` only ([src/cli.ts:184](../../src/cli.ts#L184)) and rejects any POST whose `Origin` isn't the page it serves ([src/cli.ts:94-95](../../src/cli.ts#L94-L95)). The web app's local server does the same check for its token relay and its vendor capture route ([web/local-server.ts:45-47](../../web/local-server.ts#L45-L47), [web/local-server.ts:57-60](../../web/local-server.ts#L57-L60)). The relay keeps the client secret out of the page by adding it on the server side ([web/local-server.ts:71](../../web/local-server.ts#L71)).
 
 ## The report page can't be broken by item names
 

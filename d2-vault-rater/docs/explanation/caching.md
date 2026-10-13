@@ -12,7 +12,7 @@ The manifest is Bungie's database of every item, perk, stat and activity definit
   2. a snapshot shipped with the site, `data/<name>-<version>.json` ([web/src/versioned.ts:42](../../web/src/versioned.ts#L42)), made by `npm run snapshot` ([web/scripts/snapshot.ts:30-43](../../web/scripts/snapshot.ts#L30-L43));
   3. a Web Worker that downloads and strips the tables from bungie.net ([web/src/versioned.ts:52](../../web/src/versioned.ts#L52), [web/src/manifest.worker.ts](../../web/src/manifest.worker.ts)).
 
-  Whatever it got is saved back to IndexedDB under the same key ([web/src/versioned.ts:62](../../web/src/versioned.ts#L62)), replacing the old version. The item database uses the key `manifest-v2` ([web/src/manifest.ts:11-12](../../web/src/manifest.ts#L11-L12)); the number is the strip format ([src/bungie/strip.ts:7-8](../../src/bungie/strip.ts#L7-L8)), raised when the stripped tables gain a field (2 added perk icons), so a copy in an older format is rebuilt once and the Builds tab's definitions use `build-defs-v2` (2 added subclass text) ([web/src/builds/defs.ts:13-14](../../web/src/builds/defs.ts#L13-L14)). The manifest index itself is requested once per visit and shared by both ([web/src/versioned.ts:16-22](../../web/src/versioned.ts#L16-L22)).
+  Whatever it got is saved back to IndexedDB under the same key ([web/src/versioned.ts:62](../../web/src/versioned.ts#L62)), replacing the old version. The item database uses the key `manifest-v3` ([web/src/manifest.ts:11-12](../../web/src/manifest.ts#L11-L12)); the number is the strip format ([src/bungie/strip.ts:7-8](../../src/bungie/strip.ts#L7-L8)), raised when the stripped tables gain a field (2 added perk icons, 3 perk descriptions), so a copy in an older format is rebuilt once. The Node cache names the item table's file the same way, `DestinyInventoryItemDefinition.lite.v3.json` ([src/bungie/manifest.ts:31-32](../../src/bungie/manifest.ts#L31-L32)). The Builds tab's definitions use `build-defs-v2` (2 added subclass text). A shipped snapshot's file name carries only the game version, not the strip format ([web/src/versioned.ts:42](../../web/src/versioned.ts#L42)), so re-run `npm run snapshot` after a strip format change ([web/src/builds/defs.ts:13-14](../../web/src/builds/defs.ts#L13-L14)). The manifest index itself is requested once per visit and shared by both ([web/src/versioned.ts:16-22](../../web/src/versioned.ts#L16-L22)).
 
 ## Rating sources: refreshed after 24 hours
 
@@ -48,6 +48,10 @@ The local report embeds every icon as a data URI so it works offline; each image
 
 - The Destiny membership lookup is shared: the Node rater asks once per Bungie account and process ([src/bungie/oauth.ts:44-63](../../src/bungie/oauth.ts#L44-L63)), the web app once per visit (above). Reading the vault checks the manifest version and the membership at the same time ([src/vault/fetch.ts:10](../../src/vault/fetch.ts#L10)).
 - Wrapped's account stats are fetched while the vault is read and rated, not after ([src/pipeline.ts:63-64](../../src/pipeline.ts#L63-L64), [web/src/main.ts:130-131](../../web/src/main.ts#L130-L131)). Its own requests go out together in two rounds: profile and stats first, then titles and per-weapon kills, which need the character list ([src/vault/wrapped.ts:57-80](../../src/vault/wrapped.ts#L57-L80)).
+
+## Vendor stock
+
+The Vendors tab reads stock from Bungie only when it is opened, keeps each character's rated stock in memory for the visit, and reads it again on **Refresh** ([web/src/vendors/ui.ts:38-39](../../web/src/vendors/ui.ts#L38-L39), [web/src/vendors/ui.ts:78-82](../../web/src/vendors/ui.ts#L78-L82)). Vendor, currency and cosmetic names are looked up one by one and kept in memory too ([src/vendors/vendors.ts:179-190](../../src/vendors/vendors.ts#L179-L190)). Nothing vendor-related is stored between visits. See [The Vendors tab](vendors.md).
 
 ## Hosting
 

@@ -42,8 +42,30 @@ The web app has its own scripts in [web/package.json](../../web/package.json): `
 | `POST /api/settings` | Settings panel fields | Saves preset, focus, protect list, per-type settings and DIM switches. | [src/cli.ts:131-140](../../src/cli.ts#L131-L140) |
 | `POST /api/tag` | `id`, `tag` or null, `notes?` | Sets or clears a DIM tag. | [src/cli.ts:96-107](../../src/cli.ts#L96-L107) |
 | `POST /api/move` | `ids`, `to`, `equip?` | Moves items, optionally equipping them. | [src/cli.ts:108-119](../../src/cli.ts#L108-L119) |
+| `POST /api/perk` | `id`, `socket`, `perk` | Switches a weapon's perk column to one of its own options in game ([how-to](../how-to/switch-weapon-perks.md)). | [src/cli.ts:120-130](../../src/cli.ts#L120-L130) |
 | `POST /api/locks/apply` | `planId`, `confirm: true` | Applies the current plan only. | [src/cli.ts:142-152](../../src/cli.ts#L142-L152) |
 | `POST /api/locks/undo` | `planId` | Undoes an applied plan. | [src/cli.ts:153-161](../../src/cli.ts#L153-L161) |
+
+The web app also answers `POST /api/signout`, which signs you out of Bungie in that browser ([web/src/main.ts:227-229](../../web/src/main.ts#L227-L229), [web/src/main.ts:103-108](../../web/src/main.ts#L103-L108)); its `/api/refresh` only acknowledges, because the page reloads and rates again ([web/src/main.ts:224-226](../../web/src/main.ts#L224-L226)).
+
+## Web app local server
+
+`npm run local` in `web/` builds the site and serves it over https with three extra routes ([web/local-server.ts:1-9](../../web/local-server.ts#L1-L9)):
+
+| Route | Does | Source |
+| --- | --- | --- |
+| `GET /app-config.json` | Hands the page the API key and client id from `.env`, and the token relay's address when a client secret is set. Not secret. | [web/local-server.ts:39-44](../../web/local-server.ts#L39-L44) |
+| `POST /oauth/token` | Relays Bungie's token exchange and refresh, adding the client secret; only from the page's own origin. | [web/local-server.ts:55-78](../../web/local-server.ts#L55-L78) |
+| `POST /debug/vendors` | Saves the Vendors tab's raw vendor data to `web/debug/vendors-<character>.json` ([explanation](../explanation/vendors.md#vendor-data-capture-local-mode)). | [web/local-server.ts:45-54](../../web/local-server.ts#L45-L54) |
+
+## Windows launchers
+
+Two files in the folder above `d2-vault-rater` start the apps with a double-click:
+
+| File | Does |
+| --- | --- |
+| [`Vault Rater.cmd`](../../../Vault%20Rater.cmd) | Installs packages when `node_modules` is missing and builds when `dist/cli.js` is missing (so after updating the code, run `npm run build` yourself), then runs the CLI's `serve` command. |
+| [`Vault Rater Web.cmd`](../../../Vault%20Rater%20Web.cmd) | Installs the root packages (the web app imports shared code from `src/`, which needs `zod`) and the web packages when they are missing or half-installed, opens <https://localhost:7777/> after a few seconds, and runs `npm run local`. |
 
 ## Environment variables
 

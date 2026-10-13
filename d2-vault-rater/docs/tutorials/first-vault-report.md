@@ -64,8 +64,9 @@ To apply it: npm run vault -- apply 2026-10-08T16-40-12-118Z-a3f9c1
   - **Armor Report**: best piece per class and slot, with stats and set bonuses. The class buttons list your most recently played class first.
 - **Shard**: everything marked for sharding, grouped by reason.
 - **Vault**: two modes, switched at the top. *Vault* lays out each character's weapons beside your vault, by slot, like DIM, with the vault split into one box per weapon type; drag a weapon to move or equip it. *Full list* is every item, with filters, sorting and grouping. Both share the pinned toolbar. Typing in the search box in the top bar (or pressing `/`) opens the full list filtered. Details: [The report page](../reference/report-page.md#vault-tab).
-- **Perks** show as round symbols in the game's order, with a green ring on the ones Aegis recommends; open a weapon to see every option per column.
+- **Perks** show as round symbols in the game's order, with a green ring on the ones Aegis recommends; open a weapon to see every option per column, click one to preview it, and press **Apply** to switch to it in game ([how-to](../how-to/switch-weapon-perks.md)).
 - **R&Ds**: raids and dungeons ranked by what they would add to your vault, with a loadout from your vault for every encounter.
+- **Wrapped**: your account at a glance: characters, PvE and PvP totals, kills by weapon type, top weapons and titles.
 
 If something you want to keep is on the shard list, [protect it](../how-to/protect-items.md); if the list is too long or too short, [change the strictness](../how-to/tune-strictness.md). Press **Re-rate** in the top bar to see the change ([src/cli.ts:162-176](../../src/cli.ts#L162-L176)).
 

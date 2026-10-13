@@ -47,6 +47,15 @@ The report is a single HTML file, [report-template/site.html](../../report-templ
 - The web build injects the sign-in shell and the app script into the same template ([web/vite.config.ts:37-54](../../web/vite.config.ts#L37-L54)). After rating, the app passes the data to `window.VR_START` ([web/src/main.ts:187](../../web/src/main.ts#L187)). There, images load straight from bungie.net ([web/src/main.ts:153-155](../../web/src/main.ts#L153-L155)).
 - The page's buttons call `/api/...` routes. The local server answers them over HTTP ([src/cli.ts:92](../../src/cli.ts#L92)); in the web app, `window.VR_API` answers the same routes in the browser ([web/src/main.ts:221](../../web/src/main.ts#L221)). Both read the Settings panel's changes with the same function ([src/rating/settings.ts:131](../../src/rating/settings.ts#L131)).
 
+## Web-only tabs
+
+The web app adds two tabs the local report doesn't have, each a separate JavaScript chunk loaded after the report draws, so they don't slow the first paint ([web/src/main.ts:191-202](../../web/src/main.ts#L191-L202)). The report page shows a tab only when its chunk registered itself ([report-template/site.html:1139-1142](../../report-template/site.html#L1139-L1142)).
+
+- **Vendors** ([web/src/vendors/](../../web/src/vendors/)): reads vendor stock with [src/vendors/vendors.ts](../../src/vendors/vendors.ts), decodes it with the vault decoder, and rates it with the shared rating code ([src/vendors/rate.ts](../../src/vendors/rate.ts)). See [The Vendors tab](vendors.md).
+- **Builds**, below.
+
+The web build also injects an animated background ([web/src/background.html](../../web/src/background.html), [web/vite.config.ts:45-49](../../web/vite.config.ts#L45-L49)).
+
 ## The Builds tab
 
 The web app also has a Builds tab (subclass, gear, mods and stat targets, rated and equippable). It lives in [web/src/builds/](../../web/src/builds/) and is loaded as its own chunk after the report draws ([web/src/main.ts:192-196](../../web/src/main.ts#L192-L196)). See [The Builds tab](builds-tab.md).

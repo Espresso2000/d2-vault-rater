@@ -4,7 +4,10 @@ The web app is the same rater running entirely in your browser. In this tutorial
 
 ## 1. Install
 
+The web app imports the rating code from `src/`, so it needs the package folder's packages as well as its own. If you did the first tutorial, the first command is already done.
+
 ```bash
+npm install
 cd web
 npm install
 ```
@@ -15,14 +18,15 @@ npm install
 npm run local
 ```
 
-On Windows you can double-click `Vault Rater Web.cmd` instead, next to `Vault Rater.cmd` in the folder above `d2-vault-rater`. It also opens the page for you.
+On Windows you can double-click `Vault Rater Web.cmd` instead, next to `Vault Rater.cmd` in the folder above `d2-vault-rater`. It installs both sets of packages when they are missing and opens the page for you ([launchers](../reference/cli-and-local-server.md#windows-launchers)).
 
 This builds the site and serves it over https on the port of your app's redirect URL, 7777 by default ([web/vite.config.ts:56-64](../../web/vite.config.ts#L56-L64), [web/local-server.ts:22-28](../../web/local-server.ts#L22-L28)). The certificate is self-signed, so your browser warns once: choose **Advanced**, then continue.
 
-Two small helpers run next to the page in this mode only ([web/local-server.ts:1-9](../../web/local-server.ts#L1-L9)):
+A small local server runs next to the page in this mode only ([web/local-server.ts:1-9](../../web/local-server.ts#L1-L9)):
 
 - `app-config.json` hands the page your API key and client id from `.env` ([web/local-server.ts:39-44](../../web/local-server.ts#L39-L44)).
 - `oauth/token` adds your client secret to Bungie's token exchange, so the secret never reaches the page ([web/local-server.ts:55-77](../../web/local-server.ts#L55-L77)). Because your app is Confidential, you also get a refresh token and stay signed in.
+- `debug/vendors` saves the Vendors tab's raw data to `web/debug/` for checking vendor support ([web/local-server.ts:45-54](../../web/local-server.ts#L45-L54)).
 
 ## 3. Sign in
 
@@ -34,7 +38,7 @@ The page then shows its progress while it:
 2. imports the tier list, wishlist, armor sets and raid loot when they are over a day old ([web/src/sources.ts:26-88](../../web/src/sources.ts#L26-L88));
 3. reads and rates your vault and draws the report ([web/src/main.ts:121-189](../../web/src/main.ts#L121-L189)).
 
-The report has the same tabs as the local app's, and its buttons work the same way ([web/src/main.ts:221-266](../../web/src/main.ts#L221-L266)).
+The report has the local app's tabs plus **Vendors** and **Builds**, and its buttons work the same way ([web/src/main.ts:221-266](../../web/src/main.ts#L221-L266)).
 
 ## 4. Make a build
 
@@ -47,6 +51,16 @@ Open **Builds**. The first time, it downloads subclass, aspect and fragment defi
 5. **Equip** it. You get a dry run listing every step; nothing changes until you confirm ([web/src/builds/equip.ts:41](../../web/src/builds/equip.ts#L41)).
 
 Your builds are saved in this browser ([web/src/builds/store.ts:5-8](../../web/src/builds/store.ts#L5-L8)).
+
+## 5. Check the vendors
+
+Open **Vendors**. It reads what vendors sell right now for your most recently played character and rates each weapon and armor piece against your vault ([web/src/vendors/ui.ts:78-105](../../web/src/vendors/ui.ts#L78-L105)).
+
+1. Tick **Only worth buying** to see just the items the rater would keep.
+2. Open a card for the reasons, every perk option and the price.
+3. Switch **Character** to see another class's stock, or press **Eververse** for today's featured offers.
+
+What the calls mean: [The Vendors tab](../explanation/vendors.md).
 
 ## Next
 

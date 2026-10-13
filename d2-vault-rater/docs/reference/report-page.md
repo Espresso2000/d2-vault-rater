@@ -17,10 +17,11 @@ In order ([report-template/site.html:1138-1139](../../report-template/site.html#
 | Tab | Shows | Source |
 | --- | --- | --- |
 | Overview | Keep and shard counts, the Aegis tier bar, best picks per slot, strictness and focus chips that open Settings. | [report-template/site.html:1331](../../report-template/site.html#L1331) |
-| Reports → Weapon Report | Weapons by type, with best picks; Large / Compact cards. A menu that opens on hover, click or keyboard holds this and Armor Report ([report-template/site.html:1144-1145](../../report-template/site.html#L1144-L1145)). | [report-template/site.html:1366](../../report-template/site.html#L1366) |
+| Reports → Weapon Report | Weapons by type, with best picks. **Card size** switches between large cards, which show each equipped perk as its symbol with its name (recommended ones green, the description on hover) and a line with ammo, masterwork, Crafted / Adept and God roll ([report-template/site.html:1282-1288](../../report-template/site.html#L1282-L1288)), and compact ones. A menu that opens on hover, click or keyboard holds this and Armor Report ([report-template/site.html:1144-1145](../../report-template/site.html#L1144-L1145)). | [report-template/site.html:1366](../../report-template/site.html#L1366) |
 | Reports → Armor Report | Best piece per class and slot, set cards; the class buttons list the most recently played class first. | [report-template/site.html:1438](../../report-template/site.html#L1438) |
 | Shard | Everything marked shard or review, grouped by reason; **Preview changes** and **Apply** for the lock plan. | [report-template/site.html:1928](../../report-template/site.html#L1928) |
 | Vault | Two modes: **Vault** and **Full list** ([below](#vault-tab)). | [report-template/site.html:1638](../../report-template/site.html#L1638) |
+| Vendors | Web app only: what vendors sell right now, rated against your vault and marked Worth buying, Maybe or Skip; Eververse offers with price and time left ([explanation](../explanation/vendors.md)). Its count is the number of weapons worth buying. | [report-template/site.html:1139](../../report-template/site.html#L1139), [web/src/main.ts:198-202](../../web/src/main.ts#L198-L202) |
 | R&Ds | Raids and dungeons ranked for your vault, with an encounter loadout for each encounter ([explanation](../explanation/raids-dungeons-encounters.md)). | [report-template/site.html:1473](../../report-template/site.html#L1473) |
 | Wrapped | Account stats: characters, PvE and PvP totals, kills by weapon type, top weapons, triumph score and titles. | [report-template/site.html:2061](../../report-template/site.html#L2061), [src/vault/wrapped.ts:49](../../src/vault/wrapped.ts#L49) |
 | Builds | Web app only: make, rate and equip builds. This tab is being reworked; see [The Builds tab](../explanation/builds-tab.md). | [web/src/main.ts:192-196](../../web/src/main.ts#L192-L196) |
@@ -57,7 +58,22 @@ The web app's Vault tab has a **Refresh** button that reads the vault again in p
 
 - **On cards and rows**, the perks equipped on each gun show in the game's column order: barrel, magazine, the two traits, then the origin trait ([report-template/site.html:1275-1280](../../report-template/site.html#L1275-L1280)).
 - **As symbols** by default: each perk's icon in a round socket, its name on hover, with a green ring on perks Aegis recommends ([report-template/site.html:290-304](../../report-template/site.html#L290-L304), [report-template/site.html:1261-1267](../../report-template/site.html#L1261-L1267)). Settings → Display switches to names, which show only the two traits because names are wide.
-- **In the weapon drawer**, every perk column lists all its options, with the equipped one lit, and shows the selected perk's symbol, name and description ([report-template/site.html:1269-1274](../../report-template/site.html#L1269-L1274)). Icons and descriptions come from the manifest's plug definitions ([src/report/siteData.ts:106-112](../../src/report/siteData.ts#L106-L112)).
+- **In the weapon drawer**, every perk column lists all its options, with the equipped one lit, and shows the selected perk's symbol, name and description. Clicking another option previews it (dashed gold ring), and in a served page **Apply** switches the weapon to it in game: see [Preview and switch a weapon's perks](../how-to/switch-weapon-perks.md) ([report-template/site.html:1269-1274](../../report-template/site.html#L1269-L1274)). Icons and descriptions come from the manifest's plug definitions ([src/report/siteData.ts:106-112](../../src/report/siteData.ts#L106-L112)).
+
+## Settings panel
+
+Opened with the gear or `#settings`, in a served page only ([report-template/site.html:2012](../../report-template/site.html#L2012)). Its sections, in order:
+
+| Section | Holds | Source |
+| --- | --- | --- |
+| Your vault | When the vault was rated. In the web app also the Bungie sign-in status (renewed by itself with a Confidential app, or minutes left with a Public one) and **Sign out**. | [report-template/site.html:2018-2020](../../report-template/site.html#L2018-L2020), [web/src/main.ts:204-216](../../web/src/main.ts#L204-L216) |
+| Display | Perks as symbols or names; applies at once, nothing is re-rated. | [report-template/site.html:2021-2023](../../report-template/site.html#L2021-L2023) |
+| Strictness | The preset and its main values. | [report-template/site.html:2024](../../report-template/site.html#L2024) |
+| Per weapon type | A preset per weapon type. | [report-template/site.html:2029](../../report-template/site.html#L2029) |
+| Focus and protection | Focus (PvE, PvP, both) and the protect list, one name per line. | [report-template/site.html:2031](../../report-template/site.html#L2031) |
+| DIM | Read DIM tags, read DIM loadouts, protect Favorite/Keep. | [report-template/site.html:2034](../../report-template/site.html#L2034) |
+
+**Save and re-rate** saves everything but Display and rates the vault again ([report-template/site.html:2039](../../report-template/site.html#L2039)). What each value does: [Settings](settings.md). In the web app, once Bungie access really runs out, a banner asks you to sign in again ([web/src/main.ts:211-214](../../web/src/main.ts#L211-L214)).
 
 ## What the page remembers
 
@@ -75,3 +91,8 @@ Display choices are kept in this browser's `localStorage` ([report-template/site
 | `vr-class` | Armor Report class |
 | `vr-fold` | Folded sections |
 | `vr-seen`, `vr-new` | Item ids already seen, and the ones still marked New |
+| `vr-vendors-kind`, `vr-vendors-char`, `vr-vendors-buy`, `vr-vendors-closed` | Vendors tab: Weapons / Armor / Eververse, the character, Only worth buying, and collapsed vendor cards ([web/src/vendors/ui.ts:55-63](../../web/src/vendors/ui.ts#L55-L63)) |
+
+## Background (web app)
+
+The web app draws a slow animated nebula behind the report: sparse green clouds, star dust and soft glows on the report's navy, animating only transform and opacity so the GPU does the work. It stops for people who ask their system for reduced motion ([web/src/background.html:1-4](../../web/src/background.html#L1-L4), [web/src/background.html:52](../../web/src/background.html#L52)). The web build injects it before the sign-in shell ([web/vite.config.ts:45-49](../../web/vite.config.ts#L45-L49)); the local report doesn't have it.

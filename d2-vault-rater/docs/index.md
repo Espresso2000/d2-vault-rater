@@ -1,6 +1,6 @@
 # Vault Rater documentation
 
-Vault Rater rates every weapon and armor piece in a Destiny 2 vault against Aegis's tier list and community wishlists, says what to keep and what to shard, and can lock keepers, unlock junk, move items and tag them in DIM after you approve. It runs as an MCP tool server for an AI client ([src/server.ts:32](../src/server.ts#L32)), as a command-line app with a local report page ([src/cli.ts:191](../src/cli.ts#L191)), or as a static web app in the browser ([web/src/main.ts:269](../web/src/main.ts#L269)).
+Vault Rater rates every weapon and armor piece in a Destiny 2 vault against Aegis's tier list and community wishlists, says what to keep and what to shard, and can lock keepers, unlock junk, move items, switch weapon perks and tag items in DIM after you approve. The web app also rates what vendors sell against your vault. It runs as an MCP tool server for an AI client ([src/server.ts:32](../src/server.ts#L32)), as a command-line app with a local report page ([src/cli.ts:191](../src/cli.ts#L191)), or as a static web app in the browser ([web/src/main.ts:269](../web/src/main.ts#L269)).
 
 ## How these docs are organised
 
@@ -26,6 +26,7 @@ Every statement about the code links to the lines it describes, and `npm run doc
 - [Make the rating stricter or more lenient](how-to/tune-strictness.md)
 - [Keep an item from ever being marked for sharding](how-to/protect-items.md)
 - [Move and equip items](how-to/move-and-equip-items.md)
+- [Preview and switch a weapon's perks](how-to/switch-weapon-perks.md)
 - [Lock keepers, unlock junk, and undo it](how-to/apply-and-undo-locks.md)
 - [Fix tier list and source import problems](how-to/fix-source-imports.md)
 - [Host the web app on a static site](how-to/host-the-web-app.md)
@@ -49,5 +50,6 @@ Every statement about the code links to the lines it describes, and `npm run doc
 - [Raids, dungeons and encounter loadouts](explanation/raids-dungeons-encounters.md)
 - [What is cached, where, and when it is thrown away](explanation/caching.md)
 - [Why nothing changes in game until you say so](explanation/safety.md)
+- [The Vendors tab: what is worth buying](explanation/vendors.md)
 - [The Builds tab](explanation/builds-tab.md)
 - [UX review: what was messy, and what changed](explanation/ux-review.md)

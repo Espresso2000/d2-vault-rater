@@ -13,7 +13,11 @@ The outside sources Vault Rater relies on: the APIs it calls, the data it import
 | [GetProfile](https://bungie-net.github.io/multi/operation_get_Destiny2-GetProfile.html) and [component types](https://bungie-net.github.io/multi/schema_Destiny-DestinyComponentType.html) | Reading the vault, characters, sockets and perks ([src/vault/fetch.ts:12](../../src/vault/fetch.ts#L12)). |
 | [SetItemLockState](https://bungie-net.github.io/multi/operation_post_Destiny2-SetItemLockState.html) | Applying and undoing lock plans ([src/dim/actions.ts:125](../../src/dim/actions.ts#L125)). |
 | [TransferItem](https://bungie-net.github.io/multi/operation_post_Destiny2-TransferItem.html), [EquipItems](https://bungie-net.github.io/multi/operation_post_Destiny2-EquipItems.html) | Moving and equipping items ([src/bungie/transfer.ts:66-97](../../src/bungie/transfer.ts#L66-L97)). |
-| [InsertSocketPlugFree](https://bungie-net.github.io/multi/operation_post_Destiny2-InsertSocketPlugFree.html) | The Builds tab changing subclass and mod sockets ([web/src/builds/equip.ts:29](../../web/src/builds/equip.ts#L29)). |
+| [InsertSocketPlugFree](https://bungie-net.github.io/multi/operation_post_Destiny2-InsertSocketPlugFree.html) | Switching a weapon's perk from the drawer ([src/bungie/transfer.ts:139](../../src/bungie/transfer.ts#L139)), and the Builds tab changing subclass and mod sockets ([web/src/builds/equip.ts:29](../../web/src/builds/equip.ts#L29)). |
+
+| [GetVendors](https://bungie-net.github.io/multi/operation_get_Destiny2-GetVendors.html), [GetVendor](https://bungie-net.github.io/multi/operation_get_Destiny2-GetVendor.html) | The Vendors tab: every vendor's stock for one character, then each gear vendor alone for its items' rolled perks and stats ([src/vendors/vendors.ts:195-197](../../src/vendors/vendors.ts#L195-L197), [src/vendors/vendors.ts:234-240](../../src/vendors/vendors.ts#L234-L240)). |
+| [GetDestinyEntityDefinition](https://bungie-net.github.io/multi/operation_get_Destiny2-GetDestinyEntityDefinition.html) | One definition at a time for what the stripped manifest leaves out: vendor names, currencies, Eververse cosmetics ([src/vendors/vendors.ts:182-190](../../src/vendors/vendors.ts#L182-L190)). |
+| [GetPublicVendors](https://bungie-net.github.io/multi/operation_get_Destiny2-GetPublicVendors.html) | Only probed by the local-mode vendor capture, for comparison ([web/src/vendors/capture.ts:46-47](../../web/src/vendors/capture.ts#L46-L47)). |
 
 ## The Destiny manifest
 
