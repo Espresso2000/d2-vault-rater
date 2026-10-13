@@ -7,8 +7,8 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Raw = Record<string, any>;
 
-/** The six Armor 3.0 stats, in the game's order: Weapons, Health, Class, Grenade, Super, Melee. */
-export const STAT_HASHES = [2996146975, 392767087, 1943323491, 1735777505, 144602215, 4244567218] as const;
+/** The six Armor 3.0 stats, in the order the game and DIM show them: Health, Melee, Grenade, Super, Class, Weapons. */
+export const STAT_HASHES = [392767087, 4244567218, 1735777505, 144602215, 1943323491, 2996146975] as const;
 
 export type SocketGroup = "class" | "movement" | "super" | "melee" | "grenade" | "aspects" | "fragments" | "other";
 

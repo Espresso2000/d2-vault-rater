@@ -50,6 +50,13 @@ const scoreTier = (n: number) => (n >= 90 ? "S" : n >= 80 ? "A" : n >= 65 ? "B" 
 const statChip = (h: number, v: number) => `<span class="bd-stat ${v > 0 ? "up" : "down"}">${v > 0 ? "+" : ""}${v} ${esc(ctx().statNames[h] ?? "")}</span>`;
 const GROUP_LABEL: Record<SocketGroup, string> = { super: "Super", class: "Class ability", movement: "Jump", melee: "Melee", grenade: "Grenade", aspects: "Aspect", fragments: "Fragment", other: "Passive" };
 const EL_ORDER = ["Prismatic", "Arc", "Solar", "Void", "Stasis", "Strand"];
+/** Aegis's four subclass scores (0–10): his sheet groups Super and Enhancement under damage, Offense and Defense under roaming. */
+const ROLES = [
+  ["super", "Boss super", "How much boss damage the subclass's best super does. Aegis, 0 to 10."],
+  ["enhancement", "Damage buffs", "Aegis's \"Enhancement\": how much the subclass raises damage for you and your team with buffs and debuffs such as Radiant, Weaken, Unravel or Jolt. 0 to 10."],
+  ["offense", "Roam offense", "How well the subclass clears adds while roaming. Aegis, 0 to 10."],
+  ["defense", "Roam defense", "How well the subclass keeps you alive while roaming (healing, overshields, damage resistance). Aegis, 0 to 10."],
+] as const;
 const isWeaponSlot = (s: string) => (WEAPON_SLOTS as readonly string[]).includes(s);
 const isArmorSlot = (s: string): s is GearSlot => (ARMOR_SLOTS as readonly string[]).includes(s);
 
@@ -317,14 +324,15 @@ function statsBlock(b: Build, c: Ctx) {
         const parts = [`Armor ${l.armor}`, l.mods ? `mods ${l.mods > 0 ? "+" : ""}${l.mods}` : "", l.fragments ? `fragments ${l.fragments > 0 ? "+" : ""}${l.fragments}` : ""].filter(Boolean).join(" · ");
         return `<div class="bd-sline" title="${esc(parts)}">
           <span class="bd-sname">${esc(l.name)}</span>
-          <span class="bd-sbar"><i class="a" style="width:${pct(Math.min(l.total, l.armor))}"></i><i class="m" style="width:${pct(Math.min(Math.max(0, l.total - l.armor), Math.max(0, l.mods)))}"></i><i class="f" style="width:${pct(Math.max(0, l.total - Math.max(0, l.armor) - Math.max(0, l.mods)))}"></i>
-            <s style="left:50%"></s>${l.target ? `<u style="left:${pct(l.target)}"></u>` : ""}</span>
-          <b class="num bd-stot${met ? " met" : l.target ? " short" : ""}">${l.total}</b>
-          <label class="bd-target"><span class="sr">${esc(l.name)} target</span><input type="number" min="0" max="${STAT_MAX}" step="10" value="${l.target || ""}" placeholder="aim" data-target="${l.hash}"></label>
+          <span class="bd-sbarwrap"><span class="bd-sbar"><i class="a" style="width:${pct(Math.min(l.total, l.armor))}"></i><i class="m" style="width:${pct(Math.min(Math.max(0, l.total - l.armor), Math.max(0, l.mods)))}"></i><i class="f" style="width:${pct(Math.max(0, l.total - Math.max(0, l.armor) - Math.max(0, l.mods)))}"></i>
+            <s style="left:50%"></s></span>
+            <input class="bd-aim${l.target ? " set" : ""}" type="range" min="0" max="${STAT_MAX}" step="10" value="${l.target}" data-target="${l.hash}" aria-label="${esc(l.name)} aim" aria-valuetext="${l.target ? `Aim ${l.target}` : "No aim"}" title="Drag to set an aim for ${esc(l.name)}; drag to 0 to clear"></span>
+          <b class="num bd-stot${met ? " met" : l.target ? " short" : ""}${l.total < 0 ? " neg" : ""}">${l.total}</b>
+          <span class="bd-aimv num">${l.target ? `/ ${l.target}` : ""}</span>
         </div>`;
       })
       .join("")}</div>
-    <div class="bd-legend small muted"><span><i class="a"></i>Armor</span><span><i class="m"></i>Mods</span><span><i class="f"></i>Fragments</span><span><u></u>Your aim</span></div></section>`;
+    <div class="bd-legend small muted"><span><i class="a"></i>Armor</span><span><i class="m"></i>Mods</span><span><i class="f"></i>Fragments</span><span><u></u>Your aim: drag on a bar</span></div></section>`;
 }
 
 /** Armor set bonuses the build's armor pieces turn on (bonus details from the report's set data). */
@@ -375,7 +383,7 @@ function subclassCard(b: Build, sc: SubclassDef | null, c: Ctx) {
   return `<section class="bd-card glass bd-subclass" style="--el:var(--${sc.el})">
     <div class="bd-card-head"><h3>Subclass</h3>${r ? `<span class="small muted">Aegis ${tierChip(r.tier)} ${r.total !== null ? `${r.total}/40` : ""}</span>` : ""}</div>
     ${picker}
-    ${r ? `<div class="bd-roles">${(["super", "enhancement", "offense", "defense"] as const).map((k) => `<div><span>${k}</span><b class="num">${r.scores[k] ?? "—"}</b><i style="width:${(r.scores[k] ?? 0) * 10}%"></i></div>`).join("")}</div>
+    ${r ? `<div class="bd-roles">${ROLES.map(([k, label, why]) => `<div tabindex="0" data-tip="" data-tiptext="${esc(why)}" aria-label="${esc(`${label} ${r.scores[k] ?? "unrated"} of 10. ${why}`)}"><span>${label}</span><b class="num">${r.scores[k] ?? "—"}</b><i style="width:${(r.scores[k] ?? 0) * 10}%"></i></div>`).join("")}</div>
       ${r.usage ? `<p class="small muted bd-usage">“${esc(r.usage)}”</p>` : ""}` : ""}
     <div class="bd-group"><div class="cap">Abilities</div><div class="bd-chips">${chips(abilities)}</div></div>
     <div class="bd-group"><div class="cap">Aspects <span class="bd-capnote">open ${slots} fragment slot${slots === 1 ? "" : "s"}</span></div><div class="bd-chips">${chips(group("aspects"))}</div></div>
@@ -415,7 +423,7 @@ function subclassTip(h: number) {
     <div class="bd-tipline"><span class="cap">Slots</span><span>${aspects} aspect${aspects === 1 ? "" : "s"} · fragments by aspect</span></div>
     ${notes.length ? `<div class="bd-clarity"><div class="cap">Clarity · community tested</div>${notes.map((t) => `<p>${esc(t)}</p>`).join("")}</div>` : ""}
     ${r ? `<div class="bd-aegis"><div class="cap">Aegis · ${esc(r.tier)} tier</div>
-      <div class="bd-tiproles">${(["super", "enhancement", "offense", "defense"] as const).map((k) => `<span>${k} <b class="num">${r.scores[k] ?? "—"}</b></span>`).join("")}</div>
+      <div class="bd-tiproles">${ROLES.map(([k, label]) => `<span>${label} <b class="num">${r.scores[k] ?? "—"}</b></span>`).join("")}</div>
       ${r.supers ? `<div><span>Picks</span><p>${esc(r.supers)}</p></div>` : ""}${r.usage ? `<div><span>Why</span><p>${esc(r.usage)}</p></div>` : ""}</div>` : ""}
     ${info && !r ? `<p class="small muted">${esc(info)}</p>` : ""}`;
 }
@@ -431,7 +439,7 @@ function tipEl(): HTMLElement {
 }
 function showTip(t: HTMLElement) {
   const el = tipEl();
-  const html = subclassTip(Number(t.dataset.tip));
+  const html = t.dataset.tiptext ? `<p>${esc(t.dataset.tiptext)}</p>` : subclassTip(Number(t.dataset.tip));
   if (!html) return;
   el.innerHTML = html;
   el.hidden = false;
@@ -688,6 +696,10 @@ function armorRow(b: Build, c: Ctx, slot: GearSlot) {
       <span class="bd-iico">${a ? img(a.icon) : `<span class="bd-plus">+</span>`}${a?.gearTier ? `<span class="tier tU">T${a.gearTier}</span>` : ""}</span>
       <span class="bd-imeta"><span class="cap">${slot}</span><b>${a ? esc(a.name) : b.items[slot] ? "Missing item" : `Choose ${slot === "Arms" ? "arms" : slot.toLowerCase()}`}</b>${a ? `<span class="sm">${esc(a.archetype ?? "Legacy")} · ${a.statTotal} total</span>` : ""}</span>
       ${sc !== undefined ? `<span class="bd-iscore" title="Vault score">${sc}</span>` : ""}</button>
+    ${a ? `<span class="bd-astats">${STAT_HASHES.map((h) => {
+      const v = a.stats[c.statNames[h]] ?? 0;
+      return `<span class="${v >= 25 ? "hi" : v <= 0 ? "lo" : ""}" title="${esc(c.statNames[h])}"><i>${esc((c.statNames[h] ?? "").slice(0, 3))}</i>${v}</span>`;
+    }).join("")}</span>` : ""}
     <div class="bd-mods">${mods
       .map((h, k) => {
         const p = h ? defs!.plugs[h] : undefined;
@@ -1137,6 +1149,12 @@ function wire(el: HTMLElement) {
   });
   el.addEventListener("input", (e) => {
     const t = e.target as HTMLInputElement;
+    if (t.classList.contains("bd-aim")) {
+      t.classList.toggle("set", Number(t.value) > 0);
+      const v = t.closest(".bd-sline")?.querySelector(".bd-aimv");
+      if (v) v.textContent = Number(t.value) > 0 ? `/ ${t.value}` : "";
+      return;
+    }
     if (t.id === "bd-q") {
       listQuery = t.value;
       for (const card of panel!.querySelectorAll<HTMLElement>(".bd-bcard")) {

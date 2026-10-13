@@ -160,7 +160,8 @@ export function statLines(b: Build, ctx: Ctx): StatLine[] {
     }
     const sc = b.subclass ? ctx.defs.subclasses[b.subclass] : null;
     const fragments = sc ? sc.sockets.reduce((n, s, i) => (s.group === "fragments" ? n + modStats([b.plugs[i]], ctx.defs, hash) : n), 0) : 0;
-    const total = Math.max(0, Math.min(STAT_MAX, armor + mods + fragments));
+    // Capped at 200 but not floored: a -10 fragment on a 0 stat shows -10, as in the game and DIM.
+    const total = Math.min(STAT_MAX, armor + mods + fragments);
     return { hash, name, armor, mods, fragments, total, target: b.targets[hash] ?? 0 };
   });
 }

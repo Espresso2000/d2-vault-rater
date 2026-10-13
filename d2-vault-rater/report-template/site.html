@@ -251,7 +251,7 @@ section.panel > .jumpbar { margin-bottom: -36px; }
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; background: var(--glass-hi); border: 1px solid var(--line-hi); border-radius: 10px; padding: 9px 16px; font-size: 14px; font-weight: 600; transition: border-color .2s ease, background .2s ease, filter .2s ease, transform .1s ease; }
 .btn:hover { border-color: var(--hover); background: rgba(150,170,255,.10); }
 .btn:active { transform: translateY(1px); }
-.btn.primary { background: var(--grad); color: #04102a; border-color: transparent; }
+.btn.primary { background: var(--grad) border-box; color: #04102a; border-color: transparent; }
 .btn.primary:hover { filter: brightness(1.1); }
 .btn.ghost { background: transparent; }
 .btn.danger { background: rgba(255,122,122,.14); border-color: rgba(255,122,122,.5); color: #ffd9d9; }
@@ -1004,6 +1004,10 @@ function vrMain() {
   const plural = (n, one, many = one + "s") => `${fmt(n)} ${n === 1 ? one : many}`;
   const by = (f) => (a, b) => f(b) - f(a);
   const isExotic = (x) => x.r === "Exotic";
+  // Armor stats always read in the game's order.
+  const STAT_ORDER = ["Health", "Melee", "Grenade", "Super", "Class", "Weapons"];
+  const statRank = (n) => { const i = STAT_ORDER.indexOf(n); return i < 0 ? 99 : i; };
+  const ordered = (pairs) => [...pairs].sort((x, y) => statRank(x[0]) - statRank(y[0]));
   const NAME = DATA.wrapped?.name || "";
   const S = DATA.summary;
 
@@ -1234,7 +1238,7 @@ function vrMain() {
       <div class="tb"><div class="nm">${esc(w.n)}</div><div class="sm">${esc(frameOf(w) || w.t)}</div><div class="sm">${esc(w.t)}</div></div><span class="vbar"></span></button>`;
   const statBars = (a, full) => {
     const want = new Set(DATA.buildStats[a.cls] || []);
-    const list = full && a.all ? Object.entries(a.all).sort((x, y) => y[1] - x[1]) : a.st;
+    const list = ordered(full && a.all ? Object.entries(a.all) : a.st);
     return `<div class="stats">${list.map(([n, v]) => `<div class="stat${want.has(n) ? " want" : ""}"><span>${esc(n)}</span><div class="track"><span style="width:${Math.min(100, (v / 30) * 100)}%"></span></div><b>${v}</b></div>`).join("")}</div>`;
   };
   const gearTier = (a) => (a.gt ? "T" + a.gt : isExotic(a) ? "EX" : "—");
@@ -1248,7 +1252,7 @@ function vrMain() {
   const setLine = (a) => (a.si ? " · " + esc(a.si.name) + stier(bestSetTier(a)) : a.set ? " · " + esc(a.set) : "");
   const bonusRow = (b, owned) => `<div class="bonus${owned >= b.pieces ? " active" : ""}"><span class="pc">${b.pieces}PC</span><div><div class="bn">${esc(b.name)}</div>${b.effect || b.notes ? `<p>${esc([b.effect, b.notes].filter(Boolean).join(". "))}</p>` : ""}${b.description ? `<details class="full"><summary>Full bonus text</summary><div>${esc(b.description)}</div></details>` : ""}</div>${b.tier ? `<span class="tier t${b.tier}" title="Aegis rank #${b.rank ?? "?"}">${b.tier}</span>` : `<span class="tier tU">—</span>`}</div>`;
   const armorRow = (a) => `<button class="row v-${a.v}" data-a="${a.id}"><span class="ico${isExotic(a) ? " exotic" : ""}">${img(a.ic)}<span class="tier tU" title="Gear tier">${gearTier(a)}</span></span>
-      <div style="min-width:0"><div class="nm">${esc(a.n)}${dtag(a)}${lochip(a)}${lockIcon(a)}</div><div class="sm">${isExotic(a) ? '<span class="exo">Exotic</span> · ' : ""}${esc(a.cls)} ${esc(a.s)} · ${esc(a.arch || "Legacy")}${setLine(a)}</div><div class="perkline">${a.st.map(([n, v]) => `<span>${esc(n)} ${v}</span>`).join("")}${a.tot ? `<span>Total ${a.tot}</span>` : ""}</div></div>
+      <div style="min-width:0"><div class="nm">${esc(a.n)}${dtag(a)}${lochip(a)}${lockIcon(a)}</div><div class="sm">${isExotic(a) ? '<span class="exo">Exotic</span> · ' : ""}${esc(a.cls)} ${esc(a.s)} · ${esc(a.arch || "Legacy")}${setLine(a)}</div><div class="perkline">${ordered(a.st).map(([n, v]) => `<span>${esc(n)} ${v}</span>`).join("")}${a.tot ? `<span>Total ${a.tot}</span>` : ""}</div></div>
       ${scoreCell(a.sc)}<div class="c-verdict">${verdict(a.v)}</div></button>`;
   const armorTile = (a) => `<button class="itile v-${a.v}${isExotic(a) ? " exotic" : ""}" data-a="${a.id}" title="${esc(a.n)} · ${esc(a.cls)} ${esc(a.s)} · ${VERDICT[a.v]}">
       <div class="art">${img(a.ic)}<span class="tier tU" title="Gear tier">${gearTier(a)}</span><span class="flags">${a.lk ? "🔒" : ""}</span><b class="sc num${a.sc >= 90 ? " hi" : ""}">${a.sc}</b></div>
@@ -1387,7 +1391,7 @@ function vrMain() {
     const bestLeg = SLOTS.map((s) => [s, legBySlot(s)[0]]).filter(([, a]) => a);
     const runners = SLOTS.map((s) => [s, legBySlot(s).slice(1, 4)]).filter(([, l]) => l.length);
     const exo = mine.filter(isExotic).sort(by((a) => a.sc));
-    const exItem = (a) => `<button class="exitem" data-a="${a.id}">${img(a.ic)}<div style="min-width:0"><div class="nm">${esc(a.n)}</div><div class="sm">${esc(a.s)} · ${a.st.map(([n, v]) => `${esc(n)} ${v}`).join(" / ")}</div></div><b class="num" style="font:700 16px var(--display)">${a.sc}</b></button>`;
+    const exItem = (a) => `<button class="exitem" data-a="${a.id}">${img(a.ic)}<div style="min-width:0"><div class="nm">${esc(a.n)}</div><div class="sm">${esc(a.s)} · ${ordered(a.st).map(([n, v]) => `${esc(n)} ${v}`).join(" / ")}</div></div><b class="num" style="font:700 16px var(--display)">${a.sc}</b></button>`;
     const bySet = new Map();
     for (const a of mine) if (a.si) bySet.set(a.si.name, [...(bySet.get(a.si.name) || []), a]);
     const sets = [...bySet].map(([name, pieces]) => ({ name, pieces, def: DATA.sets?.[name], si: pieces[0].si, slots: new Set(pieces.map((p) => p.s)) })).sort((x, y) => y.si.value - x.si.value || y.slots.size - x.slots.size);
@@ -1395,7 +1399,7 @@ function vrMain() {
       <div class="slotdots">${SLOTS.map((sl) => `<i class="${x.slots.has(sl) ? "on" : ""}" title="${sl}"></i>`).join("")}<span>${x.slots.size} of 5 slots · ${x.pieces.length} pieces</span></div>
       ${(x.def?.bonuses || x.si.bonuses).map((b) => bonusRow(b, x.slots.size)).join("") || `<p class="small muted">Not on Aegis's set list yet.</p>`}
       <button class="linkbtn" data-set="a" data-view="set:${esc(cls)}|${esc(x.name)}">See these ${x.pieces.length} pieces →</button></article>`;
-    const rmini = (a, i) => `<button class="mini" data-a="${a.id}"><span class="rk">${i + 2}</span>${img(a.ic)}<div style="min-width:0"><div class="nm">${esc(a.n)}</div><div class="sm">${esc(a.arch || "Legacy")} · ${a.st.slice(0, 2).map(([n, v]) => `${esc(n)} ${v}`).join(" / ")}</div></div><div class="right"><b class="num">${a.sc}</b></div></button>`;
+    const rmini = (a, i) => `<button class="mini" data-a="${a.id}"><span class="rk">${i + 2}</span>${img(a.ic)}<div style="min-width:0"><div class="nm">${esc(a.n)}</div><div class="sm">${esc(a.arch || "Legacy")} · ${ordered(a.st.slice(0, 2)).map(([n, v]) => `${esc(n)} ${v}`).join(" / ")}</div></div><div class="right"><b class="num">${a.sc}</b></div></button>`;
     // Section ids don't include the class, so collapsing Exotics stays collapsed when switching class.
     $("#abody").innerHTML =
       sec("a-best", "Best legendary piece per slot", `${mine.length} ${esc(cls)} pieces rated. Green stats are the ones your builds use.`, `<div class="armor-best">${bestLeg.map(([s, a]) => card(a, s)).join("")}</div>`) +
@@ -1534,7 +1538,7 @@ function vrMain() {
         ...(DIMS.loadouts && DIMS.loaded ? [["dl", "DIM loadout", (a) => (a.lo?.length ? a.lo : ["Not in a loadout"])]] : []),
       ],
       sorts: Object.assign({ score: ["Armor score", (a) => a.sc], setv: ["Set rating", (a) => a.si?.value ?? -1], total: ["Stat total", (a) => a.tot], name: ["Name", (a) => a.n.toLowerCase()] },
-        Object.fromEntries(uniqSorted(DATA.armor, (a) => Object.keys(a.all || {})).map((k) => ["stat:" + k, [k + " stat", (a) => a.all?.[k] ?? 0]]))),
+        Object.fromEntries(uniqSorted(DATA.armor, (a) => Object.keys(a.all || {})).sort((x, y) => statRank(x) - statRank(y)).map((k) => ["stat:" + k, [k + " stat", (a) => a.all?.[k] ?? 0]]))),
       groups: { "": "None", ...(DIMS.tags && DIMS.loaded ? { dt: "DIM tag" } : {}), cls: "Class", s: "Slot", arch: "Archetype", set: "Set", stier: "Set tier", r: "Rarity", gt: "Gear tier", p: "Highest stat", v: "Verdict" },
       views: {
         "best-slot": ["Best per class and slot", { group: "cls", group2: "s", top: "1" }],

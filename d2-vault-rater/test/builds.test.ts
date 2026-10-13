@@ -205,3 +205,16 @@ test("Destiny Clarity: description blocks become paragraphs, only for known plug
   };
   assert.deepEqual(parseClarity(json, (h) => h === 21), { 21: ["Volatile on hit.", "Lasts 6s."] });
 });
+
+test("builds: stats read Health, Melee, Grenade, Super, Class, Weapons and go below 0 like the game", () => {
+  const b = newBuild(0);
+  b.subclass = 500;
+  b.plugs = defaultPlugs(defs.subclasses[500]);
+  b.plugs[1] = 21;
+  b.plugs[3] = 31; // -10 Class
+  b.plugs[4] = 31;
+  const lines = statLines(b, ctx());
+  assert.deepEqual(lines.map((l) => l.name), ["Health", "Melee", "Grenade", "Super", "Class", "Weapons"]);
+  // No armor: two -10 Class fragments leave Class at -20, not 0 (Bungie's character stats and DIM show the negative).
+  assert.equal(lines.find((l) => l.name === "Class")!.total, -20);
+});
