@@ -12,3 +12,9 @@ test("web sign-in: an expired access token is fine while the refresh token is st
   assert.equal(canSignIn(t(-1000, -1000), now), false);
   assert.equal(canSignIn(t(-1000, 86_400_000, ""), now), false, "a public client has no refresh token");
 });
+
+test("web manifest snapshot: its name carries the strip format, so an older-format snapshot is not used", async () => {
+  const { MANIFEST_SNAPSHOT } = await import("../web/src/strip.js");
+  const { STRIP_FORMAT } = await import("../src/bungie/strip.js");
+  assert.equal(MANIFEST_SNAPSHOT, `manifest-v${STRIP_FORMAT}`);
+});
