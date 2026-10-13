@@ -1367,7 +1367,10 @@ function vrMain() {
   }
 
   /* ---------- Armor highlights ---------- */
-  const classes = Object.keys(DATA.armorBest).sort();
+  // Classes most recently played first (Wrapped has play dates; newer reports also list characters in that order).
+  const played = (c) => DATA.wrapped?.characters?.find((x) => x.className === c)?.lastPlayed || "";
+  const charOrder = (c) => { const i = (DATA.chars || []).findIndex((x) => x.cls === c); return i < 0 ? 9 : i; };
+  const classes = Object.keys(DATA.armorBest).sort((a, b) => played(b).localeCompare(played(a)) || charOrder(a) - charOrder(b) || a.localeCompare(b));
   const SLOTS = ["Helmet", "Arms", "Chest", "Legs", "Class Item"];
   let armorClass = classes.includes(store.get("vr-class")) ? store.get("vr-class") : classes[0];
   RENDER.armor = () => {
@@ -1591,7 +1594,7 @@ function vrMain() {
   const VSLOTS = ["Kinetic", "Energy", "Power"];
   function drawVault() {
     const el = $("#vaultview"); if (!el) return;
-    const chars = DATA.chars || [], can = !!window.VR_LOCAL && chars.length > 0;
+    const chars = [...(DATA.chars || [])].sort((a, b) => played(b.cls).localeCompare(played(a.cls))), can = !!window.VR_LOCAL && chars.length > 0;
     const where = (x) => x.wh || "vault";
     // ex.shown is the full list's filtered, sorted weapons; equipped weapons always show, dimmed when filtered out.
     const shown = ex.shown && ex.set === "w" ? ex.shown : DATA.weapons, match = new Set(shown.map((w) => w.id));
