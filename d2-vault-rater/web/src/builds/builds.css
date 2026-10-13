@@ -615,3 +615,7 @@ button.bd-k-pill::after { display: none; }
 .bd-newbtn:focus-visible { outline: 2px solid var(--cyan); }
 .bd-bigplus { display: grid; place-items: center; width: 54px; height: 54px; border-radius: 50%; border: 1.5px solid rgba(51,227,160,.55); color: var(--green); font: 300 36px/1 var(--display); box-shadow: 0 0 22px -8px rgba(51,227,160,.8); }
 .bd-newbtn b { font: 600 14px var(--display); }
+/* Fragments sit under the super and aspects, across the left column, three to a row */
+.bd-sc-left .bd-fragsec { grid-column: 1 / -1; margin-top: 4px; }
+.bd-sc-left .bd-frags { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 700px) { .bd-sc-left .bd-frags { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

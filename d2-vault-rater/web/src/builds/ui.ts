@@ -471,6 +471,11 @@ function abilitiesCard(b: Build, sc: SubclassDef | null, c: Ctx) {
       <div class="bd-sc-left">
         ${group("super").map((i) => chip(i, "super")).join("")}
         <div class="bd-sc-aspects"><div class="cap">Aspects <span class="bd-capnote">open ${slots} fragment slot${slots === 1 ? "" : "s"}</span></div>${group("aspects").map((i) => chip(i, "wide")).join("")}</div>
+        <div class="bd-fragsec">
+          <div class="cap">Fragments <span class="bd-capnote">${fragsIn} of ${slots} slots used</span></div>
+          <div class="bd-frags">${frags.map((i) => chip(i, "pill")).join("")}</div>
+          ${slots ? `<div class="bd-fragbtn"><button class="btn bd-sm" data-pop="${frags[0]}" aria-haspopup="dialog">Modify fragments</button></div>` : ""}
+        </div>
       </div>
       <div class="bd-sc-right">
         <div class="bd-sc-stack">${[...group("grenade"), ...group("melee"), ...group("class")].map((i) => chip(i, "wide")).join("")}</div>
@@ -480,18 +485,13 @@ function abilitiesCard(b: Build, sc: SubclassDef | null, c: Ctx) {
         </div>
       </div>
     </div>
-    <div class="bd-fragsec">
-      <div class="cap">Fragments <span class="bd-capnote">${fragsIn} of ${slots} slots used</span></div>
-      <div class="bd-frags">${frags.map((i) => chip(i, "pill")).join("")}</div>
-      ${slots ? `<div class="bd-fragbtn"><button class="btn bd-sm" data-pop="${frags[0]}" aria-haspopup="dialog">Modify fragments</button></div>` : ""}
-    </div>
   </section>`;
 }
 
 type ChipKind = "super" | "wide" | "square" | "pill";
 
 /** The first sentence or line of a plug's description, for the space beside its icon. */
-const blurb = (p?: PlugDef) => (p?.d ?? "").split(/\n/)[0].replace(/\[[^\]]+\]\s*/g, "").trim();
+const blurb = (p?: PlugDef) => (p?.d ?? "").split(/\n/)[0].replace(/\[[^\]]+\]\s*/g, "").replace(/^[\s:;,.-]+/, "").trim();
 
 function socketChip(b: Build, sc: SubclassDef, i: number, c: Ctx, slots: number, kind: ChipKind = "wide") {
   const s = sc.sockets[i];
