@@ -75,6 +75,12 @@ test("tab list is read from the htmlview page", () => {
   ]);
 });
 
+test("names compare without accents: Jötunn and Jotunn are the same weapon", async () => {
+  const { normalizeName } = await import("../src/bungie/manifest.js");
+  assert.equal(normalizeName("Jötunn"), "jotunn");
+  assert.equal(normalizeName("Jötunn"), normalizeName("Jotunn"));
+});
+
 test("Aegis names map to manifest hashes", () => {
   const a = aegis();
   assert.deepEqual(a.weapons.find((w) => w.name === "Unforgiven")!.hashes, [1001]);
