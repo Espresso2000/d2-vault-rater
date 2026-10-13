@@ -213,7 +213,7 @@ button.bd-chip:focus-visible { outline: 2px solid var(--cyan); outline-offset: 1
 .bd-stat b { color: var(--ink); }
 
 /* Socket popover */
-.bd-pop { position: fixed; z-index: 40; width: min(860px, calc(100vw - 16px)); max-height: min(620px, calc(100vh - 16px)); overflow: auto; display: grid; gap: 10px; padding: 12px; border-radius: 16px; background: rgba(10,15,36,.98); border: 1px solid var(--line-hi); box-shadow: 0 30px 70px -20px rgba(0,0,0,.95), 0 0 0 1px rgba(51,227,160,.08); }
+.bd-pop { position: fixed; z-index: 40; width: min(860px, calc(100vw - 16px)); max-height: min(620px, calc(100vh - 16px)); overflow: auto; display: grid; gap: 10px; padding: 12px; border-radius: 16px; background: #0a0f24; border: 1px solid var(--line-hi); box-shadow: 0 30px 70px -20px rgba(0,0,0,.95), 0 0 0 1px rgba(51,227,160,.08); }
 .bd-pop[hidden] { display: none; }
 .bd-pop-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
 .bd-pop-head > div { display: grid; }
@@ -221,8 +221,8 @@ button.bd-chip:focus-visible { outline: 2px solid var(--cyan); outline-offset: 1
 .bd-pop-head b { font: 600 15px var(--display); }
 .bd-pop-x { font-size: 14px; }
 /* Options on the left, the pointed-at option's details on the right */
-.bd-pop-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 330px); gap: 12px; align-items: start; min-height: 0; }
-.bd-pop-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; max-height: min(480px, calc(100vh - 150px)); overflow: auto; padding: 2px; align-content: start; }
+.bd-pop-body { display: grid; grid-template-columns: minmax(200px, 250px) minmax(0, 1fr); gap: 12px; align-items: start; min-height: 0; }
+.bd-pop-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 5px; max-height: min(480px, calc(100vh - 150px)); overflow: auto; padding: 2px; align-content: start; }
 .bd-pop-detail { max-height: min(480px, calc(100vh - 150px)); overflow: auto; }
 .bd-popt { position: relative; display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 5px 8px 5px 5px; border-radius: 10px; border: 1px solid var(--line); background: rgba(5,9,25,.5); text-align: left; color: inherit; font: inherit; }
 .bd-popt:hover, .bd-popt:focus-visible { border-color: rgba(51,227,160,.55); background: var(--glass-hi); outline: none; }
@@ -576,3 +576,7 @@ button.bd-k-pill::after { display: none; }
 }
 /* Long armor and fragment names wrap to two lines rather than cutting off */
 .bd-arow .bd-imeta b, .bd-k-pill b { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2; }
+/* Popover details: one scroll for the whole panel, roomier text */
+.bd-pop-detail { font-size: 13.5px; }
+.bd-pop-detail .bd-info p { max-height: none; overflow: visible; }
+.bd-pop-detail .bd-desc { font-size: 14px; }
