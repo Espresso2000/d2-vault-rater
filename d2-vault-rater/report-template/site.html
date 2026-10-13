@@ -470,7 +470,15 @@ details.ms summary .n { background: var(--grad); color: #04102a; border-radius: 
 .cards-big .mini .rk { font-size: 15px; }
 .cards-big .mini .nm { font-size: 15.5px; }
 .cards-big .mini .right b { font-size: 20px; }
-.cards-big .mini .perkline { display: flex; }
+/* Perk symbols with their names (wrapping), and a short info line; the small cards keep neither */
+.ptags, .minfo { display: none; }
+.cards-big .mini .ptags { display: flex; flex-wrap: wrap; gap: 4px 6px; margin-top: 6px; }
+.ptag { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px 2px 2px; border-radius: 999px; background: var(--glass-hi); font-size: 11.5px; color: var(--muted); white-space: nowrap; max-width: 100%; min-width: 0; }
+.ptag i { font-style: normal; overflow: hidden; text-overflow: ellipsis; }
+.ptag img { width: 20px !important; height: 20px !important; border-radius: 50% !important; flex: none; }
+.ptag.good { color: #c3f7e1; background: rgba(51,227,160,.10); box-shadow: inset 0 0 0 1px rgba(51,227,160,.35); }
+.cards-big .mini .minfo:not(:empty) { display: block; margin-top: 5px; font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.minfo .god { color: var(--green); }
 .row .c-verdict { min-width: 70px; display: flex; justify-content: flex-end; }
 .list.rows { grid-template-columns: repeat(auto-fill, minmax(min(520px, 100%), 1fr)); gap: 8px 12px; }
 #exlist .row { padding-block: 11px; }
@@ -798,6 +806,9 @@ aside.drawer.open { transform: none; }
 .pinfo img { width: 32px; height: 32px; flex: none; border-radius: 50%; background: rgba(0,0,0,.25); }
 .pinfo b { font-size: 13px; color: var(--ink); }
 .pinfo p { margin: 2px 0 0; font-size: 12.5px; line-height: 1.45; color: var(--muted); white-space: pre-line; }
+/* Options can be clicked to preview them; the previewed one gets a dashed gold ring, the equipped one keeps its solid ring */
+.perkcol .perkopts > * { cursor: pointer; }
+.perkcols .pico.pv, .perk.pv { opacity: 1; box-shadow: 0 0 0 2px var(--gold); outline: 2px dashed rgba(0,0,0,.5); outline-offset: -2px; }
 .wherebox { display: grid; gap: 8px; padding: 14px 16px; border-radius: 14px; border: 1px solid rgba(51,227,160,.2); background: linear-gradient(120deg, rgba(51,227,160,.07), var(--glass) 60%); }
 .wherebox .line { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; font-size: 14px; }
 .wherebox .line span:first-child { color: var(--faint); font-size: 12.5px; padding-top: 1px; }
@@ -1121,11 +1132,13 @@ function vrMain() {
     wrapped: "<svg viewBox='0 -12.63 369.54991 369.54991' aria-hidden='true'><g><g><path d='M189.71791,36.81064h-9.3831L79.286,22.37509,116.81842,0H253.95608l37.53241,22.37509ZM0,158.15841l65.68172,85.1697,40.41952,98.88348L67.84705,319.11472,0,199.29971ZM191.271,49.89183l5.05244-5.77421L300.2593,29.68207l67.84706,117.64968-68.56883,87.335L191.271,172.594ZM303.86819,244.77167l65.68172-85.89148v41.86307L301.70286,319.83649l-38.976,23.81865Zm-123.4239-71.45594L72.17772,235.38857l-68.56883-87.335L72.17772,30.40385,175.39185,44.83939l5.05244,5.77422Zm3.49941,9.29389,107.54479,60.62929-39.69774,101.0488H115.37486l-38.976-101.0488Z'/></g></g></svg>",
     settings: "",
     builds: "<svg viewBox='0 0 32 32' aria-hidden='true'><path d='M16 1 3 8.5v15L16 31l13-7.5v-15L16 1zm0 3.5 9.9 5.7L16 15.9 6.1 10.2 16 4.5zM5 12.4l10 5.8v10.5L5 22.9V12.4zm12 16.3V18.2l10-5.8v10.5l-10 5.8z'/></svg>",
+    vendors: "<svg viewBox='0 0 32 32' aria-hidden='true'><path d='M4 6h24l-2 7H6L4 6zm2.5 9h19v13h-19V15zm4 3v7h4v-7h-4zm7 0v3h4.5v-3H17.5zM9 2h14l2 3H7l2-3z'/></svg>",
   };
   // Decision tabs first (what to keep, what to shard), then browsing, then the extras.
-  const TABS = [["overview", "Overview", null], ["weapons", "Weapon Report", S.weapons], ["armor", "Armor Report", S.armor], ["shard", "Shard", S.weaponShard + S.armorShard], ["list", "Vault", null], ["rads", "R&amp;Ds", (DATA.rads || []).length || null], ["wrapped", "Wrapped", null], ...(window.VR_BUILDS ? [["builds", "Builds", window.VR_BUILDS.count()]] : []), ...(window.VR_LOCAL ? [["settings", "Settings", null]] : [])];
+  const TABS = [["overview", "Overview", null], ["weapons", "Weapon Report", S.weapons], ["armor", "Armor Report", S.armor], ["shard", "Shard", S.weaponShard + S.armorShard], ["list", "Vault", null], ["rads", "R&amp;Ds", (DATA.rads || []).length || null], ["wrapped", "Wrapped", null], ...(window.VR_BUILDS ? [["builds", "Builds", window.VR_BUILDS.count()]] : []), ...(window.VR_VENDORS ? [["vendors", "Vendors", window.VR_VENDORS.count()]] : []), ...(window.VR_LOCAL ? [["settings", "Settings", null]] : [])];
   if (!$("#p-settings")) $("main").insertAdjacentHTML("beforeend", '<section class="panel" id="p-settings" role="tabpanel" hidden></section>');
   if (window.VR_BUILDS && !$("#p-builds")) $("main").insertAdjacentHTML("beforeend", '<section class="panel" id="p-builds" role="tabpanel" hidden></section>');
+  if (window.VR_VENDORS && !$("#p-vendors")) $("main").insertAdjacentHTML("beforeend", '<section class="panel" id="p-vendors" role="tabpanel" hidden></section>');
   const tabBtn = ([id, label, n]) => `<button role="tab" id="t-${id}" aria-controls="p-${id}" aria-selected="false"${id === "settings" ? " hidden" : ""}>${ICON[id]}${label}${n != null ? `<span class="count">${n}</span>` : ""}</button>`;
   // Weapon Report and Armor Report sit in a "Reports" menu that opens on hover, click or keyboard.
   const REPORTS = ["weapons", "armor"];
@@ -1165,7 +1178,7 @@ function vrMain() {
     $("#bar-actions").insertAdjacentHTML("beforeend", `<button class="gear" id="gear" type="button" aria-label="Settings" title="Settings" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.14 12.94a7.4 7.4 0 0 0 .05-.94 7.4 7.4 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.84a.5.5 0 0 0-.49.42l-.36 2.54c-.59.24-1.13.56-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.67 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.4 7.4 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.3.6.22l2.39-.96c.5.38 1.04.7 1.63.94l.36 2.54c.04.24.25.42.49.42h3.84c.24 0 .45-.18.49-.42l.36-2.54c.59-.24 1.13-.56 1.63-.94l2.39.96c.22.08.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2Z"/></svg></button>`);
     $("#gear").onclick = () => show(location.hash === "#settings" ? store.get("vr-last-tab") || "overview" : "settings", true);
   }
-  const RENDER = { builds: () => window.VR_BUILDS.render($("#p-builds")) }, rendered = {};
+  const RENDER = { builds: () => window.VR_BUILDS.render($("#p-builds")), vendors: () => window.VR_VENDORS.render($("#p-vendors")) }, rendered = {};
   let shownTab = null;
   function show(id, scroll) {
     if (!TABS.some((t) => t[0] === id)) id = "overview";
@@ -1265,6 +1278,13 @@ function vrMain() {
   /** The perks equipped on the gun, in column order. Names are wide, so they show only the two traits. Older reports have no `a`: the first option stands in. */
   const equipped = (w) => perkCols(w).filter((p) => (perkSymbols ? PERK_ORDER.includes(p.k) : p.k === "perk1" || p.k === "perk2")).map((p) => { const o = p.a || p.o[0]; return [o, p.m.includes(o)]; });
   const traitChips = (w) => equipped(w).map(([o, good]) => perk(o, good)).join("");
+  /** Large type cards: every equipped perk as its symbol with the name beside it, the description on hover. */
+  const perkTags = (w) => perkCols(w).filter((p) => PERK_ORDER.includes(p.k)).map((p) => {
+    const o = p.a || p.o[0], src = IMG[PERK_ICON[o]];
+    return `<span class="ptag${p.m.includes(o) ? " good" : ""}" title="${esc(PERK_DESC[o] ? `${o}: ${PERK_DESC[o]}` : o)}">${src ? `<img src="${src}" alt="" loading="lazy" decoding="async">` : ""}<i>${esc(o)}</i></span>`;
+  }).join("");
+  /** One short line under them: ammo, masterwork, crafted or adept, and a wishlist god roll. */
+  const miniInfo = (w) => [w.am && esc(w.am), w.mw && `MW ${esc(w.mw)}`, w.cr && "Crafted", w.ad && "Adept", w.god && '<span class="god">God roll</span>'].filter(Boolean).join(" · ");
   /** Row: one wide line per item, with perks on wide screens. */
   const weaponRow = (w) => `<button class="row v-${w.v}" data-w="${w.id}"><span class="ico${isExotic(w) ? " exotic" : ""}">${img(w.ic)}${tierBadge(w)}</span>
       <div style="min-width:0"><div class="nm">${esc(w.n)}${newBadge(w)}${dtag(w)}${lochip(w)}${lockIcon(w)}</div><div class="sm">${isExotic(w) ? '<span class="exo">Exotic</span> · ' : ""}${esc(typeLine(w))} · ${elDot(w.e)}${w.loc && w.loc !== "Vault" ? " · " + esc(w.loc) : ""}</div><div class="perkline">${traitChips(w)}</div></div>
@@ -1295,7 +1315,7 @@ function vrMain() {
       <div class="art">${img(a.ic)}<span class="tier tU" title="Gear tier">${gearTier(a)}</span>${newBadge(a)}<span class="flags">${a.lk ? "🔒" : ""}</span><b class="sc num${a.sc >= 90 ? " hi" : ""}">${a.sc}</b></div>
       <div class="tb"><div class="nm">${esc(a.n)}</div><div class="sm">${esc(a.cls)} ${esc(a.s)}</div><div class="sm">${esc(a.arch || "Legacy")}${a.tot ? " · " + a.tot : ""}</div></div><span class="vbar"></span></button>`;
   const copiesOf = (w) => DATA.weapons.filter((x) => x.n === w.n).length;
-  const mini = (w, i) => `<button class="mini" data-w="${w.id}"><span class="rk">${i + 1}</span>${img(w.ic)}<div style="min-width:0"><div class="nm">${esc(w.n)}${copiesOf(w) > 1 ? ` <span class="small muted">×${copiesOf(w)}</span>` : ""}</div><div class="sm">${esc(frameOf(w) || w.t)} · <span class="el" style="color:var(--${esc(w.e)})"><i></i><span>${esc(w.e)}</span></span></div><div class="perkline">${traitChips(w)}</div></div><div class="right">${tierBadge(w)}<b class="num">${w.sc}</b></div></button>`;
+  const mini = (w, i) => `<button class="mini" data-w="${w.id}"><span class="rk">${i + 1}</span>${img(w.ic)}<div style="min-width:0"><div class="nm">${esc(w.n)}${copiesOf(w) > 1 ? ` <span class="small muted">×${copiesOf(w)}</span>` : ""}</div><div class="sm">${esc(frameOf(w) || w.t)} · <span class="el" style="color:var(--${esc(w.e)})"><i></i><span>${esc(w.e)}</span></span></div><div class="perkline">${traitChips(w)}</div><div class="ptags">${perkTags(w)}</div><div class="minfo">${miniInfo(w)}</div></div><div class="right">${tierBadge(w)}<b class="num">${w.sc}</b></div></button>`;
 
   document.addEventListener("click", (e) => {
     const go = e.target.closest("[data-view]"); if (go) { e.preventDefault(); openList(go.dataset.set, go.dataset.view); return; }
@@ -2301,7 +2321,7 @@ function vrMain() {
         <div class="breakdown"><div><b class="num grad-text">${w.sc}</b><span>Vault score</span></div><div><b class="num">${w.ws}</b><span>${w.tier ? `Aegis ${w.tier}${w.rank ? " #" + w.rank : ""}` : "Wishlist tier"}</span></div><div><b class="num">${w.rs}</b><span>Roll score</span></div></div>
         <div><div class="cap" style="margin-bottom:8px">Why ${VERDICT[w.v].toLowerCase()}</div><ul class="reasons">${w.why.map((r) => `<li>${esc(r)}</li>`).join("")}</ul></div>
         ${w.notes ? `<div class="notes"><b style="color:var(--ink)">Aegis:</b> ${esc(w.notes)}</div>` : ""}
-        <div class="perkcols">${perkCols(w).map((p) => `<div class="perkcol"><div class="cap">${COL[p.k] || esc(p.k)}</div><div class="perkopts">${p.o.map((o) => perk(o, good.has(o), (p.a || p.o[0]) === o ? "perk on" : "perk")).join("")}</div>${perkInfo(p.a || p.o[0])}</div>`).join("")}</div>
+        <div class="perkcols">${perkCols(w).map((p, ci) => `<div class="perkcol" data-col="${ci}"><div class="cap">${COL[p.k] || esc(p.k)}</div><div class="perkopts">${p.o.map((o) => perk(o, good.has(o), (p.a || p.o[0]) === o ? "perk on" : "perk")).join("")}</div>${perkInfo(p.a || p.o[0])}</div>`).join("")}</div>
         <div class="facts">${fact("Ammo", w.am)}${fact("Power", w.pw)}${fact("Masterwork", w.mw)}${fact("Gear tier", w.gt ? "Tier " + w.gt : null)}${fact("Where", w.loc)}${fact("Crafted", w.cr ? "Yes" : null)}${fact("Adept", w.ad ? "Yes" : null)}${fact("Aegis list", w.tab)}</div>
         ${movePanel(w, false)}
         ${dimPanel(w)}
@@ -2309,6 +2329,15 @@ function vrMain() {
         ${copies.length ? `<div><div class="cap" style="margin-bottom:8px">Other copies (${copies.length})</div><div class="list">${copies.map(weaponRow).join("")}</div></div>` : ""}
       </div>`);
   }
+  // Clicking another option in a weapon's perk column previews it in that column's card; the equipped one keeps its ring.
+  drawer.addEventListener("click", (e) => {
+    const opt = e.target.closest(".perkcol .perkopts > *"), colEl = opt?.closest(".perkcol"), w = W.get(drawer.dataset.item);
+    if (!opt || !w) return;
+    const p = perkCols(w)[Number(colEl.dataset.col)], o = p?.o[[...opt.parentNode.children].indexOf(opt)];
+    if (!o) return;
+    for (const x of opt.parentNode.children) x.classList.toggle("pv", x === opt && o !== (p.a || p.o[0]));
+    colEl.querySelector(".pinfo").outerHTML = perkInfo(o);
+  });
   function openArmor(id) {
     const a = A.get(id); if (!a) return; markSeen(id);
     drawer.dataset.item = id;

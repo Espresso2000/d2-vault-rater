@@ -16,6 +16,9 @@ export interface PerkColumn {
   icons?: Record<string, string>;
   /** Description by option name, for options that have one. Missing in older vault snapshots. */
   descriptions?: Record<string, string>;
+  /** The weapon's socket index for this column, and plug hash by option name, for switching perks. Missing in older vault snapshots. */
+  socket?: number;
+  hashes?: Record<string, number>;
 }
 
 export interface Location {
