@@ -231,3 +231,26 @@ test("builds: Font mods add 20 / 40 / 50 to their stat, as DIM counts them", () 
   assert.equal(grenade(2).fonts, 40);
   assert.equal(grenade(3).total, 50);
 });
+
+test("builds: a draft is unsaved until committed; committing replaces by id or adds it first", async () => {
+  const { commitBuild, isUnsaved, sameBuild } = await import("../web/src/builds/model.js");
+  const a = newBuild(0, "A");
+  const list = [a];
+  const draft = structuredClone(a);
+  assert.equal(isUnsaved(list, draft), false);
+  draft.updated = "later";
+  assert.equal(isUnsaved(list, draft), false, "touching alone isn't a change");
+  draft.name = "A2";
+  assert.equal(isUnsaved(list, draft), true);
+  const saved = commitBuild(list, draft);
+  assert.equal(saved.length, 1);
+  assert.equal(saved[0].name, "A2");
+  assert.equal(list[0].name, "A", "the old list is left alone");
+  assert.equal(isUnsaved(saved, draft), false);
+  draft.name = "A3";
+  assert.equal(saved[0].name, "A2", "the saved copy doesn't follow later edits");
+  const fresh = newBuild(1, "New");
+  assert.equal(isUnsaved(saved, fresh), true, "a never-saved build counts as unsaved");
+  assert.deepEqual(commitBuild(saved, fresh).map((x) => x.name), ["New", "A2"]);
+  assert.ok(sameBuild(a, { ...a, updated: "x" }));
+});

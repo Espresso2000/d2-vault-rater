@@ -19,7 +19,7 @@ Lock changes are spaced out (250 ms by default) and retried while Bungie throttl
 
 `moveItems` ([src/bungie/transfer.ts:46](../../src/bungie/transfer.ts#L46)) refuses moves that can't work instead of half-doing them: armor for another class ([src/bungie/transfer.ts:63-64](../../src/bungie/transfer.ts#L63-L64)), and anything currently equipped, which Bungie won't move until something else is equipped ([src/bungie/transfer.ts:66](../../src/bungie/transfer.ts#L66)). The MCP tool tells the AI to use it only when the player asks ([src/server.ts:335](../../src/server.ts#L335)), and Bungie's error codes are turned into plain advice ([src/bungie/transfer.ts:24-31](../../src/bungie/transfer.ts#L24-L31)).
 
-In the Builds tab, equipping a build first shows every step it would take ("Dry run · nothing has changed yet") and runs them only when you confirm ([web/src/builds/ui.ts:1389](../../web/src/builds/ui.ts#L1389), [web/src/builds/equip.ts:41](../../web/src/builds/equip.ts#L41)).
+In the Builds tab, equipping a build first shows every step it would take ("Dry run · nothing has changed yet") and runs them only when you confirm ([web/src/builds/ui.ts:1448](../../web/src/builds/ui.ts#L1448), [web/src/builds/equip.ts:41](../../web/src/builds/equip.ts#L41)).
 
 ## The local server only takes requests from its own page
 

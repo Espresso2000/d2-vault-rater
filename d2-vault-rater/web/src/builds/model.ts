@@ -317,3 +317,21 @@ export function placeMod(b: Build, hash: number, defs: BuildDefs): boolean {
   }
   return false;
 }
+
+/* ---------- Saving: the editor works on a draft ---------- */
+
+/** Same content, ignoring when it was last touched. */
+export const sameBuild = (a: Build, b: Build) => JSON.stringify({ ...a, updated: "" }) === JSON.stringify({ ...b, updated: "" });
+
+/** The saved list with this draft written in: replaces the build with the same id, or adds it first. */
+export function commitBuild(list: Build[], draft: Build): Build[] {
+  const copy: Build = { ...structuredClone(draft), updated: new Date().toISOString() };
+  return list.some((x) => x.id === draft.id) ? list.map((x) => (x.id === draft.id ? copy : x)) : [copy, ...list];
+}
+
+/** A draft has unsaved changes when it differs from its saved copy, or has never been saved. */
+export const isUnsaved = (list: Build[], draft: Build | null) => {
+  if (!draft) return false;
+  const saved = list.find((x) => x.id === draft.id);
+  return !saved || !sameBuild(saved, draft);
+};

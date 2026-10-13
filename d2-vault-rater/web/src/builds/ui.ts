@@ -13,7 +13,7 @@ import { TIER_POINTS } from "./sheets";
 import {
   ARMOR_ENERGY, ARMOR_SLOTS, CLASSES, CLASS_NAME, GENERAL_PCI, MOD_PCI, MOD_SOCKETS, STAT_MAX, WEAPON_SLOTS,
   armorOf, aspectRating, buildScore, defaultPlugs, exoticClash, fragmentRating, fragmentSlots, fromDimLoadout, infoFor, isEmptyPlug,
-  itemOf, modEnergy, newBuild, newId, socketsOf, statLines, subclassRating, toDimLoadout, trimFragments, weaponOf,
+  commitBuild, isUnsaved, itemOf, modEnergy, newBuild, newId, socketsOf, statLines, subclassRating, toDimLoadout, trimFragments, weaponOf,
   type Build, type BuildSlot, type Ctx, type GearSlot,
 } from "./model";
 import { captureCharacter, charFor, fetchBuildProfile, subclassInstance, type BuildProfile } from "./profile";
@@ -104,7 +104,7 @@ export function initBuilds(i: BuildsInput) {
   input = i;
   fixed = null;
   builds = loadBuilds();
-  window.VR_BUILDS = { render, count: () => builds.length || null };
+  window.VR_BUILDS = { render, count: () => builds.length || null, leave: (next) => (unsaved() ? (guard(next), false) : true) };
 }
 
 function render(el: HTMLElement) {
@@ -128,7 +128,7 @@ async function load() {
     const [d] = await Promise.all([loadBuildDefs(note), loadRatings().catch((e) => note(`Couldn't read the rating sheets: ${(e as Error).message}`))]);
     defs = d;
     clarity = cachedClarity();
-    cur = builds[0] ?? null;
+    cur = builds[0] ? structuredClone(builds[0]) : null;
     draw();
     void refreshProfile();
     void loadClarity((h) => !!d.plugs[h]).then((t) => (clarity = t));
@@ -156,19 +156,67 @@ function loadingCard() {
 
 /* ---------- Saving ---------- */
 
-let saveTimer = 0;
+// The editor works on a draft (cur, a copy of the saved build). Nothing is written until Save; leaving with
+// unsaved changes asks first (switching builds, classes or report tabs, and closing the page).
+const unsaved = () => isUnsaved(builds, cur);
+
 function touch(redraw = true) {
   if (!cur) return;
   cur.updated = new Date().toISOString();
-  if (!builds.includes(cur)) builds.unshift(cur);
-  clearTimeout(saveTimer);
-  saveTimer = window.setTimeout(() => {
-    saveBuilds(builds);
-    const s = panel?.querySelector("#bd-saved");
-    if (s) s.textContent = "Saved";
-  }, 250);
   if (redraw) draw();
+  else saveState();
 }
+
+/** Shows whether there is anything to save, without redrawing the editor (typing in the name or notes). */
+function saveState() {
+  const dirty = unsaved();
+  panel?.querySelectorAll<HTMLButtonElement>("[data-act=save], [data-act=revert]").forEach((b) => (b.disabled = !dirty));
+  const s = panel?.querySelector("#bd-saved");
+  if (s) (s.textContent = dirty ? "Unsaved changes" : "Saved"), s.classList.toggle("dirty", dirty);
+}
+
+function saveCur() {
+  if (!cur) return;
+  builds = commitBuild(builds, cur);
+  saveBuilds(builds);
+  cur = structuredClone(builds.find((b) => b.id === cur!.id)!);
+  draw();
+}
+
+function revertCur() {
+  const saved = cur && builds.find((b) => b.id === cur!.id);
+  cur = saved ? structuredClone(saved) : (builds.find((b) => b.cls === listCls) ? structuredClone(builds.find((b) => b.cls === listCls)!) : null);
+  draw();
+}
+
+/** Runs next() now if nothing is unsaved; otherwise asks Save / Discard / Keep editing first. */
+function guard(next: () => void) {
+  if (!unsaved()) return next();
+  let dlg = document.getElementById("bd-unsaved") as HTMLDialogElement | null;
+  if (!dlg) {
+    document.body.insertAdjacentHTML("beforeend", `<dialog class="bd-dialog" id="bd-unsaved" aria-labelledby="bd-unsaved-h"><h3 id="bd-unsaved-h">Unsaved changes</h3><p></p>
+      <div class="bd-dialog-btns"><button class="btn primary" value="save">Save</button><button class="btn" value="discard">Discard changes</button><button class="btn ghost" value="cancel">Keep editing</button></div></dialog>`);
+    dlg = document.getElementById("bd-unsaved") as HTMLDialogElement;
+    dlg.addEventListener("click", (e) => {
+      const v = (e.target as HTMLElement).closest<HTMLButtonElement>("button")?.value;
+      if (v) dlg!.close(v);
+    });
+  }
+  dlg.querySelector("p")!.textContent = `“${cur!.name}” has changes that aren't saved yet.`;
+  dlg.returnValue = "cancel";
+  dlg.onclose = () => {
+    if (dlg!.returnValue === "save") saveCur();
+    else if (dlg!.returnValue === "discard") revertCur();
+    else return;
+    next();
+  };
+  dlg.showModal();
+  dlg.querySelector<HTMLElement>("button[value=save]")?.focus();
+}
+
+addEventListener("beforeunload", (e) => {
+  if (unsaved()) e.preventDefault();
+});
 
 /* ---------- Layout ---------- */
 
@@ -206,10 +254,17 @@ function listPane() {
         .map((k) => `<button role="tab" data-act="lcls" data-cls="${k}" aria-selected="${k === cls}">${CLASS_NAME(k)}<span class="count">${builds.filter((b) => b.cls === k).length}</span></button>`)
         .join("")}</div>
       ${mine.length > 4 ? `<input class="bd-input bd-q" id="bd-q" type="search" placeholder="Search ${esc(CLASS_NAME(cls))} builds" value="${esc(listQuery)}" aria-label="Search builds">` : ""}
-      <div class="bd-list-actions"><button class="btn primary bd-sm" data-act="new" data-cls="${cls}">+ New ${esc(CLASS_NAME(cls))} build</button><button class="btn bd-sm" data-act="import">Import</button></div>
     </div>
-    <div class="bd-cards">${mine.map((b) => buildCard(b, c, !!q && !listText(b).includes(q))).join("") || `<p class="small muted bd-pad">No ${esc(CLASS_NAME(cls))} builds yet. Start one, or import your current gear or a DIM loadout.</p>`}</div>
+    <div class="bd-cards">${newCard(cls)}${mine.map((b) => buildCard(b, c, !!q && !listText(b).includes(q))).join("")}</div>
   </section>`;
+}
+
+/** The first card in the row: start a build for this class, or import one (with a preview to confirm). */
+function newCard(cls: number) {
+  return `<div class="bd-bcard bd-newcard">
+    <button class="bd-newbtn" data-act="new" data-cls="${cls}"><span class="bd-bigplus" aria-hidden="true">+</span><b>New ${esc(CLASS_NAME(cls))} build</b></button>
+    <button class="btn bd-sm" data-act="import">Import from DIM</button>
+  </div>`;
 }
 
 function buildCard(b: Build, c: Ctx, hidden: boolean) {
@@ -225,8 +280,8 @@ function buildCard(b: Build, c: Ctx, hidden: boolean) {
     x ? `<span class="bd-gico${x.rarity === "Exotic" ? " exotic" : ""}" title="${esc(x.name)}">${img(x.icon)}</span>` : `<span class="bd-gico none"></span>`;
   const id = esc(b.id);
   const ask = delAsk === b.id;
-  return `<article class="bd-bcard${b === cur ? " on" : ""}${ask ? " asking" : ""}" style="--el:var(--${sc?.el ?? "Unknown"})"${hidden ? " hidden" : ""} data-id="${id}">
-    <button class="bd-bopen" data-act="open" data-id="${id}" aria-current="${b === cur}" aria-label="${esc(`Open ${b.name}`)}">
+  return `<article class="bd-bcard${b.id === cur?.id ? " on" : ""}${ask ? " asking" : ""}" style="--el:var(--${sc?.el ?? "Unknown"})"${hidden ? " hidden" : ""} data-id="${id}">
+    <button class="bd-bopen" data-act="open" data-id="${id}" aria-current="${b.id === cur?.id}" aria-label="${esc(`Open ${b.name}`)}">
       <span class="bd-btop"><span class="bd-bico">${img(sc?.i)}</span>
         <span class="bd-bmeta"><b>${esc(b.name)}</b><span>${sc ? esc(sc.n) : "No subclass"}${b.tags.length ? " · " + b.tags.map(esc).join(", ") : ""}</span></span>
         ${s !== null ? `<span class="bd-bscore t${scoreTier(s)}" title="Build rating">${s}</span>` : ""}</span>
@@ -271,10 +326,14 @@ function editor(b: Build, c: Ctx) {
         <div class="eyebrow">${esc(CLASS_NAME(b.cls))}${sc ? ` · ${esc(sc.n)}` : ""}</div>
         <input class="bd-name" id="bd-name" value="${esc(b.name)}" aria-label="Build name" maxlength="80">
         <div class="bd-hero-row">
-          <div class="bd-pills" role="radiogroup" aria-label="Class">${classChoices().map((k) => `<button class="bd-pill${k === b.cls ? " on" : ""}" role="radio" data-act="cls" data-cls="${k}" aria-checked="${k === b.cls}">${CLASS_NAME(k)}</button>`).join("")}</div>
           <div class="bd-tags">${b.tags.map((t, i) => `<span class="chip">${esc(t)}<button class="bd-x" data-act="untag" data-i="${i}" aria-label="Remove tag ${esc(t)}">✕</button></span>`).join("")}
             <input class="bd-input bd-taginput" id="bd-tag" placeholder="+ tag" maxlength="24" aria-label="Add a tag"></div>
         </div>
+      </div>
+      <div class="bd-savebar">
+        <span class="small${unsaved() ? " dirty" : ""}" id="bd-saved" aria-live="polite">${unsaved() ? "Unsaved changes" : "Saved"}</span>
+        <button class="btn ghost bd-sm" data-act="revert"${unsaved() ? "" : " disabled"}>Discard changes</button>
+        <button class="btn primary" data-act="save"${unsaved() ? "" : " disabled"}>Save</button>
       </div>
     </header>
     <div class="bd-main">
@@ -310,7 +369,7 @@ function summary(b: Build, c: Ctx) {
     <div class="bd-acts">
       <button class="btn primary" data-act="equip"${char || !profile ? "" : " disabled"}>Equip${char ? ` on ${CLASS_NAME(b.cls)}` : ""}…</button>
       <button class="btn" data-act="dim">Export to DIM</button>
-      <div class="bd-minor"><button class="linkbtn" data-act="dup">Duplicate</button><button class="linkbtn" data-act="del">Delete</button><span class="small muted" id="bd-saved" aria-live="polite">Saved</span></div>
+      <div class="bd-minor"><button class="linkbtn" data-act="dup">Duplicate</button><button class="linkbtn" data-act="del">Delete</button></div>
     </div>
   </aside>`;
 }
@@ -1238,8 +1297,6 @@ function wire(el: HTMLElement) {
       }
     } else if (cur && t.id === "bd-name") {
       cur.name = t.value || "Untitled build";
-      const card = panel!.querySelector(".bd-bcard.on .bd-bmeta b");
-      if (card) card.textContent = cur.name;
       touch(false);
     } else if (cur && t.id === "bd-notes") (cur.notes = t.value), touch(false);
   });
@@ -1261,42 +1318,38 @@ const ACTIONS: Record<string, (t: HTMLElement) => void> = {
     loading = load();
     if (panel) panel.innerHTML = loadingCard();
   },
-  new: (t) => {
+  save: () => saveCur(),
+  revert: () => revertCur(),
+  new: (t) => guard(() => {
     cur = newBuild(t.dataset.cls ? Number(t.dataset.cls) : (listCls ?? classChoices()[0] ?? 0));
     listCls = cur.cls;
     const sc = Object.values(defs!.subclasses).find((s) => s.cls === cur!.cls && s.el === "Prismatic");
     cur.name = `${CLASS_NAME(cur.cls)} build ${builds.filter((b) => b.cls === cur!.cls).length + 1}`;
     if (sc && (!charFor(profile, cur.cls) || subclassInstance(profile, cur.cls, sc.h))) setSubclass(sc);
     touch();
-  },
+  }),
   open: (t) => {
-    closePop();
-    cur = builds.find((b) => b.id === t.dataset.id) ?? cur;
-    draw();
-    panel?.querySelector(".bd-editor")?.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
-  },
-  cls: (t) => {
-    if (!cur || Number(t.dataset.cls) === cur.cls) return;
-    cur.cls = Number(t.dataset.cls);
-    listCls = cur.cls;
-    cur.subclass = null;
-    cur.plugs = {};
-    for (const s of ARMOR_SLOTS) delete cur.items[s];
-    cur.mods = {};
-    touch();
+    if (t.dataset.id === cur?.id) return;
+    guard(() => {
+      closePop();
+      const b = builds.find((x) => x.id === t.dataset.id);
+      if (b) cur = structuredClone(b);
+      draw();
+      panel?.querySelector(".bd-editor")?.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
+    });
   },
   untag: (t) => {
     if (!cur) return;
     cur.tags.splice(Number(t.dataset.i), 1);
     touch();
   },
-  dup: () => {
-    if (!cur) return;
-    const copy: Build = { ...structuredClone(cur), id: newId(), name: cur.name + " (copy)", dimId: undefined, created: new Date().toISOString() };
-    builds.splice(builds.indexOf(cur), 0, copy);
-    cur = copy;
-    touch();
-  },
+  // A copy of what's on screen, as a new unsaved draft.
+  dup: () =>
+    guard(() => {
+      if (!cur) return;
+      cur = { ...structuredClone(cur), id: newId(), name: cur.name + " (copy)", dimId: undefined, created: new Date().toISOString() };
+      touch();
+    }),
   // Delete asks first, in the build's card, and removes the build from this app only: DIM and the game are untouched.
   del: () => cur && askDelete(cur.id),
   askdel: (t) => askDelete(t.dataset.id!),
@@ -1312,18 +1365,24 @@ const ACTIONS: Record<string, (t: HTMLElement) => void> = {
     if (!gone) return draw();
     builds = builds.filter((b) => b !== gone);
     saveBuilds(builds);
-    if (cur === gone) cur = builds.find((b) => b.cls === listCls) ?? null;
+    if (cur?.id === gone.id) {
+      const next = builds.find((b) => b.cls === listCls);
+      cur = next ? structuredClone(next) : null;
+    }
     draw();
   },
   lcls: (t) => {
     const k = Number(t.dataset.cls);
     if (k === listCls) return;
-    closePop();
-    listCls = k;
-    listQuery = "";
-    delAsk = null;
-    cur = builds.find((b) => b.cls === k) ?? null;
-    draw();
+    guard(() => {
+      closePop();
+      listCls = k;
+      listQuery = "";
+      delAsk = null;
+      const b = builds.find((x) => x.cls === k);
+      cur = b ? structuredClone(b) : null;
+      draw();
+    });
   },
   subclass: (t) => {
     hideTip();
@@ -1483,9 +1542,7 @@ function importFlow() {
     <div id="bd-dimlist"><button class="btn" data-dact="dimlist">Load my DIM loadouts</button></div></div>`);
   DRAWER_ACTIONS.fromchar = (t) => {
     const c = chars.find((x) => x.id === t.dataset.id)!;
-    cur = captureCharacter(c.id, profile!, ctx(), `${CLASS_NAME(c.cls)} current gear`);
-    closeDrawer();
-    touch();
+    previewImport(captureCharacter(c.id, profile!, ctx(), `${CLASS_NAME(c.cls)} current gear`), `What your ${CLASS_NAME(c.cls)} is wearing now`);
   };
   let list: Awaited<ReturnType<typeof dimLoadouts>> = [];
   DRAWER_ACTIONS.dimlist = async (t) => {
@@ -1509,14 +1566,54 @@ function importFlow() {
   DRAWER_ACTIONS.fromdim = (t) => {
     const l = list[Number(t.dataset.i)];
     if (!l) return;
-    cur = fromDimLoadout(l, ctx());
+    previewImport(fromDimLoadout(l, ctx()), `DIM loadout “${l.name}”`);
+  };
+}
+
+/** Shows what an import would add, and adds it (saved) only when confirmed. */
+function previewImport(b: Build, from: string) {
+  const c = ctx();
+  const sc = b.subclass ? defs!.subclasses[b.subclass] : null;
+  const plugNames = (g: SocketGroup) => (sc ? socketsOf(sc, g).map((i) => defs!.plugs[b.plugs[i]]).filter((p): p is PlugDef => !isEmptyPlug(p)).map((p) => p.n) : []);
+  const row = (label: string, value: string) => `<div class="bd-pvrow"><span class="cap">${esc(label)}</span><span>${value || '<span class="muted">None</span>'}</span></div>`;
+  const item = (slot: BuildSlot) => {
+    const x = itemOf(c, b.items[slot]?.id);
+    return `<div class="bd-pvitem${x?.rarity === "Exotic" ? " exotic" : ""}">${x ? img(x.icon) : `<span class="ph"></span>`}<span><span class="cap">${slot}</span><b>${x ? esc(x.name) : "Not set"}</b></span></div>`;
+  };
+  const mods = ARMOR_SLOTS.reduce((n, s) => n + (b.mods[s] ?? []).filter(Boolean).length, 0);
+  const stats = statLines(b, c);
+  const score = buildScore(b, c).total;
+  openDrawer(`<div class="bd-pick bd-preview">
+    <div><div class="eyebrow">Import preview · ${esc(from)}</div><h2>${esc(b.name)}</h2>
+      <p class="small muted">${esc(CLASS_NAME(b.cls))}${sc ? ` · ${esc(sc.n)}` : ""}${score !== null ? ` · rated ${score}` : ""}. Nothing is added until you confirm.</p></div>
+    <div class="bd-pvsec">
+      ${row("Super", plugNames("super").map(esc).join(""))}
+      ${row("Abilities", [...plugNames("grenade"), ...plugNames("melee"), ...plugNames("class"), ...plugNames("movement")].map(esc).join(" · "))}
+      ${row("Aspects", plugNames("aspects").map(esc).join(" · "))}
+      ${row("Fragments", plugNames("fragments").map(esc).join(" · "))}
+    </div>
+    <div class="cap">Gear</div>
+    <div class="bd-pvgear">${[...WEAPON_SLOTS, ...ARMOR_SLOTS].map(item).join("")}</div>
+    <p class="small muted">${mods} armor mod${mods === 1 ? "" : "s"}</p>
+    <div class="cap">Stats</div>
+    <div class="bd-pvstats">${stats.map((l) => `<span><i>${esc(l.name)}</i><b class="num">${l.total}</b></span>`).join("")}</div>
+    <div class="bd-pfoot"><button class="btn primary" data-dact="importyes">Import this build</button><button class="btn ghost" data-dact="importback">Back</button></div>
+  </div>`);
+  DRAWER_ACTIONS.importback = () => importFlow();
+  DRAWER_ACTIONS.importyes = () => {
     closeDrawer();
-    touch();
+    guard(() => {
+      builds = commitBuild(builds, b);
+      saveBuilds(builds);
+      cur = structuredClone(builds.find((x) => x.id === b.id)!);
+      listCls = cur.cls;
+      draw();
+    });
   };
 }
 
 declare global {
   interface Window {
-    VR_BUILDS?: { render: (el: HTMLElement) => void; count: () => number | null };
+    VR_BUILDS?: { render: (el: HTMLElement) => void; count: () => number | null; leave?: (next: () => void) => boolean };
   }
 }

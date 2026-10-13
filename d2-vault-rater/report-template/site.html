@@ -1160,8 +1160,15 @@ function vrMain() {
     $("#gear").onclick = () => show(location.hash === "#settings" ? store.get("vr-last-tab") || "overview" : "settings", true);
   }
   const RENDER = { builds: () => window.VR_BUILDS.render($("#p-builds")) }, rendered = {};
+  let shownTab = null;
   function show(id, scroll) {
     if (!TABS.some((t) => t[0] === id)) id = "overview";
+    // The Builds tab can hold back a switch while a build has unsaved changes; it asks, then calls show again.
+    if (shownTab === "builds" && id !== "builds" && window.VR_BUILDS?.leave && !window.VR_BUILDS.leave(() => show(id, scroll))) {
+      try { history.replaceState(null, "", "#builds"); } catch {}
+      return;
+    }
+    shownTab = id;
     for (const [t] of TABS) { $(`#t-${t}`).setAttribute("aria-selected", String(t === id)); $(`#p-${t}`).hidden = t !== id; }
     $("#hero").hidden = id !== "overview";
     if (!rendered[id]) { RENDER[id](); rendered[id] = true; jumpBar($(`#p-${id}`)); }
