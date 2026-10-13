@@ -14,6 +14,8 @@ export interface PerkColumn {
   enhanced: string[];
   /** Icon URL by option name, for options that have one. Missing in vault snapshots saved before icons were kept. */
   icons?: Record<string, string>;
+  /** Description by option name, for options that have one. Missing in older vault snapshots. */
+  descriptions?: Record<string, string>;
 }
 
 export interface Location {

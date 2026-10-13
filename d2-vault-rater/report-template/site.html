@@ -793,6 +793,11 @@ aside.drawer.open { transform: none; }
 .perkcols { display: grid; gap: 10px; }
 .perkcol { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 10px; align-items: start; }
 .perkcol .cap { padding-top: 6px; }
+/* The selected perk in each drawer column: symbol, name and description */
+.pinfo { grid-column: 2; display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border-radius: 12px; background: var(--glass-hi); }
+.pinfo img { width: 32px; height: 32px; flex: none; border-radius: 50%; background: rgba(0,0,0,.25); }
+.pinfo b { font-size: 13px; color: var(--ink); }
+.pinfo p { margin: 2px 0 0; font-size: 12.5px; line-height: 1.45; color: var(--muted); white-space: pre-line; }
 .wherebox { display: grid; gap: 8px; padding: 14px 16px; border-radius: 14px; border: 1px solid rgba(51,227,160,.2); background: linear-gradient(120deg, rgba(51,227,160,.07), var(--glass) 60%); }
 .wherebox .line { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; font-size: 14px; }
 .wherebox .line span:first-child { color: var(--faint); font-size: 12.5px; padding-top: 1px; }
@@ -881,6 +886,7 @@ body.vr-booting > .topbar, body.vr-booting > main, body.vr-booting > footer { di
   .breakdown b { font-size: 19px; }
   .perkcol { grid-template-columns: minmax(0, 1fr); gap: 4px; }
   .perkcol .cap { padding-top: 0; }
+  .pinfo { grid-column: 1; }
   .facts { grid-template-columns: minmax(0, 1fr); }
   .rad .rk, .rad.top .rk { font-size: 36px; }
   .rad .title h3, .rad.top .title h3 { font-size: 20px; }
@@ -1245,6 +1251,12 @@ function vrMain() {
     const c = [cls, good ? "good" : ""].filter(Boolean).join(" ");
     const src = perkSymbols && IMG[PERK_ICON[o]];
     return src ? `<span class="${c ? c + " " : ""}pico" title="${esc(o)}"><img src="${src}" alt="${esc(o)}" loading="lazy" decoding="async"></span>` : `<span${c ? ` class="${c}"` : ""}>${esc(o)}</span>`;
+  };
+  /** The selected perk's symbol, name and what it does, for the weapon drawer. Older reports have no descriptions: the name alone shows. */
+  const PERK_DESC = DATA.perkDescs || {};
+  const perkInfo = (o) => {
+    const src = IMG[PERK_ICON[o]];
+    return `<div class="pinfo">${src ? `<img src="${src}" alt="" loading="lazy" decoding="async">` : ""}<div><b>${esc(o)}</b>${PERK_DESC[o] ? `<p>${esc(PERK_DESC[o])}</p>` : ""}</div></div>`;
   };
   // Perk columns in the game's order: barrel, magazine, the two traits, then the origin (foundry) trait.
   const PERK_ORDER = ["barrel", "magazine", "perk1", "perk2", "origin"];
@@ -2289,7 +2301,7 @@ function vrMain() {
         <div class="breakdown"><div><b class="num grad-text">${w.sc}</b><span>Vault score</span></div><div><b class="num">${w.ws}</b><span>${w.tier ? `Aegis ${w.tier}${w.rank ? " #" + w.rank : ""}` : "Wishlist tier"}</span></div><div><b class="num">${w.rs}</b><span>Roll score</span></div></div>
         <div><div class="cap" style="margin-bottom:8px">Why ${VERDICT[w.v].toLowerCase()}</div><ul class="reasons">${w.why.map((r) => `<li>${esc(r)}</li>`).join("")}</ul></div>
         ${w.notes ? `<div class="notes"><b style="color:var(--ink)">Aegis:</b> ${esc(w.notes)}</div>` : ""}
-        <div class="perkcols">${perkCols(w).map((p) => `<div class="perkcol"><div class="cap">${COL[p.k] || esc(p.k)}</div><div class="perkopts">${p.o.map((o) => perk(o, good.has(o), (p.a || p.o[0]) === o ? "perk on" : "perk")).join("")}</div></div>`).join("")}</div>
+        <div class="perkcols">${perkCols(w).map((p) => `<div class="perkcol"><div class="cap">${COL[p.k] || esc(p.k)}</div><div class="perkopts">${p.o.map((o) => perk(o, good.has(o), (p.a || p.o[0]) === o ? "perk on" : "perk")).join("")}</div>${perkInfo(p.a || p.o[0])}</div>`).join("")}</div>
         <div class="facts">${fact("Ammo", w.am)}${fact("Power", w.pw)}${fact("Masterwork", w.mw)}${fact("Gear tier", w.gt ? "Tier " + w.gt : null)}${fact("Where", w.loc)}${fact("Crafted", w.cr ? "Yes" : null)}${fact("Adept", w.ad ? "Yes" : null)}${fact("Aegis list", w.tab)}</div>
         ${movePanel(w, false)}
         ${dimPanel(w)}
