@@ -3,7 +3,7 @@
  * local app (../../src), and render the same report page. Nothing runs on a server.
  */
 import { hydrate, paths, readText } from "./shims/config";
-import { loadTokens, clearTokens, LoginRequired, minutesLeft } from "./shims/client";
+import { loadTokens, clearTokens, canSignIn, LoginRequired, minutesLeft } from "./shims/client";
 import { startLogin, finishLogin } from "./shims/oauth";
 import { clearDimToken, fetchDimData, withDimKeep, setDimTag, DIM_TAGS, type DimTagValue, type DimData } from "./shims/sync";
 import { appConfig, configured, loadServedConfig, redirectUrl, saveLocalConfig } from "./appConfig";
@@ -283,7 +283,8 @@ async function boot() {
     }
   }
   const t = loadTokens();
-  if (!t || Date.now() > t.access_expires_at - 60_000) return showSignIn(t ? "Your Bungie sign-in has expired. Sign in again to continue." : "");
+  // An old access token is fine while a refresh token can renew it (local runs with the token relay).
+  if (!canSignIn(t)) return showSignIn(t ? "Your Bungie sign-in has expired. Sign in again to continue." : "");
   try {
     await run();
   } catch (e) {

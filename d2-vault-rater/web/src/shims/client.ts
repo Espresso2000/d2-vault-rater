@@ -66,6 +66,10 @@ export async function tokenRequest(body: Record<string, string>): Promise<Tokens
   return saveTokens(await res.json());
 }
 
+/** Whether these tokens still get the player in: a live access token, or a refresh token that can renew it. */
+export const canSignIn = (t: Tokens | null, now = Date.now()): boolean =>
+  !!t && (now < t.access_expires_at - 60_000 || (!!t.refresh_token && now < t.refresh_expires_at));
+
 /** Minutes of sign-in left, or 0. */
 export const minutesLeft = () => Math.max(0, Math.floor(((loadTokens()?.access_expires_at ?? 0) - Date.now()) / 60_000));
 
