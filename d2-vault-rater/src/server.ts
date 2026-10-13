@@ -15,7 +15,7 @@ import { importWishlists, loadWishlists, DEFAULT_WISHLISTS } from "./sources/wis
 import { importArmorSets, loadArmorSets } from "./sources/armorSets.js";
 import { buildSourceLookup, importActivityLoot, loadActivityLoot } from "./sources/activities.js";
 import { rateActivities } from "./rating/activities.js";
-import { planEncounters } from "./rating/encounters.js";
+import { activityMatches, planEncounters } from "./rating/encounters.js";
 import { ROLE_LABEL } from "./data/encounters.js";
 import { moveItems } from "./bungie/transfer.js";
 import { fetchDimData, setDimTag, withDimKeep, DIM_TAGS, type DimData } from "./dim/sync.js";
@@ -320,10 +320,9 @@ server.registerTool(
   wrap(async ({ activity }: { activity?: string }) => {
     const { weaponReport: w } = await rateAll();
     const all = planEncounters(w.ratings);
-    const q = activity?.toLowerCase();
     return Object.fromEntries(
       Object.entries(all)
-        .filter(([k]) => !q || k.includes(q.replace(/[^a-z]+/g, "-").replace(/^the-/, "")))
+        .filter(([k]) => !activity || activityMatches(k, activity))
         .map(([k, list]) => [k, list.map((e) => ({ encounter: e.name, kind: e.kind, tip: e.tip, loadout: e.picks.map((p) => `${ROLE_LABEL[p.role]}: ${p.name}${p.meta ? " (meta)" : ""}`), worthGetting: e.missing }))]),
     );
   }),

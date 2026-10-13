@@ -83,3 +83,9 @@ export function planEncounter(enc: Encounter, weapons: WeaponRating[]): Encounte
 export function planEncounters(weapons: WeaponRating[]): Record<string, EncounterPlan[]> {
   return Object.fromEntries(Object.entries(ENCOUNTERS).map(([key, list]) => [key, list.map((e) => planEncounter(e, weapons))]));
 }
+
+/** Whether an activity key ("kings-fall") is what a player typed ("King's Fall", "the shattered throne", "vow"). */
+export function activityMatches(key: string, query: string): boolean {
+  const q = query.toLowerCase().replace(/['’]/g, "").replace(/[^a-z]+/g, "-").replace(/^-+|-+$/g, "").replace(/^the-/, "");
+  return key.includes(q);
+}

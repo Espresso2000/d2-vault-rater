@@ -299,3 +299,12 @@ test("encounter loadouts: a vault with nothing that fits still plans every encou
   assert.ok(Object.values(plans).flat().length > 0);
   for (const e of Object.values(plans).flat()) assert.deepEqual(e.picks, []);
 });
+
+test("encounter plans filter by activity name, apostrophes and all", async () => {
+  const { activityMatches } = await import("../src/rating/encounters.js");
+  assert.ok(activityMatches("kings-fall", "King's Fall"));
+  assert.ok(activityMatches("salvations-edge", "Salvation’s Edge"));
+  assert.ok(activityMatches("shattered-throne", "The Shattered Throne"));
+  assert.ok(activityMatches("vow-of-the-disciple", "vow"));
+  assert.ok(!activityMatches("last-wish", "King's Fall"));
+});
