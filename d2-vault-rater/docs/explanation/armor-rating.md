@@ -13,7 +13,7 @@ Four parts, weighted 40 / 25 / 25 / 10 ([src/rating/armor.ts:44-45](../../src/ra
 
 **Wanted stats** come from your settings when you set them; otherwise they are the two highest stat totals across the armor each class has equipped ([src/rating/armor.ts:76-94](../../src/rating/armor.ts#L76-L94)).
 
-**Set value.** Aegis rates each set's 2-piece and 4-piece bonus by tier (S 100 down to F 10, [src/sources/armorSets.ts:13](../../src/sources/armorSets.ts#L13)); unrated bonuses count 40 ([src/rating/armor.ts:48](../../src/rating/armor.ts#L48)). How much of that counts depends on how many distinct slots of the set you own for that class ([src/rating/armor.ts:104-109](../../src/rating/armor.ts#L104-L109)), in `setValue` ([src/rating/armor.ts:54-59](../../src/rating/armor.ts#L54-L59)):
+**Set value.** [Aegis's sheet](https://docs.google.com/spreadsheets/d/1JM-0SlxVDAi-C6rGVlLxa-J1WGewEeL8Qvq4htWZHhY/htmlview) rates each set's 2-piece and 4-piece bonus by tier (S 100 down to F 10, [src/sources/armorSets.ts:13](../../src/sources/armorSets.ts#L13)); unrated bonuses count 40 ([src/rating/armor.ts:48](../../src/rating/armor.ts#L48)). How much of that counts depends on how many distinct slots of the set you own for that class ([src/rating/armor.ts:104-109](../../src/rating/armor.ts#L104-L109)), in `setValue` ([src/rating/armor.ts:54-59](../../src/rating/armor.ts#L54-L59)):
 
 - 4+ slots: both bonuses are active; the better counts 80%, the other 20%.
 - 2-3 slots: mostly the 2-piece (85%), a little of the 4-piece (15%).

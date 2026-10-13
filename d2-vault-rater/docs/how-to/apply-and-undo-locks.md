@@ -20,7 +20,7 @@ Applying saves an undo snapshot, writes the DIM tags CSV, then changes locks one
 
 ## 3. Import the DIM tags (optional)
 
-The plan tags keepers `favorite` (best) or `keep`, junk `junk`, and items to review `archive`, each with a note starting with the score ([src/dim/actions.ts:48-66](../../src/dim/actions.ts#L48-L66)). In DIM: **Settings → Spreadsheets → Import tags/notes from CSV**, and pick the CSV the apply step reported ([src/server.ts:404](../../src/server.ts#L404)). The file has DIM's `Id`, `Hash`, `Tag` and `Notes` columns ([src/dim/actions.ts:108-113](../../src/dim/actions.ts#L108-L113)). In the web app the CSV comes back with the apply result ([web/src/main.ts:231](../../web/src/main.ts#L231)).
+The plan tags keepers `favorite` (best) or `keep`, junk `junk`, and items to review `archive`, each with a note starting with the score ([src/dim/actions.ts:48-66](../../src/dim/actions.ts#L48-L66)). In [DIM](https://destinyitemmanager.com/): **Settings → Spreadsheets → Import tags/notes from CSV**, and pick the CSV the apply step reported ([src/server.ts:404](../../src/server.ts#L404)). The file has DIM's `Id`, `Hash`, `Tag` and `Notes` columns ([src/dim/actions.ts:108-113](../../src/dim/actions.ts#L108-L113)). In the web app the CSV comes back with the apply result ([web/src/main.ts:231](../../web/src/main.ts#L231)).
 
 To write the CSV without changing locks, use `export_dim_csv` ([src/server.ts:408-412](../../src/server.ts#L408-L412)).
 

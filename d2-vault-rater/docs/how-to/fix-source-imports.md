@@ -9,7 +9,7 @@ Sources refresh by themselves after a day ([src/pipeline.ts:58](../../src/pipeli
 
 ## A weapon on Aegis's sheet isn't recognised
 
-Aegis rows are matched to the manifest by name, ignoring Adept-style suffixes, case and punctuation ([src/sources/aegis.ts:122-132](../../src/sources/aegis.ts#L122-L132)). Rows that match nothing are reported: `refresh_sources` returns the first 40 and the count ([src/server.ts:152](../../src/server.ts#L152)); the CLI's `refresh` prints the list ([src/pipeline.ts:45](../../src/pipeline.ts#L45)).
+Rows on [Aegis's sheet](https://docs.google.com/spreadsheets/d/1JM-0SlxVDAi-C6rGVlLxa-J1WGewEeL8Qvq4htWZHhY/htmlview) are matched to the manifest by name, ignoring Adept-style suffixes, case and punctuation ([src/sources/aegis.ts:122-132](../../src/sources/aegis.ts#L122-L132)). Rows that match nothing are reported: `refresh_sources` returns the first 40 and the count ([src/server.ts:152](../../src/server.ts#L152)); the CLI's `refresh` prints the list ([src/pipeline.ts:45](../../src/pipeline.ts#L45)).
 
 Map a sheet name to the game's name in `~/.d2-vault-rater/sources/aliases.json` ([src/sources/aegis.ts:36](../../src/sources/aegis.ts#L36)):
 
@@ -37,4 +37,4 @@ Both imports are allowed to fail without stopping a report ([src/pipeline.ts:42-
 
 ## Use other wishlists
 
-Set `wishlists` to a list of DIM wishlist URLs in `settings.json`; empty means the voltron list ([src/pipeline.ts:40](../../src/pipeline.ts#L40), [src/sources/wishlist.ts:4-6](../../src/sources/wishlist.ts#L4-L6)). Lines must follow DIM's `dimwishlist:item=...&perks=...` format; a negative item id marks a trash roll ([src/sources/wishlist.ts:23-42](../../src/sources/wishlist.ts#L23-L42)).
+Set `wishlists` to a list of DIM wishlist URLs in `settings.json`; empty means the voltron list ([src/pipeline.ts:40](../../src/pipeline.ts#L40), [src/sources/wishlist.ts:4-6](../../src/sources/wishlist.ts#L4-L6)). Lines must follow DIM's `dimwishlist:item=...&perks=...` format ([Creating Wish Lists](https://github.com/DestinyItemManager/DIM/wiki/Creating-Wish-Lists)); a negative item id marks a trash roll ([src/sources/wishlist.ts:23-42](../../src/sources/wishlist.ts#L23-L42)).

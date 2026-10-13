@@ -6,11 +6,11 @@ Every weapon gets a score out of 100 and a verdict: keep, shard, or review. The 
 
 The score is 60% the weapon and 40% its roll ([src/rating/weapons.ts:18-19](../../src/rating/weapons.ts#L18-L19), applied at [src/rating/weapons.ts:183](../../src/rating/weapons.ts#L183)).
 
-**Weapon score.** Aegis's tier sets the base: S 100, A 85, B 70, C 50, D 30 ([src/rating/weapons.ts:8](../../src/rating/weapons.ts#L8)). Within a tier, a higher rank on its sheet tab adds up to 5 points ([src/rating/weapons.ts:165](../../src/rating/weapons.ts#L165)); the position in the tier comes from sorting each tab's tier by rank ([src/rating/weapons.ts:80-83](../../src/rating/weapons.ts#L80-L83)).
+**Weapon score.** The tier on [Aegis's Endgame Analysis sheet](https://docs.google.com/spreadsheets/d/1JM-0SlxVDAi-C6rGVlLxa-J1WGewEeL8Qvq4htWZHhY/htmlview) sets the base: S 100, A 85, B 70, C 50, D 30 ([src/rating/weapons.ts:8](../../src/rating/weapons.ts#L8)). Within a tier, a higher rank on its sheet tab adds up to 5 points ([src/rating/weapons.ts:165](../../src/rating/weapons.ts#L165)); the position in the tier comes from sorting each tab's tier by rank ([src/rating/weapons.ts:80-83](../../src/rating/weapons.ts#L80-L83)).
 
 A weapon is matched to Aegis's sheet by item hash first, then by name without the Adept/Timelost/Harrowed suffix ([src/rating/weapons.ts:85-86](../../src/rating/weapons.ts#L85-L86)). When reissues share a name, the better-tiered row wins ([src/rating/weapons.ts:75-78](../../src/rating/weapons.ts#L75-L78)).
 
-Weapons that aren't on the sheet fall back to the community wishlist: B tier if your copy fits a known god roll, C otherwise ([src/rating/weapons.ts:163](../../src/rating/weapons.ts#L163)). A roll "fits" when every perk the wishlist entry names is among your copy's selectable perks ([src/rating/weapons.ts:158-162](../../src/rating/weapons.ts#L158-L162)).
+Weapons that aren't on the sheet fall back to the community wishlist (by default [voltron](https://github.com/48klocs/dim-wish-list-sources), in [DIM's wish list format](https://github.com/DestinyItemManager/DIM/wiki/Creating-Wish-Lists)): B tier if your copy fits a known god roll, C otherwise ([src/rating/weapons.ts:163](../../src/rating/weapons.ts#L163)). A roll "fits" when every perk the wishlist entry names is among your copy's selectable perks ([src/rating/weapons.ts:158-162](../../src/rating/weapons.ts#L158-L162)).
 
 **Roll score.** Each perk column Aegis recommends for counts by weight: both trait columns 35%, barrel and magazine 10% each, origin and masterwork 5% each ([src/rating/weapons.ts:10-17](../../src/rating/weapons.ts#L10-L17)). `scoreRoll` ([src/rating/weapons.ts:112](../../src/rating/weapons.ts#L112)) works through them:
 
@@ -41,5 +41,7 @@ Which values the rules use comes from your strictness for that weapon type ([src
 - Best three keepers per slot and per element, and the best per archetype ([src/rating/weapons.ts:318-340](../../src/rating/weapons.ts#L318-L340)).
 - **Gaps**: up to 15 S-tier weapons on Aegis's sheet you don't own, best ranked first ([src/rating/weapons.ts:328-334](../../src/rating/weapons.ts#L328-L334)).
 - The count of legendaries missing from the sheet ([src/rating/weapons.ts:344](../../src/rating/weapons.ts#L344)).
+
+Perk names, icons and which options each column offers come from the item's sockets in the vault read and the manifest's plug definitions ([sources](../reference/references.md#the-destiny-manifest)).
 
 Ratings come back sorted by score, then by gear tier ([src/rating/weapons.ts:196](../../src/rating/weapons.ts#L196)).

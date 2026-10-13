@@ -1,6 +1,6 @@
 # Connect Claude (or another MCP client)
 
-The MCP server is `dist/server.js`, a stdio server ([src/server.ts:420](../../src/server.ts#L420)). It needs the same Bungie app as the local app (Confidential, redirect `https://localhost:7777/callback`; see the [tutorial](../tutorials/first-vault-report.md#1-create-a-bungie-app)).
+The MCP server is `dist/server.js`, a [Model Context Protocol](https://modelcontextprotocol.io/) server over stdio ([src/server.ts:420](../../src/server.ts#L420)). It needs the same Bungie app as the local app (Confidential, redirect `https://localhost:7777/callback`; see the [tutorial](../tutorials/first-vault-report.md#1-create-a-bungie-app)).
 
 1. Build it: `npm install && npm run build`.
 2. Register it with your client, passing the keys as environment variables ([src/config.ts:24-33](../../src/config.ts#L24-L33)).

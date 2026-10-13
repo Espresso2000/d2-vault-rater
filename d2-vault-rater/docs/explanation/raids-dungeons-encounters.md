@@ -6,7 +6,7 @@ The R&Ds tab answers two questions: which raid or dungeon is most worth farming 
 
 The activities are a fixed list of every raid and dungeon in the game, each with the names Bungie and Aegis use for it ([src/sources/activities.ts:16-37](../../src/sources/activities.ts#L16-L37)). `importActivityLoot` ([src/sources/activities.ts:96](../../src/sources/activities.ts#L96)) builds each activity's loot from three places:
 
-1. **Bungie's collections**: every collectible whose "Source:" text names the activity, leaving out Eververse, promotional and Guided Games sources ([src/sources/activities.ts:93-94](../../src/sources/activities.ts#L93-L94), [src/sources/activities.ts:112-133](../../src/sources/activities.ts#L112-L133)). Armor in those collectibles gives the activity's armor sets.
+1. **Bungie's collections** (collectible definitions in the [manifest](https://github.com/Bungie-net/api/wiki/Obtaining-Destiny-Definitions-%22The-Manifest%22)): every collectible whose "Source:" text names the activity, leaving out Eververse, promotional and Guided Games sources ([src/sources/activities.ts:93-94](../../src/sources/activities.ts#L93-L94), [src/sources/activities.ts:112-133](../../src/sources/activities.ts#L112-L133)). Armor in those collectibles gives the activity's armor sets.
 2. **Aegis's sheet**: weapons whose source column names the activity ([src/sources/activities.ts:134-153](../../src/sources/activities.ts#L134-L153)).
 3. **Exotic quests** that collections credit to the quest rather than the activity, such as Xenophage in Pit of Heresy ([src/sources/activities.ts:41-46](../../src/sources/activities.ts#L41-L46), [src/sources/activities.ts:154](../../src/sources/activities.ts#L154)).
 

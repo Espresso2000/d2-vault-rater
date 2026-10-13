@@ -6,7 +6,7 @@ The web app is plain static files: no server code runs after the build. Everythi
 
 A hosted site can't keep a client secret, so it needs its own app at <https://www.bungie.net/en/Application> (keep the Confidential one for the local app):
 
-- **OAuth client type**: Public. Public clients get no refresh token, so visitors sign in again after about an hour ([web/src/shims/client.ts:1-4](../../web/src/shims/client.ts#L1-L4)).
+- **OAuth client type**: Public. Public clients get no refresh token ([Bungie's OAuth documentation](https://github.com/Bungie-net/api/wiki/OAuth-Documentation)), so visitors sign in again after about an hour ([web/src/shims/client.ts:1-4](../../web/src/shims/client.ts#L1-L4)).
 - **Redirect URL**: the page's own address, e.g. `https://you.github.io/vault-rater/`. Bungie sends visitors back to the page itself ([web/src/appConfig.ts:46-47](../../web/src/appConfig.ts#L46-L47)).
 - **Origin header**: the site's origin, e.g. `https://you.github.io`.
 - **Scopes**: Read your Destiny 2 information; Move or equip your gear.

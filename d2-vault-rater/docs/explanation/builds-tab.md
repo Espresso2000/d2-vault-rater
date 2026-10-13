@@ -18,33 +18,27 @@ The web app's Builds tab lets you put together a subclass, three weapons, five a
 
 ## The editor
 
-The saved builds sit at the top, one class at a time: a Hunter / Titan / Warlock switcher, most recently played first, shows only that class's builds ([web/src/builds/ui.ts:247](../../web/src/builds/ui.ts#L247), [web/src/builds/ui.ts:314](../../web/src/builds/ui.ts#L314)). Each card shows the subclass, the rating, all eight gear icons (exotics outlined), the exotics and aspects by name, the fragment count and the three highest stats ([web/src/builds/ui.ts:272](../../web/src/builds/ui.ts#L272)). The first card in the row starts a new build for that class or imports one ([web/src/builds/ui.ts:263](../../web/src/builds/ui.ts#L263)). The bin button on a card (or **Delete** in the summary) asks in the card first; confirming removes the build from Vault Rater only. DIM loadouts and the game are not touched ([web/src/builds/ui.ts:1364](../../web/src/builds/ui.ts#L1364)).
+> The Builds tab's layout is being redesigned, so this section only describes what the editor does, not where things sit on screen. The rating, stats, equipping and DIM sections below describe the logic, which the redesign keeps.
 
-**Saving.** The editor works on a draft: changes to the name, tags, subclass, slots, gear, mods and aims stay unsaved until **Save** in the title card, which also offers **Discard changes** ([web/src/builds/model.ts:327](../../web/src/builds/model.ts#L327)). Opening another build, switching class, starting a new one, importing, leaving the Builds tab or closing the page with unsaved changes asks first: Save, Discard or keep editing ([web/src/builds/ui.ts:193](../../web/src/builds/ui.ts#L193)). A build's class is set when it is made (or by its import) and can't be changed afterwards.
-
-**Importing** from a character or a DIM loadout shows a preview first (subclass, abilities, aspects, fragments, all eight items, mod count and stats); the build is added and saved only when you confirm ([web/src/builds/ui.ts:1574](../../web/src/builds/ui.ts#L1574)).
-
-Below that, the build's sections, and a summary column on the right that stays in view (it moves above the sections on narrower screens).
-
-- **Subclass.** Elements switch with one click. Every ability, aspect and fragment slot opens a popover in place: on hover with a mouse, on keyboard focus (arrow down moves into it, arrows move between options, Escape closes) and on tap, where it opens as a bottom sheet ([web/src/builds/ui.ts:641](../../web/src/builds/ui.ts#L641), [web/src/builds/ui.ts:1221](../../web/src/builds/ui.ts#L1221)). Options are sorted by Aegis tier and show stat changes and fragment slots; pointing at one shows its description, Clarity's notes and Aegis's verdict. Abilities replace on click. Aspects and fragments toggle, so one popover fills every slot: a pick goes into a free slot, or replaces the slot you opened when all are full ([web/src/builds/ui.ts:753-779](../../web/src/builds/ui.ts#L753-L779)).
-- **Subclass and Abilities.** The Subclass card holds the element switcher and Aegis's scores. The Abilities card lays the slots out like the game: a big Super square beside the two aspects; across a divider, grenade, melee and class ability stacked as wide slots; then small squares for jump and any extras (Prismatic's Transcendence and grenade). Each slot shows its description beside the icon. Fragments run across a band at the bottom as pills, empty and locked slots included, with **Modify fragments** centred under them ([web/src/builds/ui.ts:460](../../web/src/builds/ui.ts#L460)).
-- **Weapons and armor on the page.** Weapons and armor are separate cards. Weapons sit side by side with their perks in the game's column order (barrel, magazine, the two traits named, origin), names on hover, and frame, ammo, masterwork, tier and power ([web/src/builds/ui.ts:798](../../web/src/builds/ui.ts#L798)). Each armor piece is one row: the piece, its six stats, its four mods as labelled tiles and its energy; pointing at a mod shows what it does, with Clarity's numbers ([web/src/builds/ui.ts:818](../../web/src/builds/ui.ts#L818)).
-- **Gear and mods.** One drawer picks weapons, armor and mods for every slot ([web/src/builds/ui.ts:922](../../web/src/builds/ui.ts#L922)). Weapons and armor come from one filterable list (slot, element, exotic, Tier 5; sorted by vault score, Aegis tier, stat total or a single stat, d2armorpicker style) with every armor stat in columns ([web/src/builds/ui.ts:970](../../web/src/builds/ui.ts#L970)). Clicking a row puts it in its slot, clicking again takes it out, and a second exotic of the same kind replaces the first. The mods tab adds to the armor piece you choose, into the first socket that takes the mod and has the energy. A tray shows every slot, every mod socket and the stats with your picks against the saved build; nothing changes until **Apply** ([web/src/builds/ui.ts:1059](../../web/src/builds/ui.ts#L1059), [web/src/builds/ui.ts:1190](../../web/src/builds/ui.ts#L1190)).
-- **Summary.** The rating ring and its parts, the six stats with your aims, the armor set bonuses your pieces turn on (from the report's set data), and the equip and DIM buttons ([web/src/builds/ui.ts:362](../../web/src/builds/ui.ts#L362), [web/src/builds/ui.ts:411](../../web/src/builds/ui.ts#L411)).
-- Each weapon links to its light.gg and D2 Foundry pages for rolls and perk numbers.
+- **Saved builds** are listed per class; you start a new build, import one from a character or a DIM loadout (with a preview before it is added), or delete one. Deleting removes it from Vault Rater only; DIM loadouts and the game are not touched ([web/src/builds/ui.ts:1364](../../web/src/builds/ui.ts#L1364), [web/src/builds/ui.ts:1574](../../web/src/builds/ui.ts#L1574)).
+- **Editing works on a draft**: nothing is kept until you save, and leaving with unsaved changes asks first ([web/src/builds/model.ts:327](../../web/src/builds/model.ts#L327), [web/src/builds/ui.ts:193](../../web/src/builds/ui.ts#L193)).
+- **Subclass**: pick the element, abilities, aspects and fragments. Options are sorted by Aegis tier and show their description, stat changes and Destiny Clarity's notes ([web/src/builds/ui.ts:641](../../web/src/builds/ui.ts#L641), [web/src/builds/ui.ts:753-779](../../web/src/builds/ui.ts#L753-L779)).
+- **Gear and mods**: weapons, armor and armor mods for every slot come from one filterable, sortable list ([D2ArmorPicker](https://d2armorpicker.com/) style stat columns), with a stat preview against the saved build; nothing changes until you apply ([web/src/builds/ui.ts:922](../../web/src/builds/ui.ts#L922), [web/src/builds/ui.ts:1190](../../web/src/builds/ui.ts#L1190)).
+- **Summary**: the rating and its parts, the six stats with your aims, the armor set bonuses your pieces turn on, and the equip and DIM actions ([web/src/builds/ui.ts:362](../../web/src/builds/ui.ts#L362)).
+- Each weapon links to its [light.gg](https://www.light.gg/) and [D2 Foundry](https://d2foundry.gg/) pages for rolls and perk numbers ([web/src/builds/ui.ts:98](../../web/src/builds/ui.ts#L98)).
 
 ## Sources
 
 | Source | What the tab uses | How |
 | --- | --- | --- |
-| Bungie manifest | Subclasses, abilities, aspects, fragments, armor mods, energy costs, stat bonuses | Stripped and cached per game version, see above |
-| Aegis's Endgame Analysis | Tiers for subclasses, aspects and fragments; the build rating | Google Sheet, daily |
-| Destiny Data Compendium | Descriptions for abilities, aspects, fragments, mods | Google Sheet, daily |
+| [Bungie manifest](https://github.com/Bungie-net/api/wiki/Obtaining-Destiny-Definitions-%22The-Manifest%22) | Subclasses, abilities, aspects, fragments, armor mods, energy costs, stat bonuses | Stripped and cached per game version, see above |
+| [Aegis's Endgame Analysis](https://docs.google.com/spreadsheets/d/1JM-0SlxVDAi-C6rGVlLxa-J1WGewEeL8Qvq4htWZHhY/htmlview) | Tiers for subclasses, aspects and fragments; the build rating | Google Sheet, daily |
+| [Destiny Data Compendium](https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/htmlview) | Descriptions for abilities, aspects, fragments, mods | Google Sheet, daily |
 | [Destiny Clarity](https://github.com/Database-Clarity) | Community-tested numbers for abilities, aspects, fragments and mods, by plug hash (the file DIM reads) | Open JSON, daily, kept only for the tab's plugs ([web/src/builds/sheets.ts:176](../../web/src/builds/sheets.ts#L176), [web/src/builds/ratings.ts:52](../../web/src/builds/ratings.ts#L52)) |
 | The rater | Vault scores and Aegis weapon tiers per item, armor set bonuses | The report's data |
-| light.gg, D2 Foundry | Weapon roll and perk pages | Links only |
+| [light.gg](https://www.light.gg/), [D2 Foundry](https://d2foundry.gg/) | Weapon roll and perk pages | Links only |
 
-Nothing here needs a key or a sign-in beyond the Bungie sign-in the app already has.
+Full list with links: [References](../reference/references.md). Nothing here needs a key or a sign-in beyond the Bungie sign-in the app already has.
 
 ## Stats
 

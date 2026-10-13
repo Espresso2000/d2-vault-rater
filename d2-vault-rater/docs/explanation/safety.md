@@ -4,6 +4,8 @@ Vault Rater can lock and unlock items, move and equip them, set DIM tags and cha
 
 ## Locks: plan, confirm, apply, undo
 
+Locks are Bungie's per-item lock flag, changed with [SetItemLockState](https://bungie-net.github.io/multi/operation_post_Destiny2-SetItemLockState.html); DIM shows the same flag after its next refresh.
+
 1. **The plan is a dry run.** `planDimActions` ([src/dim/actions.ts:46](../../src/dim/actions.ts#L46)) decides, for every rated item, whether to lock it, unlock it or leave it, and which DIM tag it should get. It only writes the plan to a file ([src/dim/actions.ts:89](../../src/dim/actions.ts#L89)); the MCP tool says so in its description ([src/server.ts:378](../../src/server.ts#L378)).
 2. **Keepers are locked; only some junk is unlocked.** A shard item is unlocked only when its category is in your strictness's `unlock` list ([src/dim/actions.ts:55-57](../../src/dim/actions.ts#L55-L57)). Items to review (extra exotics) are never unlocked ([src/dim/actions.ts:53-54](../../src/dim/actions.ts#L53-L54)).
 3. **Applying needs an explicit yes.**
