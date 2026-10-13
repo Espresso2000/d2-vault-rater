@@ -10,7 +10,8 @@ let cached: BuildDefs | null = null;
 export async function loadBuildDefs(log: (s: string) => void): Promise<BuildDefs> {
   if (cached?.version === (await manifestMeta()).version) return cached;
   return (cached = await loadVersioned<BuildDefs>({
-    key: "build-defs",
+    // v2 added subclass descriptions; an older cached copy is rebuilt once.
+    key: "build-defs-v2",
     snapshot: "builds",
     worker: () => new Worker(new URL("./defs.worker.ts", import.meta.url), { type: "module" }),
     log,

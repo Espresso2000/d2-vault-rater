@@ -312,7 +312,7 @@ function subclassCard(b: Build, sc: SubclassDef | null, c: Ctx) {
     .map((s) => {
       const r = subclassRating(c.ratings, s);
       return `<button class="bd-el${s.h === b.subclass ? " on" : ""}" role="radio" aria-checked="${s.h === b.subclass}" data-act="subclass" data-h="${s.h}" style="--el:var(--${s.el})"
-        title="${esc(owned(s) ? `${s.n}${r ? ` · Aegis ${r.tier} tier` : ""}` : "Not unlocked on this character")}" ${owned(s) ? "" : "disabled"}>
+        ${owned(s) ? `data-tip="${s.h}" aria-describedby="bd-tip"` : `title="Not unlocked on this character" disabled`}>
         ${img(s.i)}<span>${esc(s.el)}</span>${tierChip(r?.tier)}</button>`;
     })
     .join("")}</div>`;
@@ -348,6 +348,53 @@ function socketChip(b: Build, sc: SubclassDef, i: number, c: Ctx, slots: number)
     return `<span class="bd-chip${empty ? " empty" : ""} ${off ? "off" : "fixed"}" title="${esc(off ? "Pick aspects with more fragment slots to use this one" : `${label}: ${p?.n ?? ""} (fixed)`)}">${inner}</span>`;
   return `<button class="bd-chip${empty ? " empty" : ""}${pop?.i === i ? " open" : ""}" data-pop="${i}" aria-haspopup="dialog" aria-expanded="${pop?.i === i}" aria-label="${esc(`${label}: ${empty ? "empty" : p?.n}. Change`)}">${inner}</button>`;
 }
+
+/* ---------- Subclass hover card ---------- */
+
+/** What a subclass is: the game's description, Aegis's rating and any community notes. Shown on hover and keyboard focus. */
+function subclassTip(h: number) {
+  const s = defs!.subclasses[h];
+  if (!s) return "";
+  const r = subclassRating(cachedRatings(), s);
+  const info = infoFor(cachedRatings(), s.n);
+  const notes = clarity[s.h] ?? [];
+  const supers = socketsOf(s, "super").flatMap((i) => s.sockets[i].plugs).map((p) => defs!.plugs[p]?.n).filter((n): n is string => !!n && !/^Empty /i.test(n));
+  const aspects = socketsOf(s, "aspects").length;
+  return `<div class="bd-dhead">${img(s.i)}<div><b>${esc(s.n)}</b><span>${esc(CLASS_NAME(s.cls))} · ${esc(s.el)}</span></div>${r ? `<span class="bd-dtier">${tierChip(r.tier)}<span>${r.total !== null ? `${r.total}/40` : ""}</span></span>` : ""}</div>
+    ${s.d ? `<p class="bd-desc bd-flavor">“${esc(s.d)}”</p>` : ""}
+    ${supers.length ? `<div class="bd-tipline"><span class="cap">Supers</span><span>${[...new Set(supers)].map(esc).join(" · ")}</span></div>` : ""}
+    <div class="bd-tipline"><span class="cap">Slots</span><span>${aspects} aspect${aspects === 1 ? "" : "s"} · fragments by aspect</span></div>
+    ${notes.length ? `<div class="bd-clarity"><div class="cap">Clarity · community tested</div>${notes.map((t) => `<p>${esc(t)}</p>`).join("")}</div>` : ""}
+    ${r ? `<div class="bd-aegis"><div class="cap">Aegis · ${esc(r.tier)} tier</div>
+      <div class="bd-tiproles">${(["super", "enhancement", "offense", "defense"] as const).map((k) => `<span>${k} <b class="num">${r.scores[k] ?? "—"}</b></span>`).join("")}</div>
+      ${r.supers ? `<div><span>Picks</span><p>${esc(r.supers)}</p></div>` : ""}${r.usage ? `<div><span>Why</span><p>${esc(r.usage)}</p></div>` : ""}</div>` : ""}
+    ${info && !r ? `<p class="small muted">${esc(info)}</p>` : ""}`;
+}
+
+function tipEl(): HTMLElement {
+  let el = document.getElementById("bd-tip");
+  if (!el) {
+    document.body.insertAdjacentHTML("beforeend", `<div class="bd-tip" id="bd-tip" role="tooltip" hidden></div>`);
+    el = document.getElementById("bd-tip")!;
+    addEventListener("scroll", () => hideTip(), { passive: true });
+  }
+  return el;
+}
+function showTip(t: HTMLElement) {
+  const el = tipEl();
+  const html = subclassTip(Number(t.dataset.tip));
+  if (!html) return;
+  el.innerHTML = html;
+  el.hidden = false;
+  const r = t.getBoundingClientRect();
+  const below = r.bottom + 8 + el.offsetHeight < innerHeight;
+  el.style.left = `${Math.max(8, Math.min(r.left, innerWidth - el.offsetWidth - 8))}px`;
+  el.style.top = `${below ? r.bottom + 8 : Math.max(8, r.top - el.offsetHeight - 8)}px`;
+}
+const hideTip = () => {
+  const el = document.getElementById("bd-tip");
+  if (el) el.hidden = true;
+};
 
 /* ---------- Socket popover ---------- */
 
@@ -480,8 +527,8 @@ function refreshPop() {
       <b>${pc.multi ? `${pc.chosen.size} of ${pc.limit} picked` : esc(pc.sc.n)}</b></div>
       <button class="bd-x bd-pop-x" data-popclose aria-label="Close">✕</button></div>
     ${pc.opts.length > 10 ? `<input class="bd-input" id="bd-popq" type="search" placeholder="Filter ${esc(label.toLowerCase())}s" value="${esc(pop!.q)}" aria-label="Filter">` : ""}
-    <div class="bd-pop-grid" id="bd-popg" role="listbox" aria-multiselectable="${pc.multi}" aria-label="${esc(label)}">${popGrid(pc)}</div>
-    <div class="bd-pop-detail" id="bd-popd" aria-live="polite">${popDetail()}</div>
+    <div class="bd-pop-body"><div class="bd-pop-grid" id="bd-popg" role="listbox" aria-multiselectable="${pc.multi}" aria-label="${esc(label)}">${popGrid(pc)}</div>
+    <div class="bd-pop-detail" id="bd-popd" aria-live="polite">${popDetail()}</div></div>
     <p class="bd-pop-hint">${pc.multi ? "Click to add or remove · arrow keys move · Esc closes" : "Click to use it · arrow keys move · Esc closes"}</p>`;
   el.hidden = false;
   placePop();
@@ -963,12 +1010,11 @@ function plugDetail(p: PlugDef, group: SocketGroup, sc: SubclassDef | null, comp
   const notes = clarity[p.h] ?? [];
   const stats = (p.st ?? []).map(([h, v]) => statChip(h, v)).join("");
   const sub = sc && group === "super" ? subclassRating(r, sc) : null;
-  const shown = compact ? notes.slice(0, 2) : notes;
   return `<div class="bd-dhead">${img(p.i)}<div><b>${esc(p.n)}</b><span>${esc(p.t ?? GROUP_LABEL[group])}${p.cap ? ` · ${p.cap} fragment slots` : ""}${p.cost && group !== "fragments" ? ` · ${p.cost} energy` : ""}</span></div>
       ${rated ? `<span class="bd-dtier">${tierChip(rated.tier)}<span>${rated.rank ? `#${rated.rank}` : ""}</span></span>` : ""}</div>
     ${stats ? `<div class="bd-dstats">${stats}</div>` : ""}
     ${p.d ? `<p class="bd-desc">${esc(p.d)}</p>` : ""}
-    ${notes.length ? `<div class="bd-clarity"><div class="cap">Clarity · community tested</div>${shown.map((t) => `<p>${esc(t)}</p>`).join("")}${notes.length > shown.length ? `<p class="small muted">+${notes.length - shown.length} more lines</p>` : ""}</div>` : ""}
+    ${notes.length ? `<div class="bd-clarity"><div class="cap">Clarity · community tested</div>${notes.map((t) => `<p>${esc(t)}</p>`).join("")}</div>` : ""}
     ${rated ? `<div class="bd-aegis"><div class="cap">Aegis · ${esc(rated.tier)} tier${rated.subclass ? ` · ${esc(rated.subclass)}` : ""}</div>
       ${!compact && rated.trigger ? `<div><span>Trigger</span><p>${esc(rated.trigger)}</p></div>` : ""}${rated.effect && !(compact && notes.length) ? `<div><span>Effect</span><p>${esc(rated.effect)}</p></div>` : ""}${rated.usage ? `<div><span>Why</span><p>${esc(rated.usage)}</p></div>` : ""}</div>` : ""}
     ${sub ? `<div class="bd-aegis"><div class="cap">Aegis · super ${sub.scores.super ?? "—"}/10 for ${esc(sub.element)} ${esc(sub.cls)}</div><p>${esc(sub.supers)}</p></div>` : ""}
@@ -990,6 +1036,20 @@ function wire(el: HTMLElement) {
     const t = (e.target as HTMLElement).closest<HTMLElement>("[data-act]");
     if (t && !(t as HTMLButtonElement).disabled) ACTIONS[t.dataset.act!]?.(t);
   });
+  // Subclass buttons: a hover card with what the subclass is (mouse and keyboard focus).
+  el.addEventListener("pointerover", (e) => {
+    const t = (e.target as HTMLElement).closest<HTMLElement>("[data-tip]");
+    if (t && e.pointerType === "mouse") showTip(t);
+  });
+  el.addEventListener("pointerout", (e) => {
+    const t = (e.target as HTMLElement).closest<HTMLElement>("[data-tip]");
+    if (t && !t.contains(e.relatedTarget as Node | null)) hideTip();
+  });
+  el.addEventListener("focusin", (e) => {
+    const t = (e.target as HTMLElement).closest<HTMLElement>("[data-tip]");
+    if (t?.matches(":focus-visible")) showTip(t);
+  });
+  el.addEventListener("focusout", (e) => (e.target as HTMLElement).closest("[data-tip]") && hideTip());
   // Hover opens a socket's popover (mouse only; touch taps go through click).
   el.addEventListener("pointerover", (e) => {
     const p = (e.target as HTMLElement).closest<HTMLElement>("[data-pop]");
@@ -1100,6 +1160,7 @@ const ACTIONS: Record<string, (t: HTMLElement) => void> = {
     draw();
   },
   subclass: (t) => {
+    hideTip();
     const sc = defs!.subclasses[Number(t.dataset.h)];
     if (!cur || !sc || sc.h === cur.subclass) return;
     closePop();

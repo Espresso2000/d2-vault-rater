@@ -41,6 +41,8 @@ export interface SubclassDef {
   h: number;
   n: string;
   i?: string;
+  /** The game's text for the subclass (its flavor text: subclass descriptions are empty). */
+  d?: string;
   /** 0 Titan, 1 Hunter, 2 Warlock */
   cls: number;
   el: "Arc" | "Solar" | "Void" | "Stasis" | "Strand" | "Prismatic";
@@ -126,6 +128,7 @@ export function stripBuildDefs(version: string, items: Raw, plugSets: Raw, perks
       h: d.hash,
       n: d.displayProperties.name,
       i: d.displayProperties.icon,
+      d: d.displayProperties.description || d.flavorText || undefined,
       cls: d.classType,
       el: /prismatic/i.test(d.displayProperties.name) ? "Prismatic" : ELEMENT[dmg] ?? "Arc",
       sockets,
