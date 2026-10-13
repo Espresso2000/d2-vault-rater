@@ -340,7 +340,12 @@ server.registerTool(
   },
   wrap(async ({ ids, to, equip }: { ids: string[]; to: string; equip?: boolean }) => {
     await currentVault();
-    return moveItems(ids, to, { equip });
+    try {
+      return await moveItems(ids, to, { equip });
+    } finally {
+      // Moves change the cached vault in place (what is equipped where), so the ratings are re-made.
+      rated = null;
+    }
   }),
 );
 
