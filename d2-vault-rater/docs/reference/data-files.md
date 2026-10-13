@@ -33,7 +33,7 @@ The web app keeps the rater's "files" in memory and saves them to IndexedDB unde
 | --- | --- | --- | --- |
 | IndexedDB `vault-rater`, store `kv` | `file:/vr/...` | Settings, sources, applied plans, undo snapshots, saved builds | [web/src/idb.ts:2-3](../../web/src/idb.ts#L2-L3) |
 | same | `manifest` | Stripped item database for one game version | [web/src/manifest.ts:10](../../web/src/manifest.ts#L10) |
-| same | `build-defs` | Builds tab definitions for one game version | [web/src/builds/defs.ts:13](../../web/src/builds/defs.ts#L13) |
+| same | `build-defs-v2` | Builds tab definitions for one game version | [web/src/builds/defs.ts:14](../../web/src/builds/defs.ts#L14) |
 | `localStorage` | `vr-tokens` | Bungie tokens | [web/src/shims/client.ts:12](../../web/src/shims/client.ts#L12) |
 | `localStorage` | `vr-app-config` | API key and client id typed into the setup screen | [web/src/appConfig.ts:17](../../web/src/appConfig.ts#L17) |
 | `sessionStorage` | `vr-oauth-state`, `vr-return-hash` | Login in progress; the tab to return to | [web/src/shims/oauth.ts:5](../../web/src/shims/oauth.ts#L5), [web/src/shims/oauth.ts:14](../../web/src/shims/oauth.ts#L14) |

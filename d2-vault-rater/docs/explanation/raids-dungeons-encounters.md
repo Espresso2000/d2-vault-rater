@@ -1,6 +1,6 @@
-# Raids, dungeons and encounter loadouts (RADS)
+# Raids, dungeons and encounter loadouts (the R&Ds tab)
 
-The RADS tab answers two questions: which raid or dungeon is most worth farming for *your* vault, and which three weapons you already own suit each encounter.
+The R&Ds tab answers two questions: which raid or dungeon is most worth farming for *your* vault, and which three weapons you already own suit each encounter.
 
 ## Where the loot list comes from
 

@@ -59,11 +59,12 @@ To apply it: npm run vault -- apply 2026-10-08T16-40-12-118Z-a3f9c1
 ## 5. Read the report
 
 - **Overview**: how many weapons and armor pieces to keep and shard, and your best picks per slot.
-- **Weapons**: open any weapon to see its score, its Aegis tier, which perks matched, and the reasons behind its verdict. The reasons are the same sentences the rater writes while deciding ([src/rating/weapons.ts:252-315](../../src/rating/weapons.ts#L252-L315)).
-- **Armor**: best piece per class and slot, with stats and set bonuses.
+- **Reports** (a menu that opens on hover, click or keyboard) holds the two reports:
+  - **Weapon Report**: open any weapon to see its score, its Aegis tier, which perks matched, and the reasons behind its verdict. The reasons are the same sentences the rater writes while deciding ([src/rating/weapons.ts:252-315](../../src/rating/weapons.ts#L252-L315)).
+  - **Armor Report**: best piece per class and slot, with stats and set bonuses.
 - **Shard**: everything marked for sharding, grouped by reason.
-- **Vault**: two modes, switched at the top. *Vault* shows each character's weapons (equipped one first) beside your vault, by slot, like DIM; in the app you drag a weapon to another character or the vault to move it, or onto the big slot to equip it, and a message in the corner says when it is done. Vault mode splits the vault by weapon type (a tick box turns that off) and uses the same filters and sort as the full list. *Full list* is every item, with filters, sorting and grouping. The toolbar stays pinned while you scroll; its Full / 2 lines / 1 line buttons set how much room it takes. Typing in the search box in the top bar (or pressing `/`) opens the full list filtered.
-- **RADS**: raids and dungeons ranked by what they would add to your vault, with a loadout from your vault for every encounter.
+- **Vault**: two modes, switched at the top. *Vault* shows each character's weapons beside your vault, by slot, like DIM: characters in the order you last played them, the equipped weapon big and the rest in a 3 × 3 grid as in the game; in the app you drag a weapon to another character or the vault to move it, or onto the big slot to equip it, and a message in the corner says when it is done. Vault mode splits the vault by weapon type, each group in its own box (a tick box turns that off), and uses the same filters and sort as the full list. Below it, an Armor section shows every armor piece by slot, then by set (exotics first), ordered by class, tier and archetype, with the border coloured by class: blue Hunter, red Titan, yellow Warlock (black for Warlock exotics). *Full list* is every item, with filters, sorting and grouping. The toolbar stays pinned while you scroll; its Full / 2 lines / 1 line buttons set how much room it takes. Typing in the search box in the top bar (or pressing `/`) opens the full list filtered.
+- **R&Ds**: raids and dungeons ranked by what they would add to your vault, with a loadout from your vault for every encounter.
 
 If something you want to keep is on the shard list, [protect it](../how-to/protect-items.md); if the list is too long or too short, [change the strictness](../how-to/tune-strictness.md). Press **Re-rate** in the top bar to see the change ([src/cli.ts:151-165](../../src/cli.ts#L151-L165)).
 
