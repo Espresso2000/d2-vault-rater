@@ -75,7 +75,8 @@ export function planEncounter(enc: Encounter, weapons: WeaponRating[]): Encounte
 
   const picks: EncounterPick[] = bestCombo.map(({ c, role }) => ({ role, id: c.r.instanceId, name: c.r.name, meta: c.meta }));
   const owned = new Set(weapons.map((w) => base(w.name)));
-  const missing = [...new Set([...(enc.meta ?? []), ...ROLE_META[enc.roles[0]]])].filter((n) => !owned.has(normalizeName(n))).slice(0, 4);
+  // No roles left means nothing in the vault fits this encounter (an empty vault, say): only its guide picks are missing.
+  const missing = [...new Set([...(enc.meta ?? []), ...(enc.roles.length ? ROLE_META[enc.roles[0]] : [])])].filter((n) => !owned.has(normalizeName(n))).slice(0, 4);
   return { ...enc, picks, missing };
 }
 

@@ -292,3 +292,10 @@ test("readJsonCached parses a file once and re-reads it after a write", async ()
   writeJson(f, { a: 2 });
   assert.equal(readJsonCached<{ a: number } | null>(f, null)?.a, 2);
 });
+
+test("encounter loadouts: a vault with nothing that fits still plans every encounter", async () => {
+  const { planEncounters } = await import("../src/rating/encounters.js");
+  const plans = planEncounters([]);
+  assert.ok(Object.values(plans).flat().length > 0);
+  for (const e of Object.values(plans).flat()) assert.deepEqual(e.picks, []);
+});
