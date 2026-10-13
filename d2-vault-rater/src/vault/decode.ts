@@ -40,7 +40,7 @@ interface RawPlug {
 export interface RawProfile {
   profile?: { data?: { userInfo: { membershipId: string; membershipType: number } } };
   profileInventory?: { data?: { items: RawItem[] } };
-  characters?: { data?: Record<string, { classType: number }> };
+  characters?: { data?: Record<string, { classType: number; dateLastPlayed?: string }> };
   characterInventories?: { data?: Record<string, { items: RawItem[] }> };
   characterEquipment?: { data?: Record<string, { items: RawItem[] }> };
   itemComponents?: {
@@ -192,7 +192,10 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
     fetchedAt: new Date().toISOString(),
     membershipId: user?.membershipId ?? "",
     membershipType: user?.membershipType ?? 0,
-    characters: Object.entries(chars).map(([id, c]) => ({ id, className: CLASSES[c.classType] ?? "Any" })),
+    // Most recently played first, as the game and DIM list them.
+    characters: Object.entries(chars)
+      .sort(([, a], [, b]) => (b.dateLastPlayed ?? "").localeCompare(a.dateLastPlayed ?? ""))
+      .map(([id, c]) => ({ id, className: CLASSES[c.classType] ?? "Any" })),
     weapons,
     armor,
   };

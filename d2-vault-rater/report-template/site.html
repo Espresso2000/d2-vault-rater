@@ -509,11 +509,25 @@ details.group > summary::-webkit-details-marker { display: none; }
 .vdrop { min-height: 70px; padding: 4px; border-radius: 10px; border: 1px dashed transparent; transition: border-color .15s ease, background .15s ease; }
 .vdrop.over { border-color: var(--green); background: rgba(51,227,160,.08); }
 .vinv, .vbox { display: flex; flex-wrap: wrap; gap: 7px; align-content: flex-start; }
+/* Character inventory: a 3 x 3 grid of smaller tiles beside the big equipped one, like the game */
+.vinv { display: grid; grid-template-columns: repeat(3, 44px); gap: 5px; }
+.vinv .vitem { width: 44px; height: 44px; border-radius: 7px; }
+.vinv .vitem b { font-size: 10.5px; right: 3px; bottom: 2px; }
+.vinv .vitem .tier { min-width: 15px; height: 14px; font-size: 9px; left: -4px; top: -4px; }
+/* Armor section: border colour by class */
+.varmor-sec { display: grid; gap: 10px; margin-top: 26px; }
+.varmor-sec .vslot { margin-top: 6px; }
+.vitem.varmor { border: 2px solid var(--cc, var(--line-hi)); }
+.c-Hunter { --cc: #4d9dff; } .c-Titan { --cc: #ff5a5a; } .c-Warlock { --cc: #f2c14e; } .c-Warlock.exotic { --cc: #000; }
+.vitem.varmor.exotic { border-color: var(--cc); box-shadow: 0 0 0 1px rgba(242,193,78,.35); }
+.vkey { display: inline-block; width: 11px; height: 11px; margin: 0 3px 0 8px; border-radius: 3px; border: 2px solid var(--cc); vertical-align: -1px; }
+.vkey.exotic { background: rgba(242,193,78,.5); }
 .vbox { padding: 10px; background: var(--glass); border: 1px solid var(--line); border-radius: 3px 14px; }
 .vbox.over { border-style: solid; }
 /* Vault split by weapon type: one labelled group per type, flowing side by side */
 .vbox.split { gap: 12px 18px; }
-.vtype { display: grid; gap: 6px; align-content: start; max-width: 100%; }
+.vtype { display: grid; gap: 6px; align-content: start; max-width: 100%; padding: 8px 10px 10px; border: 1px solid var(--line-hi); border-radius: 3px 12px; background: rgba(5,9,25,.35); }
+.vtype .cap { margin: 0; }
 .vtype .cap span { color: var(--muted); margin-left: 6px; }
 .vtiles { display: flex; flex-wrap: wrap; gap: 7px; }
 .vitem.nomatch { opacity: .3; }
@@ -1540,7 +1554,24 @@ function vrMain() {
       ${VSLOTS.map((s) => `<div class="vslot"><span class="cap">${s}</span></div>` +
         chars.map((c) => { const items = at(c.id, s), eq = DATA.weapons.find((w) => w.wh === c.id && w.s === s && w.eq); return `<div class="vcell"><div class="vdrop" data-to="${c.id}" data-equip="1" title="Drop here to equip">${eq ? tile(eq, true) : '<span class="vempty">Empty</span>'}</div><div class="vdrop vinv" data-to="${c.id}">${items.filter((w) => !w.eq).map((w) => tile(w)).join("")}</div></div>`; }).join("") +
         vaultBox(at("vault", s), tile)).join("")}
-    </div>`;
+    </div>${armorSection()}`;
+  }
+  /** Every armor piece, by slot, then set; inside a set by class (border colour), tier, then archetype. */
+  const ASLOTS = ["Helmet", "Arms", "Chest", "Legs", "Class Item"], ACLS = ["Hunter", "Titan", "Warlock"];
+  function armorSection() {
+    const atile = (a) => `<button class="vitem varmor c-${esc(a.cls)}${isExotic(a) ? " exotic" : ""} v-${a.v}" data-a="${a.id}" title="${esc(a.n)} · ${esc(a.cls)} · ${esc(a.arch || "Legacy")}${a.gt ? ` · Tier ${a.gt}` : ""} · ${a.tot} total · ${a.sc} · ${VERDICT[a.v]}${a.loc ? " · " + esc(a.loc) : ""}">${img(a.ic)}${a.gt ? `<span class="tier tU">T${a.gt}</span>` : ""}<b class="num">${a.sc}</b></button>`;
+    const order = (x, y) => ACLS.indexOf(x.cls) - ACLS.indexOf(y.cls) || (y.gt || 0) - (x.gt || 0) || (x.arch || "~").localeCompare(y.arch || "~") || y.sc - x.sc;
+    const groupOf = (a) => (isExotic(a) ? "Exotic" : a.set || "No set");
+    const rank = (g) => (g === "Exotic" ? 0 : g === "No set" ? 2 : 1);
+    return `<section class="varmor-sec"><div class="vhead"><b>Armor</b><span class="small muted">${plural(DATA.armor.length, "piece")} on characters and in the vault · border colour is the class: <i class="vkey c-Hunter"></i>Hunter <i class="vkey c-Titan"></i>Titan <i class="vkey c-Warlock"></i>Warlock <i class="vkey c-Warlock exotic"></i>Warlock exotic</span></div>
+      ${ASLOTS.map((slot) => {
+        const groups = new Map();
+        for (const a of DATA.armor.filter((x) => x.s === slot)) groups.set(groupOf(a), [...(groups.get(groupOf(a)) || []), a]);
+        if (!groups.size) return "";
+        return `<div class="vslot"><span class="cap">${slot}</span></div><div class="vbox split">${[...groups]
+          .sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0]))
+          .map(([g, xs]) => `<div class="vtype"><div class="cap">${esc(g)}<span>${xs.length}</span></div><div class="vtiles">${xs.sort(order).map(atile).join("")}</div></div>`).join("")}</div>`;
+      }).join("")}</section>`;
   }
   /** One slot's vault weapons, in the current order; split into a labelled group per weapon type when that's on. */
   function vaultBox(items, tile) {
