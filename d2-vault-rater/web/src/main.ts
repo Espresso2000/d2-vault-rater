@@ -21,11 +21,12 @@ import { rateArmor } from "../../src/rating/armor.js";
 import { rateActivities } from "../../src/rating/activities.js";
 import { planEncounters } from "../../src/rating/encounters.js";
 import { planDimActions, applyDimActions, undoDimActions, type DimPlan } from "../../src/dim/actions.js";
-import { moveItems } from "../../src/bungie/transfer.js";
+import { insertPerk, moveItems } from "../../src/bungie/transfer.js";
 import { buildSiteData } from "../../src/report/siteData.js";
 import { loadBuilds } from "./builds/store";
 import { esc } from "./html";
 import type { BuildsInput } from "./builds/ui";
+import type { VendorsInput } from "./vendors/ui";
 
 declare global {
   interface Window {
@@ -182,6 +183,7 @@ async function run() {
   const back = sessionStorage.getItem("vr-return-hash");
   if (back) (sessionStorage.removeItem("vr-return-hash"), history.replaceState(null, "", back));
   lazyBuilds({ vault, data, manifest: m });
+  lazyVendors({ vault, manifest: m, aegis, settings });
   window.VR_START!(data, images);
   watchSession();
 }
@@ -191,6 +193,12 @@ function lazyBuilds(input: BuildsInput) {
   // initBuilds swaps in the real VR_BUILDS, so render below reaches the loaded tab.
   const ready = import("./builds/ui").then((b) => b.initBuilds(input));
   window.VR_BUILDS = { count: () => loadBuilds().length || null, render: (el) => void ready.then(() => window.VR_BUILDS!.render(el)) };
+}
+
+/** The Vendors tab is its own chunk too; it reads vendor stock from Bungie only when first opened. */
+function lazyVendors(input: VendorsInput) {
+  const ready = import("./vendors/ui").then((v) => v.initVendors(input));
+  window.VR_VENDORS = { count: () => null, render: (el) => void ready.then(() => window.VR_VENDORS!.render(el)) };
 }
 
 /** Sign-in status for the Settings panel, and a banner once Bungie access really runs out. */
@@ -235,6 +243,10 @@ window.VR_API = async (path, body) => {
         if (!ids.length || typeof body.to !== "string") return { ok: false, error: "Send item ids and a destination." };
         return { ok: true, results: await moveItems(ids, body.to, { equip: body.equip === true }) };
       }
+      case "/api/perk":
+        if (typeof body.id !== "string" || typeof body.socket !== "number" || typeof body.perk !== "string") return { ok: false, error: "Send a weapon id, socket index and perk name." };
+        await insertPerk(body.id, body.socket, body.perk);
+        return { ok: true };
       case "/api/locks/apply": {
         // Only the plan the page previewed, and only with the explicit confirmation.
         if (body.confirm !== true || !currentPlan || body.planId !== currentPlan.id) return { ok: false, error: "Preview the current plan and confirm it first." };

@@ -33,7 +33,7 @@ function shims(): Plugin {
   };
 }
 
-/** The page is the local app's report template plus the sign-in shell and the app script. */
+/** The page is the local app's report template plus the animated background, the sign-in shell and the app script. */
 function reportPage(): Plugin {
   return {
     name: "vault-rater-page",
@@ -42,10 +42,11 @@ function reportPage(): Plugin {
       handler() {
         const tpl = readFileSync(resolve(here, "../report-template/site.html"), "utf8");
         const shell = readFileSync(resolve(here, "src/shell.html"), "utf8");
+        const background = readFileSync(resolve(here, "src/background.html"), "utf8");
         return tpl
           .replace("__TITLE__", "Vault Rater")
           .replace("</head>", `<meta name="description" content="Rate your Destiny 2 vault against Aegis's tier list.">\n</head>`)
-          .replace("<body>", `<body class="vr-booting">\n${shell}`)
+          .replace("<body>", `<body class="vr-booting">\n${background}\n${shell}`)
           .replace(/<\/body>\s*<\/html>\s*$/, `<script type="module" src="/src/main.ts"></script>\n</body>\n</html>\n`);
       },
     },

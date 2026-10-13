@@ -25,7 +25,8 @@ const friendly = (e: unknown): string => {
   const m = (e as Error).message;
   if (/NoRoomInDestination|DestinyNoRoom/i.test(m)) return "No room there. Make space on the character (or in the vault) and try again.";
   if (/ItemNotFound/i.test(m)) return "Bungie can't find the item where expected. Re-rate to refresh your vault and try again.";
-  if (/CannotPerformActionAtThisLocation|ActionOnlyInGame|ClientMustBeInGame/i.test(m)) return "Bungie won't allow that right now (for example mid-activity). Try from orbit or the Tower.";
+  if (/CannotPerformActionAtThisLocation|ActionOnlyInGame|ClientMustBeInGame|NotInTower|SocialSpace/i.test(m)) return "Bungie won't allow that right now (for example mid-activity). Try from orbit or the Tower.";
+  if (/SocketAction|PlugNotFree|InvalidPlug|PlugSet|PlugUnavailable|ItemActionForbidden|NotAllowed/i.test(m)) return `Bungie won't switch to that perk from outside the game (it may not be unlocked, or not free to change). ${m}`;
   return m;
 };
 
@@ -112,6 +113,34 @@ export async function moveItems(ids: string[], to: string, opts: { equip?: boole
     }
   }
   return results;
+}
+
+/**
+ * The InsertSocketPlugFree request that switches a weapon's perk column to one of its own options.
+ * Bungie only allows "free" plugs (the weapon's selectable perks), with the character in orbit, a social
+ * space or offline. A vault weapon still needs a character id: any of the account's characters works.
+ */
+export function perkInsertBody(vault: Vault, id: string, socket: number, perk: string) {
+  const w = vault.weapons.find((x) => x.instanceId === id);
+  if (!w) throw new Error("Not in your vault or on a character (re-rate to refresh).");
+  const col = w.columns.find((c) => c.socket === socket);
+  const plugItemHash = col?.hashes?.[perk];
+  if (!col || !plugItemHash || !col.options.includes(perk)) throw new Error(`${perk} isn't a perk you can select on this ${w.name}. Re-rate to refresh.`);
+  const characterId = w.location.where !== "vault" ? w.location.where : vault.characters[0]?.id;
+  if (!characterId) throw new Error("Bungie needs one of your characters for this, and none were found.");
+  return { col, body: { plug: { socketIndex: socket, socketArrayType: 0, plugItemHash }, itemId: id, characterId, membershipType: vault.membershipType } };
+}
+
+/** Switch a weapon's perk in game (needs the "Move or equip your gear" scope). */
+export async function insertPerk(id: string, socket: number, perk: string, opts: { vault?: Vault; send?: typeof action } = {}): Promise<void> {
+  const { col, body } = perkInsertBody(opts.vault ?? (await currentVault()), id, socket, perk);
+  if (col.active === perk) return;
+  try {
+    await (opts.send ?? action)("/Destiny2/Actions/Items/InsertSocketPlugFree/", body);
+  } catch (e) {
+    throw new Error(friendly(e));
+  }
+  col.active = perk;
 }
 
 const sameSlot = (a: WeaponRecord | ArmorRecord, b: WeaponRecord | ArmorRecord) => a.kind === b.kind && a.slot === b.slot;
