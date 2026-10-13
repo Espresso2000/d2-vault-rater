@@ -281,7 +281,9 @@ function editor(b: Build, c: Ctx) {
       ${summary(b, c)}
       <div class="bd-col">
         ${subclassCard(b, sc, c)}
-        ${gearCard(b, c)}
+        ${abilitiesCard(b, sc, c)}
+        ${weaponsCard(b, c)}
+        ${armorCard(b, c)}
         <section class="bd-card glass bd-notes"><div class="bd-card-head"><h3>Notes</h3></div>
           <textarea id="bd-notes" rows="3" placeholder="How to play it, what it's for, which artifact perks it wants…">${esc(b.notes)}</textarea></section>
       </div>
@@ -370,6 +372,7 @@ function setsBlock(b: Build, c: Ctx) {
 
 /* ---------- Subclass ---------- */
 
+/** Subclass choice and Aegis's view of it. The slots themselves are in the Abilities card below. */
 function subclassCard(b: Build, sc: SubclassDef | null, c: Ctx) {
   const all = Object.values(defs!.subclasses)
     .filter((s) => s.cls === b.cls)
@@ -386,36 +389,50 @@ function subclassCard(b: Build, sc: SubclassDef | null, c: Ctx) {
     .join("")}</div>`;
   if (!sc) return `<section class="bd-card glass bd-subclass"><div class="bd-card-head"><h3>Subclass</h3></div>${picker}<p class="small muted">Pick a subclass to choose its super, abilities, aspects and fragments.</p></section>`;
   const r = subclassRating(c.ratings, sc);
-  const slots = fragmentSlots(b, defs!);
-  const group = (g: SocketGroup) => socketsOf(sc, g);
-  const chip = (i: number, kind: ChipKind) => socketChip(b, sc, i, c, slots, kind);
-  const frags = group("fragments");
-  const fragsIn = frags.filter((i, k) => k < slots && !isEmptyPlug(defs!.plugs[b.plugs[i]])).length;
-  // Class ability and jump, then anything else the subclass has (Prismatic's Transcendence and its grenade).
-  const small = [...group("class"), ...group("movement"), ...group("other")];
-  const extras = group("other").length;
   return `<section class="bd-card glass bd-subclass" style="--el:var(--${sc.el})">
     <div class="bd-card-head"><h3>Subclass</h3>${r ? `<span class="small muted">Aegis ${tierChip(r.tier)} ${r.total !== null ? `${r.total}/40` : ""}</span>` : ""}</div>
     ${picker}
     ${r ? `<div class="bd-roles">${ROLES.map(([k, label, why]) => `<div tabindex="0" data-tip="" data-tiptext="${esc(why)}" aria-label="${esc(`${label} ${r.scores[k] ?? "unrated"} of 10. ${why}`)}"><span>${label}</span><b class="num">${r.scores[k] ?? "—"}</b><i style="width:${(r.scores[k] ?? 0) * 10}%"></i></div>`).join("")}</div>
       ${r.usage ? `<p class="small muted bd-usage">“${esc(r.usage)}”</p>` : ""}` : ""}
+  </section>`;
+}
+
+/** The subclass's slots, laid out like the game: super and aspects, then grenade, melee and class ability, then the small slots, then fragments. */
+function abilitiesCard(b: Build, sc: SubclassDef | null, c: Ctx) {
+  if (!sc) return "";
+  const slots = fragmentSlots(b, defs!);
+  const group = (g: SocketGroup) => socketsOf(sc, g);
+  const chip = (i: number, kind: ChipKind) => socketChip(b, sc, i, c, slots, kind);
+  const frags = group("fragments");
+  const fragsIn = frags.filter((i, k) => k < slots && !isEmptyPlug(defs!.plugs[b.plugs[i]])).length;
+  const extras = group("other");
+  return `<section class="bd-card glass bd-abilities" style="--el:var(--${sc.el})">
+    <div class="bd-card-head"><h3>Abilities</h3><span class="small muted">Point at or tap a slot to change it</span></div>
     <div class="bd-sclayout">
       <div class="bd-sc-left">
         ${group("super").map((i) => chip(i, "super")).join("")}
         <div class="bd-sc-aspects"><div class="cap">Aspects <span class="bd-capnote">open ${slots} fragment slot${slots === 1 ? "" : "s"}</span></div>${group("aspects").map((i) => chip(i, "wide")).join("")}</div>
       </div>
       <div class="bd-sc-right">
-        <div class="bd-sc-row">${[...group("grenade"), ...group("melee")].map((i) => chip(i, "wide")).join("")}</div>
-        <div class="bd-sc-small">${small.map((i) => chip(i, "square")).join("")}</div>
-        ${extras ? `<div class="bd-sc-extra"><span>${esc(sc.el === "Prismatic" ? "Prismatic" : sc.el)} extras: ${group("other").map((i) => esc(defs!.plugs[b.plugs[i]]?.t ?? GROUP_LABEL.other)).join(" · ")}</span></div>` : ""}
+        <div class="bd-sc-stack">${[...group("grenade"), ...group("melee"), ...group("class")].map((i) => chip(i, "wide")).join("")}</div>
+        <div class="bd-sc-small">
+          ${group("movement").map((i) => `<div class="bd-sc-sq">${chip(i, "square")}</div>`).join("")}
+          ${extras.length ? `<div class="bd-sc-sq bd-sc-extras"><div class="bd-sc-sqrow">${extras.map((i) => chip(i, "square")).join("")}</div><span class="bd-sc-extra">${esc(sc.el)} extras</span></div>` : ""}
+        </div>
       </div>
     </div>
-    <div class="bd-group"><div class="cap">Fragments <span class="bd-capnote">${fragsIn} of ${slots}</span></div><div class="bd-frags">${frags.map((i) => chip(i, "pill")).join("")}</div>
-      ${slots ? `<div class="bd-fragbtn"><button class="btn bd-sm" data-pop="${frags[0]}" aria-haspopup="dialog">Modify fragments</button></div>` : ""}</div>
+    <div class="bd-fragsec">
+      <div class="cap">Fragments <span class="bd-capnote">${fragsIn} of ${slots} slots used</span></div>
+      <div class="bd-frags">${frags.map((i) => chip(i, "pill")).join("")}</div>
+      ${slots ? `<div class="bd-fragbtn"><button class="btn bd-sm" data-pop="${frags[0]}" aria-haspopup="dialog">Modify fragments</button></div>` : ""}
+    </div>
   </section>`;
 }
 
 type ChipKind = "super" | "wide" | "square" | "pill";
+
+/** The first sentence or line of a plug's description, for the space beside its icon. */
+const blurb = (p?: PlugDef) => (p?.d ?? "").split(/\n/)[0].replace(/\[[^\]]+\]\s*/g, "").trim();
 
 function socketChip(b: Build, sc: SubclassDef, i: number, c: Ctx, slots: number, kind: ChipKind = "wide") {
   const s = sc.sockets[i];
@@ -427,13 +444,15 @@ function socketChip(b: Build, sc: SubclassDef, i: number, c: Ctx, slots: number,
   const label = s.group === "other" ? p?.t ?? GROUP_LABEL.other : GROUP_LABEL[s.group];
   const name = empty ? (off ? "Locked" : kind === "pill" ? "Empty slot" : "Empty") : p?.n ?? "";
   const icon = empty ? `<span class="bd-plus">${off ? LOCK : "+"}</span>` : img(p?.i);
+  const desc = !empty && kind !== "square" ? blurb(p) : "";
+  const stats = (p?.st ?? []).map(([h, v]) => statChip(h, v)).join("");
   const inner =
     kind === "square"
-      ? `<span class="bd-sico">${icon}</span><span class="bd-sqlabel">${esc(label)}</span>`
+      ? `<span class="bd-sico">${icon}</span><span class="bd-sqlabel">${esc(label)}</span><span class="bd-sqname">${esc(name)}</span>`
       : kind === "super"
-        ? `<span class="cap">Super</span><span class="bd-sico">${icon}</span><b>${esc(name)}</b>`
+        ? `<span class="cap">Super</span><span class="bd-sico">${icon}</span><b>${esc(name)}</b>${desc ? `<span class="bd-cdesc">${esc(desc)}</span>` : ""}`
         : `<span class="bd-sico">${icon}${rated ? tierChip(rated.tier) : ""}</span>
-    <span class="bd-cmeta">${kind === "pill" ? "" : `<span class="cap">${esc(label)}</span>`}<b>${esc(name)}</b>${(p?.st ?? []).map(([h, v]) => statChip(h, v)).join("")}</span>`;
+    <span class="bd-cmeta">${kind === "pill" ? "" : `<span class="cap">${esc(label)}</span>`}<b>${esc(name)}</b>${stats}${desc ? `<span class="bd-cdesc">${esc(desc)}</span>` : ""}</span>`;
   const cls = `bd-chip bd-k-${kind}${empty ? " is-empty" : ""}`;
   if (locked || off)
     return `<span class="${cls} ${off ? "off" : "fixed"}" ${off ? `title="Pick aspects with more fragment slots to use this one"` : `data-tip="" data-tiptext="${esc(`${label}: ${p?.n ?? ""}. Fixed for this subclass.`)}" tabindex="0"`}>${inner}</span>`;
@@ -701,13 +720,17 @@ function pickPlug(h: number) {
 
 /* ---------- Gear and mods (main column) ---------- */
 
-function gearCard(b: Build, c: Ctx) {
-  return `<section class="bd-card glass bd-gear">
-    <div class="bd-card-head"><h3>Gear and mods</h3><button class="btn primary bd-sm" data-act="gear">Choose gear and mods</button></div>
-    <div class="bd-gearcols">
-      <div class="bd-rows"><div class="cap">Weapons</div><div class="bd-wlist">${WEAPON_SLOTS.map((slot) => weaponRow(b, c, slot)).join("")}</div></div>
-      <div class="bd-rows"><div class="cap">Armor <span class="bd-capnote">${ARMOR_ENERGY} mod energy each · point at a mod to see what it does</span></div>${ARMOR_SLOTS.map((slot) => armorRow(b, c, slot)).join("")}</div>
-    </div>
+function weaponsCard(b: Build, c: Ctx) {
+  return `<section class="bd-card glass bd-weapons">
+    <div class="bd-card-head"><h3>Weapons</h3><button class="btn primary bd-sm" data-act="gear">Choose gear and mods</button></div>
+    <div class="bd-wlist">${WEAPON_SLOTS.map((slot) => weaponRow(b, c, slot)).join("")}</div>
+  </section>`;
+}
+
+function armorCard(b: Build, c: Ctx) {
+  return `<section class="bd-card glass bd-armorcard">
+    <div class="bd-card-head"><h3>Armor and mods</h3><span class="small muted">${ARMOR_ENERGY} mod energy each · point at a mod to see what it does</span><button class="btn primary bd-sm" data-act="gear" data-slot="Helmet">Choose armor and mods</button></div>
+    <div class="bd-alist">${ARMOR_SLOTS.map((slot) => armorRow(b, c, slot)).join("")}</div>
   </section>`;
 }
 
@@ -716,20 +739,20 @@ const PERK_KIND: Record<string, string> = { barrel: "Barrel", magazine: "Magazin
 function weaponRow(b: Build, c: Ctx, slot: (typeof WEAPON_SLOTS)[number]) {
   const w = weaponOf(c, b.items[slot]?.id);
   const sc = w ? c.scores.get(w.instanceId) : undefined;
-  // Equipped perks: the two traits with names, barrel, magazine and origin as icons (names on hover).
+  // Equipped perks in the game's column order: barrel, magazine, trait 1, trait 2, origin. Traits named, the rest icons (names on hover).
   const cols = (w?.columns ?? []).filter((k) => k.active && k.kind !== "other");
-  const perk = (k: (typeof cols)[number], named: boolean) =>
-    `<span class="bd-perk${named ? " named" : ""}" tabindex="0" data-tip="" data-tiptext="${esc(`${PERK_KIND[k.kind] ?? "Perk"}: ${k.active}${k.enhanced.includes(k.active) ? " (enhanced)" : ""}`)}">${k.icons?.[k.active] ? img(k.icons[k.active], k.active) : `<span class="ph"></span>`}${named ? `<span>${esc(k.active)}</span>` : ""}</span>`;
-  const traits = cols.filter((k) => k.kind === "perk1" || k.kind === "perk2");
-  const rest = cols.filter((k) => !traits.includes(k));
+  const perk = (k: (typeof cols)[number]) => {
+    const named = k.kind === "perk1" || k.kind === "perk2";
+    return `<span class="bd-perk${named ? " named" : ""}" tabindex="0" data-tip="" data-tiptext="${esc(`${PERK_KIND[k.kind] ?? "Perk"}: ${k.active}${k.enhanced.includes(k.active) ? " (enhanced)" : ""}`)}">${k.icons?.[k.active] ? img(k.icons[k.active], k.active) : `<span class="ph"></span>`}${named ? `<span>${esc(k.active)}</span>` : ""}</span>`;
+  };
   const facts = w ? [w.frame, w.ammo !== "Unknown" ? `${w.ammo} ammo` : "", w.masterwork ? `MW ${w.masterwork}` : "", w.crafted ? "Crafted" : "", w.adept ? "Adept" : "", w.gearTier ? `Tier ${w.gearTier}` : "", w.power ? `Power ${w.power}` : ""].filter(Boolean) : [];
   return `<div class="bd-row bd-wrow${w?.rarity === "Exotic" ? " exotic" : ""}">
     <button class="bd-rowbtn" data-act="gear" data-slot="${slot}" aria-label="${esc(`${slot}: ${w ? w.name : "empty"}. Change`)}">
       <span class="bd-iico">${w ? img(w.icon) : `<span class="bd-plus">+</span>`}${tierChip(weaponTier(w?.instanceId))}</span>
       <span class="bd-imeta"><span class="cap">${slot}</span><b>${w ? esc(w.name) : b.items[slot] ? "Missing item" : "Choose a weapon"}</b>${w ? `<span class="sm">${esc(w.type)} · <span class="el" style="color:var(--${esc(w.element)})"><i></i><span>${esc(w.element)}</span></span></span>` : ""}</span>
       ${sc !== undefined ? `<span class="bd-iscore" title="Vault score">${sc}</span>` : ""}</button>
-    ${cols.length ? `<div class="bd-wperks">${traits.map((k) => perk(k, true)).join("")}${rest.map((k) => perk(k, false)).join("")}</div>` : ""}
-    ${facts.length || w ? `<div class="bd-wfacts">${facts.map((f) => `<span>${esc(f)}</span>`).join("")}${w ? `<span class="bd-links">${weaponLinks(w)}</span>` : ""}</div>` : ""}
+    ${cols.length ? `<div class="bd-wperks">${cols.map(perk).join("")}</div>` : ""}
+    ${w ? `<div class="bd-wfacts">${facts.map((f) => `<span>${esc(f)}</span>`).join("")}<span class="bd-links">${weaponLinks(w)}</span></div>` : ""}
   </div>`;
 }
 
@@ -740,25 +763,23 @@ function armorRow(b: Build, c: Ctx, slot: GearSlot) {
   const sc = a ? c.scores.get(a.instanceId) : undefined;
   const meta = a ? [a.archetype ?? "Legacy", a.gearTier ? `Tier ${a.gearTier}` : "", a.setName ?? (a.rarity === "Exotic" ? "Exotic" : ""), `${a.statTotal} total`].filter(Boolean).join(" · ") : "";
   return `<div class="bd-row bd-arow${a?.rarity === "Exotic" ? " exotic" : ""}">
-    <div class="bd-arow-top">
-      <button class="bd-rowbtn" data-act="gear" data-slot="${slot}" aria-label="${esc(`${slot}: ${a ? a.name : "empty"}. Change`)}">
-        <span class="bd-iico">${a ? img(a.icon) : `<span class="bd-plus">+</span>`}${a?.gearTier ? `<span class="tier tU">T${a.gearTier}</span>` : ""}</span>
-        <span class="bd-imeta"><span class="cap">${slot}</span><b>${a ? esc(a.name) : b.items[slot] ? "Missing item" : `Choose ${slot === "Arms" ? "arms" : slot.toLowerCase()}`}</b>${a ? `<span class="sm">${esc(meta)}</span>` : ""}</span>
-        ${sc !== undefined ? `<span class="bd-iscore" title="Vault score">${sc}</span>` : ""}</button>
-      ${a ? `<span class="bd-astats">${STAT_HASHES.map((h) => {
-        const v = a.stats[c.statNames[h]] ?? 0;
-        return `<span class="${v >= 25 ? "hi" : v <= 0 ? "lo" : ""}" title="${esc(c.statNames[h])}"><i>${esc((c.statNames[h] ?? "").slice(0, 3))}</i>${v}</span>`;
-      }).join("")}</span>` : ""}
-    </div>
-    <div class="bd-amods">${mods
+    <button class="bd-rowbtn" data-act="gear" data-slot="${slot}" aria-label="${esc(`${slot}: ${a ? a.name : "empty"}. Change`)}">
+      <span class="bd-iico">${a ? img(a.icon) : `<span class="bd-plus">+</span>`}${a?.gearTier ? `<span class="tier tU">T${a.gearTier}</span>` : ""}</span>
+      <span class="bd-imeta"><span class="cap">${slot}${sc !== undefined ? ` · <span class="bd-ascore" title="Vault score">${sc}</span>` : ""}</span><b>${a ? esc(a.name) : b.items[slot] ? "Missing item" : `Choose ${slot === "Arms" ? "arms" : slot.toLowerCase()}`}</b>${a ? `<span class="sm">${esc(meta)}</span>` : ""}</span></button>
+    <span class="bd-astats">${a ? STAT_HASHES.map((h) => {
+      const v = a.stats[c.statNames[h]] ?? 0;
+      return `<span class="${v >= 25 ? "hi" : v <= 0 ? "lo" : ""}" title="${esc(c.statNames[h])}"><i>${esc((c.statNames[h] ?? "").slice(0, 3))}</i>${v}</span>`;
+    }).join("") : ""}</span>
+    ${mods
       .map((h, k) => {
         const p = h ? defs!.plugs[h] : undefined;
         const kind = k === 0 ? "General" : slot;
         return p
-          ? `<button class="bd-amod" data-act="gear" data-gt="mods" data-slot="${slot}" data-tip="" data-tipplug="${p.h}" aria-label="${esc(`${kind} mod: ${p.n}, ${p.cost ?? 0} energy. Change`)}">${img(p.i)}<span><b>${esc(p.n)}</b><i>${esc(kind)} · ${p.cost ?? 0} energy</i></span></button>`
+          ? `<button class="bd-amod" data-act="gear" data-gt="mods" data-slot="${slot}" data-tip="" data-tipplug="${p.h}" aria-label="${esc(`${kind} mod: ${p.n}, ${p.cost ?? 0} energy. Change`)}">${img(p.i)}<span><b>${esc(p.n)}</b><i>${esc(kind)} · ${p.cost ?? 0}</i></span></button>`
           : `<button class="bd-amod is-none" data-act="gear" data-gt="mods" data-slot="${slot}" aria-label="${esc(`Add a ${kind.toLowerCase()} mod`)}"><span class="bd-plus">+</span><span><b>Add mod</b><i>${esc(kind)}</i></span></button>`;
       })
-      .join("")}<span class="bd-energy${used > ARMOR_ENERGY ? " over" : ""}" title="Mod energy used"><span style="width:${Math.min(100, (used / ARMOR_ENERGY) * 100)}%"></span><b class="num">${used}/${ARMOR_ENERGY}</b></span></div>
+      .join("")}
+    <span class="bd-aenergy${used > ARMOR_ENERGY ? " over" : ""}" title="Mod energy used"><b class="num">${used}/${ARMOR_ENERGY}</b><span><i style="width:${Math.min(100, (used / ARMOR_ENERGY) * 100)}%"></i></span></span>
   </div>`;
 }
 

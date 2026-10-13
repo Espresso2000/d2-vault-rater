@@ -407,72 +407,107 @@ aside.drawer.bd-drawer { z-index: 31; }
 .bd-oico { position: relative; flex: none; width: 48px; height: 48px; border-radius: 10px; background: rgba(5,9,25,.75); border: 1px solid var(--line-hi); display: grid; place-items: center; }
 .bd-oico img { width: 100%; height: 100%; border-radius: inherit; display: block; }
 
-/* ---------- Subclass layout: super and aspects | grenade, melee and the small slots | fragments ---------- */
-.bd-sclayout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px 18px; align-items: start; }
-.bd-sc-left { display: grid; grid-template-columns: 124px minmax(0, 1fr); gap: 12px; align-items: start; }
-.bd-sc-aspects { display: grid; gap: 8px; align-content: start; }
+/* ---------- Abilities: super and aspects | grenade, melee, class | small slots | fragments ---------- */
+.bd-sclayout { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px 22px; align-items: start; }
+.bd-sc-left { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 14px; align-items: start; }
+.bd-sc-aspects { display: grid; gap: 10px; align-content: start; }
 .bd-sc-aspects .cap { margin: 0; }
-.bd-sc-right { display: grid; gap: 10px; align-content: start; padding-left: 18px; border-left: 1px solid var(--line-hi); }
-.bd-sc-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 1fr)); gap: 8px; }
-.bd-sc-small { display: flex; flex-wrap: wrap; gap: 10px; }
-.bd-sc-extra { font-size: 11.5px; color: var(--faint); display: flex; align-items: center; gap: 8px; }
-.bd-sc-extra::before, .bd-sc-extra::after { content: ""; flex: 1; height: 1px; background: var(--line-hi); }
-/* Super: one big square */
-.bd-k-super { grid-template-columns: 1fr; justify-items: center; gap: 6px; padding: 8px 8px 10px; text-align: center; }
+.bd-sc-right { display: grid; gap: 12px; align-content: start; padding-left: 22px; border-left: 1px solid var(--line-hi); }
+.bd-sc-stack { display: grid; gap: 8px; }
+.bd-sc-small { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 14px; }
+.bd-sc-sq { display: grid; justify-items: center; gap: 4px; }
+.bd-sc-sqrow { display: flex; gap: 10px; }
+.bd-sc-extra { display: flex; align-items: center; gap: 8px; width: 100%; font: 600 9.5px var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--faint); }
+.bd-sc-extra::before, .bd-sc-extra::after { content: ""; flex: 1; min-width: 10px; height: 1px; background: var(--line-hi); }
+/* Wide slots: bigger icon, name, then the description in the spare room */
+.bd-k-wide { grid-template-columns: 52px minmax(0, 1fr); gap: 12px; padding: 8px 12px 8px 8px; align-items: start; }
+.bd-k-wide .bd-sico { width: 52px; height: 52px; }
+.bd-k-wide b { font-size: 14.5px; }
+.bd-cdesc { font-size: 12px; line-height: 1.35; color: var(--muted); white-space: normal; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.bd-cmeta { gap: 2px; }
+/* Super: one big square with its description underneath */
+.bd-k-super { grid-template-columns: 1fr; justify-items: center; gap: 6px; padding: 10px 10px 12px; text-align: center; }
 .bd-k-super .cap { margin: 0; }
-.bd-k-super .bd-sico { width: 84px; height: 84px; border-radius: 14px; }
-.bd-k-super .bd-plus { font-size: 34px; }
-.bd-k-super b { font-size: 12.5px; line-height: 1.2; }
+.bd-k-super .bd-sico { width: 110px; height: 110px; border-radius: 16px; }
+.bd-k-super .bd-plus { font-size: 40px; }
+.bd-k-super b { font-size: 14px; line-height: 1.2; }
+.bd-k-super .bd-cdesc { -webkit-line-clamp: 5; font-size: 11.5px; }
 .bd-k-super::after { display: none; }
-/* Small squares: class ability, jump, Prismatic extras */
-.bd-k-square { grid-template-columns: 1fr; justify-items: center; gap: 4px; padding: 6px; width: 76px; }
-.bd-k-square .bd-sico { width: 52px; height: 52px; }
-.bd-sqlabel { font: 600 9.5px var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); text-align: center; line-height: 1.2; }
+/* Small squares: jump and subclass extras, with label and name under */
+.bd-k-square { grid-template-columns: 1fr; justify-items: center; gap: 3px; padding: 7px 6px; width: 92px; text-align: center; }
+.bd-k-square .bd-sico { width: 56px; height: 56px; }
+.bd-sqlabel { font: 600 9.5px var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); line-height: 1.2; }
+.bd-sqname { font-size: 11.5px; font-weight: 600; line-height: 1.2; }
 button.bd-k-square::after { display: none; }
-/* Fragments: pills across the full width */
-.bd-frags { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(140px, 100%), 1fr)); gap: 8px; }
-.bd-k-pill { grid-template-columns: 30px minmax(0, 1fr); gap: 8px; padding: 6px 12px 6px 6px; border-radius: 999px; }
-.bd-k-pill .bd-sico { width: 30px; height: 30px; border-radius: 50%; }
+/* Fragments: a clearer band of pills, button centred under them */
+.bd-fragsec { display: grid; gap: 10px; margin-top: 6px; padding: 14px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--el, var(--green)) 35%, var(--line-hi)); background: color-mix(in srgb, var(--el, var(--green)) 6%, rgba(5,9,25,.45)); }
+.bd-fragsec > .cap { margin: 0; }
+.bd-frags { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(122px, 100%), 1fr)); gap: 8px; }
+.bd-k-pill { grid-template-columns: 36px minmax(0, 1fr); gap: 9px; padding: 6px 12px 6px 6px; border-radius: 999px; border-color: var(--line-hi); background: rgba(5,9,25,.6); }
+.bd-k-pill .bd-sico { width: 36px; height: 36px; border-radius: 50%; }
 .bd-k-pill .bd-sico img { border-radius: 50%; }
 .bd-k-pill .bd-sico .tier { right: -7px; bottom: -6px; }
 .bd-k-pill b { font-size: 13px; }
+.bd-k-pill .bd-cdesc { display: none; }
 .bd-k-pill.is-empty b { color: var(--muted); font-weight: 500; }
 .bd-k-pill.off b { color: var(--faint); }
 button.bd-k-pill::after { display: none; }
-.bd-lock { width: 14px; height: 14px; fill: currentColor; }
-.bd-fragbtn { display: flex; justify-content: center; margin-top: 10px; }
-/* Weapons: perks and facts under the name */
-.bd-wrow { gap: 8px; align-content: start; }
-/* Weapons side by side, each a narrow card */
-.bd-wlist { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr)); gap: 8px; }
-.bd-wlist .bd-wperks, .bd-wlist .bd-wfacts { padding-left: 0; }
-.bd-wperks { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding-left: 50px; }
-.bd-perk { display: inline-flex; align-items: center; gap: 6px; height: 30px; border-radius: 999px; outline: none; }
-.bd-perk img, .bd-perk .ph { width: 28px; height: 28px; border-radius: 50%; background: rgba(5,9,25,.8); border: 1px solid var(--line-hi); }
+.bd-lock { width: 15px; height: 15px; fill: currentColor; }
+.bd-fragbtn { display: flex; justify-content: center; }
+/* Weapons: three cards side by side, bigger icons, perks in column order */
+.bd-wlist { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 10px; }
+.bd-wrow { gap: 10px; align-content: start; padding: 10px; }
+.bd-wrow .bd-rowbtn { grid-template-columns: 64px minmax(0, 1fr) auto; }
+.bd-wrow .bd-iico { width: 64px; height: 64px; border-radius: 10px; }
+.bd-wperks { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.bd-perk { display: inline-flex; align-items: center; gap: 6px; height: 32px; border-radius: 999px; outline: none; }
+.bd-perk img, .bd-perk .ph { width: 30px; height: 30px; border-radius: 50%; background: rgba(5,9,25,.8); border: 1px solid var(--line-hi); }
 .bd-perk.named { padding-right: 10px; background: rgba(5,9,25,.55); border: 1px solid var(--line); }
 .bd-perk.named span { font-size: 12.5px; font-weight: 600; white-space: nowrap; }
 .bd-perk:focus-visible { box-shadow: 0 0 0 2px var(--cyan); }
-.bd-wfacts { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding-left: 50px; font-size: 11.5px; color: var(--muted); }
+.bd-wfacts { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: 11.5px; color: var(--muted); }
 .bd-wfacts .bd-links { padding-left: 0; margin-left: auto; }
-/* Armor: piece and stats on top, labelled mods underneath */
-.bd-arow { gap: 10px; }
-.bd-arow-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
-.bd-arow-top .bd-rowbtn { flex: 1 1 260px; width: auto; min-width: 0; }
-.bd-amods { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)) 70px; gap: 8px; align-items: center; }
-.bd-amod { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 8px; align-items: center; min-width: 0; padding: 5px 8px 5px 5px; border-radius: 10px; border: 1px solid var(--line-hi); background: rgba(5,9,25,.6); color: inherit; font: inherit; text-align: left; }
+/* Armor: one line per piece (piece, stats, four labelled mods, energy), separated rows */
+.bd-armorcard { container-type: inline-size; }
+.bd-armorcard .bd-card-head .small { margin-right: auto; margin-left: 12px; }
+.bd-alist { display: grid; gap: 10px; }
+.bd-arow { display: grid; grid-template-columns: minmax(180px, 1.1fr) auto repeat(4, minmax(0, 1fr)) 48px; gap: 8px; align-items: center; padding: 10px; border-color: var(--line-hi); background: rgba(5,9,25,.5); }
+.bd-arow .bd-rowbtn { grid-template-columns: 64px minmax(0, 1fr); padding: 0; }
+.bd-arow .bd-iico { width: 64px; height: 64px; border-radius: 10px; }
+.bd-ascore { font: 700 12px var(--display); color: var(--green); letter-spacing: 0; }
+.bd-astats { display: grid; grid-template-columns: repeat(6, 26px); gap: 2px; font: 500 12px var(--mono); text-align: center; }
+.bd-astats span { display: grid; color: var(--muted); }
+.bd-astats i { font: 600 8.5px var(--display); font-style: normal; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
+.bd-astats .hi { color: var(--green); }
+.bd-astats .lo { color: var(--faint); }
+.bd-amod { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 7px; align-items: center; min-width: 0; padding: 5px 7px 5px 5px; border-radius: 10px; border: 1px solid var(--line-hi); background: rgba(5,9,25,.6); color: inherit; font: inherit; text-align: left; }
 .bd-amod img { width: 40px; height: 40px; border-radius: 8px; display: block; }
 .bd-amod span { display: grid; min-width: 0; }
-.bd-amod b { font-size: 12.5px; font-weight: 600; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.bd-amod b { font-size: 12px; font-weight: 600; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .bd-amod i { font-style: normal; font-size: 10.5px; color: var(--muted); }
 .bd-amod:hover, .bd-amod:focus-visible { border-color: var(--green); box-shadow: 0 0 14px -6px rgba(51,227,160,.9); outline: none; }
 .bd-amod.is-none { border-style: dashed; background: none; }
 .bd-amod.is-none .bd-plus { width: 40px; text-align: center; }
-.bd-amods .bd-energy { width: auto; }
+.bd-aenergy { display: grid; gap: 4px; justify-items: center; font: 500 11px var(--mono); color: var(--muted); }
+.bd-aenergy > span { width: 100%; height: 6px; border-radius: 99px; background: rgba(5,9,25,.8); border: 1px solid var(--line); overflow: hidden; }
+.bd-aenergy i { display: block; height: 100%; background: linear-gradient(90deg, rgba(54,196,242,.7), rgba(51,227,160,.8)); }
+.bd-aenergy.over b { color: var(--shard); }
+.bd-aenergy.over i { background: rgba(255,122,122,.8); }
+@container (max-width: 860px) {
+  .bd-arow { grid-template-columns: repeat(4, minmax(0, 1fr)) 54px; }
+  .bd-arow .bd-rowbtn { grid-column: 1 / 4; }
+  .bd-arow .bd-astats { grid-column: 4 / -1; justify-self: end; }
+}
+@container (max-width: 560px) {
+  .bd-arow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bd-arow .bd-rowbtn, .bd-arow .bd-astats, .bd-arow .bd-aenergy { grid-column: 1 / -1; justify-self: stretch; }
+  .bd-astats { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}
 
 /* ---------- Narrower screens ---------- */
 @media (max-width: 1100px) {
   .bd-sclayout { grid-template-columns: minmax(0, 1fr); }
-  .bd-sc-right { padding-left: 0; border-left: 0; padding-top: 12px; border-top: 1px solid var(--line-hi); }
+  .bd-sc-right { padding-left: 0; border-left: 0; padding-top: 14px; border-top: 1px solid var(--line-hi); }
 }
 @media (max-width: 1280px) {
   .bd-main { grid-template-columns: minmax(0, 1fr); }
@@ -534,9 +569,10 @@ button.bd-k-pill::after { display: none; }
 }
 
 @media (max-width: 700px) {
-  .bd-amods { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .bd-amods .bd-energy { grid-column: 1 / -1; }
-  .bd-sc-left { grid-template-columns: 100px minmax(0, 1fr); }
-  .bd-k-super .bd-sico { width: 64px; height: 64px; }
-  .bd-wperks, .bd-wfacts { padding-left: 0; }
+  .bd-sc-left { grid-template-columns: minmax(0, 1fr); }
+  .bd-k-super { grid-template-columns: 72px minmax(0, 1fr); justify-items: start; text-align: left; column-gap: 12px; }
+  .bd-k-super .cap { grid-column: 1 / -1; }
+  .bd-k-super .bd-sico { width: 72px; height: 72px; grid-row: span 2; }
 }
+/* Long armor and fragment names wrap to two lines rather than cutting off */
+.bd-arow .bd-imeta b, .bd-k-pill b { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2; }
