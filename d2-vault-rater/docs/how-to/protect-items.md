@@ -16,7 +16,7 @@ Armor checks the protect list the same way ([src/rating/armor.ts:189](../../src/
 
 With DIM tags on and `dim.protectTagged` on (both are on by default, [src/rating/settings.ts:103-110](../../src/rating/settings.ts#L103-L110)), every item tagged Favorite or Keep in DIM is protected on the next rating ([src/dim/common.ts:48-52](../../src/dim/common.ts#L48-L52), [src/rating/weapons.ts:206](../../src/rating/weapons.ts#L206)).
 
-To turn it off: `npm run vault -- dim protect off` ([src/cli.ts:200](../../src/cli.ts#L200)), `update_settings` with `dim_protect_tagged: false`, or the switch in the report's Settings panel.
+To turn it off: `npm run vault -- dim protect off` ([src/cli.ts:211](../../src/cli.ts#L211)), `update_settings` with `dim_protect_tagged: false`, or the switch in the report's Settings panel.
 
 If DIM can't be reached, the rating goes ahead without DIM data, and nothing is protected by tags that run ([src/pipeline.ts:68-73](../../src/pipeline.ts#L68-L73)).
 
@@ -26,6 +26,6 @@ Equipped weapons and armor are always protected ([src/rating/weapons.ts:203](../
 
 ## Already protected without asking
 
-- Adept, Timelost and Harrowed copies ([src/rating/weapons.ts:204](../../src/rating/weapons.ts#L204), detected from the name at [src/vault/decode.ts:150](../../src/vault/decode.ts#L150)).
+- Adept, Timelost and Harrowed copies ([src/rating/weapons.ts:204](../../src/rating/weapons.ts#L204), detected from the name at [src/vault/decode.ts:154](../../src/vault/decode.ts#L154)).
 - Your only weapon for a slot and element, e.g. your only Strand power weapon ([src/rating/weapons.ts:199-200](../../src/rating/weapons.ts#L199-L200), [src/rating/weapons.ts:207](../../src/rating/weapons.ts#L207)).
 - Extra exotic copies aren't protected, but they are only ever marked *review*, never shard ([src/rating/weapons.ts:261-267](../../src/rating/weapons.ts#L261-L267), [src/rating/armor.ts:194-202](../../src/rating/armor.ts#L194-L202)).

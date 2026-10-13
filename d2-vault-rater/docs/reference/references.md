@@ -12,7 +12,7 @@ The outside sources Vault Rater relies on: the APIs it calls, the data it import
 | [Application portal](https://www.bungie.net/en/Application) | Where you create the app, set its redirect URL, origin header and scopes. |
 | [GetProfile](https://bungie-net.github.io/multi/operation_get_Destiny2-GetProfile.html) and [component types](https://bungie-net.github.io/multi/schema_Destiny-DestinyComponentType.html) | Reading the vault, characters, sockets and perks ([src/vault/fetch.ts:12](../../src/vault/fetch.ts#L12)). |
 | [SetItemLockState](https://bungie-net.github.io/multi/operation_post_Destiny2-SetItemLockState.html) | Applying and undoing lock plans ([src/dim/actions.ts:125](../../src/dim/actions.ts#L125)). |
-| [TransferItem](https://bungie-net.github.io/multi/operation_post_Destiny2-TransferItem.html), [EquipItems](https://bungie-net.github.io/multi/operation_post_Destiny2-EquipItems.html) | Moving and equipping items ([src/bungie/transfer.ts:65-96](../../src/bungie/transfer.ts#L65-L96)). |
+| [TransferItem](https://bungie-net.github.io/multi/operation_post_Destiny2-TransferItem.html), [EquipItems](https://bungie-net.github.io/multi/operation_post_Destiny2-EquipItems.html) | Moving and equipping items ([src/bungie/transfer.ts:66-97](../../src/bungie/transfer.ts#L66-L97)). |
 | [InsertSocketPlugFree](https://bungie-net.github.io/multi/operation_post_Destiny2-InsertSocketPlugFree.html) | The Builds tab changing subclass and mod sockets ([web/src/builds/equip.ts:29](../../web/src/builds/equip.ts#L29)). |
 
 ## The Destiny manifest

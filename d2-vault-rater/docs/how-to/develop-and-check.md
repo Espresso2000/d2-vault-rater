@@ -33,4 +33,4 @@ Code in `src/` runs in Node and, through the shims, in the browser. Before addin
 ## Running the apps from source
 
 - MCP server: `npm run dev` ([package.json](../../package.json)).
-- Web app with hot reload: `cd web && npm run dev` (port 5173, [web/vite.config.ts:62](../../web/vite.config.ts#L62)). Bungie sign-in needs the https local mode instead: see the [web app tutorial](../tutorials/web-app-on-your-pc.md).
+- Web app with hot reload: `cd web && npm run dev` (port 5173, [web/vite.config.ts:63](../../web/vite.config.ts#L63)). Bungie sign-in needs the https local mode instead: see the [web app tutorial](../tutorials/web-app-on-your-pc.md).

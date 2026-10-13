@@ -11,7 +11,7 @@ A hosted site can't keep a client secret, so it needs its own app at <https://ww
 - **Origin header**: the site's origin, e.g. `https://you.github.io`.
 - **Scopes**: Read your Destiny 2 information; Move or equip your gear.
 
-The setup screen shows these exact values for the address it is running at ([web/src/main.ts:69-92](../../web/src/main.ts#L69-L92)).
+The setup screen shows these exact values for the address it is running at ([web/src/main.ts:71-94](../../web/src/main.ts#L71-L94)).
 
 ## 2. Put the keys in the build
 
@@ -27,7 +27,7 @@ npm install
 npm run snapshot
 ```
 
-This writes a stripped manifest and the Builds tab's definitions for the live game version, plus a copy of Aegis's tier list and armor set tiers, into `public/data` ([web/scripts/snapshot.ts:1-7](../../web/scripts/snapshot.ts#L1-L7)). With them, a first visit loads a few MB instead of building the item database from 200 MB of Bungie tables ([web/src/versioned.ts:1-6](../../web/src/versioned.ts#L1-L6)). The sources copy comes from your local app's cache, so run its `refresh` first if it is old ([web/scripts/snapshot.ts:56-61](../../web/scripts/snapshot.ts#L56-L61)). Re-run after each game patch; a snapshot for an older version is simply skipped ([web/src/versioned.ts:44-47](../../web/src/versioned.ts#L44-L47)).
+This writes a stripped manifest and the Builds tab's definitions for the live game version, plus a copy of Aegis's tier list and armor set tiers, into `public/data` ([web/scripts/snapshot.ts:1-7](../../web/scripts/snapshot.ts#L1-L7)). With them, a first visit loads a few MB instead of building the item database from 200 MB of Bungie tables ([web/src/versioned.ts:1-6](../../web/src/versioned.ts#L1-L6)). The sources copy comes from your local app's cache, so run its `refresh` first if it is old ([web/scripts/snapshot.ts:56-61](../../web/scripts/snapshot.ts#L56-L61)). Re-run after each game patch; a snapshot for an older version is simply skipped ([web/src/versioned.ts:42-46](../../web/src/versioned.ts#L42-L46)).
 
 ## 4. Build and upload
 
@@ -35,7 +35,7 @@ This writes a stripped manifest and the Builds tab's definitions for the live ga
 npm run build
 ```
 
-Upload `web/dist/` anywhere. Asset paths are relative ([web/vite.config.ts:59](../../web/vite.config.ts#L59)), so a sub-folder such as `/vault-rater/` works.
+Upload `web/dist/` anywhere. Asset paths are relative ([web/vite.config.ts:60](../../web/vite.config.ts#L60)), so a sub-folder such as `/vault-rater/` works.
 
 ## 5. Cache headers
 

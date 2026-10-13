@@ -1,12 +1,12 @@
 # The Builds tab
 
-The web app's Builds tab lets you put together a subclass, three weapons, five armor pieces, their mods and stat targets; see how the community rates it; then equip it on a character or send it to DIM. Builds are saved in the browser ([web/src/builds/store.ts:5-8](../../web/src/builds/store.ts#L5-L8)). It is web-only and is loaded as a separate chunk ([web/src/main.ts:179-183](../../web/src/main.ts#L179-L183)).
+The web app's Builds tab lets you put together a subclass, three weapons, five armor pieces, their mods and stat targets; see how the community rates it; then equip it on a character or send it to DIM. Builds are saved in the browser ([web/src/builds/store.ts:5-8](../../web/src/builds/store.ts#L5-L8)). It is web-only and is loaded as a separate chunk ([web/src/main.ts:192-196](../../web/src/main.ts#L192-L196)).
 
 ## The parts
 
 | Module | Role |
 | --- | --- |
-| [web/src/builds/defs.strip.ts](../../web/src/builds/defs.strip.ts) | Cuts the manifest down to subclasses, their socket plugs (supers, abilities, aspects, fragments) and armor mods ([web/src/builds/defs.strip.ts:79](../../web/src/builds/defs.strip.ts#L79)). |
+| [web/src/builds/defs.strip.ts](../../web/src/builds/defs.strip.ts) | Cuts the manifest down to subclasses, their socket plugs (supers, abilities, aspects, fragments) and armor mods ([web/src/builds/defs.strip.ts:78](../../web/src/builds/defs.strip.ts#L78)). |
 | [web/src/builds/defs.ts](../../web/src/builds/defs.ts) | Loads those definitions like the item database: IndexedDB, then a shipped snapshot, then a worker ([web/src/builds/defs.ts:10-23](../../web/src/builds/defs.ts#L10-L23)). |
 | [web/src/builds/sheets.ts](../../web/src/builds/sheets.ts) | Parses Aegis's Aspects, Fragments and Subclasses tabs and the Data Compendium's descriptions ([web/src/builds/sheets.ts:61](../../web/src/builds/sheets.ts#L61), [web/src/builds/sheets.ts:105](../../web/src/builds/sheets.ts#L105), [web/src/builds/sheets.ts:149](../../web/src/builds/sheets.ts#L149)). |
 | [web/src/builds/ratings.ts](../../web/src/builds/ratings.ts) | Downloads those sheets once a day and keeps yesterday's copy if a refresh fails ([web/src/builds/ratings.ts:15-38](../../web/src/builds/ratings.ts#L15-L38)). |
@@ -14,7 +14,7 @@ The web app's Builds tab lets you put together a subclass, three weapons, five a
 | [web/src/builds/profile.ts](../../web/src/builds/profile.ts) | Reads what equipping needs beyond the vault: subclasses, unlocked plugs, socket contents and in-game loadout slots ([web/src/builds/profile.ts:45](../../web/src/builds/profile.ts#L45)). |
 | [web/src/builds/equip.ts](../../web/src/builds/equip.ts) | Turns a build into a step-by-step plan and runs it ([web/src/builds/equip.ts:41](../../web/src/builds/equip.ts#L41), [web/src/builds/equip.ts:162](../../web/src/builds/equip.ts#L162)). |
 | [web/src/builds/dim.ts](../../web/src/builds/dim.ts) | Reads DIM loadouts, saves a build as one, and makes share and import links. |
-| [web/src/builds/ui.ts](../../web/src/builds/ui.ts) | The tab's HTML and event handling ([web/src/builds/ui.ts:104](../../web/src/builds/ui.ts#L104)). |
+| [web/src/builds/ui.ts](../../web/src/builds/ui.ts) | The tab's HTML and event handling ([web/src/builds/ui.ts:103](../../web/src/builds/ui.ts#L103)). |
 
 ## The editor
 
@@ -22,8 +22,8 @@ The web app's Builds tab lets you put together a subclass, three weapons, five a
 
 - **Saved builds** are listed per class; you start a new build, import one from a character or a DIM loadout (with a preview before it is added), or delete one. Deleting removes it from Vault Rater only; DIM loadouts and the game are not touched ([web/src/builds/ui.ts:1364](../../web/src/builds/ui.ts#L1364), [web/src/builds/ui.ts:1574](../../web/src/builds/ui.ts#L1574)).
 - **Editing works on a draft**: nothing is kept until you save, and leaving with unsaved changes asks first ([web/src/builds/model.ts:327](../../web/src/builds/model.ts#L327), [web/src/builds/ui.ts:193](../../web/src/builds/ui.ts#L193)).
-- **Subclass**: pick the element, abilities, aspects and fragments. Options are sorted by Aegis tier and show their description, stat changes and Destiny Clarity's notes ([web/src/builds/ui.ts:641](../../web/src/builds/ui.ts#L641), [web/src/builds/ui.ts:753-779](../../web/src/builds/ui.ts#L753-L779)).
-- **Gear and mods**: weapons, armor and armor mods for every slot come from one filterable, sortable list ([D2ArmorPicker](https://d2armorpicker.com/) style stat columns), with a stat preview against the saved build; nothing changes until you apply ([web/src/builds/ui.ts:922](../../web/src/builds/ui.ts#L922), [web/src/builds/ui.ts:1190](../../web/src/builds/ui.ts#L1190)).
+- **Subclass**: pick the element, abilities, aspects and fragments. Options are sorted by Aegis tier and show their description, stat changes and Destiny Clarity's notes ([web/src/builds/ui.ts:640](../../web/src/builds/ui.ts#L640), [web/src/builds/ui.ts:753-779](../../web/src/builds/ui.ts#L753-L779)).
+- **Gear and mods**: weapons, armor and armor mods for every slot come from one filterable, sortable list ([D2ArmorPicker](https://d2armorpicker.com/) style stat columns), with a stat preview against the saved build; nothing changes until you apply ([web/src/builds/ui.ts:921](../../web/src/builds/ui.ts#L921), [web/src/builds/ui.ts:1189](../../web/src/builds/ui.ts#L1189)).
 - **Summary**: the rating and its parts, the six stats with your aims, the armor set bonuses your pieces turn on, and the equip and DIM actions ([web/src/builds/ui.ts:362](../../web/src/builds/ui.ts#L362)).
 - Each weapon links to its [light.gg](https://www.light.gg/) and [D2 Foundry](https://d2foundry.gg/) pages for rolls and perk numbers ([web/src/builds/ui.ts:98](../../web/src/builds/ui.ts#L98)).
 

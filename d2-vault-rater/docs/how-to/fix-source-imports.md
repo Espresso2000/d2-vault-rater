@@ -4,7 +4,7 @@
 
 Sources refresh by themselves after a day ([src/pipeline.ts:58](../../src/pipeline.ts#L58), [web/src/sources.ts:28](../../web/src/sources.ts#L28)). To refresh now:
 
-- CLI: `npm run vault -- refresh` ([src/cli.ts:205-207](../../src/cli.ts#L205-L207)).
+- CLI: `npm run vault -- refresh` ([src/cli.ts:216-218](../../src/cli.ts#L216-L218)).
 - AI: `refresh_sources`; with `force_manifest: true` it also downloads the manifest again ([src/server.ts:138-158](../../src/server.ts#L138-L158)).
 
 ## A weapon on Aegis's sheet isn't recognised

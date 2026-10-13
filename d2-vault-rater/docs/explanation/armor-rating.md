@@ -21,7 +21,7 @@ Four parts, weighted 40 / 25 / 25 / 10 ([src/rating/armor.ts:44-45](../../src/ra
 
 ## The verdict
 
-Pieces are grouped by class, slot, archetype and tertiary stat; each exotic forms its own group ([src/rating/armor.ts:165-168](../../src/rating/armor.ts#L165-L168)). Legacy armor (no archetype, from before Armor 3.0, [src/vault/decode.ts:182](../../src/vault/decode.ts#L182)) is judged separately. In order ([src/rating/armor.ts:176-226](../../src/rating/armor.ts#L176-L226)):
+Pieces are grouped by class, slot, archetype and tertiary stat; each exotic forms its own group ([src/rating/armor.ts:165-168](../../src/rating/armor.ts#L165-L168)). Legacy armor (no archetype, from before Armor 3.0, [src/vault/decode.ts:186](../../src/vault/decode.ts#L186)) is judged separately. In order ([src/rating/armor.ts:176-226](../../src/rating/armor.ts#L176-L226)):
 
 1. **Protected**: equipped, on your protect list, or tagged Favorite or Keep in DIM ([src/rating/armor.ts:189-193](../../src/rating/armor.ts#L189-L193)).
 2. **Exotics**: the best copy is kept; extra copies are marked *review* ([src/rating/armor.ts:194-202](../../src/rating/armor.ts#L194-L202)).
