@@ -34,7 +34,13 @@ interface SetBonus {
 export interface BuildsInput {
   vault: Vault;
   /** The report's site data: the rater's scores per item, and the armor set bonuses. */
-  data: { weapons: { id: string; sc: number; tier: string | null }[]; armor: { id: string; sc: number }[]; sets?: Record<string, { name: string; bonuses: SetBonus[] }> };
+  data: {
+    weapons: { id: string; sc: number; tier: string | null }[];
+    armor: { id: string; sc: number }[];
+    sets?: Record<string, { name: string; bonuses: SetBonus[] }>;
+    /** Wrapped's per-character play dates, for ordering classes. */
+    wrapped?: { characters?: { className: string; lastPlayed: string }[] } | null;
+  };
   manifest: { stats: Record<string, { displayProperties: { name: string } }> };
 }
 
@@ -161,49 +167,92 @@ function touch(redraw = true) {
 
 function draw() {
   if (!panel || !defs) return;
+  listCls ??= cur?.cls ?? classChoices()[0];
   const c = ctx();
   const y = scrollY;
   panel.innerHTML = `<div class="bd">
     <div class="sec-head"><h2>Builds</h2><span class="badge">${builds.length} saved</span>
       <p>Hover or tap a subclass slot to change it, pick gear and mods for every slot from one list, then equip the build or send it to DIM. Builds are saved in this browser.</p></div>
-    <div class="bd-layout">${listPane()}${cur ? editor(cur, c) : emptyEditor()}</div></div>`;
+    <div class="bd-layout">${listPane()}${cur && cur.cls === listCls ? editor(cur, c) : emptyEditor()}</div></div>`;
   scrollTo({ top: y });
   if (pop) refreshPop();
 }
 
 let listQuery = "";
+/** The class whose builds are shown; set on the first draw. */
+let listCls: number | null = null;
+/** The saved build waiting for a delete confirmation. */
+let delAsk: string | null = null;
 const listText = (b: Build) => `${b.name} ${b.tags.join(" ")} ${CLASS_NAME(b.cls)}`.toLowerCase();
+const TRASH = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6l1 2h4v2H4V5h4l1-2zm-3 6h12l-1 12H7L6 9zm4 2v8h1.5v-8H10zm3.5 0v8H15v-8h-1.5z"/></svg>`;
+
+/** The saved builds of one class, each card showing enough to tell builds apart without opening them. */
 function listPane() {
+  const c = ctx();
+  const cls = listCls!;
+  const mine = builds.filter((b) => b.cls === cls);
   const q = listQuery.toLowerCase();
-  return `<aside class="bd-list glass">
-    <div class="bd-list-head"><span class="cap">Saved builds</span>
-      <div class="bd-list-actions"><button class="btn primary bd-sm" data-act="new">+ New</button><button class="btn bd-sm" data-act="import">Import</button></div></div>
-    ${builds.length > 4 ? `<input class="bd-input" id="bd-q" type="search" placeholder="Search builds" value="${esc(listQuery)}" aria-label="Search builds">` : ""}
-    <div class="bd-cards">${
-      builds
-        .map((b) => {
-          const sc = b.subclass ? defs!.subclasses[b.subclass] : null;
-          const s = buildScore(b, ctx()).total;
-          return `<button class="bd-bcard${b === cur ? " on" : ""}" data-act="open" data-id="${esc(b.id)}" style="--el:var(--${sc?.el ?? "Unknown"})"${q && !listText(b).includes(q) ? " hidden" : ""}>
-          <span class="bd-bico">${img(sc?.i)}</span>
-          <span class="bd-bmeta"><b>${esc(b.name)}</b><span>${esc(CLASS_NAME(b.cls))}${sc ? " · " + esc(sc.el) : ""}${b.tags.length ? " · " + b.tags.map(esc).join(", ") : ""}</span></span>
-          ${s !== null ? `<span class="bd-bscore t${scoreTier(s)}">${s}</span>` : ""}</button>`;
-        })
-        .join("") || `<p class="small muted bd-pad">No builds yet. Start one, or import your current gear or a DIM loadout.</p>`
-    }</div></aside>`;
+  return `<section class="bd-saved glass" aria-label="Saved builds">
+    <div class="bd-saved-head">
+      <span class="cap">Saved builds</span>
+      <div class="seg bd-clsseg" role="tablist" aria-label="Class">${classChoices()
+        .map((k) => `<button role="tab" data-act="lcls" data-cls="${k}" aria-selected="${k === cls}">${CLASS_NAME(k)}<span class="count">${builds.filter((b) => b.cls === k).length}</span></button>`)
+        .join("")}</div>
+      ${mine.length > 4 ? `<input class="bd-input bd-q" id="bd-q" type="search" placeholder="Search ${esc(CLASS_NAME(cls))} builds" value="${esc(listQuery)}" aria-label="Search builds">` : ""}
+      <div class="bd-list-actions"><button class="btn primary bd-sm" data-act="new" data-cls="${cls}">+ New ${esc(CLASS_NAME(cls))} build</button><button class="btn bd-sm" data-act="import">Import</button></div>
+    </div>
+    <div class="bd-cards">${mine.map((b) => buildCard(b, c, !!q && !listText(b).includes(q))).join("") || `<p class="small muted bd-pad">No ${esc(CLASS_NAME(cls))} builds yet. Start one, or import your current gear or a DIM loadout.</p>`}</div>
+  </section>`;
+}
+
+function buildCard(b: Build, c: Ctx, hidden: boolean) {
+  const sc = b.subclass ? defs!.subclasses[b.subclass] : null;
+  const s = buildScore(b, c).total;
+  const weapons = WEAPON_SLOTS.map((slot) => weaponOf(c, b.items[slot]?.id));
+  const armor = ARMOR_SLOTS.map((slot) => armorOf(c, b.items[slot]?.id));
+  const exotics = [...weapons, ...armor].filter((x): x is WeaponRecord | ArmorRecord => x?.rarity === "Exotic");
+  const aspects = sc ? socketsOf(sc, "aspects").map((i) => defs!.plugs[b.plugs[i]]).filter((p): p is PlugDef => !isEmptyPlug(p)) : [];
+  const frags = sc ? socketsOf(sc, "fragments").filter((i) => !isEmptyPlug(defs!.plugs[b.plugs[i]])).length : 0;
+  const top = statLines(b, c).filter((l) => l.total > 0).sort((x, y) => y.total - x.total).slice(0, 3);
+  const gearIco = (x: WeaponRecord | ArmorRecord | undefined) =>
+    x ? `<span class="bd-gico${x.rarity === "Exotic" ? " exotic" : ""}" title="${esc(x.name)}">${img(x.icon)}</span>` : `<span class="bd-gico none"></span>`;
+  const id = esc(b.id);
+  const ask = delAsk === b.id;
+  return `<article class="bd-bcard${b === cur ? " on" : ""}${ask ? " asking" : ""}" style="--el:var(--${sc?.el ?? "Unknown"})"${hidden ? " hidden" : ""} data-id="${id}">
+    <button class="bd-bopen" data-act="open" data-id="${id}" aria-current="${b === cur}" aria-label="${esc(`Open ${b.name}`)}">
+      <span class="bd-btop"><span class="bd-bico">${img(sc?.i)}</span>
+        <span class="bd-bmeta"><b>${esc(b.name)}</b><span>${sc ? esc(sc.n) : "No subclass"}${b.tags.length ? " · " + b.tags.map(esc).join(", ") : ""}</span></span>
+        ${s !== null ? `<span class="bd-bscore t${scoreTier(s)}" title="Build rating">${s}</span>` : ""}</span>
+      <span class="bd-bgear">${weapons.map(gearIco).join("")}<i></i>${armor.map(gearIco).join("")}</span>
+      <span class="bd-bline"><span class="cap">Exotics</span><span>${exotics.length ? exotics.map((x) => esc(x.name)).join(" · ") : "None"}</span></span>
+      <span class="bd-bline"><span class="cap">Aspects</span><span>${aspects.length ? aspects.map((p) => esc(p.n)).join(" · ") : "None"}${frags ? ` · ${frags} fragment${frags === 1 ? "" : "s"}` : ""}</span></span>
+      ${top.length ? `<span class="bd-bstats">${top.map((l) => `<span><i>${esc(l.name)}</i><b class="num">${l.total}</b></span>`).join("")}</span>` : ""}
+    </button>
+    <button class="bd-bdel" data-act="askdel" data-id="${id}" aria-label="${esc(`Delete ${b.name}`)}" title="Delete from Vault Rater">${TRASH}</button>
+    ${
+      ask
+        ? `<div class="bd-bconfirm" role="alertdialog" aria-label="Delete build" aria-describedby="bd-del-${id}">
+      <p id="bd-del-${id}">Delete <b>${esc(b.name)}</b> from Vault Rater? ${b.dimId ? "Its DIM loadout stays in DIM. " : ""}Nothing changes in DIM or the game. This can't be undone.</p>
+      <div><button class="btn bd-sm bd-danger" data-act="delyes" data-id="${id}">Delete</button><button class="btn ghost bd-sm" data-act="delno">Cancel</button></div></div>`
+        : ""
+    }
+  </article>`;
 }
 
 function emptyEditor() {
+  const k = listCls ?? classChoices()[0];
   return `<section class="bd-editor"><div class="bd-empty glass">
-    <div class="eyebrow">Start a build</div><h2>What are you <span class="grad-text">playing</span>?</h2>
-    <p class="muted">Pick a class to start from scratch, or bring in what a character is wearing right now.</p>
-    <div class="bd-pills">${classChoices().map((c) => `<button class="bd-pill" data-act="new" data-cls="${c}">${CLASS_NAME(c)}</button>`).join("")}</div>
-    <div class="bd-pills"><button class="btn" data-act="import">Import from a character or DIM</button></div></div></section>`;
+    <div class="eyebrow">Start a ${esc(CLASS_NAME(k))} build</div><h2>What are you <span class="grad-text">playing</span>?</h2>
+    <p class="muted">Start from scratch, or bring in what your ${esc(CLASS_NAME(k))} is wearing right now or a DIM loadout.</p>
+    <div class="bd-pills"><button class="btn primary" data-act="new" data-cls="${k}">+ New ${esc(CLASS_NAME(k))} build</button><button class="btn" data-act="import">Import from a character or DIM</button></div></div></section>`;
 }
 
+/** Classes you have, most recently played first (Wrapped's play dates, else the vault's character order). */
 const classChoices = () => {
-  const have = [...new Set(input!.vault.characters.map((c) => CLASSES.indexOf(c.className as (typeof CLASSES)[number])).filter((x) => x >= 0))];
-  return have.length ? have.sort() : [0, 1, 2];
+  const played = (cls: string) => input!.data.wrapped?.characters?.find((x) => x.className === cls)?.lastPlayed ?? "";
+  const chars = [...input!.vault.characters].sort((a, b) => played(b.className).localeCompare(played(a.className)));
+  const have = [...new Set(chars.map((c) => CLASSES.indexOf(c.className as (typeof CLASSES)[number])).filter((x) => x >= 0))];
+  return have.length ? have : [0, 1, 2];
 };
 
 function editor(b: Build, c: Ctx) {
@@ -1078,6 +1127,7 @@ function wire(el: HTMLElement) {
     const p = (e.target as HTMLElement).closest<HTMLElement>("[data-pop]");
     if (p && e.key === "ArrowDown") return e.preventDefault(), openPop(Number(p.dataset.pop), true, true);
     if (p && e.key === "Escape" && pop) return closePop();
+    if (e.key === "Escape" && delAsk) return ACTIONS.delno(e.target as HTMLElement);
     const t = e.target as HTMLInputElement;
     if (t.id === "bd-tag" && e.key === "Enter" && cur && t.value.trim()) {
       cur.tags = [...new Set([...cur.tags, t.value.trim()])];
@@ -1095,7 +1145,7 @@ function wire(el: HTMLElement) {
       }
     } else if (cur && t.id === "bd-name") {
       cur.name = t.value || "Untitled build";
-      const card = panel!.querySelector(".bd-bcard.on b");
+      const card = panel!.querySelector(".bd-bcard.on .bd-bmeta b");
       if (card) card.textContent = cur.name;
       touch(false);
     } else if (cur && t.id === "bd-notes") (cur.notes = t.value), touch(false);
@@ -1119,7 +1169,8 @@ const ACTIONS: Record<string, (t: HTMLElement) => void> = {
     if (panel) panel.innerHTML = loadingCard();
   },
   new: (t) => {
-    cur = newBuild(t.dataset.cls ? Number(t.dataset.cls) : (classChoices()[0] ?? 0));
+    cur = newBuild(t.dataset.cls ? Number(t.dataset.cls) : (listCls ?? classChoices()[0] ?? 0));
+    listCls = cur.cls;
     const sc = Object.values(defs!.subclasses).find((s) => s.cls === cur!.cls && s.el === "Prismatic");
     cur.name = `${CLASS_NAME(cur.cls)} build ${builds.filter((b) => b.cls === cur!.cls).length + 1}`;
     if (sc && (!charFor(profile, cur.cls) || subclassInstance(profile, cur.cls, sc.h))) setSubclass(sc);
@@ -1134,6 +1185,7 @@ const ACTIONS: Record<string, (t: HTMLElement) => void> = {
   cls: (t) => {
     if (!cur || Number(t.dataset.cls) === cur.cls) return;
     cur.cls = Number(t.dataset.cls);
+    listCls = cur.cls;
     cur.subclass = null;
     cur.plugs = {};
     for (const s of ARMOR_SLOTS) delete cur.items[s];
@@ -1152,11 +1204,32 @@ const ACTIONS: Record<string, (t: HTMLElement) => void> = {
     cur = copy;
     touch();
   },
-  del: () => {
-    if (!cur || !confirm(`Delete “${cur.name}”? This can't be undone.`)) return;
-    builds = builds.filter((b) => b !== cur);
+  // Delete asks first, in the build's card, and removes the build from this app only: DIM and the game are untouched.
+  del: () => cur && askDelete(cur.id),
+  askdel: (t) => askDelete(t.dataset.id!),
+  delno: () => {
+    const id = delAsk;
+    delAsk = null;
+    draw();
+    panel?.querySelector<HTMLElement>(`.bd-bdel[data-id="${id}"]`)?.focus();
+  },
+  delyes: (t) => {
+    const gone = builds.find((b) => b.id === t.dataset.id);
+    delAsk = null;
+    if (!gone) return draw();
+    builds = builds.filter((b) => b !== gone);
     saveBuilds(builds);
-    cur = builds[0] ?? null;
+    if (cur === gone) cur = builds.find((b) => b.cls === listCls) ?? null;
+    draw();
+  },
+  lcls: (t) => {
+    const k = Number(t.dataset.cls);
+    if (k === listCls) return;
+    closePop();
+    listCls = k;
+    listQuery = "";
+    delAsk = null;
+    cur = builds.find((b) => b.cls === k) ?? null;
     draw();
   },
   subclass: (t) => {
@@ -1172,6 +1245,17 @@ const ACTIONS: Record<string, (t: HTMLElement) => void> = {
   dim: () => dimFlow(),
   import: () => importFlow(),
 };
+
+function askDelete(id: string) {
+  const b = builds.find((x) => x.id === id);
+  if (!b) return;
+  listCls = b.cls;
+  delAsk = id;
+  draw();
+  const box = panel?.querySelector<HTMLElement>(".bd-bcard.asking");
+  box?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  box?.querySelector<HTMLElement>("[data-act=delno]")?.focus();
+}
 
 function setSubclass(sc: SubclassDef) {
   if (!cur) return;

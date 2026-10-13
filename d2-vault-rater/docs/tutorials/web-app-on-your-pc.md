@@ -38,9 +38,9 @@ The report has the same tabs as the local app's, and its buttons work the same w
 
 ## 4. Make a build
 
-Open **Builds**. The first time, it downloads subclass, aspect and fragment definitions, the community build ratings and Destiny Clarity's notes ([web/src/builds/ui.ts:108-127](../../web/src/builds/ui.ts#L108-L127)).
+Open **Builds**. The first time, it downloads subclass, aspect and fragment definitions, the community build ratings and Destiny Clarity's notes ([web/src/builds/ui.ts:114-133](../../web/src/builds/ui.ts#L114-L133)).
 
-1. Press **New**, pick a class and a subclass.
+1. Pick a class in **Saved builds**, press **New**, and pick a subclass.
 2. Point at (or tap) an ability, aspect or fragment slot: a popover lists the options with their tiers and notes. Click to pick; aspects and fragments toggle, so one popover fills every slot. The rating ring updates as you go ([web/src/builds/model.ts:186-212](../../web/src/builds/model.ts#L186-L212)).
 3. Press **Choose gear and mods**: pick weapons, armor and mods for every slot from one list, check the stat preview, then **Apply**.
 4. Press **Equip**. You get a dry run listing every step; nothing changes until you confirm ([web/src/builds/equip.ts:41](../../web/src/builds/equip.ts#L41)).

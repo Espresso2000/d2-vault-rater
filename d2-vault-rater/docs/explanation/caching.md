@@ -39,7 +39,7 @@ The local report embeds every icon as a data URI so it works offline; each image
 - Images load lazily and decode off the main thread; a remote image that fails is retried twice before the placeholder shows ([report-template/site.html:976-987](../../report-template/site.html#L976-L987)).
 - Rows and tiles in long lists skip layout and paint while off screen ([report-template/site.html:478-480](../../report-template/site.html#L478-L480)), so the full list and Shard tab stay smooth with hundreds of icons.
 - The Builds tab is a separate JavaScript chunk, fetched in the background once the report is on screen ([web/src/main.ts:179-183](../../web/src/main.ts#L179-L183)).
-- Its score map, stat names and weapon tiers are worked out once per rating run, not on every redraw ([web/src/builds/ui.ts:65-75](../../web/src/builds/ui.ts#L65-L75)), and items are looked up through a per-vault index ([web/src/builds/model.ts:106-113](../../web/src/builds/model.ts#L106-L113)).
+- Its score map, stat names and weapon tiers are worked out once per rating run, not on every redraw ([web/src/builds/ui.ts:71-81](../../web/src/builds/ui.ts#L71-L81)), and items are looked up through a per-vault index ([web/src/builds/model.ts:106-113](../../web/src/builds/model.ts#L106-L113)).
 - Your Destiny membership is asked for once per visit ([web/src/shims/oauth.ts:44-59](../../web/src/shims/oauth.ts#L44-L59)).
 
 ## Fewer waits on Bungie
