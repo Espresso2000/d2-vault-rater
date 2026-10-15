@@ -60,7 +60,7 @@ To apply it: npm run vault -- apply 2026-10-08T16-40-12-118Z-a3f9c1
 
 - **Overview**: how many weapons and armor pieces to keep and shard, and your best picks per slot.
 - **Reports** (a menu that opens on hover, click or keyboard) holds the two reports:
-  - **Weapon Report**: open any weapon to see its score, its Aegis tier, which perks matched, and the reasons behind its verdict. The reasons are the same sentences the rater writes while deciding ([src/rating/weapons.ts:252-315](../../src/rating/weapons.ts#L252-L315)).
+  - **Weapon Report**: open any weapon to see its score, its Aegis tier, which perks matched, and the reasons behind its verdict. The reasons are the same sentences the rater writes while deciding ([src/rating/weapons.ts:248-311](../../src/rating/weapons.ts#L248-L311)).
   - **Armor Report**: best piece per class and slot, with stats and set bonuses. The class buttons list your most recently played class first.
 - **Shard**: everything marked for sharding, grouped by reason.
 - **Vault**: two modes, switched at the top. *Vault* lays out each character's weapons beside your vault, by slot, like DIM, with the vault split into one box per weapon type; drag a weapon to move or equip it. *Full list* is every item, with filters, sorting and grouping. Both share the pinned toolbar. Typing in the search box in the top bar (or pressing `/`) opens the full list filtered. Details: [The report page](../reference/report-page.md#vault-tab).

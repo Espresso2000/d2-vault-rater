@@ -13,15 +13,15 @@ Ask in plain words; the skill maps requests to `update_settings` ([skill/SKILL.m
 { "weapon_type": "Submachine Gun", "clear_weapon_type": true }
 ```
 
-- A global `preset` resets the global overrides, so set the preset before the overrides ([src/server.ts:226-230](../../src/server.ts#L226-L230)).
-- With `weapon_type`, `preset` and `overrides` apply to that type only ([src/server.ts:222-224](../../src/server.ts#L222-L224)). A type with its own preset ignores the global overrides ([src/rating/settings.ts:145-149](../../src/rating/settings.ts#L145-L149)).
-- The reply includes the resolved values for that type, so you can check the result ([src/server.ts:241](../../src/server.ts#L241)).
+- A global `preset` resets the global overrides, so set the preset before the overrides ([src/server.ts:230-234](../../src/server.ts#L230-L234)).
+- With `weapon_type`, `preset` and `overrides` apply to that type only ([src/server.ts:222-228](../../src/server.ts#L222-L228)). Sending only `overrides` keeps the preset the type already has ([src/server.ts:225-227](../../src/server.ts#L225-L227)). A type with its own preset ignores the global overrides ([src/rating/settings.ts:145-149](../../src/rating/settings.ts#L145-L149)).
+- The reply includes the resolved values for that type, so you can check the result ([src/server.ts:245](../../src/server.ts#L245)).
 
 Then run `rate_weapons` or `rate_armor` again; the new settings make the server rate afresh ([src/server.ts:77-79](../../src/server.ts#L77-L79)).
 
 ## In the report page
 
-Open **Settings** (the gear button). Preset, focus, per-type presets and the protect list are saved by the page's `/api/settings` call ([src/rating/settings.ts:127-142](../../src/rating/settings.ts#L127-L142)). **Save and re-rate** saves them and rates your vault again; the web app re-rates when the page reloads ([web/src/main.ts:224-226](../../web/src/main.ts#L224-L226)).
+Open **Settings** (the gear button). Preset, focus, per-type presets and the protect list are saved by the page's `/api/settings` call ([src/rating/settings.ts:127-142](../../src/rating/settings.ts#L127-L142)). **Save and re-rate** saves them and rates your vault again; the web app re-rates when the page reloads ([web/src/main.ts:226-228](../../web/src/main.ts#L226-L228)).
 
 ## By editing settings.json
 

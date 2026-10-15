@@ -1,6 +1,6 @@
 # Vault Rater documentation
 
-Vault Rater rates every weapon and armor piece in a Destiny 2 vault against Aegis's tier list and community wishlists, says what to keep and what to shard, and can lock keepers, unlock junk, move items, switch weapon perks and tag items in DIM after you approve. The web app also rates what vendors sell against your vault. It runs as an MCP tool server for an AI client ([src/server.ts:32](../src/server.ts#L32)), as a command-line app with a local report page ([src/cli.ts:191](../src/cli.ts#L191)), or as a static web app in the browser ([web/src/main.ts:269](../web/src/main.ts#L269)).
+Vault Rater rates every weapon and armor piece in a Destiny 2 vault against Aegis's tier list and community wishlists, says what to keep and what to shard, and can lock keepers, unlock junk, move items, switch weapon perks and tag items in DIM after you approve. The web app also rates what vendors sell against your vault. It runs as an MCP tool server for an AI client ([src/server.ts:32](../src/server.ts#L32)), as a command-line app with a local report page ([src/cli.ts:191](../src/cli.ts#L191)), or as a static web app in the browser ([web/src/main.ts:271](../web/src/main.ts#L271)).
 
 ## How these docs are organised
 

@@ -33,7 +33,7 @@ The web app has its own scripts in [web/package.json](../../web/package.json): `
 
 ## Local server routes
 
-`serve` listens on `127.0.0.1` ([src/cli.ts:184](../../src/cli.ts#L184)). POST requests must come from the page itself ([src/cli.ts:94-95](../../src/cli.ts#L94-L95)). The web app answers the same routes in the browser ([web/src/main.ts:221-266](../../web/src/main.ts#L221-L266)).
+`serve` listens on `127.0.0.1` ([src/cli.ts:184](../../src/cli.ts#L184)). POST requests must come from the page itself ([src/cli.ts:94-95](../../src/cli.ts#L94-L95)). The web app answers the same routes in the browser ([web/src/main.ts:223-268](../../web/src/main.ts#L223-L268)).
 
 | Route | Body | Does | Source |
 | --- | --- | --- | --- |
@@ -46,17 +46,16 @@ The web app has its own scripts in [web/package.json](../../web/package.json): `
 | `POST /api/locks/apply` | `planId`, `confirm: true` | Applies the current plan only. | [src/cli.ts:142-152](../../src/cli.ts#L142-L152) |
 | `POST /api/locks/undo` | `planId` | Undoes an applied plan. | [src/cli.ts:153-161](../../src/cli.ts#L153-L161) |
 
-The web app also answers `POST /api/signout`, which signs you out of Bungie in that browser ([web/src/main.ts:227-229](../../web/src/main.ts#L227-L229), [web/src/main.ts:103-108](../../web/src/main.ts#L103-L108)); its `/api/refresh` only acknowledges, because the page reloads and rates again ([web/src/main.ts:224-226](../../web/src/main.ts#L224-L226)).
+The web app also answers `POST /api/signout`, which signs you out of Bungie in that browser ([web/src/main.ts:229-231](../../web/src/main.ts#L229-L231), [web/src/main.ts:103-108](../../web/src/main.ts#L103-L108)); its `/api/refresh` only acknowledges, because the page reloads and rates again ([web/src/main.ts:226-228](../../web/src/main.ts#L226-L228)).
 
 ## Web app local server
 
-`npm run local` in `web/` builds the site and serves it over https with three extra routes ([web/local-server.ts:1-9](../../web/local-server.ts#L1-L9)):
+`npm run local` in `web/` builds the site and serves it over https with two extra routes ([web/local-server.ts:1-8](../../web/local-server.ts#L1-L8)):
 
 | Route | Does | Source |
 | --- | --- | --- |
-| `GET /app-config.json` | Hands the page the API key and client id from `.env`, and the token relay's address when a client secret is set. Not secret. | [web/local-server.ts:39-44](../../web/local-server.ts#L39-L44) |
-| `POST /oauth/token` | Relays Bungie's token exchange and refresh, adding the client secret; only from the page's own origin. | [web/local-server.ts:55-78](../../web/local-server.ts#L55-L78) |
-| `POST /debug/vendors` | Saves the Vendors tab's raw vendor data to `web/debug/vendors-<character>.json` ([explanation](../explanation/vendors.md#vendor-data-capture-local-mode)). | [web/local-server.ts:45-54](../../web/local-server.ts#L45-L54) |
+| `GET /app-config.json` | Hands the page the API key and client id from `.env`, and the token relay's address when a client secret is set. Not secret. | [web/local-server.ts:38-43](../../web/local-server.ts#L38-L43) |
+| `POST /oauth/token` | Relays Bungie's token exchange and refresh, adding the client secret; only from the page's own origin. | [web/local-server.ts:44-67](../../web/local-server.ts#L44-L67) |
 
 ## Windows launchers
 
@@ -74,10 +73,10 @@ Two files in the folder above `d2-vault-rater` start the apps with a double-clic
 | `BUNGIE_API_KEY` | Every Bungie request. Required. | [src/config.ts:24-26](../../src/config.ts#L24-L26) |
 | `BUNGIE_CLIENT_ID` | OAuth login. | [src/config.ts:29](../../src/config.ts#L29) |
 | `BUNGIE_CLIENT_SECRET` | OAuth token requests (Confidential app). | [src/config.ts:30](../../src/config.ts#L30) |
-| `BUNGIE_REDIRECT_URL` | Default `https://localhost:7777/callback`; the web app's local mode also takes its port from it. | [src/config.ts:31](../../src/config.ts#L31), [web/local-server.ts:22-28](../../web/local-server.ts#L22-L28) |
+| `BUNGIE_REDIRECT_URL` | Default `https://localhost:7777/callback`; the web app's local mode also takes its port from it. | [src/config.ts:31](../../src/config.ts#L31), [web/local-server.ts:21-27](../../web/local-server.ts#L21-L27) |
 | `VAULT_RATER_HOME` | Data folder, default `~/.d2-vault-rater`. | [src/config.ts:5](../../src/config.ts#L5) |
 | `VAULT_RATER_PORT` | `serve` port, default 7780. | [src/cli.ts:226](../../src/cli.ts#L226) |
 | `VAULT_RATER_NO_OPEN` | Don't open a browser window. | [src/cli.ts:37](../../src/cli.ts#L37) |
 | `VR_NO_SSL` | Web app local mode over plain http. | [web/vite.config.ts:61-62](../../web/vite.config.ts#L61-L62) |
 
-`.env` values never override variables already set in the environment ([src/cli.ts:33](../../src/cli.ts#L33), [web/local-server.ts:15-19](../../web/local-server.ts#L15-L19)). See [.env.example](../../.env.example).
+`.env` values never override variables already set in the environment ([src/cli.ts:33](../../src/cli.ts#L33), [web/local-server.ts:14-18](../../web/local-server.ts#L14-L18)). See [.env.example](../../.env.example).

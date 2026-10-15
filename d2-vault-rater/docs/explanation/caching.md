@@ -12,7 +12,7 @@ The manifest is Bungie's database of every item, perk, stat and activity definit
   2. a snapshot shipped with the site, `data/<name>-<version>.json` ([web/src/versioned.ts:42](../../web/src/versioned.ts#L42)), made by `npm run snapshot` ([web/scripts/snapshot.ts:30-43](../../web/scripts/snapshot.ts#L30-L43));
   3. a Web Worker that downloads and strips the tables from bungie.net ([web/src/versioned.ts:52](../../web/src/versioned.ts#L52), [web/src/manifest.worker.ts](../../web/src/manifest.worker.ts)).
 
-  Whatever it got is saved back to IndexedDB under the same key ([web/src/versioned.ts:62](../../web/src/versioned.ts#L62)), replacing the old version. The item database uses the key `manifest-v3` ([web/src/manifest.ts:11-12](../../web/src/manifest.ts#L11-L12)); the number is the strip format ([src/bungie/strip.ts:7-8](../../src/bungie/strip.ts#L7-L8)), raised when the stripped tables gain a field (2 added perk icons, 3 perk descriptions), so a copy in an older format is rebuilt once. The Node cache names the item table's file the same way, `DestinyInventoryItemDefinition.lite.v3.json` ([src/bungie/manifest.ts:31-32](../../src/bungie/manifest.ts#L31-L32)). The Builds tab's definitions use `build-defs-v2` (2 added subclass text). A shipped snapshot's file name carries only the game version, not the strip format ([web/src/versioned.ts:42](../../web/src/versioned.ts#L42)), so re-run `npm run snapshot` after a strip format change ([web/src/builds/defs.ts:13-14](../../web/src/builds/defs.ts#L13-L14)). The manifest index itself is requested once per visit and shared by both ([web/src/versioned.ts:16-22](../../web/src/versioned.ts#L16-L22)).
+  Whatever it got is saved back to IndexedDB under the same key ([web/src/versioned.ts:62](../../web/src/versioned.ts#L62)), replacing the old version. The item database uses the key `manifest-v3` ([web/src/manifest.ts:11-12](../../web/src/manifest.ts#L11-L12)); the number is the strip format ([src/bungie/strip.ts:7-8](../../src/bungie/strip.ts#L7-L8)), raised when the stripped tables gain a field (2 added perk icons, 3 perk descriptions), so a copy in an older format is rebuilt once. The Node cache names the item table's file the same way, `DestinyInventoryItemDefinition.lite.v3.json` ([src/bungie/manifest.ts:31-32](../../src/bungie/manifest.ts#L31-L32)). The Builds tab's definitions use `build-defs-v2` (2 added subclass text) ([web/src/builds/defs.ts:13-14](../../web/src/builds/defs.ts#L13-L14)). The shipped snapshot's name carries the strip format too, `data/manifest-v3-<version>.json`, so a snapshot made before a format change is never taken for the new format ([web/src/strip.ts:18-22](../../web/src/strip.ts#L18-L22), [web/scripts/snapshot.ts:30](../../web/scripts/snapshot.ts#L30)). The manifest index itself is requested once per visit and shared by both ([web/src/versioned.ts:16-22](../../web/src/versioned.ts#L16-L22)).
 
 ## Rating sources: refreshed after 24 hours
 
@@ -34,13 +34,17 @@ In the browser, the saved files are restored with one IndexedDB read at startup 
 
 ## Images in the local report
 
-The local report embeds every icon as a data URI so it works offline; each image is downloaded once into the images folder and reused after that ([src/report/site.ts:22](../../src/report/site.ts#L22), [src/report/site.ts:41-45](../../src/report/site.ts#L41-L45)). Only the top pick per slot gets its full-size screenshot, since each is about 170 KB ([src/report/siteData.ts:14-15](../../src/report/siteData.ts#L14-L15)). The web app loads images from bungie.net as they scroll into view, so there every weapon gets its screenshot ([web/src/main.ts:168-169](../../web/src/main.ts#L168-L169)).
+The local report embeds every icon as a data URI so it works offline; each image is downloaded once into the images folder and reused after that ([src/report/site.ts:24](../../src/report/site.ts#L24), [src/report/site.ts:45-49](../../src/report/site.ts#L45-L49)). Only the top pick per slot gets its full-size screenshot, since each is about 170 KB ([src/report/siteData.ts:16-17](../../src/report/siteData.ts#L16-L17)). The web app loads images from bungie.net as they scroll into view, so there every weapon gets its screenshot ([web/src/main.ts:170-171](../../web/src/main.ts#L170-L171)).
 
 ## In the page
 
-- Images load lazily and decode off the main thread; a remote image that fails is retried twice before the placeholder shows ([report-template/site.html:1000-1011](../../report-template/site.html#L1000-L1011)).
-- Rows and tiles in long lists skip layout and paint while off screen ([report-template/site.html:486-488](../../report-template/site.html#L486-L488)), so the full list and Shard tab stay smooth with hundreds of icons.
-- The Builds tab is a separate JavaScript chunk, fetched in the background once the report is on screen ([web/src/main.ts:192-196](../../web/src/main.ts#L192-L196)).
+- Fonts load without holding up the page: it draws with fallback fonts and swaps the web fonts in, and keeps the fallbacks offline ([report-template/site.html:10-11](../../report-template/site.html#L10-L11)).
+- An embedded image is turned from a data URI into a short blob URL the first time it is shown, so images on tabs you never open are never decoded ([report-template/site.html:988-1000](../../report-template/site.html#L988-L1000)).
+- Both search boxes redraw once typing pauses for 120 ms, not on every key ([report-template/site.html:1783-1785](../../report-template/site.html#L1783-L1785)).
+- The list of item ids seen (for New badges) is written to storage only when the vault's items changed ([report-template/site.html:1026-1030](../../report-template/site.html#L1026-L1030)), and copies per weapon name are counted once per vault read ([report-template/site.html:1332-1334](../../report-template/site.html#L1332-L1334)).
+- Images load lazily and decode off the main thread; a remote image that fails is retried twice before the placeholder shows ([report-template/site.html:1005-1015](../../report-template/site.html#L1005-L1015)).
+- Rows and tiles in long lists skip layout and paint while off screen ([report-template/site.html:487-489](../../report-template/site.html#L487-L489)), so the full list and Shard tab stay smooth with hundreds of icons.
+- The Builds tab is a separate JavaScript chunk, fetched in the background once the report is on screen ([web/src/main.ts:194-198](../../web/src/main.ts#L194-L198)).
 - Its score map, stat names and weapon tiers are worked out once per rating run, not on every redraw ([web/src/builds/ui.ts:79-89](../../web/src/builds/ui.ts#L79-L89)), and items are looked up through a per-vault index ([web/src/builds/model.ts:106-113](../../web/src/builds/model.ts#L106-L113)).
 - Your Destiny membership is asked for once per visit ([web/src/shims/oauth.ts:44-59](../../web/src/shims/oauth.ts#L44-L59)).
 
@@ -51,7 +55,16 @@ The local report embeds every icon as a data URI so it works offline; each image
 
 ## Vendor stock
 
-The Vendors tab reads stock from Bungie only when it is opened, keeps each character's rated stock in memory for the visit, and reads it again on **Refresh** ([web/src/vendors/ui.ts:38-39](../../web/src/vendors/ui.ts#L38-L39), [web/src/vendors/ui.ts:78-82](../../web/src/vendors/ui.ts#L78-L82)). Vendor, currency and cosmetic names are looked up one by one and kept in memory too ([src/vendors/vendors.ts:179-190](../../src/vendors/vendors.ts#L179-L190)). Nothing vendor-related is stored between visits. See [The Vendors tab](vendors.md).
+The Vendors tab reads stock from Bungie only when it is opened, keeps each character's rated stock in memory for the visit, and reads it again on **Refresh** ([web/src/vendors/ui.ts:37-38](../../web/src/vendors/ui.ts#L37-L38), [web/src/vendors/ui.ts:77-81](../../web/src/vendors/ui.ts#L77-L81)). Vendor, currency and cosmetic names are saved per game version in `manifest/entities-<version>.json`, so only names not seen before are fetched ([src/vendors/vendors.ts:180-198](../../src/vendors/vendors.ts#L180-L198)). The stock itself is never stored. See [The Vendors tab](vendors.md).
+
+## Work done once, not on every rating
+
+- **Wishlist rolls by item.** The ~275,000 wishlist rolls are grouped by item once per loaded wishlist and kept for as long as that wishlist object lives; each rating, and each vendor item, then reads only the rolls for its own weapons ([src/rating/weapons.ts:91-106](../../src/rating/weapons.ts#L91-L106)).
+- **Where each weapon comes from.** The web app builds the source lookup and loads raid loot once per visit, so the Vault tab's Refresh reuses them ([web/src/main.ts:132-134](../../web/src/main.ts#L132-L134)).
+
+## The local report's size
+
+Raid and dungeon banner art is about 130 KB per image, so the local report embeds only the best raid's and the best dungeon's; the others stay bungie.net URLs that load when online and leave a placeholder offline ([src/report/siteData.ts:110-111](../../src/report/siteData.ts#L110-L111), [src/report/siteData.ts:153-157](../../src/report/siteData.ts#L153-L157), [src/report/site.ts:15-31](../../src/report/site.ts#L15-L31)).
 
 ## Hosting
 

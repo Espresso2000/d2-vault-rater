@@ -4,22 +4,22 @@ The weapon drawer lets you look at any perk a weapon can roll in each column and
 
 ## Preview a perk
 
-1. Open a weapon (from a card, a list row or a Vault tab tile). Each perk column lists every option, with the equipped one ringed ([report-template/site.html:2325](../../report-template/site.html#L2325)).
-2. Click another option. Its symbol, name and description replace the column's card, and the option gets a dashed gold ring; the equipped one keeps its solid ring ([report-template/site.html:2333-2345](../../report-template/site.html#L2333-L2345), [report-template/site.html:809-812](../../report-template/site.html#L809-L812)).
+1. Open a weapon (from a card, a list row or a Vault tab tile). Each perk column lists every option, with the equipped one ringed ([report-template/site.html:2345](../../report-template/site.html#L2345)).
+2. Click another option. Its symbol, name and description replace the column's card, and the option gets a dashed gold ring; the equipped one keeps its solid ring ([report-template/site.html:2353-2365](../../report-template/site.html#L2353-L2365), [report-template/site.html:810-813](../../report-template/site.html#L810-L813)).
 
 Previewing changes nothing, and works in a report opened from disk too.
 
 ## Switch to it in game
 
-In a served page (local app or web app), a previewed perk gets an **Apply** button under its card ([report-template/site.html:2342-2345](../../report-template/site.html#L2342-L2345)).
+In a served page (local app or web app), a previewed perk gets an **Apply** button under its card ([report-template/site.html:2362-2365](../../report-template/site.html#L2362-L2365)).
 
 1. Be in orbit, a social space such as the Tower, or offline. Bungie refuses perk changes mid-activity.
-2. Press **Apply**. The page sends `POST /api/perk` with the weapon id, the column's socket index and the perk name ([report-template/site.html:2346-2361](../../report-template/site.html#L2346-L2361)).
-3. On success the drawer and every list show the new perk and "Switched to … in game" ([report-template/site.html:2353-2358](../../report-template/site.html#L2353-L2358)).
+2. Press **Apply**. The page sends `POST /api/perk` with the weapon id, the column's socket index and the perk name ([report-template/site.html:2366-2380](../../report-template/site.html#L2366-L2380)).
+3. On success the drawer and every list show the new perk and "Switched to … in game" ([report-template/site.html:2373-2377](../../report-template/site.html#L2373-L2377)).
 
-Behind it, `insertPerk` checks the perk is one of that column's own options, looks up its plug hash, and calls Bungie's [InsertSocketPlugFree](https://bungie-net.github.io/multi/operation_post_Destiny2-InsertSocketPlugFree.html) action ([src/bungie/transfer.ts:118-145](../../src/bungie/transfer.ts#L118-L145)). It needs the **Move or equip your gear** scope the app already asks for. A weapon in the vault still needs a character id for the call, so the first character is used ([src/bungie/transfer.ts:129](../../src/bungie/transfer.ts#L129)). If the perk is already equipped, nothing is sent ([src/bungie/transfer.ts:137](../../src/bungie/transfer.ts#L137)). The local server and the web app answer the route the same way ([src/cli.ts:120-130](../../src/cli.ts#L120-L130), [web/src/main.ts:246-249](../../web/src/main.ts#L246-L249)).
+Behind it, `insertPerk` checks the perk is one of that column's own options, looks up its plug hash, and calls Bungie's [InsertSocketPlugFree](https://bungie-net.github.io/multi/operation_post_Destiny2-InsertSocketPlugFree.html) action ([src/bungie/transfer.ts:118-145](../../src/bungie/transfer.ts#L118-L145)). It needs the **Move or equip your gear** scope the app already asks for. A weapon in the vault still needs a character id for the call, so the first character is used ([src/bungie/transfer.ts:129](../../src/bungie/transfer.ts#L129)). If the perk is already equipped, nothing is sent ([src/bungie/transfer.ts:137](../../src/bungie/transfer.ts#L137)). The local server and the web app answer the route the same way ([src/cli.ts:120-130](../../src/cli.ts#L120-L130), [web/src/main.ts:248-251](../../web/src/main.ts#L248-L251)).
 
-The column's socket index and the plug hash per option are recorded when the vault is read ([src/vault/decode.ts:128-129](../../src/vault/decode.ts#L128-L129), [src/vault/types.ts:19-21](../../src/vault/types.ts#L19-L21)). Reports made before that have no socket index, so they show the preview without **Apply** ([report-template/site.html:2343](../../report-template/site.html#L2343)).
+The column's socket index and the plug hash per option are recorded when the vault is read ([src/vault/decode.ts:128-129](../../src/vault/decode.ts#L128-L129), [src/vault/types.ts:19-21](../../src/vault/types.ts#L19-L21)). Reports made before that have no socket index, so they show the preview without **Apply** ([report-template/site.html:2363](../../report-template/site.html#L2363)).
 
 ## If it fails
 
