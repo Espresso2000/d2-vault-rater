@@ -539,8 +539,6 @@ details.group > summary::-webkit-details-marker { display: none; }
 .vinv .vitem b { font-size: 10.5px; right: 3px; bottom: 2px; }
 .vinv .vitem .tier { min-width: 15px; height: 14px; font-size: 9px; left: -4px; top: -4px; }
 /* Armor section: border colour by class */
-.varmor-sec { display: grid; gap: 10px; margin-top: 26px; }
-.varmor-sec .vslot { margin-top: 6px; }
 .vitem.varmor { border: 2px solid var(--cc, var(--line-hi)); }
 .c-Hunter { --cc: #4d9dff; } .c-Titan { --cc: #ff5a5a; } .c-Warlock { --cc: #f2c14e; } .c-Warlock.exotic { --cc: #fbdf00; }
 .vitem.varmor.exotic { border-color: var(--cc); box-shadow: 0 0 0 1px rgba(242,193,78,.35); }
@@ -1659,13 +1657,16 @@ function vrMain() {
   };
   // Split the vault column into one group per weapon type (on unless turned off).
   let vsplit = store.get("vr-vsplit") !== "off";
+  // Armor one character at a time, each with only its class's vault armor (off unless turned on).
+  let asplit = store.get("vr-asplit") === "on";
   function setListMode(m) {
     listMode = m; store.set("vr-listmode", m);
     if (!$("#listmode")) return;
     $$("#listmode button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.m === m)));
     $("#vaultview").hidden = m !== "vault"; $("#explorer").classList.toggle("vmode", m === "vault");
-    $("#vmnote").innerHTML = m !== "vault" ? "" : `<label class="vsplit"><input type="checkbox" id="vsplit"${vsplit ? " checked" : ""}> Split the vault by weapon type</label> · ${window.VR_LOCAL && DATA.chars?.length ? "Drag a weapon onto a character or the vault to move it, or onto the big slot to equip it." : "Moving items needs the app (Vault Rater.cmd or the web app)."}`;
+    $("#vmnote").innerHTML = m !== "vault" ? "" : `<label class="vsplit"><input type="checkbox" id="vsplit"${vsplit ? " checked" : ""}> Split the vault by weapon type</label> <label class="vsplit"><input type="checkbox" id="asplit"${asplit ? " checked" : ""}> Split armor by character</label> · ${window.VR_LOCAL && DATA.chars?.length ? "Drag a weapon onto a character or the vault to move it, or onto the big slot to equip it." : "Moving items needs the app (Vault Rater.cmd or the web app)."}`;
     $("#vsplit")?.addEventListener("change", (e) => { vsplit = e.target.checked; store.set("vr-vsplit", vsplit ? "on" : "off"); drawVault(); });
+    $("#asplit")?.addEventListener("change", (e) => { asplit = e.target.checked; store.set("vr-asplit", asplit ? "on" : "off"); drawVault(); });
     // Vault mode shows weapons only, through the same filters and sort as the full list.
     if (m === "vault" && ex.set !== "w") { ex.set = "w"; drawExplorer(true); } else drawExplorer(false);
   }
@@ -1709,34 +1710,35 @@ function vrMain() {
     const at = (to, s) => shown.filter((w) => where(w) === to && w.s === s);
     const tile = (w, big) => `<button class="vitem${big ? " big" : ""}${match.has(w.id) ? "" : " nomatch"}${isExotic(w) ? " exotic" : ""} v-${w.v}" data-w="${w.id}"${can && !w.eq ? ' draggable="true"' : ""} title="${esc(w.n)} · ${esc(typeLine(w))} · ${w.sc} · ${VERDICT[w.v]}${w.eq ? " · equipped" : ""}">${img(w.ic)}${tierBadge(w)}${newBadge(w)}<b class="num">${w.sc}</b></button>`;
     const inVault = DATA.weapons.filter((w) => where(w) === "vault").length, armorInVault = DATA.armor.filter((a) => where(a) === "vault").length;
-    el.innerHTML = `<div class="vgrid" style="--chars:${chars.length}">
+    el.innerHTML = subsec("v-weapons", "Weapons", plural(DATA.weapons.length, "weapon"), `<div class="vgrid" style="--chars:${chars.length}">
       ${chars.map((c) => `<div class="vhead"><b>${esc(c.cls)}</b><span class="small muted">${DATA.weapons.filter((w) => w.wh === c.id).length} weapons</span></div>`).join("")}
       <div class="vhead"><b>Vault</b><span class="small muted">${plural(inVault, "weapon")} · ${plural(armorInVault, "armor piece")}</span></div>
       ${VSLOTS.map((s) => `<div class="vslot"><span class="cap">${s}</span></div>` +
         chars.map((c) => { const items = at(c.id, s), eq = DATA.weapons.find((w) => w.wh === c.id && w.s === s && w.eq); return `<div class="vcell"><div class="vdrop" data-to="${c.id}" data-equip="1" title="Drop here to equip">${eq ? tile(eq, true) : '<span class="vempty">Empty</span>'}</div><div class="vdrop vinv" data-to="${c.id}">${items.filter((w) => !w.eq).map((w) => tile(w)).join("")}</div></div>`; }).join("") +
         vaultBox(at("vault", s), tile)).join("")}
-    </div>${armorSection(chars)}`;
+    </div>`) + subsec("v-armor", "Armor", `${plural(DATA.armor.length, "piece")} · border colour is the class: <i class="vkey c-Hunter"></i>Hunter <i class="vkey c-Titan"></i>Titan <i class="vkey c-Warlock"></i>Warlock <i class="vkey c-Warlock exotic"></i>Warlock exotic`, armorSection(chars));
   }
-  /** Every armor piece, by slot, then set; inside a set by class (border colour), tier, then archetype. */
+  /** Armor laid out like the weapons: per slot, each character's worn piece and inventory, then the vault by set;
+   *  inside a set by class (border colour), tier, then archetype. Split by character: one block per character, vault limited to its class. */
   const ASLOTS = ["Helmet", "Arms", "Chest", "Legs", "Class Item"], ACLS = ["Hunter", "Titan", "Warlock"];
   function armorSection(chars = []) {
-    const atile = (a) => `<button class="vitem varmor c-${esc(a.cls)}${isExotic(a) ? " exotic" : ""} v-${a.v}" data-a="${a.id}" title="${esc(a.n)} · ${esc(a.cls)} · ${esc(a.arch || "Legacy")}${a.gt ? ` · Tier ${a.gt}` : ""} · ${a.tot} total · ${a.sc} · ${VERDICT[a.v]}${a.loc ? " · " + esc(a.loc) : ""}">${img(a.ic)}${a.gt ? `<span class="tier tU">T${a.gt}</span>` : ""}${newBadge(a)}<b class="num">${a.sc}</b></button>`;
+    const atile = (a, big) => `<button class="vitem${big ? " big" : ""} varmorc-${esc(a.cls)}${isExotic(a) ? " exotic" : ""} v-${a.v}" data-a="${a.id}" title="${esc(a.n)} · ${esc(a.cls)} · ${esc(a.arch || "Legacy")}${a.gt ? ` · Tier ${a.gt}` : ""} · ${a.tot} total · ${a.sc} · ${VERDICT[a.v]}${a.loc ? " · " + esc(a.loc) : ""}">${img(a.ic)}${a.gt ? `<span class="tier tU">T${a.gt}</span>` : ""}${newBadge(a)}<b class="num">${a.sc}</b></button>`;
     const order = (x, y) => ACLS.indexOf(x.cls) - ACLS.indexOf(y.cls) || (y.gt || 0) - (x.gt || 0) || (x.arch || "~").localeCompare(y.arch || "~") || y.sc - x.sc;
     const groupOf = (a) => (isExotic(a) ? "Exotic" : a.set || "No set");
     const rank = (g) => (g === "Exotic" ? 0 : g === "No set" ? 2 : 1);
-    // What each character is wearing, one column per character like the weapons above, in slot order.
-    const worn = (c) => ASLOTS.map((slot) => { const a = DATA.armor.find((x) => x.wh === c.id && x.s === slot && x.eq); return a ? atile(a).replace('class="vitem ', 'class="vitem big ') : `<span class="vempty" title="${slot}">Empty</span>`; }).join("");
-    const equipped = chars.length ? `<div class="vgrid" style="--chars:${chars.length}">${chars.map((c) => `<div class="vhead"><b>${esc(c.cls)}</b><span class="small muted">Equipped</span></div>`).join("")}<div></div>${chars.map((c) => `<div class="vtiles">${worn(c)}</div>`).join("")}</div>` : "";
-    return `<section class="varmor-sec"><div class="vhead"><b>Armor</b><span class="small muted">${plural(DATA.armor.length, "piece")} on characters and in the vault · border colour is the class: <i class="vkey c-Hunter"></i>Hunter <i class="vkey c-Titan"></i>Titan <i class="vkey c-Warlock"></i>Warlock <i class="vkey c-Warlock exotic"></i>Warlock exotic</span></div>
-      ${equipped}
-      ${ASLOTS.map((slot) => {
-        const groups = new Map();
-        for (const a of DATA.armor.filter((x) => x.s === slot)) groups.set(groupOf(a), [...(groups.get(groupOf(a)) || []), a]);
-        if (!groups.size) return "";
-        return `<div class="vslot"><span class="cap">${slot}</span></div><div class="vbox split">${[...groups]
-          .sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0]))
-          .map(([g, xs]) => `<div class="vtype"><div class="cap">${esc(g)}<span>${xs.length}</span></div><div class="vtiles">${xs.sort(order).map(atile).join("")}</div></div>`).join("")}</div>`;
-      }).join("")}</section>`;
+    const bySlot = groupBy(DATA.armor, (a) => a.s), inVault = (a) => (a.wh || "vault") === "vault";
+    const vaultSets = (xs) => !xs.length ? '<div class="vbox"><span class="small muted">No armor</span></div>' : `<div class="vbox split">${[...groupBy(xs, groupOf)]
+      .sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0]))
+      .map(([g, gs]) => `<div class="vtype"><div class="cap">${esc(g)}<span>${gs.length}</span></div><div class="vtiles">${gs.sort(order).map((a) => atile(a)).join("")}</div></div>`).join("")}</div>`;
+    const grid = (cs, keep) => `<div class="vgrid" style="--chars:${cs.length}">
+      ${cs.map((c) => `<div class="vhead"><b>${esc(c.cls)}</b><span class="small muted">${plural(DATA.armor.filter((a) => a.wh === c.id).length, "piece")}</span></div>`).join("")}
+      <div class="vhead"><b>Vault</b><span class="small muted">${plural(DATA.armor.filter((a) => inVault(a) && keep(a)).length, "armor piece")}</span></div>
+      ${ASLOTS.map((slot) => { const xs = bySlot.get(slot) || []; return `<div class="vslot"><span class="cap">${slot}</span></div>` +
+        cs.map((c) => { const mine = xs.filter((a) => a.wh === c.id), eq = mine.find((a) => a.eq); return `<div class="vcell"><div>${eq ? atile(eq, true) : '<span class="vempty">Empty</span>'}</div><div class="vinv">${mine.filter((a) => !a.eq).map((a) => atile(a)).join("")}</div></div>`; }).join("") +
+        vaultSets(xs.filter((a) => inVault(a) && keep(a))); }).join("")}
+    </div>`;
+    if (!asplit || !chars.length) return grid(chars, () => true);
+    return chars.map((c) => subsec(`v-armor-${c.id}`, esc(c.cls), `${plural(DATA.armor.filter((a) => a.wh === c.id).length, "piece")} on this character · vault ${esc(c.cls)} armor`, grid([c], (a) => a.cls === c.cls))).join("");
   }
   /** One slot's vault weapons, in the current order; split into a labelled group per weapon type when that's on. */
   function vaultBox(items, tile) {
