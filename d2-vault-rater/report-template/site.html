@@ -835,6 +835,15 @@ details.full div { white-space: pre-line; color: var(--muted); font-size: 12.5px
 .scrim.open { opacity: 1; pointer-events: auto; }
 aside.drawer { position: fixed; z-index: 21; top: 10px; right: 10px; bottom: 10px; width: min(540px, calc(100% - 20px)); border-radius: 4px 24px; background: rgba(10,15,36,.97); border: 1px solid var(--line-hi); box-shadow: -30px 0 80px -30px rgba(0,0,0,.9); transform: translateX(calc(100% + 20px)); transition: transform .32s cubic-bezier(.2,.8,.2,1); overflow-y: auto; overscroll-behavior: contain; padding-bottom: env(safe-area-inset-bottom, 0px); }
 aside.drawer.open { transform: none; }
+/* Placement (data-place) and modal behaviour (data-modal): bottom-centre dock, and a non-blocking panel that leaves the page clickable */
+aside.drawer[data-place=bottom] { top: auto; left: 50%; right: auto; bottom: 10px; width: min(1000px, calc(100% - 20px)); height: min(74vh, 740px); border-radius: 24px 4px; box-shadow: 0 -24px 80px -30px rgba(0,0,0,.9); transform: translate(-50%, calc(100% + 20px)); }
+aside.drawer[data-place=bottom].open { transform: translate(-50%, 0); }
+aside.drawer[data-place=bottom] .d-art { aspect-ratio: 16 / 3.2; }
+aside.drawer[data-place=bottom] .d-body { display: block; column-count: 2; column-gap: 30px; }
+aside.drawer[data-place=bottom] .d-body > * { break-inside: avoid; margin-bottom: 20px; }
+.d-tools { position: sticky; top: calc(12px + env(safe-area-inset-top, 0px)); height: 0; margin-left: 12px; z-index: 3; display: flex; gap: 6px; flex-wrap: wrap; }
+.d-tool { border: 1px solid var(--line-hi); border-radius: 999px; padding: 5px 11px; font-size: 12px; background: rgba(5,8,22,.6); backdrop-filter: blur(8px); color: var(--ink); }
+.d-tool:hover { background: rgba(5,8,22,.85); }
 .d-art { position: relative; aspect-ratio: 16 / 8; background: var(--grad-soft); overflow: hidden; max-width: 100%; }
 .d-art img.shot { width: 100%; height: 100%; object-fit: cover; display: block; }
 .d-art .bigicon { position: absolute; inset: 0; display: grid; place-items: center; }
@@ -846,7 +855,8 @@ aside.drawer.open { transform: none; }
 .d-body h2 { font-size: 28px; font-weight: 600; margin-top: 6px; }
 .d-body .sub { color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; margin-top: 8px; }
 .breakdown { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.breakdown div { padding: 12px 14px; border-radius: 3px 12px; background: var(--ticks), var(--glass); border: 1px solid var(--line); }
+.breakdown div { padding: 12px 14px; border-radius: 3px 12px; background: var(--ticks), var(--glass); border: 1px solid var(--line); border-top: 2px solid var(--line-hi); }
+.breakdown div:first-child { border-top-color: var(--green); background: linear-gradient(160deg, rgba(51,227,160,.1), var(--glass)); }
 .breakdown b { display: block; font: 600 24px/1.1 var(--display); }
 .breakdown span { font-size: 12px; color: var(--muted); }
 .facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 18px; font-size: 13.5px; }
@@ -854,7 +864,7 @@ aside.drawer.open { transform: none; }
 .facts span { color: var(--muted); }
 .facts b { font-weight: 500; }
 .perkcols { display: grid; gap: 10px; }
-.perkcol { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 10px; align-items: start; }
+.perkcol { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 10px; align-items: start; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--glass); }
 .perkcol .cap { padding-top: 6px; }
 /* The selected perk in each drawer column: symbol, name and description */
 .pinfo { grid-column: 2; display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border-radius: 12px; background: var(--glass-hi); }
@@ -949,7 +959,12 @@ body.vr-booting > .topbar, body.vr-booting > main, body.vr-booting > footer { di
   .itile .tb { padding: 6px 8px 10px; }
   details.sec > summary p { padding-left: 0; }
   .jumpbar .cap { display: none; }
-  aside.drawer { top: auto; left: 0; right: 0; bottom: 0; height: 88vh; width: 100%; border-radius: 22px 22px 0 0; border-width: 1px 0 0; transform: translateY(102%); }
+  aside.drawer, aside.drawer[data-place=bottom] { top: auto; left: 0; right: 0; bottom: 0; height: 88vh; width: 100%; border-radius: 22px 22px 0 0; border-width: 1px 0 0; transform: translateY(102%); }
+  aside.drawer.open, aside.drawer[data-place=bottom].open { transform: none; }
+  aside.drawer[data-modal=float] { height: 62vh; }
+  aside.drawer[data-place=bottom] .d-body { display: grid; column-count: auto; }
+  aside.drawer[data-place=bottom] .d-body > * { margin-bottom: 0; }
+  aside.drawer[data-place=bottom] .d-art { aspect-ratio: 16 / 8; }
   .breakdown b { font-size: 19px; }
   .perkcol { grid-template-columns: minmax(0, 1fr); gap: 4px; }
   .perkcol .cap { padding-top: 0; }
@@ -1027,7 +1042,7 @@ body.vr-booting > .topbar, body.vr-booting > main, body.vr-booting > footer { di
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <div class="scrim" id="scrim"></div>
-<aside class="drawer" id="drawer" aria-modal="true" role="dialog" aria-label="Item details"></aside>
+<aside class="drawer" id="drawer" data-place="side" aria-modal="true" role="dialog" aria-label="Item details"></aside>
 
 <script>
 let DATA = /*__DATA__*/null;
@@ -2160,7 +2175,11 @@ function vrMain() {
         ${window.VR_WEB ? '<div class="confirmrow"><button class="btn" type="button" id="signout">Sign out</button></div>' : ""}</fieldset>
       <fieldset><legend>Display</legend><p class="small muted">Changes the page straight away; nothing is re-rated.</p>
         <div class="toggles" id="perkmode"><label><input type="radio" name="perkmode" value="symbols" ${perkSymbols ? "checked" : ""}> <span>Show perks as symbols, with the name on hover</span></label>
-        <label><input type="radio" name="perkmode" value="names" ${perkSymbols ? "" : "checked"}> <span>Show perk names</span></label></div></fieldset>
+        <label><input type="radio" name="perkmode" value="names" ${perkSymbols ? "" : "checked"}> <span>Show perk names</span></label></div>
+        <div class="toggles" id="dplace"><label><input type="radio" name="dplace" value="side" ${dPlace === "side" ? "checked" : ""}> <span>Item details open in a side panel</span></label>
+        <label><input type="radio" name="dplace" value="bottom" ${dPlace === "bottom" ? "checked" : ""}> <span>Item details open at the bottom centre</span></label></div>
+        <div class="toggles" id="dmodal"><label><input type="radio" name="dmodal" value="block" ${dFloat ? "" : "checked"}> <span>Blur the page behind the details and block it until closed</span></label>
+        <label><input type="radio" name="dmodal" value="float" ${dFloat ? "checked" : ""}> <span>No blur: keep the rest of the page clickable</span></label></div></fieldset>
       <fieldset><legend>Strictness</legend><div class="presets">${Object.entries(PRESET_INFO).map(([k, [l, d]]) => `<label><span><input type="radio" name="preset" value="${k}" ${st.preset === k ? "checked" : ""}> <b>${l}</b></span><span>${d}</span></label>`).join("")}</div>
         <div class="tablewrap"><table class="prestable"><tr><th></th><th>Lenient</th><th>Balanced</th><th>Strict</th><th>Ruthless</th></tr>
           <tr><td>Lowest tier kept</td><td>C</td><td>B</td><td>A</td><td>S</td></tr><tr><td>Roll score to keep a spare</td><td>50</td><td>70</td><td>80</td><td>90</td></tr>
@@ -2182,6 +2201,8 @@ function vrMain() {
       perkSymbols = e.target.value === "symbols"; store.set("vr-perks", perkSymbols ? "symbols" : "names");
       for (const k of Object.keys(rendered)) if (k !== "settings") delete rendered[k];
     };
+    $("#dplace").onchange = (e) => { dPlace = e.target.value; store.set("vr-place", dPlace); applyDrawerMode(); };
+    $("#dmodal").onchange = (e) => { dFloat = e.target.value === "float"; store.set("vr-modal", dFloat ? "float" : "block"); applyDrawerMode(); };
     $("#setform").onsubmit = async (e) => {
       e.preventDefault();
       const f = e.target, byWeaponType = {};
@@ -2316,13 +2337,28 @@ function vrMain() {
   /* ---------- Drawer ---------- */
   const drawer = $("#drawer"), scrim = $("#scrim");
   let lastFocus = null;
+  // Display settings, saved with the other page preferences: where the panel docks and whether it blocks the page.
+  let dPlace = store.get("vr-place") === "bottom" ? "bottom" : "side", dFloat = store.get("vr-modal") === "float";
+  function applyDrawerMode() {
+    drawer.dataset.place = dPlace; drawer.dataset.modal = dFloat ? "float" : "block";
+    drawer.setAttribute("aria-modal", String(!dFloat));
+    scrim.classList.toggle("open", drawer.classList.contains("open") && !dFloat);
+    const t = $(".d-tools", drawer);
+    if (t) t.innerHTML = `<button class="d-tool" type="button" data-dtool="place">${dPlace === "side" ? "Dock at bottom" : "Dock at side"}</button><button class="d-tool" type="button" data-dtool="modal">${dFloat ? "Dim page" : "Keep page usable"}</button>`;
+  }
   function openDrawer(html) {
     lastFocus = document.activeElement;
-    drawer.innerHTML = html; drawer.scrollTop = 0;
-    drawer.classList.add("open"); scrim.classList.add("open");
+    drawer.innerHTML = `<div class="d-tools"></div>` + html; drawer.scrollTop = 0;
+    drawer.classList.add("open"); applyDrawerMode();
     $(".d-close", drawer).focus();
   }
   function closeDrawer() { drawer.classList.remove("open"); scrim.classList.remove("open"); if (lastFocus) lastFocus.focus(); }
+  drawer.addEventListener("click", (e) => {
+    const t = e.target.closest("[data-dtool]"); if (!t) return;
+    if (t.dataset.dtool === "place") { dPlace = dPlace === "side" ? "bottom" : "side"; store.set("vr-place", dPlace); }
+    else { dFloat = !dFloat; store.set("vr-modal", dFloat ? "float" : "block"); }
+    applyDrawerMode();
+  });
   scrim.onclick = closeDrawer;
   drawer.addEventListener("click", (e) => { if (e.target.closest(".d-close")) closeDrawer(); });
   addEventListener("keydown", (e) => { if (e.key === "Escape" && drawer.classList.contains("open")) closeDrawer(); });
