@@ -40,7 +40,7 @@ A DIM-style layout of your weapons ([report-template/site.html:1687-1703](../../
 - **Split the vault by weapon type** (on by default) gives each weapon type its own labelled box in the vault column; untick it for one box per slot ([report-template/site.html:1645-1653](../../report-template/site.html#L1645-L1653), [report-template/site.html:1721-1727](../../report-template/site.html#L1721-L1727)).
 - It uses the full list's weapon search, filters and sort. Weapons that don't match are dimmed rather than hidden when equipped ([report-template/site.html:1654-1655](../../report-template/site.html#L1654-L1655), [report-template/site.html:1691-1692](../../report-template/site.html#L1691-L1692)).
 - In a served page, drag a weapon onto a character or the vault to move it, or onto the big slot to equip it; a corner message reports the result ([report-template/site.html:1729-1763](../../report-template/site.html#L1729-L1763)). See [Move and equip items](../how-to/move-and-equip-items.md).
-- Below the weapons, an **Armor** section shows every armor piece by slot, then by set (exotics first), ordered by class, gear tier and archetype, with the border coloured by class ([report-template/site.html:1705-1719](../../report-template/site.html#L1705-L1719)).
+- Below the weapons, an **Armor** section starts with an **Equipped** row: one column per character with its five equipped armor pieces as big tiles, and **Empty** for an unequipped slot. Below that it shows every armor piece by slot, then by set (exotics first), ordered by class, gear tier and archetype, with the border coloured by class. Armor can't be dragged; move it from its drawer ([report-template/site.html:1705-1719](../../report-template/site.html#L1705-L1719)).
 
 ### Full list mode
 
