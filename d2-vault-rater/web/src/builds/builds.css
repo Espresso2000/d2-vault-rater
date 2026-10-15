@@ -622,3 +622,12 @@ button.bd-k-pill::after { display: none; }
 /* Hover / Click switch in the Abilities header */
 .bd-popmode { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-left: auto; }
 .bd-popmode .seg button { padding: 5px 12px; font-size: 12.5px; }
+
+/* In-game loadouts: one card in front of the new-build card */
+.bd-loadcard { display: grid; align-content: start; gap: 6px; padding: 10px; }
+.bd-lrow { display: flex; align-items: center; gap: 6px; }
+.bd-lopen { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; padding: 4px 6px; border-radius: 10px; border: 1px solid var(--line); background: transparent; color: inherit; cursor: pointer; }
+.bd-lopen:hover, .bd-lopen:focus-visible { border-color: var(--el, var(--line-hi)); background: rgba(255,255,255,.04); }
+.bd-lopen .bd-bico { width: 24px; height: 24px; flex: none; }
+.bd-lopen .bd-bgear { flex: 1; min-width: 0; }
+.bd-lmatch { color: var(--ok, #33e3a0); font-weight: 700; }

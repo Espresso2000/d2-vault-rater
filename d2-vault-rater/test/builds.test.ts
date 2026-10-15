@@ -3,7 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { parseClarity, parseRatedTab, parseSubclassTab, parseInfoTab, elementFromSupers, norm } from "../web/src/builds/sheets.js";
 import { stripBuildDefs, type BuildDefs } from "../web/src/builds/defs.strip.js";
-import { buildScore, fragmentSlots, fromDimLoadout, newBuild, placeMod, statLines, toDimLoadout, trimFragments, defaultPlugs, type Ctx } from "../web/src/builds/model.js";
+import { buildScore, fragmentSlots, fromDimLoadout, fromGameLoadout, lastUsed, sameLoadout, newBuild, placeMod, statLines, toDimLoadout, trimFragments, defaultPlugs, type Ctx } from "../web/src/builds/model.js";
 import { planEquip } from "../web/src/builds/equip.js";
 import type { BuildProfile } from "../web/src/builds/profile.js";
 import type { Vault } from "../src/vault/types.js";
@@ -253,4 +253,34 @@ test("builds: a draft is unsaved until committed; committing replaces by id or a
   assert.equal(isUnsaved(saved, fresh), true, "a never-saved build counts as unsaved");
   assert.deepEqual(commitBuild(saved, fresh).map((x) => x.name), ["New", "A2"]);
   assert.ok(sameBuild(a, { ...a, updated: "x" }));
+});
+
+test("builds: an in-game loadout becomes a build, matches a saved build exactly, and the list sorts by last use" + "", () => {
+  const game = fromGameLoadout(0, "Loadout 1", [
+    { id: "sub", plugs: [11, 21, 31] },
+    { id: "h1", plugs: [41, 51] },
+    { id: "w1", plugs: [] },
+  ], (id) => (id === "sub" ? 500 : undefined), ctx());
+  assert.equal(game.subclass, 500);
+  assert.equal(game.plugs[0], 11);
+  assert.equal(game.plugs[1], 21);
+  assert.equal(game.plugs[3], 31);
+  assert.deepEqual(game.mods.Helmet, [41, 51, 0, 0]);
+  assert.equal(game.items.Kinetic?.id, "w1");
+
+  const saved = structuredClone(game);
+  saved.id = "evr";
+  saved.name = "My build";
+  saved.mods.Helmet = [41, 0, 51, 0]; // socket order doesn't matter
+  assert.equal(sameLoadout(saved, game, defs), true);
+  saved.plugs[3] = 32; // a different fragment
+  assert.equal(sameLoadout(saved, game, defs), false);
+  saved.plugs[3] = 31;
+  saved.items.Kinetic = undefined; // a different item set
+  assert.equal(sameLoadout(saved, game, defs), false);
+
+  const old = { ...game, created: "2026-01-01", updated: "2026-02-01" };
+  assert.equal(lastUsed(old), "2026-02-01");
+  assert.equal(lastUsed({ ...old, applied: "2026-03-01" }), "2026-03-01");
+  assert.equal(lastUsed({ ...old, applied: "2026-01-15" }), "2026-02-01", "an older apply doesn't hide a newer edit");
 });

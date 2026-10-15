@@ -5,7 +5,7 @@
 import { bungie } from "../shims/client";
 import { primaryMembership } from "../shims/oauth";
 import type { BuildDefs } from "./defs.strip";
-import { ARMOR_SLOTS, GENERAL_PCI, MOD_PCI, MOD_SOCKETS, WEAPON_SLOTS, defaultPlugs, itemOf, newBuild, type Build, type BuildSlot, type Ctx, type GearSlot } from "./model";
+import { ARMOR_SLOTS, GENERAL_PCI, MOD_PCI, MOD_SOCKETS, WEAPON_SLOTS, defaultPlugs, itemOf, newBuild, type Build, type BuildSlot, type GameLoadoutItem, type Ctx, type GearSlot } from "./model";
 
 const SUBCLASS_BUCKET = 3284755031;
 
@@ -17,7 +17,7 @@ export interface CharState {
   /** Instance ids equipped now. */
   equipped: Set<string>;
   subclasses: { id: string; hash: number; equipped: boolean }[];
-  loadouts: { colorHash: number; iconHash: number; nameHash: number; empty: boolean }[];
+  loadouts: { colorHash: number; iconHash: number; nameHash: number; empty: boolean; items: GameLoadoutItem[] }[];
 }
 
 export interface BuildProfile {
@@ -35,7 +35,7 @@ interface RawProfile {
   characters?: { data?: Record<string, { characterId: string; classType: number; light: number; emblemPath?: string }> };
   characterInventories?: { data?: Record<string, { items: Item[] }> };
   characterEquipment?: { data?: Record<string, { items: Item[] }> };
-  characterLoadouts?: { data?: Record<string, { loadouts: { colorHash: number; iconHash: number; nameHash: number; items: { itemInstanceId: string }[] }[] }> };
+  characterLoadouts?: { data?: Record<string, { loadouts: { colorHash: number; iconHash: number; nameHash: number; items: { itemInstanceId: string; plugItemHashes?: number[] }[] }[] }> };
   itemComponents?: {
     sockets?: { data?: Record<string, { sockets: { plugHash?: number }[] }> };
     reusablePlugs?: { data?: Record<string, { plugs: Record<string, { plugItemHash: number; canInsert: boolean; enabled: boolean }[]> }> };
@@ -70,6 +70,7 @@ export async function fetchBuildProfile(): Promise<BuildProfile> {
         iconHash: l.iconHash,
         nameHash: l.nameHash,
         empty: !l.items?.some((x) => x.itemInstanceId && x.itemInstanceId !== "0"),
+        items: (l.items ?? []).filter((x) => x.itemInstanceId && x.itemInstanceId !== "0").map((x) => ({ id: x.itemInstanceId, plugs: (x.plugItemHashes ?? []).filter(Boolean) })),
       })),
     };
   });

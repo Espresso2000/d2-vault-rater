@@ -12,8 +12,8 @@ import { cachedClarity, cachedRatings, loadClarity, loadRatings } from "./rating
 import { TIER_POINTS } from "./sheets";
 import {
   ARMOR_ENERGY, ARMOR_SLOTS, CLASSES, CLASS_NAME, GENERAL_PCI, MOD_PCI, MOD_SOCKETS, STAT_MAX, WEAPON_SLOTS,
-  armorOf, aspectRating, buildScore, defaultPlugs, exoticClash, fragmentRating, fragmentSlots, fromDimLoadout, infoFor, isEmptyPlug,
-  commitBuild, isUnsaved, itemOf, modEnergy, newBuild, newId, socketsOf, statLines, subclassRating, toDimLoadout, trimFragments, weaponOf,
+  armorOf, aspectRating, buildScore, defaultPlugs, exoticClash, fragmentRating, fragmentSlots, fromDimLoadout, fromGameLoadout, infoFor, isEmptyPlug,
+  commitBuild, isUnsaved, itemOf, lastUsed, modEnergy, newBuild, sameLoadout, newId, socketsOf, statLines, subclassRating, toDimLoadout, trimFragments, weaponOf,
   type Build, type BuildSlot, type Ctx, type GearSlot,
 } from "./model";
 import { captureCharacter, charFor, fetchBuildProfile, subclassInstance, type BuildProfile } from "./profile";
@@ -245,7 +245,7 @@ const TRASH = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6l1 2h4
 function listPane() {
   const c = ctx();
   const cls = listCls!;
-  const mine = builds.filter((b) => b.cls === cls);
+  const mine = builds.filter((b) => b.cls === cls).sort((a, b) => lastUsed(b).localeCompare(lastUsed(a)));
   const q = listQuery.toLowerCase();
   return `<section class="bd-saved glass" aria-label="Saved builds">
     <div class="bd-saved-head">
@@ -255,8 +255,42 @@ function listPane() {
         .join("")}</div>
       ${mine.length > 4 ? `<input class="bd-input bd-q" id="bd-q" type="search" placeholder="Search ${esc(CLASS_NAME(cls))} builds" value="${esc(listQuery)}" aria-label="Search builds">` : ""}
     </div>
-    <div class="bd-cards">${newCard(cls)}${mine.map((b) => buildCard(b, c, !!q && !listText(b).includes(q))).join("")}</div>
+    <div class="bd-cards">${loadoutCard(cls, c)}${newCard(cls)}${mine.map((b) => buildCard(b, c, !!q && !listText(b).includes(q))).join("")}</div>
   </section>`;
+}
+
+/** This class's in-game loadouts as builds, in slot order, each with the saved build that matches it exactly. */
+function gameLoadouts(cls: number, c: Ctx) {
+  const ch = charFor(profile, cls);
+  if (!ch || !defs) return [];
+  const sub = (id: string) => ch.subclasses.find((x) => x.id === id)?.hash;
+  return ch.loadouts.flatMap((l, i) => {
+    if (l.empty) return [];
+    const b = fromGameLoadout(cls, `Loadout ${i + 1}`, l.items, sub, c);
+    return [{ i, b, match: builds.find((x) => x.cls === cls && sameLoadout(x, b, defs!)) }];
+  });
+}
+
+/** One card in front of the new-build button listing every in-game loadout of the class's character. */
+function loadoutCard(cls: number, c: Ctx) {
+  const list = gameLoadouts(cls, c);
+  if (!list.length) return "";
+  const ico = (b: Build, slot: BuildSlot) => {
+    const x = itemOf(c, b.items[slot]?.id);
+    return x ? `<span class="bd-gico${x.rarity === "Exotic" ? " exotic" : ""}" title="${esc(x.name)}">${img(x.icon)}</span>` : `<span class="bd-gico none"></span>`;
+  };
+  return `<div class="bd-bcard bd-loadcard" aria-label="In-game loadouts"><div class="cap">In-game loadouts</div>${list
+    .map(({ i, b, match }) => {
+      const sc = b.subclass ? defs!.subclasses[b.subclass] : null;
+      return `<div class="bd-lrow" style="--el:var(--${sc?.el ?? "Unknown"})">
+        <button class="bd-lopen" data-act="loadgame" data-i="${i}" title="Load this loadout into the builder">
+          <span class="bd-bico">${img(sc?.i)}</span><b>${i + 1}</b>
+          <span class="bd-bgear">${WEAPON_SLOTS.map((s) => ico(b, s)).join("")}<i></i>${ARMOR_SLOTS.map((s) => ico(b, s)).join("")}</span>
+          ${match ? `<span class="bd-lmatch" title="Matches your EVR build “${esc(match.name)}”">✓</span>` : ""}</button>
+        ${match ? "" : `<button class="btn bd-sm" data-act="savegame" data-i="${i}" title="Save as an EVR build">Save</button>`}
+      </div>`;
+    })
+    .join("")}</div>`;
 }
 
 /** The first card in the row: start a build for this class, or import one (with a preview to confirm). */
@@ -1360,6 +1394,26 @@ const ACTIONS: Record<string, (t: HTMLElement) => void> = {
       panel?.querySelector(".bd-editor")?.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
     });
   },
+  loadgame: (t) => {
+    const l = gameLoadouts(listCls!, ctx()).find((x) => x.i === Number(t.dataset.i));
+    if (!l) return;
+    guard(() => {
+      closePop();
+      // Matching EVR build: open that one; otherwise a new, unsaved draft ("Save" in the title card keeps it).
+      cur = structuredClone(l.match ?? l.b);
+      draw();
+    });
+  },
+  savegame: (t) => {
+    const l = gameLoadouts(listCls!, ctx()).find((x) => x.i === Number(t.dataset.i));
+    if (!l) return;
+    guard(() => {
+      builds = commitBuild(builds, l.b);
+      saveBuilds(builds);
+      cur = structuredClone(builds.find((x) => x.id === l.b.id)!);
+      draw();
+    });
+  },
   untag: (t) => {
     if (!cur) return;
     cur.tags.splice(Number(t.dataset.i), 1);
@@ -1489,6 +1543,12 @@ async function equipFlow(target: Build | null = cur, undoing = false) {
       li.querySelector("em")!.textContent = st === "ok" ? "✓" : st === "fail" ? `✕ ${m ?? ""}` : "…";
     });
     if (before) undo = before;
+    const saved = !undoing && builds.find((x) => x.id === target.id);
+    if (saved) {
+      saved.applied = new Date().toISOString();
+      saveBuilds(builds);
+      if (cur?.id === saved.id) cur.applied = saved.applied;
+    }
     msg.innerHTML = r.ok
       ? `Done. ${undo && !undoing ? `<button class="linkbtn" data-dact="undo">Undo: put the previous gear back</button>` : ""}`
       : `Not everything worked: ${esc(r.error)} ${undo && !undoing ? `<button class="linkbtn" data-dact="undo">Put the previous gear back</button>` : ""}`;

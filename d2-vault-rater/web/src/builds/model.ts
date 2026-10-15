@@ -46,6 +46,8 @@ export interface Build {
   targets: Record<number, number>;
   created: string;
   updated: string;
+  /** When it was last equipped through Vault Rater; the saved list sorts by the later of this and `updated`. */
+  applied?: string;
   /** Set when the build came from (or was saved to) DIM. */
   dimId?: string;
 }
@@ -321,7 +323,68 @@ export function placeMod(b: Build, hash: number, defs: BuildDefs): boolean {
 /* ---------- Saving: the editor works on a draft ---------- */
 
 /** Same content, ignoring when it was last touched. */
-export const sameBuild = (a: Build, b: Build) => JSON.stringify({ ...a, updated: "" }) === JSON.stringify({ ...b, updated: "" });
+export const sameBuild = (a: Build, b: Build) => JSON.stringify({ ...a, updated: "", applied: "" }) === JSON.stringify({ ...b, updated: "", applied: "" });
+
+/** When a saved build was last changed or applied (existing builds fall back to when they were saved). */
+export const lastUsed = (b: Build) => (b.applied && b.applied > b.updated ? b.applied : b.updated) || b.created;
+
+/* ---------- In-game loadouts ---------- */
+
+export interface GameLoadoutItem {
+  id: string;
+  /** Plug hashes the loadout sets on the item: subclass abilities/aspects/fragments, or armor mods. */
+  plugs: number[];
+}
+
+/** An in-game loadout (Bungie profile component 206) as a build: items by instance id, subclass plugs, armor mods. */
+export function fromGameLoadout(cls: number, name: string, items: GameLoadoutItem[], subclassHash: (id: string) => number | undefined, ctx: Ctx): Build {
+  const b = newBuild(cls, name);
+  for (const { id, plugs } of items) {
+    const sc = subclassHash(id);
+    const def = sc ? ctx.defs.subclasses[sc] : undefined;
+    if (def) {
+      b.subclass = def.h;
+      b.plugs = defaultPlugs(def);
+      for (const h of plugs) {
+        const i = def.sockets.findIndex((s) => s.plugs.includes(h));
+        if (i >= 0) b.plugs[i] = h;
+      }
+      continue;
+    }
+    const it = itemOf(ctx, id);
+    if (!it || !([...WEAPON_SLOTS, ...ARMOR_SLOTS] as string[]).includes(it.slot)) continue;
+    const slot = it.slot as BuildSlot;
+    b.items[slot] = { id, hash: it.itemHash };
+    if ((ARMOR_SLOTS as readonly string[]).includes(slot)) {
+      const mods = Array<number>(MOD_SOCKETS).fill(0);
+      for (const h of plugs) {
+        const c = ctx.defs.plugs[h]?.c;
+        const i = c === GENERAL_PCI ? 0 : c === MOD_PCI[slot as GearSlot] ? [1, 2, 3].find((k) => !mods[k]) : undefined;
+        if (i !== undefined && !mods[i]) mods[i] = h;
+      }
+      b.mods[slot as GearSlot] = mods;
+    }
+  }
+  trimFragments(b, ctx.defs);
+  return b;
+}
+
+/**
+ * An EVR build matches an in-game loadout exactly when the class, the equipped weapons and armor (by instance id,
+ * slot by slot), the subclass, every subclass plug (empty plugs count as the same) and each armor piece's mods
+ * (as a set, so socket order doesn't matter) are all the same. Name, tags, notes and stat aims don't count.
+ */
+export function sameLoadout(a: Build, b: Build, defs: BuildDefs): boolean {
+  if (a.cls !== b.cls || a.subclass !== b.subclass) return false;
+  const slots = [...WEAPON_SLOTS, ...ARMOR_SLOTS] as BuildSlot[];
+  if (slots.some((s) => (a.items[s]?.id ?? "") !== (b.items[s]?.id ?? ""))) return false;
+  const sc = a.subclass ? defs.subclasses[a.subclass] : null;
+  const plug = (x: Build, i: number) => (isEmptyPlug(defs.plugs[x.plugs[i]]) ? 0 : x.plugs[i]);
+  if (sc && sc.sockets.some((_, i) => plug(a, i) !== plug(b, i))) return false;
+  const mods = (x: Build, s: GearSlot) => (x.mods[s] ?? []).filter((h) => h && !isEmptyPlug(defs.plugs[h])).sort().join();
+  return ARMOR_SLOTS.every((s) => mods(a, s) === mods(b, s));
+}
+
 
 /** The saved list with this draft written in: replaces the build with the same id, or adds it first. */
 export function commitBuild(list: Build[], draft: Build): Build[] {
