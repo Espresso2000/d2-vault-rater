@@ -17,7 +17,6 @@ import { rateVendors, type Buy, type RatedSale, type RatedVendor } from "../../.
 import { BRIGHT_DUST, type Offer, type VendorCost } from "../../../src/vendors/vendors.js";
 import { LoginRequired } from "../shims/client";
 import { esc } from "../html";
-import { captureVendors } from "./capture";
 
 export interface VendorsInput {
   vault: Vault;
@@ -84,7 +83,6 @@ async function load(force = false) {
   loading = (async () => {
     try {
       const raw = await fetchVendors(id);
-      void captureVendors(id);
       stock.set(id, rateVendors(raw, input.vault, { aegis: input.aegis, wishlists: loadWishlists(), manifest: input.manifest, armorSets: loadArmorSets() }, input.settings));
       // The tab's count (weapons worth buying) is only known once stock is read.
       const tab = document.querySelector("#t-vendors");
