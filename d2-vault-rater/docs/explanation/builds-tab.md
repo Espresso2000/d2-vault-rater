@@ -18,14 +18,57 @@ The web app's Builds tab lets you put together a subclass, three weapons, five a
 
 ## The editor
 
-> The Builds tab's layout is being redesigned, so this section only describes what the editor does, not where things sit on screen. The rating, stats, equipping and DIM sections below describe the logic, which the redesign keeps.
+The tab has two parts side by side: the saved builds, and the build you have open ([web/src/builds/ui.ts:223-234](../../web/src/builds/ui.ts#L223-L234)).
 
-- **Saved builds** are listed per class; you start a new build, import one from a character or a DIM loadout (with a preview before it is added), or delete one. Deleting removes it from Vault Rater only; DIM loadouts and the game are not touched ([web/src/builds/ui.ts:1364](../../web/src/builds/ui.ts#L1364), [web/src/builds/ui.ts:1574](../../web/src/builds/ui.ts#L1574)).
-- **Editing works on a draft**: nothing is kept until you save, and leaving with unsaved changes asks first ([web/src/builds/model.ts:327](../../web/src/builds/model.ts#L327), [web/src/builds/ui.ts:193](../../web/src/builds/ui.ts#L193)).
-- **Subclass**: pick the element, abilities, aspects and fragments. Options are sorted by Aegis tier and show their description, stat changes and Destiny Clarity's notes ([web/src/builds/ui.ts:640](../../web/src/builds/ui.ts#L640), [web/src/builds/ui.ts:753-779](../../web/src/builds/ui.ts#L753-L779)).
-- **Gear and mods**: weapons, armor and armor mods for every slot come from one filterable, sortable list ([D2ArmorPicker](https://d2armorpicker.com/) style stat columns), with a stat preview against the saved build; nothing changes until you apply ([web/src/builds/ui.ts:921](../../web/src/builds/ui.ts#L921), [web/src/builds/ui.ts:1189](../../web/src/builds/ui.ts#L1189)).
-- **Summary**: the rating and its parts, the six stats with your aims, the armor set bonuses your pieces turn on, and the equip and DIM actions ([web/src/builds/ui.ts:362](../../web/src/builds/ui.ts#L362)).
-- Each weapon links to its [light.gg](https://www.light.gg/) and [D2 Foundry](https://d2foundry.gg/) pages for rolls and perk numbers ([web/src/builds/ui.ts:98](../../web/src/builds/ui.ts#L98)).
+### Saved builds
+
+- **One class at a time.** A Hunter / Titan / Warlock switcher, with the class you played most recently first, shows that class's builds and how many each class has ([web/src/builds/ui.ts:244-260](../../web/src/builds/ui.ts#L244-L260), [web/src/builds/ui.ts:312-318](../../web/src/builds/ui.ts#L312-L318)). With more than four builds a search box filters them by name, tags and class ([web/src/builds/ui.ts:256](../../web/src/builds/ui.ts#L256)).
+- **Cards.** Each card shows the subclass, the build rating, all eight gear icons (exotics outlined), the exotics and aspects by name, the fragment count and the three highest stats ([web/src/builds/ui.ts:270-289](../../web/src/builds/ui.ts#L270-L289)).
+- **New and import.** The first card starts a new build for that class or imports one from DIM ([web/src/builds/ui.ts:262-268](../../web/src/builds/ui.ts#L262-L268)). With no build open, the editor offers the same, plus importing what a character is wearing ([web/src/builds/ui.ts:304-310](../../web/src/builds/ui.ts#L304-L310)).
+- **Delete.** The bin button asks in the card first; confirming removes the build from Vault Rater only, and DIM loadouts and the game are not touched ([web/src/builds/ui.ts:290-301](../../web/src/builds/ui.ts#L290-L301)).
+
+**Importing** from a character or a DIM loadout shows a preview first (subclass, abilities, aspects, fragments, all eight items, mod count and stats); the build is added and saved only when you confirm ([web/src/builds/ui.ts:1555-1567](../../web/src/builds/ui.ts#L1555-L1567), [web/src/builds/ui.ts:1595-1596](../../web/src/builds/ui.ts#L1595-L1596)). A build's class is set when it is made or imported.
+
+### Saving
+
+The editor works on a draft. The title card holds the name, tags (type and press Enter) and a save bar: **Saved** or **Unsaved changes**, **Discard changes** and **Save** ([web/src/builds/ui.ts:320-341](../../web/src/builds/ui.ts#L320-L341), [web/src/builds/model.ts:327](../../web/src/builds/model.ts#L327)). Opening another build, switching class, starting or importing a build, leaving the tab or closing the page with unsaved changes asks first: Save, Discard or keep editing ([web/src/builds/ui.ts:192-193](../../web/src/builds/ui.ts#L192-L193)). A Notes box at the end holds free text ([web/src/builds/ui.ts:346-347](../../web/src/builds/ui.ts#L346-L347)).
+
+### The build's sections
+
+A summary column sits beside the sections and stays in view; on narrow screens it moves above them ([web/src/builds/ui.ts:342-350](../../web/src/builds/ui.ts#L342-L350), [web/src/builds/builds.css:84-85](../../web/src/builds/builds.css#L84-L85), [web/src/builds/builds.css:513-515](../../web/src/builds/builds.css#L513-L515)).
+
+- **Subclass.** Element buttons switch the subclass in one click, each with a hover card describing it; the card also shows Aegis's four scores ([web/src/builds/ui.ts:434-457](../../web/src/builds/ui.ts#L434-L457), [web/src/builds/ui.ts:527-546](../../web/src/builds/ui.ts#L527-L546)).
+- **Abilities.** Laid out like the game ([web/src/builds/ui.ts:459-490](../../web/src/builds/ui.ts#L459-L490)):
+  - left: the Super as a big square, the two aspects (with how many fragment slots they open), and below them the fragments, three per row ([web/src/builds/builds.css:620](../../web/src/builds/builds.css#L620)), with how many slots are used and a **Modify fragments** button;
+  - right: grenade, melee and class ability stacked as wide slots, then small squares for jump and any extras such as Prismatic's Transcendence;
+  - each slot shows its icon with the first line of its description beside it ([web/src/builds/ui.ts:495-496](../../web/src/builds/ui.ts#L495-L496)).
+- **Weapons** sit side by side with their perks in the game's column order, names on hover, plus frame, ammo, masterwork, tier and power, and links to the weapon's [light.gg](https://www.light.gg/) and [D2 Foundry](https://d2foundry.gg/) pages ([web/src/builds/ui.ts:795-800](../../web/src/builds/ui.ts#L795-L800), [web/src/builds/ui.ts:811-829](../../web/src/builds/ui.ts#L811-L829), [web/src/builds/ui.ts:95-99](../../web/src/builds/ui.ts#L95-L99)).
+- **Armor and mods**: one row per piece with its six stats, its four mods as labelled tiles (pointing at one shows what it does, with Clarity's numbers) and its energy, 10 per piece ([web/src/builds/ui.ts:802-809](../../web/src/builds/ui.ts#L802-L809), [web/src/builds/ui.ts:831-856](../../web/src/builds/ui.ts#L831-L856)).
+- **Summary**: the rating ring and its parts, the six stats with your aims, the armor set bonuses your pieces turn on, and **Equip on …** and **Export to DIM** ([web/src/builds/ui.ts:360-375](../../web/src/builds/ui.ts#L360-L375), [web/src/builds/ui.ts:410-430](../../web/src/builds/ui.ts#L410-L430)).
+
+### Slot popovers
+
+Every ability, aspect and fragment slot opens a popover in place with the options for that slot, sorted by Aegis tier, with stat changes and fragment slots; pointing at or focusing an option shows its description, Clarity's notes and Aegis's verdict beside the list ([web/src/builds/ui.ts:686-750](../../web/src/builds/ui.ts#L686-L750)). Abilities replace on click. Aspects and fragments toggle, so one popover fills every slot: a pick goes into a free slot, or replaces the slot you opened when all are full ([web/src/builds/ui.ts:765-792](../../web/src/builds/ui.ts#L765-L792)).
+
+How a popover opens depends on the **Hover / Click** switch in the Abilities card header ([web/src/builds/ui.ts:469-471](../../web/src/builds/ui.ts#L469-L471)):
+
+| | Hover (default) | Click |
+| --- | --- | --- |
+| Mouse | Opens after the pointer rests on a slot for 350 ms, or 300 ms to switch from an open popover, so sweeping across slots opens nothing ([web/src/builds/ui.ts:585-587](../../web/src/builds/ui.ts#L585-L587), [web/src/builds/ui.ts:1261-1269](../../web/src/builds/ui.ts#L1261-L1269)). It closes shortly after the pointer leaves both the slot and the popover ([web/src/builds/ui.ts:638-642](../../web/src/builds/ui.ts#L638-L642), [web/src/builds/ui.ts:1270-1276](../../web/src/builds/ui.ts#L1270-L1276)). | Opens only on click. |
+| Click or tap | Pins it open; clicking the slot again closes it ([web/src/builds/ui.ts:1239-1242](../../web/src/builds/ui.ts#L1239-L1242)). | Same. |
+| Keyboard | Focusing a slot opens it at once ([web/src/builds/ui.ts:1278-1282](../../web/src/builds/ui.ts#L1278-L1282)). | Enter opens and pins it, like a click. |
+
+In both modes, arrow down on a slot moves into its popover, the arrow keys, Home and End move between options, and Escape closes it ([web/src/builds/ui.ts:1286-1289](../../web/src/builds/ui.ts#L1286-L1289), [web/src/builds/ui.ts:616-628](../../web/src/builds/ui.ts#L616-L628)). On a phone-width screen it opens as a bottom sheet ([web/src/builds/ui.ts:751-755](../../web/src/builds/ui.ts#L751-L755)). The choice is remembered in this browser as `vr-bd-popmode` ([web/src/builds/ui.ts:577-584](../../web/src/builds/ui.ts#L577-L584), [web/src/builds/ui.ts:1335-1342](../../web/src/builds/ui.ts#L1335-L1342)).
+
+### Gear and mods
+
+**Choose gear and mods** (or any weapon, armor or mod slot) opens one drawer for every slot ([web/src/builds/ui.ts:912-955](../../web/src/builds/ui.ts#L912-L955)):
+
+- **Weapons**: filter by slot, exotic or element; sort by vault score, Aegis tier or name ([web/src/builds/ui.ts:956-970](../../web/src/builds/ui.ts#L956-L970)).
+- **Armor**: your class's armor; filter by slot, exotic, legendary or Tier 5; sort by vault score, stat total, any single stat or name, with every stat in columns ([D2ArmorPicker](https://d2armorpicker.com/) style) ([web/src/builds/ui.ts:956-970](../../web/src/builds/ui.ts#L956-L970), [web/src/builds/ui.ts:982-1008](../../web/src/builds/ui.ts#L982-L1008)).
+- **Mods**: pick the armor piece to add to; filter to stat, general or that slot's mods; sort by name or energy cost. A mod goes into the first socket that takes it and has the energy ([web/src/builds/model.ts:305](../../web/src/builds/model.ts#L305), [web/src/builds/ui.ts:1010-1020](../../web/src/builds/ui.ts#L1010-L1020), [web/src/builds/ui.ts:1021-1033](../../web/src/builds/ui.ts#L1021-L1033)).
+
+Clicking a row puts it in its slot and clicking again takes it out; picking a second exotic weapon (or armor piece) takes the first one out ([web/src/builds/ui.ts:1155-1172](../../web/src/builds/ui.ts#L1155-L1172)). A tray shows every slot, every mod socket and the stats with your picks against the saved build. Clicking a mod in the tray takes it out. Nothing changes until **Apply**, which puts the picks into the open build (still to be saved); **Reset** goes back to the build's gear as it was when the drawer opened ([web/src/builds/ui.ts:1071-1080](../../web/src/builds/ui.ts#L1071-L1080), [web/src/builds/ui.ts:1155-1210](../../web/src/builds/ui.ts#L1155-L1210)).
 
 ## Sources
 
@@ -69,6 +112,8 @@ Parts with nothing to rate don't count, and the rest are re-weighted ([web/src/b
 
 Item moves that fail are reported at the end; any other failure stops the run ([web/src/builds/equip.ts:161-178](../../web/src/builds/equip.ts#L161-L178)).
 
+**Equip on …** shows that plan as a dry run ("Dry run · nothing has changed yet"), with an option to also save it to one of the character's in-game loadout slots, and runs it only on **Equip now** ([web/src/builds/ui.ts:1453-1475](../../web/src/builds/ui.ts#L1453-L1475)). Before running, it records what the character was wearing; when the run ends, **Undo: put the previous gear back** equips that again through the same dry run ([web/src/builds/ui.ts:1482](../../web/src/builds/ui.ts#L1482), [web/src/builds/ui.ts:1493-1498](../../web/src/builds/ui.ts#L1493-L1498), [web/src/builds/profile.ts:92](../../web/src/builds/profile.ts#L92)).
+
 ## DIM
 
-A build converts to DIM's loadout format with subclass socket overrides, armor mods and stat targets ([web/src/builds/model.ts:242](../../web/src/builds/model.ts#L242)), and back again ([web/src/builds/model.ts:276](../../web/src/builds/model.ts#L276)); mods from DIM go into the first free socket that takes them ([web/src/builds/model.ts:305](../../web/src/builds/model.ts#L305)). You can save to DIM Sync, make a dim.gg share link, or open DIM with the loadout ready to import, which works without DIM Sync ([web/src/builds/dim.ts:12-32](../../web/src/builds/dim.ts#L12-L32)).
+A build converts to DIM's loadout format with subclass socket overrides, armor mods and stat targets ([web/src/builds/model.ts:242](../../web/src/builds/model.ts#L242)), and back again ([web/src/builds/model.ts:276](../../web/src/builds/model.ts#L276)); mods from DIM go into the first free socket that takes them ([web/src/builds/model.ts:305](../../web/src/builds/model.ts#L305)). You can save to DIM Sync, make a dim.gg share link, or open DIM with the loadout ready to import, which works without DIM Sync ([web/src/builds/dim.ts:12-32](../../web/src/builds/dim.ts#L12-L32)). **Export to DIM** offers all of these, plus copying the loadout JSON ([web/src/builds/ui.ts:1504-1515](../../web/src/builds/ui.ts#L1504-L1515)).

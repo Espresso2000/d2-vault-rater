@@ -21,7 +21,7 @@ Lock changes are spaced out (250 ms by default) and retried while Bungie throttl
 
 `moveItems` ([src/bungie/transfer.ts:47](../../src/bungie/transfer.ts#L47)) refuses moves that can't work instead of half-doing them: armor for another class ([src/bungie/transfer.ts:64-65](../../src/bungie/transfer.ts#L64-L65)), and anything currently equipped, which Bungie won't move until something else is equipped ([src/bungie/transfer.ts:67](../../src/bungie/transfer.ts#L67)). The MCP tool tells the AI to use it only when the player asks ([src/server.ts:338](../../src/server.ts#L338)), and Bungie's error codes are turned into plain advice ([src/bungie/transfer.ts:24-31](../../src/bungie/transfer.ts#L24-L31)).
 
-In the Builds tab, equipping a build first shows every step it would take ("Dry run · nothing has changed yet") and runs them only when you confirm ([web/src/builds/ui.ts:1445](../../web/src/builds/ui.ts#L1445), [web/src/builds/equip.ts:41](../../web/src/builds/equip.ts#L41)).
+In the Builds tab, equipping a build first shows every step it would take ("Dry run · nothing has changed yet") and runs them only when you confirm ([web/src/builds/ui.ts:1467](../../web/src/builds/ui.ts#L1467), [web/src/builds/equip.ts:41](../../web/src/builds/equip.ts#L41)).
 
 ## Perk switches
 

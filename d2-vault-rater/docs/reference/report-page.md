@@ -21,10 +21,10 @@ In order ([report-template/site.html:1147-1148](../../report-template/site.html#
 | Reports → Armor Report | Best piece per class and slot, set cards; the class buttons list the most recently played class first. | [report-template/site.html:1454](../../report-template/site.html#L1454) |
 | Shard | Everything marked shard or review, grouped by reason; **Preview changes** and **Apply** for the lock plan. | [report-template/site.html:1951](../../report-template/site.html#L1951) |
 | Vault | Two modes: **Vault** and **Full list** ([below](#vault-tab)). | [report-template/site.html:1653](../../report-template/site.html#L1653) |
-| Vendors | Web app only: what vendors sell right now, rated against your vault and marked Worth buying, Maybe or Skip; Eververse offers with price and time left ([explanation](../explanation/vendors.md)). Its count is the number of weapons worth buying. | [report-template/site.html:1148](../../report-template/site.html#L1148), [web/src/main.ts:200-204](../../web/src/main.ts#L200-L204) |
+| Vendors | Web app only: what vendors sell right now, rated against your vault and marked Worth buying, Maybe or Skip; Eververse offers with price and time left. One collapsible card per vendor, laid out side by side, up to four items wide ([explanation](../explanation/vendors.md#what-the-tab-shows)). Its count is the number of weapons worth buying. | [report-template/site.html:1148](../../report-template/site.html#L1148), [web/src/main.ts:200-204](../../web/src/main.ts#L200-L204) |
 | R&Ds | Raids and dungeons ranked for your vault, with an encounter loadout for each encounter ([explanation](../explanation/raids-dungeons-encounters.md)). | [report-template/site.html:1488](../../report-template/site.html#L1488) |
 | Wrapped | Account stats: characters, PvE and PvP totals, kills by weapon type, top weapons, triumph score and titles. | [report-template/site.html:2083](../../report-template/site.html#L2083), [src/vault/wrapped.ts:49](../../src/vault/wrapped.ts#L49) |
-| Builds | Web app only: make, rate and equip builds. This tab is being reworked; see [The Builds tab](../explanation/builds-tab.md). | [web/src/main.ts:194-198](../../web/src/main.ts#L194-L198) |
+| Builds | Web app only: saved builds per class, a subclass and abilities editor with slot popovers, one picker for gear and mods, stats with aims, a build rating, equip with a dry run and undo, and DIM export; see [The Builds tab](../explanation/builds-tab.md). | [web/src/main.ts:194-198](../../web/src/main.ts#L194-L198) |
 | Settings | Strictness, focus, protect list, per-type settings, DIM switches, display options ([settings reference](settings.md)). | [report-template/site.html:2034](../../report-template/site.html#L2034) |
 
 ## Vault tab
@@ -91,6 +91,7 @@ Display choices are kept in this browser's `localStorage` ([report-template/site
 | `vr-class` | Armor Report class |
 | `vr-fold` | Folded sections |
 | `vr-seen`, `vr-new` | Item ids already seen, and the ones still marked New |
+| `vr-bd-popmode` | Builds tab: whether slot popovers open on `hover` (the default) or only on `click` ([web/src/builds/ui.ts:577-584](../../web/src/builds/ui.ts#L577-L584), [web/src/builds/ui.ts:1335-1342](../../web/src/builds/ui.ts#L1335-L1342)) |
 | `vr-vendors-kind`, `vr-vendors-char`, `vr-vendors-buy`, `vr-vendors-closed` | Vendors tab: Weapons / Armor / Eververse, the character, Only worth buying, and collapsed vendor cards ([web/src/vendors/ui.ts:54-62](../../web/src/vendors/ui.ts#L54-L62)) |
 
 ## Background (web app)

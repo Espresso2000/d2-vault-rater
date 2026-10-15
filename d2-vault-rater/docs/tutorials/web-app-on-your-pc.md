@@ -41,13 +41,17 @@ The report has the local app's tabs plus **Vendors** and **Builds**, and its but
 
 ## 4. Make a build
 
-Open **Builds**. The first time, it downloads subclass, aspect and fragment definitions, the community build ratings and Destiny Clarity's notes ([web/src/builds/ui.ts:122-141](../../web/src/builds/ui.ts#L122-L141)). The tab is being redesigned, so buttons may have moved, but the steps are the same:
+Open **Builds**. The first time, it downloads subclass, aspect and fragment definitions, the community build ratings and Destiny Clarity's notes ([web/src/builds/ui.ts:121-141](../../web/src/builds/ui.ts#L121-L141)).
 
-1. Start a new build for a class and pick a subclass.
-2. Fill the abilities, aspects and fragments; the rating updates as you go ([web/src/builds/model.ts:195-221](../../web/src/builds/model.ts#L195-L221)).
-3. Choose weapons, armor and mods, check the stat preview, and apply them to the build.
-4. **Save** the build; nothing is kept until you do.
-5. **Equip** it. You get a dry run listing every step; nothing changes until you confirm ([web/src/builds/equip.ts:41](../../web/src/builds/equip.ts#L41)).
+1. Under **Saved builds**, pick your class and press **New … build** on the first card ([web/src/builds/ui.ts:262-268](../../web/src/builds/ui.ts#L262-L268)). Name it in the title card.
+2. In the **Subclass** card, pick an element ([web/src/builds/ui.ts:434-457](../../web/src/builds/ui.ts#L434-L457)).
+3. In the **Abilities** card, rest the pointer on a slot (or tap it) to open its options, then click one. Aspects and fragments toggle, so you can fill every fragment slot from one popover. If popovers open when you don't want them to, switch the card's header from **Hover** to **Click** ([web/src/builds/ui.ts:469-471](../../web/src/builds/ui.ts#L469-L471)). The rating ring in the summary updates as you go ([web/src/builds/model.ts:195-221](../../web/src/builds/model.ts#L195-L221)).
+4. Press **Choose gear and mods**, pick weapons, armor and mods for any slots, check the stat tray, then press **Apply** ([web/src/builds/ui.ts:912-955](../../web/src/builds/ui.ts#L912-L955)).
+5. Drag the gold markers on the stat bars to set the stats you aim for ([web/src/builds/ui.ts:401](../../web/src/builds/ui.ts#L401)).
+6. Press **Save** in the title card. Nothing is kept until you do; leaving with unsaved changes asks first ([web/src/builds/ui.ts:192-193](../../web/src/builds/ui.ts#L192-L193)).
+7. Press **Equip on …**. You get a dry run listing every step; nothing changes until you press **Equip now**, and afterwards **Undo** puts your previous gear back ([web/src/builds/ui.ts:1453-1498](../../web/src/builds/ui.ts#L1453-L1498), [web/src/builds/equip.ts:41](../../web/src/builds/equip.ts#L41)).
+
+What each part does: [The Builds tab](../explanation/builds-tab.md#the-editor).
 
 Your builds are saved in this browser ([web/src/builds/store.ts:5-8](../../web/src/builds/store.ts#L5-L8)).
 
