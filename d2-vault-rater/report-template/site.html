@@ -536,6 +536,12 @@ details.vsec > summary .chev::before { width: 8px; height: 8px; border-width: 2p
 details.vsec > summary h3 { font: 600 19px var(--display); }
 details.vsec > summary .small { margin-left: auto; text-align: right; }
 details.vsec.cc > summary { border-left: 3px solid var(--cc); }
+details.vsec > summary .vsplit { margin-left: 8px; white-space: nowrap; }
+@media (max-width: 700px) { details.vsec > summary { flex-wrap: wrap; } details.vsec > summary .small { flex-basis: 100%; margin-left: 0; text-align: left; } }
+.vtip { position: fixed; z-index: 30; display: grid; gap: 6px; width: 270px; padding: 12px 14px; border-radius: 3px 14px; background: rgba(21,28,62,.97); border: 1px solid var(--line-hi); box-shadow: var(--shadow); pointer-events: none; font-size: 13px; }
+.vtip .nm { font: 600 15px var(--display); }
+.vtip .sm { color: var(--muted); font-size: 12px; }
+.vtperks { display: flex; flex-wrap: wrap; gap: 5px; }
 .vslot { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; margin-top: 14px; }
 .vslot::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(51,227,160,.45), transparent); }
 .vcell { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px; align-items: start; }
@@ -1668,14 +1674,18 @@ function vrMain() {
   let vsplit = store.get("vr-vsplit") !== "off";
   // Armor one character at a time, each with only its class's vault armor (off unless turned on).
   let asplit = store.get("vr-asplit") === "on";
+  // The two switches sit in the Weapons / Armor headings, which drawVault rebuilds.
+  document.addEventListener("change", (e) => {
+    const id = e.target.id; if (id !== "vsplit" && id !== "asplit") return;
+    if (id === "vsplit") vsplit = e.target.checked; else asplit = e.target.checked;
+    store.set(`vr-${id}`, e.target.checked ? "on" : "off"); drawVault();
+  });
   function setListMode(m) {
     listMode = m; store.set("vr-listmode", m);
     if (!$("#listmode")) return;
     $$("#listmode button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.m === m)));
     $("#vaultview").hidden = m !== "vault"; $("#explorer").classList.toggle("vmode", m === "vault");
-    $("#vmnote").innerHTML = m !== "vault" ? "" : `<label class="vsplit"><input type="checkbox" id="vsplit"${vsplit ? " checked" : ""}> Split the vault by weapon type</label> <label class="vsplit"><input type="checkbox" id="asplit"${asplit ? " checked" : ""}> Split armor by character</label> · ${window.VR_LOCAL && DATA.chars?.length ? "Drag a weapon or armor piece onto a character or the vault to move it, or onto the big slot to equip it." : "Moving items needs the app (Vault Rater.cmd or the web app)."}`;
-    $("#vsplit")?.addEventListener("change", (e) => { vsplit = e.target.checked; store.set("vr-vsplit", vsplit ? "on" : "off"); drawVault(); });
-    $("#asplit")?.addEventListener("change", (e) => { asplit = e.target.checked; store.set("vr-asplit", asplit ? "on" : "off"); drawVault(); });
+    $("#vmnote").innerHTML = m !== "vault" ? "" : `${window.VR_LOCAL && DATA.chars?.length ? "Drag a weapon or armor piece onto a character or the vault to move it, or onto the big slot to equip it." : "Moving items needs the app (Vault Rater.cmd or the web app)."}`;
     // Vault mode shows weapons only, through the same filters and sort as the full list.
     if (m === "vault" && ex.set !== "w") { ex.set = "w"; drawExplorer(true); } else drawExplorer(false);
   }
@@ -1711,7 +1721,8 @@ function vrMain() {
   document.addEventListener("visibilitychange", () => autoRefresh(20_000));
   const VSLOTS = ["Kinetic", "Energy", "Power"];
   /** A collapsible Vault-mode block under a full heading; cls colours it like that class. Open state is remembered like other sections. */
-  const vsec = (id, title, note, body, cls) => `<details class="subsec vsec${cls ? ` cc c-${esc(cls)}` : ""}" data-sec="${id}"${isOpen(id) ? " open" : ""}><summary>${chev}<h3>${title}</h3><span class="small">${note}</span></summary>${body}</details>`;
+  const vsec = (id, title, note, body, cls, tools = "") => `<details class="subsec vsec${cls ? ` cc c-${esc(cls)}` : ""}" data-sec="${id}"${isOpen(id) ? " open" : ""}><summary>${chev}<h3>${title}</h3>${tools}<span class="small">${note}</span></summary>${body}</details>`;
+  const vswitch = (id, on, label) => `<label class="vsplit"><input type="checkbox" id="${id}"${on ? " checked" : ""}> ${label}</label>`;
   function drawVault() {
     const el = $("#vaultview"); if (!el) return;
     const chars = [...(DATA.chars || [])].sort((a, b) => played(b.cls).localeCompare(played(a.cls))), can = !!window.VR_LOCAL && chars.length > 0;
@@ -1719,7 +1730,7 @@ function vrMain() {
     // ex.shown is the full list's filtered, sorted weapons; equipped weapons always show, dimmed when filtered out.
     const shown = ex.shown && ex.set === "w" ? ex.shown : DATA.weapons, match = new Set(shown.map((w) => w.id));
     const at = (to, s) => shown.filter((w) => where(w) === to && w.s === s);
-    const tile = (w, big) => `<button class="vitem${big ? " big" : ""}${match.has(w.id) ? "" : " nomatch"}${isExotic(w) ? " exotic" : ""} v-${w.v}" data-w="${w.id}"${can && !w.eq ? ' draggable="true"' : ""} title="${esc(w.n)} · ${esc(typeLine(w))} · ${w.sc} · ${VERDICT[w.v]}${w.eq ? " · equipped" : ""}">${img(w.ic)}${tierBadge(w)}${newBadge(w)}<b class="num">${w.sc}</b></button>`;
+    const tile = (w, big) => `<button class="vitem${big ? " big" : ""}${match.has(w.id) ? "" : " nomatch"}${isExotic(w) ? " exotic" : ""} v-${w.v}" data-w="${w.id}"${can && !w.eq ? ' draggable="true"' : ""} aria-label="${esc(w.n)} · ${esc(typeLine(w))} · ${w.sc} · ${VERDICT[w.v]}${w.eq ? " · equipped" : ""}">${img(w.ic)}${tierBadge(w)}${newBadge(w)}<b class="num">${w.sc}</b></button>`;
     const inVault = DATA.weapons.filter((w) => where(w) === "vault").length, armorInVault = DATA.armor.filter((a) => where(a) === "vault").length;
     el.innerHTML = vsec("v-weapons", "Weapons", plural(DATA.weapons.length, "weapon"), `<div class="vgrid" style="--chars:${chars.length}">
       ${chars.map((c) => `<div class="vhead cc c-${esc(c.cls)}"><b>${esc(c.cls)}</b><span class="small muted">${DATA.weapons.filter((w) => w.wh === c.id).length} weapons</span></div>`).join("")}
@@ -1727,13 +1738,13 @@ function vrMain() {
       ${VSLOTS.map((s) => `<div class="vslot"><span class="cap">${s}</span></div>` +
         chars.map((c) => { const items = at(c.id, s), eq = DATA.weapons.find((w) => w.wh === c.id && w.s === s && w.eq); return `<div class="vcell"><div class="vdrop" data-to="${c.id}" data-equip="1" title="Drop here to equip">${eq ? tile(eq, true) : '<span class="vempty">Empty</span>'}</div><div class="vdrop vinv" data-to="${c.id}">${items.filter((w) => !w.eq).map((w) => tile(w)).join("")}</div></div>`; }).join("") +
         vaultBox(at("vault", s), tile)).join("")}
-    </div>`) + vsec("v-armor", "Armor", `${plural(DATA.armor.length, "piece")} · border colour is the class: <i class="vkey c-Hunter"></i>Hunter <i class="vkey c-Titan"></i>Titan <i class="vkey c-Warlock"></i>Warlock <i class="vkey c-Warlock exotic"></i>Warlock exotic`, armorSection(chars, can));
+    </div>`, "", vswitch("vsplit", vsplit, "Split the vault by type")) + vsec("v-armor", "Armor", `${plural(DATA.armor.length, "piece")} · border colour is the class: <i class="vkey c-Hunter"></i>Hunter <i class="vkey c-Titan"></i>Titan <i class="vkey c-Warlock"></i>Warlock <i class="vkey c-Warlock exotic"></i>Warlock exotic`, armorSection(chars, can), "", vswitch("asplit", asplit, "Split by character"));
   }
   /** Armor laid out like the weapons: per slot, each character's worn piece and inventory, then the vault by set;
    *  inside a set by class (border colour), tier, then archetype. Split by character: one block per character, vault limited to its class. */
   const ASLOTS = ["Helmet", "Arms", "Chest", "Legs", "Class Item"], ACLS = ["Hunter", "Titan", "Warlock"];
   function armorSection(chars = [], can = false) {
-    const atile = (a, big) => `<button class="vitem${big ? " big" : ""} varmor c-${esc(a.cls)}${isExotic(a) ? " exotic" : ""} v-${a.v}" data-a="${a.id}"${can && !a.eq ? ' draggable="true"' : ""} title="${esc(a.n)} · ${esc(a.cls)} · ${esc(a.arch || "Legacy")}${a.gt ? ` · Tier ${a.gt}` : ""} · ${a.tot} total · ${a.sc} · ${VERDICT[a.v]}${a.loc ? " · " + esc(a.loc) : ""}">${img(a.ic)}${a.gt ? `<span class="tier tU">T${a.gt}</span>` : ""}${newBadge(a)}<b class="num">${a.sc}</b></button>`;
+    const atile = (a, big) => `<button class="vitem${big ? " big" : ""} varmor c-${esc(a.cls)}${isExotic(a) ? " exotic" : ""} v-${a.v}" data-a="${a.id}"${can && !a.eq ? ' draggable="true"' : ""} aria-label="${esc(a.n)} · ${esc(a.cls)} · ${esc(a.arch || "Legacy")}${a.gt ? ` · Tier ${a.gt}` : ""} · ${a.tot} total · ${a.sc} · ${VERDICT[a.v]}${a.loc ? " · " + esc(a.loc) : ""}">${img(a.ic)}${a.gt ? `<span class="tier tU">T${a.gt}</span>` : ""}${newBadge(a)}<b class="num">${a.sc}</b></button>`;
     const order = (x, y) => ACLS.indexOf(x.cls) - ACLS.indexOf(y.cls) || (y.gt || 0) - (x.gt || 0) || (x.arch || "~").localeCompare(y.arch || "~") || y.sc - x.sc;
     const groupOf = (a) => (isExotic(a) ? "Exotic" : a.set || "No set");
     const rank = (g) => (g === "Exotic" ? 0 : g === "No set" ? 2 : 1);
@@ -1787,6 +1798,23 @@ function vrMain() {
     const ok = !!m?.ok && !m.error;
     t.done(ok ? `${w.n} ${equip ? "equipped on" : "moved to"} ${name}` : `${m?.ok ? `${w.n} moved, but` : `Couldn't move ${w.n}`}${m?.error ? ": " + m.error : ""}`, ok);
   }
+  /** Hovering a Vault tile with a mouse: a small card with the weapon's perks or the armor's stats. */
+  const tipHtml = (w, a) => w
+    ? `<div class="nm">${esc(w.n)}</div><div class="sm">${esc(typeLine(w))} · ${w.sc} · ${VERDICT[w.v]}${w.eq ? " · equipped" : ""}</div><div class="vtperks">${perkTags(w)}</div>`
+    : `<div class="nm">${esc(a.n)}</div><div class="sm">${esc(a.cls)} · ${esc(a.arch || "Legacy")}${a.gt ? ` · Tier ${a.gt}` : ""}${setLine(a)}</div>${statBars(a, true)}<div class="sm">${a.tot} total · ${a.sc} · ${VERDICT[a.v]}${a.loc ? " · " + esc(a.loc) : ""}</div>`;
+  const hideTip = () => $("#vtip")?.remove();
+  document.addEventListener("pointerover", (e) => {
+    const t = e.pointerType === "mouse" && !dragId && e.target.closest?.("#vaultview .vitem");
+    const w = t && W.get(t.dataset.w), a = t && A.get(t.dataset.a);
+    if (!w && !a || $("#vtip")?.dataset.for === (w || a).id) return;
+    hideTip(); document.body.insertAdjacentHTML("beforeend", `<div class="vtip" id="vtip" role="tooltip" data-for="${(w || a).id}">${tipHtml(w, a)}</div>`);
+    const tip = $("#vtip"), r = t.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
+    tip.style.left = `${r.right + 10 + tw < innerWidth ? r.right + 10 : Math.max(8, r.left - 10 - tw)}px`;
+    tip.style.top = `${Math.max(8, Math.min(r.top, innerHeight - th - 8))}px`;
+  });
+  document.addEventListener("pointerout", (e) => { if (e.target.closest?.("#vaultview .vitem") && !e.relatedTarget?.closest?.(".vitem")) hideTip(); });
+  document.addEventListener("dragstart", hideTip);
+  addEventListener("scroll", hideTip, { passive: true });
   /** A small message in the bottom corner that turns green or red when its move finishes. */
   function cornerToast(text) {
     if (!$("#mtoasts")) document.body.insertAdjacentHTML("beforeend", '<div class="mtoasts" id="mtoasts" role="status" aria-live="polite"></div>');
