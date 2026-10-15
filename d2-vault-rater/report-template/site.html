@@ -547,7 +547,8 @@ details.vchar > summary:focus-visible { outline: none; }
 details.vsec > summary .vsplit { margin-left: 8px; white-space: nowrap; }
 @media (max-width: 700px) { details.vsec > summary { flex-wrap: wrap; } details.vsec > summary .small { flex-basis: 100%; margin-left: 0; text-align: left; } }
 .vtip { position: fixed; z-index: 30; display: grid; gap: 6px; width: 270px; padding: 12px 14px; border-radius: 3px 14px; background: rgba(21,28,62,.97); border: 1px solid var(--line-hi); box-shadow: var(--shadow); pointer-events: none; font-size: 13px; }
-.vtip .nm { font: 600 15px var(--display); }
+.vtip .nm { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font: 600 15px var(--display); }
+.vtpw { flex: none; color: var(--gold); font-size: 14px; }
 .vtip .sm { color: var(--muted); font-size: 12px; }
 .vtip:has(.vtrows) { width: 320px; }
 .vtel { display: inline-block; padding: 0 7px; margin-right: 4px; border-radius: 999px; font-size: 11px; font-weight: 600; color: var(--el); border: 1px solid var(--el); background: color-mix(in srgb, var(--el) 14%, transparent); }
@@ -1852,7 +1853,7 @@ function vrMain() {
   /** One row per perk column: green (solid) for options the rater wants, blue (dashed) for the rest, the rolled one filled with a tick; then Aegis's masterwork pick. */
   const perkRows = (w) => perkCols(w).filter((p) => PERK_ORDER.includes(p.k)).map((p) => `<div class="vtrow"><span>${PERK_LABEL[p.k]}</span><div>${p.o.map((o) => chip(o, (p.m.includes(o) ? "good" : "alt") + (o === p.a ? " sel" : ""), o === p.a ? "✓ " : "")).join("")}</div></div>`).join("")
     + (w.rmw?.length ? `<div class="vtrow mw"><span>Rec masterwork</span><div>${w.rmw.map((o) => chip(o, "mw", "☆ ")).join("")}</div></div>` : "");
-  const tipTop = (x, sub) => `<div class="nm">${esc(x.n)}</div><div class="sm">${sub}</div><div class="vtmeta"><span class="vtv ${x.v}">${VERDICT[x.v]}</span><span>Overall ${x.sc}${x.rs != null ? " (god roll match + ranking)" : ""}</span>${x.pw ? `<span>✦ ${x.pw} Light</span>` : ""}${x.gt ? `<span>Tier ${x.gt}</span>` : ""}${x.eq ? "<span>Equipped</span>" : ""}</div>`;
+  const tipTop = (x, sub) => `<div class="nm"><span>${esc(x.n)}</span>${x.pw ? `<span class="vtpw">✦ ${x.pw}</span>` : ""}</div><div class="sm">${sub}</div><div class="vtmeta"><span class="vtv ${x.v}">${VERDICT[x.v]}</span><span>Overall ${x.sc}${x.rs != null ? " (god roll match + ranking)" : ""}</span>${x.gt ? `<span>Tier ${x.gt}</span>` : ""}${x.eq ? "<span>Equipped</span>" : ""}</div>`;
   const tipHtml = (w, a) => w
     ? `${tipTop(w, `<span class="vtel" style="--el:var(--${esc(w.e)})">${esc(w.e)}</span> ${esc(typeLine(w))}`)}<div class="vtaegis">${tierBadge(w)}<span>${w.tier ? "tier gun according to Aegis" : "Unrated: not on Aegis's sheet"}</span></div><div class="vtaegis"><b>${w.rs ?? "—"}/100</b><span>Aegis god roll match</span></div><div class="vtrows">${perkRows(w)}</div>`
     : `${tipTop(a, `${esc(a.cls)} · ${esc(a.arch || "Legacy")}${setLine(a)}`)}${statBars(a, true)}<div class="sm">${a.tot} total${topStat(a) ? ` · highest ${esc(topStat(a))}` : ""}${a.loc ? " · " + esc(a.loc) : ""}</div>`;
