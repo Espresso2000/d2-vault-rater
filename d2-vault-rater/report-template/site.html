@@ -864,9 +864,11 @@ aside.drawer[data-place=bottom] .d-body > * { break-inside: avoid; margin-bottom
 .facts span { color: var(--muted); }
 .facts b { font-weight: 500; }
 .perkcols { display: grid; gap: 10px; }
-.perkcol { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 10px; align-items: start; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--glass); }
-.perkcol:has(.papply .movebtn) { grid-template-columns: 92px minmax(0, 1fr) auto; }
-.perkcol:has(.papply .movebtn) .pinfo { grid-column: 2 / -1; }
+.perkcol { display: grid; grid-template-columns: 124px minmax(0, 1fr); gap: 6px 12px; align-items: start; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--glass); }
+/* Label and icons stack in the left column; the selected perk's card (and Apply under it) takes the full width on the right */
+.perkcol .cap { grid-column: 1; grid-row: 1; }
+.perkcol .perkopts { grid-column: 1; grid-row: 2; }
+.perkcol .pinfo { grid-column: 2; grid-row: 1 / span 2; }
 .perkcol .cap { padding-top: 6px; }
 /* The selected perk in each drawer column: symbol, name and description */
 .pinfo { grid-column: 2; display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border-radius: 12px; background: var(--glass-hi); }
@@ -875,11 +877,7 @@ aside.drawer[data-place=bottom] .d-body > * { break-inside: avoid; margin-bottom
 .pinfo p { margin: 2px 0 0; font-size: 12.5px; line-height: 1.45; color: var(--muted); white-space: pre-line; }
 /* Options can be clicked to preview them; the previewed one gets a dashed gold ring, the equipped one keeps its solid ring */
 .perkcol .perkopts > * { cursor: pointer; }
-.papply { grid-column: 2 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
-/* The Apply button sits on the perk icons' row, to their right; its status line drops under the column */
-.perkcol > .papply:has(.movebtn) { grid-column: 3; grid-row: 1; flex-wrap: nowrap; }
-.papply .small { max-width: 200px; }
-.papply .movebtn { white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+.papply { grid-column: 2; grid-row: 3; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
 .perkcols .pico.pv, .perk.pv { opacity: 1; box-shadow: 0 0 0 2px var(--gold); outline: 2px dashed rgba(0,0,0,.5); outline-offset: -2px; }
 .wherebox { display: grid; gap: 8px; padding: 14px 16px; border-radius: 14px; border: 1px solid rgba(51,227,160,.2); background: linear-gradient(120deg, rgba(51,227,160,.07), var(--glass) 60%); }
 .wherebox .line { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; font-size: 14px; }
@@ -974,8 +972,7 @@ body.vr-booting > .topbar, body.vr-booting > main, body.vr-booting > footer { di
   .breakdown b { font-size: 19px; }
   .perkcol { grid-template-columns: minmax(0, 1fr); gap: 4px; }
   .perkcol .cap { padding-top: 0; }
-  .pinfo, .papply, .perkcol > .papply:has(.movebtn), .perkcol:has(.papply .movebtn) .pinfo { grid-column: 1; grid-row: auto; }
-  .perkcol:has(.papply .movebtn) { grid-template-columns: minmax(0, 1fr); }
+  .perkcol .cap, .perkcol .perkopts, .perkcol .pinfo, .papply { grid-column: 1; grid-row: auto; }
   .facts { grid-template-columns: minmax(0, 1fr); }
   .rad .rk, .rad.top .rk { font-size: 36px; }
   .rad .title h3, .rad.top .title h3 { font-size: 20px; }
