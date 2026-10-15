@@ -28,6 +28,8 @@ export interface VendorsInput {
 declare global {
   interface Window {
     VR_VENDORS?: { render: (el: HTMLElement) => void; count: () => number | null };
+    /** The page's hover card asks for a vendor item by its data-vt id. */
+    VR_TIP?: (id: string) => { w?: object; a?: object } | null;
   }
 }
 
@@ -60,7 +62,34 @@ export function initVendors(i: VendorsInput) {
   onlyBuy = store.get("vr-vendors-buy") === "1";
   try { closed = new Set(JSON.parse(store.get("vr-vendors-closed") || "[]") as string[]); } catch { /* keep all open */ }
   window.VR_VENDORS = { render, count: () => buyCount() };
+  window.VR_TIP = (id) => tips.get(id) ?? null;
 }
+
+/** Each drawn card's item in the report's own shape, so the page's hover card can show it like vault gear. */
+const tips = new Map<string, { w?: object; a?: object }>();
+const tipFor = (item: { w?: object; a?: object }) => {
+  const id = `v${tips.size}`;
+  tips.set(id, item);
+  return id;
+};
+const weaponTip = (r: WeaponRating, rolled: boolean) => {
+  const good = goodSet(r);
+  return {
+    w: {
+      id: r.instanceId, n: r.name, e: r.element, t: r.type, f: r.frame, r: r.rarity, gt: r.gearTier,
+      sc: r.score, rs: r.rollScore, v: r.verdict, tier: r.aegis?.tier ?? null, rank: r.aegis?.rank ?? null, tab: r.aegis?.tab ?? "", rmw: r.recMasterwork,
+      // Before purchase the roll isn't decided, so there are no perks to show.
+      pk: rolled ? r.perks.map((p) => ({ k: p.kind, a: p.active, o: p.options, m: p.options.filter((o) => good.has(o)) })) : [],
+      pi: Object.assign({}, ...r.perks.map((p) => p.icons ?? {})),
+    },
+  };
+};
+const armorTip = (a: ArmorRating) => ({
+  a: {
+    id: a.instanceId, n: a.name, cls: a.classType, s: a.slot, r: a.rarity, gt: a.gearTier, arch: a.archetype,
+    st: a.topStats.map((t) => [t.name, t.value]), tot: a.statTotal, set: a.setName, si: a.setInfo, sc: a.score, v: a.verdict,
+  },
+});
 
 const buyCount = () => {
   const list = stock.get(charId);
@@ -135,7 +164,7 @@ function weaponCard({ rating: r, sale, buy, owned }: RatedSale<WeaponRating>) {
   const cols = r.perks.filter((p) => p.options.length).sort((a, b) => rank(a.kind) - rank(b.kind));
   const line = cols.filter((p) => PERK_ORDER.includes(p.kind)).map((p) => perkIcon(p.active, p.icons?.[p.active], good.has(p.active) ? "good" : "")).join("");
   const exo = r.rarity === "Exotic";
-  return `<details class="vcard v-${buy}"><summary>
+  return `<details class="vcard v-${buy}"><summary data-vt="${tipFor(weaponTip(r, sale.rolled))}">
       <div class="vdhead"><span class="ico${exo ? " exotic" : ""}">${img(r.icon)}${tierBadge(r)}</span>
         <div class="vname"><div class="nm">${esc(r.name)}</div><div class="sm">${esc([r.frame.replace(/ Frame$/, ""), r.type].filter(Boolean).join(" "))}</div><div class="sm">${elDot(r.element)}${exo ? ' · <span class="exo">Exotic</span>' : ""}</div></div>
         ${score(r.score)}</div>
@@ -152,7 +181,7 @@ function weaponCard({ rating: r, sale, buy, owned }: RatedSale<WeaponRating>) {
 
 function armorCard({ rating: a, sale, buy }: RatedSale<ArmorRating>) {
   const exo = a.rarity === "Exotic";
-  return `<details class="vcard v-${buy}"><summary>
+  return `<details class="vcard v-${buy}"><summary data-vt="${tipFor(armorTip(a))}">
       <div class="vdhead"><span class="ico${exo ? " exotic" : ""}">${img(a.icon)}<span class="tier tU" title="Gear tier">${a.gearTier ? "T" + a.gearTier : exo ? "EX" : "—"}</span></span>
         <div class="vname"><div class="nm">${esc(a.name)}</div><div class="sm">${esc(a.classType)} ${esc(a.slot)}</div><div class="sm">${esc(a.archetype || "Legacy")}${a.setName ? " · " + esc(a.setName) : ""}</div></div>
         ${score(a.score)}</div>
@@ -203,6 +232,7 @@ function vendorBlock(v: RatedVendor) {
 
 function draw() {
   if (!panel) return;
+  tips.clear();
   const list = stock.get(charId);
   const chars = input.vault.characters;
   const gear = (list ?? []).filter((v) => v.weapons.length || v.armor.length);

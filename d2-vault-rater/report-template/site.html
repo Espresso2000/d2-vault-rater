@@ -1359,7 +1359,7 @@ function vrMain() {
       <div style="min-width:0"><div class="nm">${esc(w.n)}${newBadge(w)}${dtag(w)}${lochip(w)}${lockIcon(w)}</div><div class="sm">${isExotic(w) ? '<span class="exo">Exotic</span> · ' : ""}${esc(typeLine(w))} · ${elDot(w.e)}${w.loc && w.loc !== "Vault" ? " · " + esc(w.loc) : ""}</div><div class="perkline">${traitChips(w)}</div></div>
       ${scoreCell(w.sc)}<div class="c-verdict">${verdict(w.v)}</div></button>`;
   /** Tile: tall and narrow, icon first, like an inventory grid. */
-  const weaponTile = (w) => `<button class="itile v-${w.v}${isExotic(w) ? " exotic" : ""}" data-w="${w.id}" title="${esc(w.n)} · ${esc(typeLine(w))} · ${VERDICT[w.v]}">
+  const weaponTile = (w) => `<button class="itile v-${w.v}${isExotic(w) ? " exotic" : ""}" data-w="${w.id}">
       <div class="art">${img(w.ic)}${tierBadge(w)}${newBadge(w)}<span class="elc" style="color:var(--${esc(w.e)})" title="${esc(w.e)}"></span><span class="flags">${w.lk ? "🔒" : ""}${w.god ? '<span title="Wishlist god roll" style="color:var(--green)">★</span>' : ""}</span><b class="sc num${w.sc >= 90 ? " hi" : ""}">${w.sc}</b></div>
       <div class="tb"><div class="nm">${esc(w.n)}</div><div class="sm">${esc(frameOf(w) || w.t)}</div><div class="sm">${esc(w.t)}</div></div><span class="vbar"></span></button>`;
   const statBars = (a, full) => {
@@ -1380,7 +1380,7 @@ function vrMain() {
   const armorRow = (a) => `<button class="row v-${a.v}" data-a="${a.id}"><span class="ico${isExotic(a) ? " exotic" : ""}">${img(a.ic)}<span class="tier tU" title="Gear tier">${gearTier(a)}</span></span>
       <div style="min-width:0"><div class="nm">${esc(a.n)}${newBadge(a)}${dtag(a)}${lochip(a)}${lockIcon(a)}</div><div class="sm">${isExotic(a) ? '<span class="exo">Exotic</span> · ' : ""}${esc(a.cls)} ${esc(a.s)} · ${esc(a.arch || "Legacy")}${setLine(a)}</div><div class="perkline">${ordered(a.st).map(([n, v]) => `<span>${esc(n)} ${v}</span>`).join("")}${a.tot ? `<span>Total ${a.tot}</span>` : ""}</div></div>
       ${scoreCell(a.sc)}<div class="c-verdict">${verdict(a.v)}</div></button>`;
-  const armorTile = (a) => `<button class="itile v-${a.v}${isExotic(a) ? " exotic" : ""}" data-a="${a.id}" title="${esc(a.n)} · ${esc(a.cls)} ${esc(a.s)} · ${VERDICT[a.v]}">
+  const armorTile = (a) => `<button class="itile v-${a.v}${isExotic(a) ? " exotic" : ""}" data-a="${a.id}">
       <div class="art">${img(a.ic)}<span class="tier tU" title="Gear tier">${gearTier(a)}</span>${newBadge(a)}<span class="flags">${a.lk ? "🔒" : ""}</span><b class="sc num${a.sc >= 90 ? " hi" : ""}">${a.sc}</b></div>
       <div class="tb"><div class="nm">${esc(a.n)}</div><div class="sm">${esc(a.cls)} ${esc(a.s)}</div><div class="sm">${esc(a.arch || "Legacy")}${a.tot ? " · " + a.tot : ""}</div></div><span class="vbar"></span></button>`;
   // Copies of each weapon by name, counted once (and again after a vault refresh).
@@ -1847,22 +1847,34 @@ function vrMain() {
     const ok = !!m?.ok && !m.error;
     t.done(ok ? `${w.n} ${equip ? "equipped on" : "moved to"} ${name}` : `${m?.ok ? `${w.n} moved, but` : `Couldn't move ${w.n}`}${m?.error ? ": " + m.error : ""}`, ok);
   }
-  /** Hovering a Vault tile with a mouse: a small card with the weapon's perks or the armor's stats. */
+  /** Resting the mouse on any weapon or armor piece: a small card with the weapon's perks or the armor's stats. */
   const PERK_LABEL = { barrel: "Barrel", magazine: "Mag", perk1: "Perk 1", perk2: "Perk 2", origin: "Origin" };
-  const chip = (o, cls, star = "") => { const u = src(PERK_ICON[o]); return `<span class="pchip ${cls}">${u ? `<img src="${u}" alt="">` : ""}${star}${esc(o)}</span>`; };
+  const chip = (o, cls, star = "", pi) => { const u = src(PERK_ICON[o]) || pi?.[o]; return `<span class="pchip ${cls}">${u ? `<img src="${u}" alt="">` : ""}${star}${esc(o)}</span>`; };
   /** One row per perk column: green (solid) for options the rater wants, blue (dashed) for the rest, the rolled one filled with a tick; then Aegis's masterwork pick. */
-  const perkRows = (w) => perkCols(w).filter((p) => PERK_ORDER.includes(p.k)).map((p) => `<div class="vtrow"><span>${PERK_LABEL[p.k]}</span><div>${p.o.map((o) => chip(o, (p.m.includes(o) ? "good" : "alt") + (o === p.a ? " sel" : ""), o === p.a ? "✓ " : "")).join("")}</div></div>`).join("")
+  const perkRows = (w) => perkCols(w).filter((p) => PERK_ORDER.includes(p.k)).map((p) => `<div class="vtrow"><span>${PERK_LABEL[p.k]}</span><div>${p.o.map((o) => chip(o, (p.m.includes(o) ? "good" : "alt") + (o === p.a ? " sel" : ""), o === p.a ? "✓ " : "", w.pi)).join("")}</div></div>`).join("")
     + (w.rmw?.length ? `<div class="vtrow mw"><span>Rec masterwork</span><div>${w.rmw.map((o) => chip(o, "mw", "☆ ")).join("")}</div></div>` : "");
   const tipTop = (x, sub) => `<div class="nm"><span>${esc(x.n)}</span>${x.pw ? `<span class="vtpw">✦ ${x.pw}</span>` : ""}</div><div class="sm">${sub}</div><div class="vtmeta"><span class="vtv ${x.v}">${VERDICT[x.v]}</span><span>Overall ${x.sc}${x.rs != null ? ` (${x.rs} · ${x.tier || "—"})` : ""}</span>${x.gt ? `<span>Tier ${x.gt}</span>` : ""}${x.eq ? "<span>Equipped</span>" : ""}</div>`;
   const tipHtml = (w, a) => w
     ? `${tipTop(w, `<span class="vtel" style="--el:var(--${esc(w.e)})">${esc(w.e)}</span> ${esc(typeLine(w))}`)}<div class="vtaegis">${tierBadge(w)}<span>${w.tier ? "tier gun according to Aegis" : "Unrated: not on Aegis's sheet"}</span></div><div class="vtaegis"><b>${w.rs ?? "—"}/100</b><span>Aegis god roll match</span></div><div class="vtrows">${perkRows(w)}</div>`
     : `${tipTop(a, `${esc(a.cls)} · ${esc(a.arch || "Legacy")}${setLine(a)}`)}${statBars(a, true)}<div class="sm">${a.tot} total${topStat(a) ? ` · highest ${esc(topStat(a))}` : ""}${a.loc ? " · " + esc(a.loc) : ""}</div>`;
-  const hideTip = () => $("#vtip")?.remove();
+  // Anything showing one item gets the card: data-w / data-a for your own gear, data-vt for items another module rates
+  // (the web app's Vendors tab answers window.VR_TIP(id) with { w } or { a }). Not on Overview or Wrapped.
+  const HOVER = "[data-w], [data-a], [data-vt]";
+  const tipItem = (t) => { if (t.dataset.vt) return window.VR_TIP?.(t.dataset.vt) || null; const w = W.get(t.dataset.w), a = A.get(t.dataset.a); return w ? { w } : a ? { a } : null; };
+  let tipTimer = 0, tipGone = 0;
+  const hideTip = () => { clearTimeout(tipTimer); if ($("#vtip")) { $("#vtip").remove(); tipGone = Date.now(); } };
   document.addEventListener("pointerover", (e) => {
-    const t = e.pointerType === "mouse" && !dragId && e.target.closest?.("#vaultview .vitem");
-    const w = t && W.get(t.dataset.w), a = t && A.get(t.dataset.a);
-    if (!w && !a || $("#vtip")?.dataset.for === (w || a).id) return;
-    hideTip(); document.body.insertAdjacentHTML("beforeend", `<div class="vtip" id="vtip" role="tooltip" data-for="${(w || a).id}">${tipHtml(w, a)}</div>`);
+    const t = e.pointerType === "mouse" && !dragId && e.target.closest?.(HOVER);
+    if (!t || t.closest("#p-overview, #p-wrapped")) return;
+    const key = t.dataset.w || t.dataset.a || t.dataset.vt;
+    if ($("#vtip")?.dataset.for === key) return;
+    clearTimeout(tipTimer);
+    // A short rest before the first card so it doesn't flash as the mouse passes; quick from one item to the next.
+    const quick = $("#vtip") || Date.now() - tipGone < 300;
+    tipTimer = setTimeout(() => { const it = t.isConnected && t.matches(":hover") && tipItem(t); if (it) showTip(t, it, key); }, quick ? 100 : 400);
+  });
+  function showTip(t, { w, a }, key) {
+    $("#vtip")?.remove(); document.body.insertAdjacentHTML("beforeend", `<div class="vtip" id="vtip" role="tooltip" data-for="${esc(key)}">${tipHtml(w, a)}</div>`);
     const tip = $("#vtip"), r = t.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
     // Underneath the tile, lined up with its left edge; above it when there's no room below; beside it when neither fits.
     const below = r.bottom + 8 + th <= innerHeight, above = r.top - 8 - th >= 8;
@@ -1873,8 +1885,9 @@ function vrMain() {
       tip.style.left = `${r.right + 10 + tw < innerWidth ? r.right + 10 : Math.max(8, r.left - 10 - tw)}px`;
       tip.style.top = `${Math.max(8, Math.min(r.top, innerHeight - th - 8))}px`;
     }
-  });
-  document.addEventListener("pointerout", (e) => { if (e.target.closest?.("#vaultview .vitem") && !e.relatedTarget?.closest?.(".vitem")) hideTip(); });
+  }
+  document.addEventListener("pointerout", (e) => { const t = e.target.closest?.(HOVER); if (t && !t.contains(e.relatedTarget) && !e.relatedTarget?.closest?.(HOVER)) hideTip(); });
+  document.addEventListener("pointerdown", hideTip, true);
   document.addEventListener("dragstart", hideTip);
   addEventListener("scroll", hideTip, { passive: true });
   /** A small message in the bottom corner that turns green or red when its move finishes. */
