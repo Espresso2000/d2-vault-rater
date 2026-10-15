@@ -560,13 +560,16 @@ details.vsec > summary .vsplit { margin-left: 8px; white-space: nowrap; }
 .pchip { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 2px 10px 2px 3px; border-radius: 999px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #9db8ff; background: rgba(77,125,255,.08); border: 1px dashed rgba(122,160,255,.7); }
 .pchip img { flex: none; width: 20px; height: 20px; border-radius: 50%; }
 .pchip.good { color: var(--green); background: rgba(51,227,160,.08); border: 1px solid var(--green); }
+.pchip.sel { color: #fff; font-weight: 600; background: rgba(77,125,255,.32); border-style: solid; }
+.pchip.good.sel { background: rgba(51,227,160,.30); }
 .pchip.mw { color: var(--gold); background: rgba(242,193,78,.08); border-color: var(--gold); padding-left: 10px; }
 /* Vault tiles: damage-type glow along the top and right edges (weapons), gear tier as diamonds down the left */
-.vitem.welem::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; box-shadow: inset 0 2px 0 var(--el), inset -2px 0 0 var(--el), 3px -3px 10px -5px var(--el); opacity: .8; }
-.tdia { position: absolute; left: 3px; top: 14px; display: flex; flex-direction: column; gap: 2px; pointer-events: none; }
-.tdia i { width: 5px; height: 5px; transform: rotate(45deg); background: #f4f1e6; box-shadow: 0 0 2px #000, 0 0 1px #000; }
-.vinv .tdia { top: 11px; left: 2px; gap: 1.5px; } .vinv .tdia i { width: 4px; height: 4px; }
-.vitem.big .tdia { top: 18px; gap: 3px; } .vitem.big .tdia i { width: 6px; height: 6px; }
+.vitem.welem::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; box-shadow: inset 0 2px 0 var(--el), inset -2px 0 0 var(--el), 4px -4px 14px -4px var(--el); }
+.tdia { position: absolute; left: 1px; top: 14px; display: flex; flex-direction: column; gap: 3px; pointer-events: none; }
+.tdia i { width: 4.5px; height: 4.5px; transform: rotate(45deg); background: #f4f1e6; box-shadow: 0 0 2px #000, 0 0 1px #000; }
+.tdia.t5 i { background: #d6ecff; box-shadow: 0 0 3px #6fb8ff, 0 0 1px #000; }
+.vinv .tdia { top: 11px; left: 1px; gap: 2.5px; } .vinv .tdia i { width: 3.5px; height: 3.5px; }
+.vitem.big .tdia { top: 18px; left: 2px; gap: 4px; } .vitem.big .tdia i { width: 5.5px; height: 5.5px; }
 #explorer:not(.vmode) .vm-only { display: none; }
 .vslot { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; margin-top: 14px; }
 .vslot::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(51,227,160,.45), transparent); }
@@ -1751,7 +1754,7 @@ function vrMain() {
   /** A collapsible Vault-mode block under a full heading; cls colours it like that class. Open state is remembered like other sections. */
   const vsec = (id, title, note, body, cls, tools = "") => `<details class="subsec vsec${cls ? ` cc c-${esc(cls)}` : ""}" data-sec="${id}"${isOpen(id) ? " open" : ""}><summary>${chev}<h3>${title}</h3>${tools}<span class="small">${note}</span></summary>${body}</details>`;
   /** Gear tier as small diamonds down a tile's left edge, like the game. */
-  const dia = (n) => (n ? `<span class="tdia" aria-hidden="true">${"<i></i>".repeat(n)}</span>` : "");
+  const dia = (n) => (n ? `<span class="tdia${n === 5 ? " t5" : ""}" aria-hidden="true">${"<i></i>".repeat(n)}</span>` : "");
   const vswitch = (id, on, label) => `<label class="vsplit"><input type="checkbox" id="${id}"${on ? " checked" : ""}> ${label}</label>`;
   function drawVault() {
     const el = $("#vaultview"); if (!el) return;
@@ -1832,13 +1835,13 @@ function vrMain() {
   /** Hovering a Vault tile with a mouse: a small card with the weapon's perks or the armor's stats. */
   const PERK_LABEL = { barrel: "Barrel", magazine: "Mag", perk1: "Perk 1", perk2: "Perk 2", origin: "Origin" };
   const chip = (o, cls, star = "") => { const u = src(PERK_ICON[o]); return `<span class="pchip ${cls}">${u ? `<img src="${u}" alt="">` : ""}${star}${esc(o)}</span>`; };
-  /** One row per perk column: green (solid) for options the rater wants, blue (dashed) for the rest; then Aegis's masterwork pick. */
-  const perkRows = (w) => perkCols(w).filter((p) => PERK_ORDER.includes(p.k)).map((p) => `<div class="vtrow"><span>${PERK_LABEL[p.k]}</span><div>${p.o.map((o) => chip(o, p.m.includes(o) ? "good" : "alt")).join("")}</div></div>`).join("")
+  /** One row per perk column: green (solid) for options the rater wants, blue (dashed) for the rest, the rolled one filled with a tick; then Aegis's masterwork pick. */
+  const perkRows = (w) => perkCols(w).filter((p) => PERK_ORDER.includes(p.k)).map((p) => `<div class="vtrow"><span>${PERK_LABEL[p.k]}</span><div>${p.o.map((o) => chip(o, (p.m.includes(o) ? "good" : "alt") + (o === p.a ? " sel" : ""), o === p.a ? "✓ " : "")).join("")}</div></div>`).join("")
     + (w.rmw?.length ? `<div class="vtrow mw"><span>Rec masterwork</span><div>${w.rmw.map((o) => chip(o, "mw", "☆ ")).join("")}</div></div>` : "");
-  const tipTop = (x, sub) => `<div class="nm">${esc(x.n)}</div><div class="sm">${sub}</div><div class="vtmeta"><span class="vtv ${x.v}">${VERDICT[x.v]}</span><span>${x.sc}</span>${x.pw ? `<span>✦ ${x.pw} Light</span>` : ""}${x.eq ? "<span>Equipped</span>" : ""}</div>`;
+  const tipTop = (x, sub) => `<div class="nm">${esc(x.n)}</div><div class="sm">${sub}</div><div class="vtmeta"><span class="vtv ${x.v}">${VERDICT[x.v]}</span><span>${x.sc}</span>${x.pw ? `<span>✦ ${x.pw} Light</span>` : ""}${x.gt ? `<span>Tier ${x.gt}</span>` : ""}${x.eq ? "<span>Equipped</span>" : ""}</div>`;
   const tipHtml = (w, a) => w
     ? `${tipTop(w, esc(typeLine(w)))}<div class="vtrows">${perkRows(w)}</div>`
-    : `${tipTop(a, `${esc(a.cls)} · ${esc(a.arch || "Legacy")}${a.gt ? ` · Tier ${a.gt}` : ""}${setLine(a)}`)}${statBars(a, true)}<div class="sm">${a.tot} total${a.loc ? " · " + esc(a.loc) : ""}</div>`;
+    : `${tipTop(a, `${esc(a.cls)} · ${esc(a.arch || "Legacy")}${setLine(a)}`)}${statBars(a, true)}<div class="sm">${a.tot} total${a.loc ? " · " + esc(a.loc) : ""}</div>`;
   const hideTip = () => $("#vtip")?.remove();
   document.addEventListener("pointerover", (e) => {
     const t = e.pointerType === "mouse" && !dragId && e.target.closest?.("#vaultview .vitem");
