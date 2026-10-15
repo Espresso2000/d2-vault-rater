@@ -75,6 +75,12 @@ test("tab list is read from the htmlview page", () => {
   ]);
 });
 
+test("names compare without accents: Jötunn and Jotunn are the same weapon", async () => {
+  const { normalizeName } = await import("../src/bungie/manifest.js");
+  assert.equal(normalizeName("Jötunn"), "jotunn");
+  assert.equal(normalizeName("Jötunn"), normalizeName("Jotunn"));
+});
+
 test("Aegis names map to manifest hashes", () => {
   const a = aegis();
   assert.deepEqual(a.weapons.find((w) => w.name === "Unforgiven")!.hashes, [1001]);
@@ -202,6 +208,19 @@ test("DIM plan, CSV, apply and undo; protected items are never unlocked", async 
   assert.equal(undo.failed.length, 0);
 });
 
+test("RADS loot links to your best copy even when the sheet spells the name differently", async () => {
+  const { buildSiteData } = await import("../src/report/siteData.js");
+  const v = vault();
+  const settings = SettingsSchema.parse({});
+  const w = rateWeapons(v.weapons, { aegis: aegis(), wishlists: null, manifest: m }, settings);
+  const a = rateArmor(v, settings);
+  const loot = { name: "UNFORGIVEN", hash: null, type: "Submachine Gun", element: "Void", rarity: "Legendary" as const, icon: "", from: ["aegis" as const] };
+  const act = { key: "x", name: "X", kind: "raid" as const, image: "", rank: 1, score: 0, verdict: "Low priority" as const, parts: { quality: 0, need: 0, sets: 0 }, weapons: [{ ...loot, tier: null, aegisRank: null, tab: null, frame: "", notes: "", owned: 2, bestScore: null, bestRoll: null, status: "have" as const }], sets: [], counts: { chase: 0, upgrade: 0, have: 1, sTier: 0 } };
+  const data = buildSiteData(w, a, { vaultSize: 0, settings, vault: v, activities: [act] }, () => null, null);
+  const best = w.ratings.filter((r) => r.name === "Unforgiven").sort((x, y) => y.score - x.score)[0];
+  assert.equal(data.rads[0].weapons[0].best, best.instanceId);
+});
+
 test("report markdown has images and every section", () => {
   const v = vault();
   const settings = SettingsSchema.parse({});
@@ -211,6 +230,19 @@ test("report markdown has images and every section", () => {
   for (const h of ["## Top picks by slot", "## Best by element", "## Best by archetype", "## Duplicates", "## Shard list", "## Armor"]) assert.ok(md.includes(h), h);
   assert.match(md, /!\[Unforgiven\]\(https:\/\/www\.bungie\.net\/screens\/1001\.jpg\)/);
   assert.match(md, /\*\*Attrition Orbs\*\*/);
+});
+
+test("the report embeds only the best raid's and best dungeon's banner art", async () => {
+  const { buildSiteData } = await import("../src/report/siteData.js");
+  const v = vault();
+  const settings = SettingsSchema.parse({});
+  const w = rateWeapons(v.weapons, { aegis: aegis(), wishlists: null, manifest: m }, settings);
+  const act = (key: string, kind: string, score: number) => ({ key, name: key, kind, score, image: `art:${key}`, weapons: [] });
+  const embeds: Record<string, boolean> = {};
+  const key = (url: string | null | undefined, embed = true) => (url?.startsWith("art:") && (embeds[url] = embed), url ?? null);
+  const activities = [act("r1", "raid", 50), act("r2", "raid", 80), act("d1", "dungeon", 10)] as unknown as NonNullable<Parameters<typeof buildSiteData>[2]["activities"]>;
+  buildSiteData(w, rateArmor(v, settings), { vaultSize: 9, settings, activities }, key, null);
+  assert.deepEqual(embeds, { "art:r1": false, "art:r2": true, "art:d1": true });
 });
 
 test("armor set tiers: Aegis tab and bonus sheet parse, and owning more of a strong set scores higher", async () => {
@@ -278,4 +310,20 @@ test("readJsonCached parses a file once and re-reads it after a write", async ()
   assert.equal(readJsonCached(f, null), first);
   writeJson(f, { a: 2 });
   assert.equal(readJsonCached<{ a: number } | null>(f, null)?.a, 2);
+});
+
+test("encounter loadouts: a vault with nothing that fits still plans every encounter", async () => {
+  const { planEncounters } = await import("../src/rating/encounters.js");
+  const plans = planEncounters([]);
+  assert.ok(Object.values(plans).flat().length > 0);
+  for (const e of Object.values(plans).flat()) assert.deepEqual(e.picks, []);
+});
+
+test("encounter plans filter by activity name, apostrophes and all", async () => {
+  const { activityMatches } = await import("../src/rating/encounters.js");
+  assert.ok(activityMatches("kings-fall", "King's Fall"));
+  assert.ok(activityMatches("salvations-edge", "Salvation’s Edge"));
+  assert.ok(activityMatches("shattered-throne", "The Shattered Throne"));
+  assert.ok(activityMatches("vow-of-the-disciple", "vow"));
+  assert.ok(!activityMatches("last-wish", "King's Fall"));
 });

@@ -3,7 +3,7 @@
  * local app (../../src), and render the same report page. Nothing runs on a server.
  */
 import { hydrate, paths, readText } from "./shims/config";
-import { loadTokens, clearTokens, LoginRequired, minutesLeft } from "./shims/client";
+import { loadTokens, clearTokens, canSignIn, LoginRequired, minutesLeft } from "./shims/client";
 import { startLogin, finishLogin } from "./shims/oauth";
 import { clearDimToken, fetchDimData, withDimKeep, setDimTag, DIM_TAGS, type DimTagValue, type DimData } from "./shims/sync";
 import { appConfig, configured, loadServedConfig, redirectUrl, saveLocalConfig } from "./appConfig";
@@ -129,6 +129,9 @@ async function run() {
 
   // Wrapped only needs the manifest: fetch it alongside the vault instead of after rating.
   const wrappedP = fetchWrapped(m).catch(() => null);
+  // Fixed for the visit, so the Vault tab's Refresh doesn't rebuild them.
+  const loot = loadActivityLoot();
+  const sourceOfP = buildSourceLookup(m, aegis, loot);
   /** Reads the vault (and DIM) and rates it. Runs again for the Vault tab's Refresh, reusing what's loaded above. */
   const rate = async () => {
     log("Reading your vault…");
@@ -145,7 +148,6 @@ async function run() {
     const w = rateWeapons(vault.weapons, { manifest: m, aegis, wishlists: loadWishlists() }, rated);
     const a = rateArmor(vault, rated, loadArmorSets());
     const plan = (currentPlan = planDimActions(vault, w, a, rated));
-    const loot = loadActivityLoot();
     const activities = loot ? rateActivities(loot, aegis, w.ratings, a.ratings, loadArmorSets()) : [];
     log("Reading your account stats for Wrapped…");
     const wrapped = await wrappedP;
@@ -160,7 +162,7 @@ async function run() {
       vault,
       wrapped,
       activities,
-      sourceOf: await buildSourceLookup(m, aegis, loot),
+      sourceOf: await sourceOfP,
       encounters: planEncounters(w.ratings),
       dim,
       dimError,
@@ -281,7 +283,8 @@ async function boot() {
     }
   }
   const t = loadTokens();
-  if (!t || Date.now() > t.access_expires_at - 60_000) return showSignIn(t ? "Your Bungie sign-in has expired. Sign in again to continue." : "");
+  // An old access token is fine while a refresh token can renew it (local runs with the token relay).
+  if (!canSignIn(t)) return showSignIn(t ? "Your Bungie sign-in has expired. Sign in again to continue." : "");
   try {
     await run();
   } catch (e) {

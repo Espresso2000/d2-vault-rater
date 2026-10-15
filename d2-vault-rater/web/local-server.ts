@@ -4,10 +4,9 @@
  *   GET  /app-config.json  hands the page the API key and client id from ../.env (not secret)
  *   POST /oauth/token      relays Bungie's token exchange, adding the client secret, so the secret
  *                          stays in .env and never reaches the page
- *   POST /debug/vendors    saves the page's raw vendor data to web/debug/ (see src/vendors/capture.ts)
  * Hosted on a static server instead, the page uses a Public Bungie app and needs neither.
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { parseEnv } from "node:util";
 import type { Connect, Plugin } from "vite";
@@ -41,16 +40,6 @@ function middleware(): Connect.NextHandleFunction {
       res.setHeader("Content-Type", "application/json");
       res.setHeader("Cache-Control", "no-store");
       return res.end(JSON.stringify({ bungieApiKey: env.BUNGIE_API_KEY || "", bungieClientId: env.BUNGIE_CLIENT_ID || "", tokenEndpoint: env.BUNGIE_CLIENT_SECRET ? "oauth/token" : "" }));
-    }
-    if (req.method === "POST" && path.endsWith("/debug/vendors")) {
-      const host = req.headers.host || (req.headers[":authority"] as string | undefined);
-      if (req.headers.origin && req.headers.origin !== `https://${host}`) return (res.statusCode = 403), res.end("Wrong origin");
-      const body = await readBody(req);
-      const id = (JSON.parse(body) as { characterId?: string }).characterId?.replace(/\D/g, "") || "unknown";
-      const dir = resolve(import.meta.dirname, "debug");
-      mkdirSync(dir, { recursive: true });
-      writeFileSync(resolve(dir, `vendors-${id}.json`), body);
-      return res.end("ok");
     }
     if (req.method === "POST" && path.endsWith("/oauth/token")) {
       // Only this page may use the relay.

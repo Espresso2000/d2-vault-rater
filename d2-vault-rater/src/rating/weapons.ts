@@ -88,23 +88,19 @@ function aegisIndex(aegis: AegisData | null) {
   };
 }
 
+/** ~275k wishlist rolls grouped by item, once per loaded wishlist: each rating (and each vendor item) then reads only its own. */
+const rollsByItem = new WeakMap<WishlistData, Map<number, WishlistData["rolls"]>>();
+
 /** Wishlist rolls for the weapons you own, with perk hashes turned into names to compare with records. */
 function wishIndex(wl: WishlistData | null, m: Manifest | null, owned: Set<number>) {
   const byItem = new Map<number, { names: string[]; trash: boolean }[]>();
   if (!wl || !m) return byItem;
-  const perkName = new Map<number, string>();
-  const nameOf = (h: number) => {
-    let n = perkName.get(h);
-    if (n === undefined) perkName.set(h, (n = normalizeName(m.items[h]?.displayProperties?.name ?? "")));
-    return n;
-  };
-  for (const r of wl.rolls) {
-    // ~275k rolls; only those for items in the vault can match.
-    if (!owned.has(r.itemHash)) continue;
-    const names = r.perks.map(nameOf).filter(Boolean);
-    const list = byItem.get(r.itemHash) ?? [];
-    list.push({ names, trash: r.trash });
-    byItem.set(r.itemHash, list);
+  let rolls = rollsByItem.get(wl);
+  if (!rolls) rollsByItem.set(wl, (rolls = groupBy(wl.rolls, (r) => r.itemHash)));
+  const nameOf = (h: number) => normalizeName(m.items[h]?.displayProperties?.name ?? "");
+  for (const h of owned) {
+    const list = rolls.get(h);
+    if (list) byItem.set(h, list.map((r) => ({ names: r.perks.map(nameOf).filter(Boolean), trash: r.trash })));
   }
   return byItem;
 }

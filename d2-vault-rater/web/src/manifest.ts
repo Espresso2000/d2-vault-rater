@@ -3,14 +3,14 @@ import { setManifest, versionSlug, type Manifest } from "./shims/manifest";
 import { files, join } from "./shims/node";
 import { paths } from "./shims/config";
 import { loadVersioned } from "./versioned";
-import type { LiteManifest } from "./strip";
+import { MANIFEST_SNAPSHOT, type LiteManifest } from "./strip";
 import { STRIP_FORMAT } from "../../src/bungie/strip.js";
 
 export async function loadLiteManifest(log: (s: string) => void): Promise<LiteManifest> {
   const m = await loadVersioned<LiteManifest>({
     // A copy stored in an older strip format (without plug icons) is rebuilt once.
     key: `manifest-v${STRIP_FORMAT}`,
-    snapshot: "manifest",
+    snapshot: MANIFEST_SNAPSHOT,
     worker: () => new Worker(new URL("./manifest.worker.ts", import.meta.url), { type: "module" }),
     log,
     messages: {

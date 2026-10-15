@@ -57,6 +57,7 @@ export function normalizeName(s: string): string {
     n = s
       .toLowerCase()
       .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
       .replace(/[‘’“”'"]/g, "")
       .replace(/[^a-z0-9]+/g, " ")
       .trim();

@@ -75,10 +75,17 @@ export function planEncounter(enc: Encounter, weapons: WeaponRating[]): Encounte
 
   const picks: EncounterPick[] = bestCombo.map(({ c, role }) => ({ role, id: c.r.instanceId, name: c.r.name, meta: c.meta }));
   const owned = new Set(weapons.map((w) => base(w.name)));
-  const missing = [...new Set([...(enc.meta ?? []), ...ROLE_META[enc.roles[0]]])].filter((n) => !owned.has(normalizeName(n))).slice(0, 4);
+  // No roles left means nothing in the vault fits this encounter (an empty vault, say): only its guide picks are missing.
+  const missing = [...new Set([...(enc.meta ?? []), ...(enc.roles.length ? ROLE_META[enc.roles[0]] : [])])].filter((n) => !owned.has(normalizeName(n))).slice(0, 4);
   return { ...enc, picks, missing };
 }
 
 export function planEncounters(weapons: WeaponRating[]): Record<string, EncounterPlan[]> {
   return Object.fromEntries(Object.entries(ENCOUNTERS).map(([key, list]) => [key, list.map((e) => planEncounter(e, weapons))]));
+}
+
+/** Whether an activity key ("kings-fall") is what a player typed ("King's Fall", "the shattered throne", "vow"). */
+export function activityMatches(key: string, query: string): boolean {
+  const q = query.toLowerCase().replace(/['’]/g, "").replace(/[^a-z]+/g, "-").replace(/^-+|-+$/g, "").replace(/^the-/, "");
+  return key.includes(q);
 }
