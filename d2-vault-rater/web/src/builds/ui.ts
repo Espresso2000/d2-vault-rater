@@ -466,7 +466,9 @@ function abilitiesCard(b: Build, sc: SubclassDef | null, c: Ctx) {
   const fragsIn = frags.filter((i, k) => k < slots && !isEmptyPlug(defs!.plugs[b.plugs[i]])).length;
   const extras = group("other");
   return `<section class="bd-card glass bd-abilities" style="--el:var(--${sc.el})">
-    <div class="bd-card-head"><h3>Abilities</h3><span class="small muted">Point at or tap a slot to change it</span></div>
+    <div class="bd-card-head"><h3>Abilities</h3>
+      <span class="bd-popmode"><span class="small muted">${popMode === "hover" ? "Rest the pointer on a slot, or tap it, to change it" : "Click or tap a slot to change it"}</span>
+        <span class="seg" role="group" aria-label="Open slot pickers on">${(["hover", "click"] as const).map((m) => `<button data-act="popmode" data-m="${m}" aria-pressed="${popMode === m}">${m === "hover" ? "Hover" : "Click"}</button>`).join("")}</span></span></div>
     <div class="bd-sclayout">
       <div class="bd-sc-left">
         ${group("super").map((i) => chip(i, "super")).join("")}
@@ -572,6 +574,17 @@ const hideTip = () => {
 
 /** The open popover: the socket it belongs to, and whether a click or tap pinned it open. */
 let pop: { i: number; pinned: boolean; q: string; detail: number | null } | null = null;
+/** How slot popovers open: on hover (after a short rest, so sweeping the mouse across slots opens nothing) or only on click. Remembered in this browser. */
+let popMode: "hover" | "click" = (() => {
+  try {
+    return localStorage.getItem("vr-bd-popmode") === "click" ? "click" : "hover";
+  } catch {
+    return "hover";
+  }
+})();
+/** Hover intent: the pointer has to rest this long on a slot before its popover opens (or replaces an open one). */
+const HOVER_OPEN_MS = 350;
+const HOVER_SWITCH_MS = 300;
 let popTimer = 0;
 
 function popEl(): HTMLElement {
@@ -1251,7 +1264,8 @@ function wire(el: HTMLElement) {
     if (!p || e.pointerType !== "mouse" || pop?.pinned) return;
     clearTimeout(popTimer);
     if (pop?.i === Number(p.dataset.pop)) return;
-    popTimer = window.setTimeout(() => openPop(Number(p.dataset.pop), false), pop ? 60 : 160);
+    if (popMode !== "hover") return;
+    popTimer = window.setTimeout(() => openPop(Number(p.dataset.pop), false), pop ? HOVER_SWITCH_MS : HOVER_OPEN_MS);
   });
   el.addEventListener("pointerout", (e) => {
     const p = (e.target as HTMLElement).closest<HTMLElement>("[data-pop]");
@@ -1264,7 +1278,7 @@ function wire(el: HTMLElement) {
   // Keyboard focus shows the popover; arrow down moves into it.
   el.addEventListener("focusin", (e) => {
     const p = (e.target as HTMLElement).closest<HTMLElement>("[data-pop]");
-    if (p && p.matches(":focus-visible") && pop?.i !== Number(p.dataset.pop)) openPop(Number(p.dataset.pop), false);
+    if (p && popMode === "hover" && p.matches(":focus-visible") && pop?.i !== Number(p.dataset.pop)) openPop(Number(p.dataset.pop), false);
   });
   el.addEventListener("focusout", (e) => {
     if ((e.target as HTMLElement).closest("[data-pop]")) leaveCheck(e.relatedTarget as Node | null);
@@ -1317,6 +1331,14 @@ const ACTIONS: Record<string, (t: HTMLElement) => void> = {
     log.length = 0;
     loading = load();
     if (panel) panel.innerHTML = loadingCard();
+  },
+  popmode: (t) => {
+    popMode = t.dataset.m === "click" ? "click" : "hover";
+    try {
+      localStorage.setItem("vr-bd-popmode", popMode);
+    } catch {}
+    closePop();
+    draw();
   },
   save: () => saveCur(),
   revert: () => revertCur(),
