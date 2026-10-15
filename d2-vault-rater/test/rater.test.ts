@@ -208,6 +208,19 @@ test("DIM plan, CSV, apply and undo; protected items are never unlocked", async 
   assert.equal(undo.failed.length, 0);
 });
 
+test("RADS loot links to your best copy even when the sheet spells the name differently", async () => {
+  const { buildSiteData } = await import("../src/report/siteData.js");
+  const v = vault();
+  const settings = SettingsSchema.parse({});
+  const w = rateWeapons(v.weapons, { aegis: aegis(), wishlists: null, manifest: m }, settings);
+  const a = rateArmor(v, settings);
+  const loot = { name: "UNFORGIVEN", hash: null, type: "Submachine Gun", element: "Void", rarity: "Legendary" as const, icon: "", from: ["aegis" as const] };
+  const act = { key: "x", name: "X", kind: "raid" as const, image: "", rank: 1, score: 0, verdict: "Low priority" as const, parts: { quality: 0, need: 0, sets: 0 }, weapons: [{ ...loot, tier: null, aegisRank: null, tab: null, frame: "", notes: "", owned: 2, bestScore: null, bestRoll: null, status: "have" as const }], sets: [], counts: { chase: 0, upgrade: 0, have: 1, sTier: 0 } };
+  const data = buildSiteData(w, a, { vaultSize: 0, settings, vault: v, activities: [act] }, () => null, null);
+  const best = w.ratings.filter((r) => r.name === "Unforgiven").sort((x, y) => y.score - x.score)[0];
+  assert.equal(data.rads[0].weapons[0].best, best.instanceId);
+});
+
 test("report markdown has images and every section", () => {
   const v = vault();
   const settings = SettingsSchema.parse({});

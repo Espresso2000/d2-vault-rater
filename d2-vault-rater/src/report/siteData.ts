@@ -2,7 +2,7 @@ import type { WeaponRating, WeaponReport } from "../rating/weapons.js";
 import type { ArmorRating, ArmorReport } from "../rating/armor.js";
 import type { ReportOptions } from "./report.js";
 import { setKey, type ArmorSetData } from "../sources/armorSets.js";
-import { stripReissue } from "../bungie/defs.js";
+import { baseName } from "../bungie/defs.js";
 import { groupBy } from "../util.js";
 
 /**
@@ -26,7 +26,7 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
   // Your best copy of each weapon by name (first one on a tie), for RADS loot.
   const bestCopy = new Map<string, WeaponRating>();
   for (const r of w.ratings) {
-    const k = stripReissue(r.name);
+    const k = baseName(r.name);
     if (r.score > (bestCopy.get(k)?.score ?? -Infinity)) bestCopy.set(k, r);
   }
   const dimOf = (id: string) => {
@@ -160,7 +160,7 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
         icon: imageKey(x.icon),
         src: o.sourceOf?.(x.hash ?? 0, x.name) ?? null,
         // Your best copy, so the page can open its details.
-        best: bestCopy.get(x.name)?.instanceId ?? null,
+        best: bestCopy.get(baseName(x.name))?.instanceId ?? null,
       })),
     })),
     encounters: o.encounters ?? {},
