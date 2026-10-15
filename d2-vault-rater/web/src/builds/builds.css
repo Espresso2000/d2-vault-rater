@@ -643,3 +643,10 @@ button.bd-k-pill::after { display: none; }
 .bd-lopen { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; padding: 4px 8px; border-radius: 10px; border: 1px solid var(--line); background: transparent; color: inherit; cursor: pointer; }
 .bd-lopen:hover, .bd-lopen:focus-visible { border-color: var(--el, var(--line-hi)); background: rgba(255,255,255,.04); }
 .bd-lopen .bd-bgear { flex: 1; min-width: 0; }
+.bd-bgame { flex: none; display: inline-flex; margin-right: 6px; }
+.bd-bgame .bd-lglyph { width: 24px; height: 24px; }
+.bd-lchip { position: relative; }
+.bd-lchip .bd-lmatch { position: absolute; top: -5px; right: -5px; width: 15px; height: 15px; display: grid; place-items: center; border-radius: 50%; background: #33e3a0; color: #04140d; font-size: 10px; line-height: 1; }
+.bd-lsaved { flex: none; font-size: 12px; color: var(--muted); white-space: nowrap; max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
+.bd-lsaved b { color: var(--ok, #33e3a0); }
+.bd-gname { margin-left: 6px; font-size: 12px; }

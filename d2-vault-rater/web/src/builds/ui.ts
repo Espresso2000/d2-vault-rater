@@ -247,6 +247,7 @@ function listPane() {
   const cls = listCls!;
   const mine = builds.filter((b) => b.cls === cls).sort((a, b) => lastUsed(b).localeCompare(lastUsed(a)));
   const q = listQuery.toLowerCase();
+  const game = gameLoadouts(cls, c);
   return `<section class="bd-saved glass" aria-label="Saved builds">
     <div class="bd-saved-head">
       <span class="cap">Saved builds</span>
@@ -255,7 +256,7 @@ function listPane() {
         .join("")}</div>
       ${mine.length > 4 ? `<input class="bd-input bd-q" id="bd-q" type="search" placeholder="Search ${esc(CLASS_NAME(cls))} builds" value="${esc(listQuery)}" aria-label="Search builds">` : ""}
     </div>
-    <div class="bd-cards">${loadoutCard(cls, c)}${newCard(cls)}${mine.map((b) => buildCard(b, c, !!q && !listText(b).includes(q))).join("")}</div>
+    <div class="bd-cards">${loadoutCard(game)}${newCard(cls)}${mine.map((b) => buildCard(b, c, !!q && !listText(b).includes(q), game.find((l) => l.match?.id === b.id))).join("")}</div>
   </section>`;
 }
 
@@ -285,8 +286,7 @@ const loadGlyph = (l: { icon?: string; color?: string }, sub?: string | null) =>
     : `<span class="bd-bico">${img(sub)}</span>`;
 
 /** A compact card first in the grid: a few slot chips, the count, and a button for the full list. */
-function loadoutCard(cls: number, c: Ctx) {
-  const list = gameLoadouts(cls, c);
+function loadoutCard(list: ReturnType<typeof gameLoadouts>) {
   if (!list.length) return "";
   const chips = list
     .map((l) => {
@@ -327,7 +327,7 @@ function openLoadoutList() {
             ${l.icon ? `<span class="bd-bico bd-lsub">${img(sc?.i)}</span>` : ""}
             <span class="bd-bgear">${WEAPON_SLOTS.map((s) => rowIco(c, b, s)).join("")}<i></i>${ARMOR_SLOTS.map((s) => rowIco(c, b, s)).join("")}</span>
             ${match ? `<span class="bd-lmatch" title="Matches your EVR build “${esc(match.name)}”">✓</span>` : ""}</button>
-          ${match ? "" : `<button class="btn bd-sm" data-act="savegame" data-i="${i}" title="Save as an EVR build">Save</button>`}
+          ${match ? `<span class="bd-lsaved" title="Matches your EVR build">Saved as <b>${esc(match.name)}</b></span>` : `<button class="btn bd-sm" data-act="savegame" data-i="${i}" title="Save as an EVR build">Save</button>`}
         </div>`;
       })
       .join("")}</div>
@@ -361,7 +361,7 @@ function newCard(cls: number) {
   </div>`;
 }
 
-function buildCard(b: Build, c: Ctx, hidden: boolean) {
+function buildCard(b: Build, c: Ctx, hidden: boolean, game?: ReturnType<typeof gameLoadouts>[number]) {
   const sc = b.subclass ? defs!.subclasses[b.subclass] : null;
   const s = buildScore(b, c).total;
   const weapons = WEAPON_SLOTS.map((slot) => weaponOf(c, b.items[slot]?.id));
@@ -378,7 +378,7 @@ function buildCard(b: Build, c: Ctx, hidden: boolean) {
     <button class="bd-bopen" data-act="open" data-id="${id}" aria-current="${b.id === cur?.id}" aria-label="${esc(`Open ${b.name}`)}">
       <span class="bd-btop"><span class="bd-bico">${img(sc?.i)}</span>
         <span class="bd-bmeta"><b>${esc(b.name)}</b><span>${sc ? esc(sc.n) : "No subclass"}${b.tags.length ? " · " + b.tags.map(esc).join(", ") : ""}</span></span>
-        ${s !== null ? `<span class="bd-bscore t${scoreTier(s)}" title="Build rating">${s}</span>` : ""}</span>
+        ${game ? `<span class="bd-bgame" title="Matches in-game loadout ${game.i + 1} (${esc(game.name)})">${loadGlyph(game)}</span>` : ""}${s !== null ? `<span class="bd-bscore t${scoreTier(s)}" title="Build rating">${s}</span>` : ""}</span>
       <span class="bd-bgear">${weapons.map(gearIco).join("")}<i></i>${armor.map(gearIco).join("")}</span>
       <span class="bd-bline"><span class="cap">Exotics</span><span>${exotics.length ? exotics.map((x) => esc(x.name)).join(" · ") : "None"}</span></span>
       <span class="bd-bline"><span class="cap">Aspects</span><span>${aspects.length ? aspects.map((p) => esc(p.n)).join(" · ") : "None"}${frags ? ` · ${frags} fragment${frags === 1 ? "" : "s"}` : ""}</span></span>
@@ -417,7 +417,10 @@ function editor(b: Build, c: Ctx) {
     <header class="bd-hero" style="--el:var(--${sc?.el ?? "Unknown"})">
       <div class="bd-hero-ico">${img(sc?.i)}</div>
       <div class="bd-hero-text">
-        <div class="eyebrow">${esc(CLASS_NAME(b.cls))}${sc ? ` · ${esc(sc.n)}` : ""}</div>
+        <div class="eyebrow">${esc(CLASS_NAME(b.cls))}${sc ? ` · ${esc(sc.n)}` : ""}${(() => {
+          const g = gameLoadouts(b.cls, c).find((l) => l.match?.id === b.id);
+          return g ? ` <span class="bd-bgame" title="Matches in-game loadout ${g.i + 1} “${esc(g.name)}”">${loadGlyph(g)}<span class="bd-gname">In-game loadout ${g.i + 1}: ${esc(g.name)}</span></span>` : "";
+        })()}</div>
         <input class="bd-name" id="bd-name" value="${esc(b.name)}" aria-label="Build name" maxlength="80">
         <div class="bd-hero-row">
           <div class="bd-tags">${b.tags.map((t, i) => `<span class="chip">${esc(t)}<button class="bd-x" data-act="untag" data-i="${i}" aria-label="Remove tag ${esc(t)}">✕</button></span>`).join("")}
