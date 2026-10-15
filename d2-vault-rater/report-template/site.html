@@ -536,6 +536,13 @@ details.vsec > summary .chev::before { width: 8px; height: 8px; border-width: 2p
 details.vsec > summary h3 { font: 600 19px var(--display); }
 details.vsec > summary .small { margin-left: auto; text-align: right; }
 details.vsec.cc > summary { border-left: 3px solid var(--cc); }
+details.vchar { margin-bottom: 14px; }
+details.vchar > summary { list-style: none; cursor: pointer; user-select: none; margin-bottom: 10px; }
+details.vchar > summary::-webkit-details-marker { display: none; }
+details.vchar > summary .vhead { position: static; transition: border-color .15s ease; }
+details.vchar > summary:hover .vhead, details.vchar > summary:focus-visible .vhead { border-color: var(--hover); }
+details.vchar > summary:focus-visible { outline: none; }
+.vht { display: flex; align-items: center; gap: 10px; }
 details.vsec > summary .vsplit { margin-left: 8px; white-space: nowrap; }
 @media (max-width: 700px) { details.vsec > summary { flex-wrap: wrap; } details.vsec > summary .small { flex-basis: 100%; margin-left: 0; text-align: left; } }
 .vtip { position: fixed; z-index: 30; display: grid; gap: 6px; width: 270px; padding: 12px 14px; border-radius: 3px 14px; background: rgba(21,28,62,.97); border: 1px solid var(--line-hi); box-shadow: var(--shadow); pointer-events: none; font-size: 13px; }
@@ -1752,15 +1759,16 @@ function vrMain() {
     const vaultSets = (xs) => !xs.length ? '<div class="vdrop vbox" data-k="a" data-to="vault"><span class="small muted">No armor</span></div>' : `<div class="vdrop vbox split" data-k="a" data-to="vault">${[...groupBy(xs, groupOf)]
       .sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0]))
       .map(([g, gs]) => `<div class="vtype"><div class="cap">${esc(g)}<span>${gs.length}</span></div><div class="vtiles">${gs.sort(order).map((a) => atile(a)).join("")}</div></div>`).join("")}</div>`;
-    const grid = (cs, keep) => `<div class="vgrid" style="--chars:${cs.length}">
-      ${cs.map((c) => `<div class="vhead cc c-${esc(c.cls)}"><b>${esc(c.cls)}</b><span class="small muted">${plural(DATA.armor.filter((a) => a.wh === c.id).length, "piece")}</span></div>`).join("")}
-      <div class="vhead"><b>Vault</b><span class="small muted">${plural(DATA.armor.filter((a) => inVault(a) && keep(a)).length, "armor piece")}</span></div>
-      ${ASLOTS.map((slot) => { const xs = bySlot.get(slot) || []; return `<div class="vslot"><span class="cap">${slot}</span></div>` +
+    // The header row (a chevron in the character's header when it's a collapsible split block) and the slot rows.
+    const heads = (cs, keep, fold) => `${cs.map((c) => `<div class="vhead cc c-${esc(c.cls)}"><span class="vht">${fold ? chev : ""}<b>${esc(c.cls)}</b></span><span class="small muted">${plural(DATA.armor.filter((a) => a.wh === c.id).length, "piece")}</span></div>`).join("")}
+      <div class="vhead"><b>Vault</b><span class="small muted">${plural(DATA.armor.filter((a) => inVault(a) && keep(a)).length, "armor piece")}</span></div>`;
+    const rows = (cs, keep) => `${ASLOTS.map((slot) => { const xs = bySlot.get(slot) || []; return `<div class="vslot"><span class="cap">${slot}</span></div>` +
         cs.map((c) => { const mine = xs.filter((a) => a.wh === c.id), eq = mine.find((a) => a.eq); return `<div class="vcell"><div class="vdrop" data-k="a" data-cls="${esc(c.cls)}" data-to="${c.id}" data-equip="1" title="Drop here to equip">${eq ? atile(eq, true) : '<span class="vempty">Empty</span>'}</div><div class="vdrop vinv" data-k="a" data-cls="${esc(c.cls)}" data-to="${c.id}">${mine.filter((a) => !a.eq).map((a) => atile(a)).join("")}</div></div>`; }).join("") +
-        vaultSets(xs.filter((a) => inVault(a) && keep(a))); }).join("")}
-    </div>`;
-    if (!asplit || !chars.length) return grid(chars, () => true);
-    return chars.map((c) => vsec(`v-armor-${c.id}`, esc(c.cls), `${plural(DATA.armor.filter((a) => a.wh === c.id).length, "piece")} on this character · vault ${esc(c.cls)} armor`, grid([c], (a) => a.cls === c.cls), c.cls)).join("");
+        vaultSets(xs.filter((a) => inVault(a) && keep(a))); }).join("")}`;
+    if (!asplit || !chars.length) return `<div class="vgrid" style="--chars:${chars.length}">${heads(chars, () => true)}${rows(chars, () => true)}</div>`;
+    // Split: one block per character; its header row is the collapse control, so it stays when the slots fold away.
+    return chars.map((c) => { const keep = (a) => a.cls === c.cls, id = `v-armor-${c.id}`;
+      return `<details class="vchar" data-sec="${id}"${isOpen(id) ? " open" : ""}><summary class="vgrid" style="--chars:1">${heads([c], keep, true)}</summary><div class="vgrid" style="--chars:1">${rows([c], keep)}</div></details>`; }).join("");
   }
   /** One slot's vault weapons, in the current order; split into a labelled group per weapon type when that's on. */
   function vaultBox(items, tile) {
