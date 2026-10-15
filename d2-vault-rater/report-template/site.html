@@ -567,16 +567,17 @@ details.vsec > summary .vsplit { margin-left: 8px; white-space: nowrap; }
 .pchip.mw { color: var(--gold); background: rgba(242,193,78,.08); border-color: var(--gold); padding-left: 10px; }
 /* Vault tiles: damage-type glow along the top edge (weapons), gear tier as diamonds down the left */
 .vitem.welem::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; box-shadow: inset 0 2px 0 var(--el), 0 -1px 3px var(--el); }
-.tstat { position: absolute; left: 1px; top: 1px; display: grid; place-items: center; width: 14px; height: 14px; border-radius: 4px; background: rgba(5,8,22,.78); pointer-events: none; }
-.tstat img { width: 11px !important; height: 11px !important; border-radius: 0 !important; }
-.vinv .tstat { width: 11px; height: 11px; } .vinv .tstat img { width: 9px !important; height: 9px !important; }
-.vitem.big .tstat { width: 17px; height: 17px; } .vitem.big .tstat img { width: 14px !important; height: 14px !important; }
+/* Armor's highest-stat badge: the weapons' grade badge, a touch bigger, with the stat's icon in place of the letter */
+.vitem .tier.tstat { width: 20px; height: 18px; padding: 0; pointer-events: none; }
+.tstat img { width: 14px !important; height: 14px !important; border-radius: 0 !important; }
+.vinv .vitem .tier.tstat { width: 16px; height: 14px; } .vinv .tstat img { width: 11px !important; height: 11px !important; }
+.vitem.big .tier.tstat { width: 22px; height: 20px; } .vitem.big .tstat img { width: 16px !important; height: 16px !important; }
 .tdia { position: absolute; left: 1px; top: 14px; display: flex; flex-direction: column; gap: 3px; pointer-events: none; }
 .tdia i { width: 4.5px; height: 4.5px; transform: rotate(45deg); background: #f4f1e6; box-shadow: 0 0 2px #000, 0 0 1px #000; }
 .tdia.t5 i { background: #d6ecff; box-shadow: 0 0 3px #6fb8ff, 0 0 1px #000; }
 .vinv .tdia { top: 11px; left: 1px; gap: 2.5px; } .vinv .tdia i { width: 3.5px; height: 3.5px; }
 .vitem.big .tdia { top: 18px; left: 2px; gap: 4px; }
-.varmor .tdia { top: 17px; } .vinv .varmor .tdia { top: 13px; } .vitem.big.varmor .tdia { top: 21px; } .vitem.big .tdia i { width: 5.5px; height: 5.5px; }
+.vitem.big .tdia i { width: 5.5px; height: 5.5px; }
 #explorer:not(.vmode) .vm-only { display: none; }
 .vslot { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; margin-top: 14px; }
 .vslot::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(51,227,160,.45), transparent); }
@@ -1762,7 +1763,7 @@ function vrMain() {
   const vsec = (id, title, note, body, cls, tools = "") => `<details class="subsec vsec${cls ? ` cc c-${esc(cls)}` : ""}" data-sec="${id}"${isOpen(id) ? " open" : ""}><summary>${chev}<h3>${title}</h3>${tools}<span class="small">${note}</span></summary>${body}</details>`;
   const STAT_ICON = DATA.statIcons || {};
   const topStat = (a) => (a.all ? STAT_ORDER.reduce((best, n) => ((a.all[n] ?? -99) > (a.all[best] ?? -99) ? n : best), STAT_ORDER[0]) : a.st?.[0]?.[0] || null);
-  const statMark = (a) => { const n = topStat(a), u = n && src(STAT_ICON[n]); return u ? `<span class="tstat" title="Highest: ${esc(n)}"><img src="${u}" alt=""></span>` : ""; };
+  const statMark = (a) => { const n = topStat(a), u = n && src(STAT_ICON[n]); return u ? `<span class="tier tstat" title="Highest: ${esc(n)}"><img src="${u}" alt=""></span>` : ""; };
   /** Gear tier as small diamonds down a tile's left edge, like the game. */
   const dia = (n) => (n ? `<span class="tdia${n === 5 ? " t5" : ""}" aria-hidden="true">${"<i></i>".repeat(n)}</span>` : "");
   const vswitch = (id, on, label) => `<label class="vsplit"><input type="checkbox" id="${id}"${on ? " checked" : ""}> ${label}</label>`;
