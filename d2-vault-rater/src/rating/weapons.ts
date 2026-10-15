@@ -39,6 +39,8 @@ export interface WeaponRating {
   score: number;
   /** Rolled options that match Aegis's picks, by column. */
   matched: Partial<Record<ColumnKey, string[]>>;
+  /** Aegis's recommended masterwork stats for this weapon. */
+  recMasterwork?: string[];
   perks: { kind: string; active: string; options: string[]; icons?: Record<string, string>; descriptions?: Record<string, string>; socket?: number }[];
   godRoll: boolean;
   trashRoll: boolean;
@@ -178,6 +180,7 @@ export function rateWeapons(
       rollScore,
       score: Math.round(WEAPON_WEIGHT * weaponScore + ROLL_WEIGHT * rollScore),
       matched,
+      recMasterwork: a?.recommended.masterwork ?? [],
       perks: w.columns.map((c) => ({ kind: c.kind, active: c.active, options: c.options, icons: c.icons, descriptions: c.descriptions, socket: c.socket })),
       godRoll,
       trashRoll,

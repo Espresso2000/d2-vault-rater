@@ -68,6 +68,7 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
     cr: recW.get(r.instanceId)?.crafted ?? false,
     ad: recW.get(r.instanceId)?.adept ?? false,
     mw: recW.get(r.instanceId)?.masterwork ?? null,
+    rmw: r.recMasterwork?.length ? r.recMasterwork : undefined,
     loc: where(recW.get(r.instanceId)?.location),
     };
   });
@@ -92,6 +93,7 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
     l: r.label,
     why: r.reasons,
     all: recA.get(r.instanceId)?.stats ?? null,
+    pw: recA.get(r.instanceId)?.power ?? null,
     si: r.setInfo,
     loc: where(recA.get(r.instanceId)?.location),
   }));

@@ -59,6 +59,7 @@ export interface ArmorRecord {
   slot: ArmorSlot;
   rarity: "Exotic" | "Legendary" | "Other";
   gearTier: number | null;
+  power?: number | null;
   /** stat name -> value as reported by the API */
   stats: Record<string, number>;
   statTotal: number;

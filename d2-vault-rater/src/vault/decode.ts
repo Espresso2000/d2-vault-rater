@@ -179,6 +179,7 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
         slot: ARMOR_BUCKETS[bucket],
         rarity: rarity(def),
         gearTier: inst.gearTier ?? null,
+        power: inst.primaryStat?.value ?? null,
         stats,
         statTotal: Object.values(stats).reduce((a, b) => a + b, 0),
         archetype,

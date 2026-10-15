@@ -548,7 +548,26 @@ details.vsec > summary .vsplit { margin-left: 8px; white-space: nowrap; }
 .vtip { position: fixed; z-index: 30; display: grid; gap: 6px; width: 270px; padding: 12px 14px; border-radius: 3px 14px; background: rgba(21,28,62,.97); border: 1px solid var(--line-hi); box-shadow: var(--shadow); pointer-events: none; font-size: 13px; }
 .vtip .nm { font: 600 15px var(--display); }
 .vtip .sm { color: var(--muted); font-size: 12px; }
-.vtperks { display: flex; flex-wrap: wrap; gap: 5px; }
+.vtip:has(.vtrows) { width: 320px; }
+.vtmeta { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; font-size: 12px; color: var(--muted); }
+.vtv { font: 700 11px var(--body); letter-spacing: .1em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; }
+.vtv.keep { color: var(--keep); background: rgba(51,227,160,.12); } .vtv.shard { color: var(--shard); background: rgba(255,122,122,.12); } .vtv.review { color: var(--review); background: rgba(242,193,78,.12); }
+.vtrows { display: grid; }
+.vtrow { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 8px; align-items: start; padding: 6px 0; border-top: 1px solid var(--line); }
+.vtrow > span { padding-top: 4px; color: var(--muted); font-size: 12px; }
+.vtrow > div { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; min-width: 0; }
+.vtrow.mw > span { color: var(--gold); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; }
+.pchip { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 2px 10px 2px 3px; border-radius: 999px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #9db8ff; background: rgba(77,125,255,.08); border: 1px dashed rgba(122,160,255,.7); }
+.pchip img { flex: none; width: 20px; height: 20px; border-radius: 50%; }
+.pchip.good { color: var(--green); background: rgba(51,227,160,.08); border: 1px solid var(--green); }
+.pchip.mw { color: var(--gold); background: rgba(242,193,78,.08); border-color: var(--gold); padding-left: 10px; }
+/* Vault tiles: damage-type glow along the top and right edges (weapons), gear tier as diamonds down the left */
+.vitem.welem::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; box-shadow: inset 0 2px 0 var(--el), inset -2px 0 0 var(--el), 3px -3px 10px -5px var(--el); opacity: .8; }
+.tdia { position: absolute; left: 3px; top: 14px; display: flex; flex-direction: column; gap: 2px; pointer-events: none; }
+.tdia i { width: 5px; height: 5px; transform: rotate(45deg); background: #f4f1e6; box-shadow: 0 0 2px #000, 0 0 1px #000; }
+.vinv .tdia { top: 11px; left: 2px; gap: 1.5px; } .vinv .tdia i { width: 4px; height: 4px; }
+.vitem.big .tdia { top: 18px; gap: 3px; } .vitem.big .tdia i { width: 6px; height: 6px; }
+#explorer:not(.vmode) .vm-only { display: none; }
 .vslot { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; margin-top: 14px; }
 .vslot::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(51,227,160,.45), transparent); }
 .vcell { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px; align-items: start; }
@@ -1681,10 +1700,12 @@ function vrMain() {
   let vsplit = store.get("vr-vsplit") !== "off";
   // Armor one character at a time, each with only its class's vault armor (off unless turned on).
   let asplit = store.get("vr-asplit") === "on";
+  // Vault view: weapons the search and filters leave out stay in place, dimmed, instead of being hidden.
+  let vdim = store.get("vr-vdim") === "on";
   // The two switches sit in the Weapons / Armor headings, which drawVault rebuilds.
   document.addEventListener("change", (e) => {
-    const id = e.target.id; if (id !== "vsplit" && id !== "asplit") return;
-    if (id === "vsplit") vsplit = e.target.checked; else asplit = e.target.checked;
+    const id = e.target.id; if (id !== "vsplit" && id !== "asplit" && id !== "vdim") return;
+    if (id === "vsplit") vsplit = e.target.checked; else if (id === "asplit") asplit = e.target.checked; else vdim = e.target.checked;
     store.set(`vr-${id}`, e.target.checked ? "on" : "off"); drawVault();
   });
   function setListMode(m) {
@@ -1729,6 +1750,8 @@ function vrMain() {
   const VSLOTS = ["Kinetic", "Energy", "Power"];
   /** A collapsible Vault-mode block under a full heading; cls colours it like that class. Open state is remembered like other sections. */
   const vsec = (id, title, note, body, cls, tools = "") => `<details class="subsec vsec${cls ? ` cc c-${esc(cls)}` : ""}" data-sec="${id}"${isOpen(id) ? " open" : ""}><summary>${chev}<h3>${title}</h3>${tools}<span class="small">${note}</span></summary>${body}</details>`;
+  /** Gear tier as small diamonds down a tile's left edge, like the game. */
+  const dia = (n) => (n ? `<span class="tdia" aria-hidden="true">${"<i></i>".repeat(n)}</span>` : "");
   const vswitch = (id, on, label) => `<label class="vsplit"><input type="checkbox" id="${id}"${on ? " checked" : ""}> ${label}</label>`;
   function drawVault() {
     const el = $("#vaultview"); if (!el) return;
@@ -1736,8 +1759,8 @@ function vrMain() {
     const where = (x) => x.wh || "vault";
     // ex.shown is the full list's filtered, sorted weapons; equipped weapons always show, dimmed when filtered out.
     const shown = ex.shown && ex.set === "w" ? ex.shown : DATA.weapons, match = new Set(shown.map((w) => w.id));
-    const at = (to, s) => shown.filter((w) => where(w) === to && w.s === s);
-    const tile = (w, big) => `<button class="vitem${big ? " big" : ""}${match.has(w.id) ? "" : " nomatch"}${isExotic(w) ? " exotic" : ""} v-${w.v}" data-w="${w.id}"${can && !w.eq ? ' draggable="true"' : ""} aria-label="${esc(w.n)} · ${esc(typeLine(w))} · ${w.sc} · ${VERDICT[w.v]}${w.eq ? " · equipped" : ""}">${img(w.ic)}${tierBadge(w)}${newBadge(w)}<b class="num">${w.sc}</b></button>`;
+    const at = (to, s) => (vdim ? DATA.weapons : shown).filter((w) => where(w) === to && w.s === s);
+    const tile = (w, big) => `<button class="vitem welem${big ? " big" : ""}${match.has(w.id) ? "" : " nomatch"}${isExotic(w) ? " exotic" : ""} v-${w.v}" style="--el:var(--${esc(w.e)})" data-w="${w.id}"${can && !w.eq && match.has(w.id) ? ' draggable="true"' : ""} aria-label="${esc(w.n)} · ${esc(typeLine(w))} · ${w.sc} · ${VERDICT[w.v]}${w.eq ? " · equipped" : ""}">${img(w.ic)}${dia(w.gt)}${tierBadge(w)}${newBadge(w)}<b class="num">${w.sc}</b></button>`;
     const inVault = DATA.weapons.filter((w) => where(w) === "vault").length, armorInVault = DATA.armor.filter((a) => where(a) === "vault").length;
     el.innerHTML = vsec("v-weapons", "Weapons", plural(DATA.weapons.length, "weapon"), `<div class="vgrid" style="--chars:${chars.length}">
       ${chars.map((c) => `<div class="vhead cc c-${esc(c.cls)}"><b>${esc(c.cls)}</b><span class="small muted">${DATA.weapons.filter((w) => w.wh === c.id).length} weapons</span></div>`).join("")}
@@ -1751,7 +1774,7 @@ function vrMain() {
    *  inside a set by class (border colour), tier, then archetype. Split by character: one block per character, vault limited to its class. */
   const ASLOTS = ["Helmet", "Arms", "Chest", "Legs", "Class Item"], ACLS = ["Hunter", "Titan", "Warlock"];
   function armorSection(chars = [], can = false) {
-    const atile = (a, big) => `<button class="vitem${big ? " big" : ""} varmor c-${esc(a.cls)}${isExotic(a) ? " exotic" : ""} v-${a.v}" data-a="${a.id}"${can && !a.eq ? ' draggable="true"' : ""} aria-label="${esc(a.n)} · ${esc(a.cls)} · ${esc(a.arch || "Legacy")}${a.gt ? ` · Tier ${a.gt}` : ""} · ${a.tot} total · ${a.sc} · ${VERDICT[a.v]}${a.loc ? " · " + esc(a.loc) : ""}">${img(a.ic)}${a.gt ? `<span class="tier tU">T${a.gt}</span>` : ""}${newBadge(a)}<b class="num">${a.sc}</b></button>`;
+    const atile = (a, big) => `<button class="vitem${big ? " big" : ""} varmor c-${esc(a.cls)}${isExotic(a) ? " exotic" : ""} v-${a.v}" data-a="${a.id}"${can && !a.eq ? ' draggable="true"' : ""} aria-label="${esc(a.n)} · ${esc(a.cls)} · ${esc(a.arch || "Legacy")}${a.gt ? ` · Tier ${a.gt}` : ""} · ${a.tot} total · ${a.sc} · ${VERDICT[a.v]}${a.loc ? " · " + esc(a.loc) : ""}">${img(a.ic)}${dia(a.gt)}${newBadge(a)}<b class="num">${a.sc}</b></button>`;
     const order = (x, y) => ACLS.indexOf(x.cls) - ACLS.indexOf(y.cls) || (y.gt || 0) - (x.gt || 0) || (x.arch || "~").localeCompare(y.arch || "~") || y.sc - x.sc;
     const groupOf = (a) => (isExotic(a) ? "Exotic" : a.set || "No set");
     const rank = (g) => (g === "Exotic" ? 0 : g === "No set" ? 2 : 1);
@@ -1807,9 +1830,15 @@ function vrMain() {
     t.done(ok ? `${w.n} ${equip ? "equipped on" : "moved to"} ${name}` : `${m?.ok ? `${w.n} moved, but` : `Couldn't move ${w.n}`}${m?.error ? ": " + m.error : ""}`, ok);
   }
   /** Hovering a Vault tile with a mouse: a small card with the weapon's perks or the armor's stats. */
+  const PERK_LABEL = { barrel: "Barrel", magazine: "Mag", perk1: "Perk 1", perk2: "Perk 2", origin: "Origin" };
+  const chip = (o, cls, star = "") => { const u = src(PERK_ICON[o]); return `<span class="pchip ${cls}">${u ? `<img src="${u}" alt="">` : ""}${star}${esc(o)}</span>`; };
+  /** One row per perk column: green (solid) for options the rater wants, blue (dashed) for the rest; then Aegis's masterwork pick. */
+  const perkRows = (w) => perkCols(w).filter((p) => PERK_ORDER.includes(p.k)).map((p) => `<div class="vtrow"><span>${PERK_LABEL[p.k]}</span><div>${p.o.map((o) => chip(o, p.m.includes(o) ? "good" : "alt")).join("")}</div></div>`).join("")
+    + (w.rmw?.length ? `<div class="vtrow mw"><span>Rec masterwork</span><div>${w.rmw.map((o) => chip(o, "mw", "☆ ")).join("")}</div></div>` : "");
+  const tipTop = (x, sub) => `<div class="nm">${esc(x.n)}</div><div class="sm">${sub}</div><div class="vtmeta"><span class="vtv ${x.v}">${VERDICT[x.v]}</span><span>${x.sc}</span>${x.pw ? `<span>✦ ${x.pw} Light</span>` : ""}${x.eq ? "<span>Equipped</span>" : ""}</div>`;
   const tipHtml = (w, a) => w
-    ? `<div class="nm">${esc(w.n)}</div><div class="sm">${esc(typeLine(w))} · ${w.sc} · ${VERDICT[w.v]}${w.eq ? " · equipped" : ""}</div><div class="vtperks">${perkTags(w)}</div>`
-    : `<div class="nm">${esc(a.n)}</div><div class="sm">${esc(a.cls)} · ${esc(a.arch || "Legacy")}${a.gt ? ` · Tier ${a.gt}` : ""}${setLine(a)}</div>${statBars(a, true)}<div class="sm">${a.tot} total · ${a.sc} · ${VERDICT[a.v]}${a.loc ? " · " + esc(a.loc) : ""}</div>`;
+    ? `${tipTop(w, esc(typeLine(w)))}<div class="vtrows">${perkRows(w)}</div>`
+    : `${tipTop(a, `${esc(a.cls)} · ${esc(a.arch || "Legacy")}${a.gt ? ` · Tier ${a.gt}` : ""}${setLine(a)}`)}${statBars(a, true)}<div class="sm">${a.tot} total${a.loc ? " · " + esc(a.loc) : ""}</div>`;
   const hideTip = () => $("#vtip")?.remove();
   document.addEventListener("pointerover", (e) => {
     const t = e.pointerType === "mouse" && !dragId && e.target.closest?.("#vaultview .vitem");
@@ -1880,7 +1909,7 @@ function vrMain() {
             <label class="ctl vm-hide"${st.group ? "" : " hidden"}><span>then</span><select id="exgroup2">${opt(cfg.groups, st.group2)}</select></label>
             <label class="ctl vm-hide"><span>Show</span><select id="extop">${opt({ "": "All", 1: "Best 1", 3: "Best 3", 5: "Best 5" }, st.top)}</select></label>
           </div></div></details>
-          <div class="tb-foot"><span class="result num" id="excount"></span><div class="active-chips" id="exchips"></div><button class="resetbtn" id="exreset" type="button" title="Clear search, filters, sort and grouping">Reset</button></div>
+          <div class="tb-foot"><span class="result num" id="excount"></span><div class="active-chips" id="exchips"></div><label class="vsplit vm-only" title="Vault view: keep filtered-out weapons in place, dimmed"><input type="checkbox" id="vdim"${vdim ? " checked" : ""}> Dim filtered</label><button class="resetbtn" id="exreset" type="button" title="Clear search, filters, sort and grouping">Reset</button></div>
           </div>
         </div>
         <div id="exlist"></div><div class="more" id="exmore"></div>`;
