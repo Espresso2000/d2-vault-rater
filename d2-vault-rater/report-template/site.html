@@ -1715,16 +1715,20 @@ function vrMain() {
       ${VSLOTS.map((s) => `<div class="vslot"><span class="cap">${s}</span></div>` +
         chars.map((c) => { const items = at(c.id, s), eq = DATA.weapons.find((w) => w.wh === c.id && w.s === s && w.eq); return `<div class="vcell"><div class="vdrop" data-to="${c.id}" data-equip="1" title="Drop here to equip">${eq ? tile(eq, true) : '<span class="vempty">Empty</span>'}</div><div class="vdrop vinv" data-to="${c.id}">${items.filter((w) => !w.eq).map((w) => tile(w)).join("")}</div></div>`; }).join("") +
         vaultBox(at("vault", s), tile)).join("")}
-    </div>${armorSection()}`;
+    </div>${armorSection(chars)}`;
   }
   /** Every armor piece, by slot, then set; inside a set by class (border colour), tier, then archetype. */
   const ASLOTS = ["Helmet", "Arms", "Chest", "Legs", "Class Item"], ACLS = ["Hunter", "Titan", "Warlock"];
-  function armorSection() {
+  function armorSection(chars = []) {
     const atile = (a) => `<button class="vitem varmor c-${esc(a.cls)}${isExotic(a) ? " exotic" : ""} v-${a.v}" data-a="${a.id}" title="${esc(a.n)} · ${esc(a.cls)} · ${esc(a.arch || "Legacy")}${a.gt ? ` · Tier ${a.gt}` : ""} · ${a.tot} total · ${a.sc} · ${VERDICT[a.v]}${a.loc ? " · " + esc(a.loc) : ""}">${img(a.ic)}${a.gt ? `<span class="tier tU">T${a.gt}</span>` : ""}${newBadge(a)}<b class="num">${a.sc}</b></button>`;
     const order = (x, y) => ACLS.indexOf(x.cls) - ACLS.indexOf(y.cls) || (y.gt || 0) - (x.gt || 0) || (x.arch || "~").localeCompare(y.arch || "~") || y.sc - x.sc;
     const groupOf = (a) => (isExotic(a) ? "Exotic" : a.set || "No set");
     const rank = (g) => (g === "Exotic" ? 0 : g === "No set" ? 2 : 1);
+    // What each character is wearing, one column per character like the weapons above, in slot order.
+    const worn = (c) => ASLOTS.map((slot) => { const a = DATA.armor.find((x) => x.wh === c.id && x.s === slot && x.eq); return a ? atile(a).replace('class="vitem ', 'class="vitem big ') : `<span class="vempty" title="${slot}">Empty</span>`; }).join("");
+    const equipped = chars.length ? `<div class="vgrid" style="--chars:${chars.length}">${chars.map((c) => `<div class="vhead"><b>${esc(c.cls)}</b><span class="small muted">Equipped</span></div>`).join("")}<div></div>${chars.map((c) => `<div class="vtiles">${worn(c)}</div>`).join("")}</div>` : "";
     return `<section class="varmor-sec"><div class="vhead"><b>Armor</b><span class="small muted">${plural(DATA.armor.length, "piece")} on characters and in the vault · border colour is the class: <i class="vkey c-Hunter"></i>Hunter <i class="vkey c-Titan"></i>Titan <i class="vkey c-Warlock"></i>Warlock <i class="vkey c-Warlock exotic"></i>Warlock exotic</span></div>
+      ${equipped}
       ${ASLOTS.map((slot) => {
         const groups = new Map();
         for (const a of DATA.armor.filter((x) => x.s === slot)) groups.set(groupOf(a), [...(groups.get(groupOf(a)) || []), a]);
