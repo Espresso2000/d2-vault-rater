@@ -271,26 +271,77 @@ function gameLoadouts(cls: number, c: Ctx) {
   });
 }
 
-/** One card in front of the new-build button listing every in-game loadout of the class's character. */
+const rowIco = (c: Ctx, b: Build, slot: BuildSlot) => {
+  const x = itemOf(c, b.items[slot]?.id);
+  return x ? `<span class="bd-gico${x.rarity === "Exotic" ? " exotic" : ""}" title="${esc(x.name)}">${img(x.icon)}</span>` : `<span class="bd-gico none"></span>`;
+};
+
+/** A compact card first in the grid: a few slot chips, the count, and a button for the full list. */
 function loadoutCard(cls: number, c: Ctx) {
   const list = gameLoadouts(cls, c);
   if (!list.length) return "";
-  const ico = (b: Build, slot: BuildSlot) => {
-    const x = itemOf(c, b.items[slot]?.id);
-    return x ? `<span class="bd-gico${x.rarity === "Exotic" ? " exotic" : ""}" title="${esc(x.name)}">${img(x.icon)}</span>` : `<span class="bd-gico none"></span>`;
-  };
-  return `<div class="bd-bcard bd-loadcard" aria-label="In-game loadouts"><div class="cap">In-game loadouts</div>${list
+  const chips = list
+    .slice(0, 4)
     .map(({ i, b, match }) => {
       const sc = b.subclass ? defs!.subclasses[b.subclass] : null;
-      return `<div class="bd-lrow" style="--el:var(--${sc?.el ?? "Unknown"})">
-        <button class="bd-lopen" data-act="loadgame" data-i="${i}" title="Load this loadout into the builder">
-          <span class="bd-bico">${img(sc?.i)}</span><b>${i + 1}</b>
-          <span class="bd-bgear">${WEAPON_SLOTS.map((s) => ico(b, s)).join("")}<i></i>${ARMOR_SLOTS.map((s) => ico(b, s)).join("")}</span>
-          ${match ? `<span class="bd-lmatch" title="Matches your EVR build “${esc(match.name)}”">✓</span>` : ""}</button>
-        ${match ? "" : `<button class="btn bd-sm" data-act="savegame" data-i="${i}" title="Save as an EVR build">Save</button>`}
-      </div>`;
+      return `<span class="bd-lchip" style="--el:var(--${sc?.el ?? "Unknown"})"><span class="bd-bico">${img(sc?.i)}</span><b>${i + 1}</b>${match ? `<i class="bd-lmatch" title="Matches your EVR build “${esc(match.name)}”">✓</i>` : ""}</span>`;
     })
-    .join("")}</div>`;
+    .join("");
+  return `<button class="bd-bcard bd-loadcard" data-act="loadlist" aria-label="Show all ${list.length} in-game loadouts">
+    <span class="cap">In-game loadouts</span>
+    <span class="bd-lchips">${chips}</span>
+    <span class="bd-lfoot"><b>${list.length} loadouts</b><span class="btn bd-sm">View all</span></span></button>`;
+}
+
+/** The modal with every loadout in game order: click one to load it, Save keeps it as an EVR build. */
+function openLoadoutList() {
+  const c = ctx();
+  const list = gameLoadouts(listCls!, c);
+  let dlg = document.getElementById("bd-loadouts") as HTMLDialogElement | null;
+  if (!dlg) {
+    document.body.insertAdjacentHTML("beforeend", `<dialog class="bd-dialog bd-wide" id="bd-loadouts" aria-labelledby="bd-loadouts-h"></dialog>`);
+    dlg = document.getElementById("bd-loadouts") as HTMLDialogElement;
+    dlg.addEventListener("click", (e) => {
+      const t = (e.target as HTMLElement).closest<HTMLElement>("[data-act]");
+      if (t?.dataset.act === "closedlg") return dlg!.close();
+      if (!t || !ACTIONS[t.dataset.act!]) return;
+      dlg!.close();
+      ACTIONS[t.dataset.act!](t);
+    });
+  }
+  dlg.innerHTML = `<h3 id="bd-loadouts-h">In-game loadouts · ${esc(CLASS_NAME(listCls!))}</h3>
+    <div class="bd-lrows">${list
+      .map(({ i, b, match }) => {
+        const sc = b.subclass ? defs!.subclasses[b.subclass] : null;
+        return `<div class="bd-lrow" style="--el:var(--${sc?.el ?? "Unknown"})">
+          <button class="bd-lopen" data-act="loadgame" data-i="${i}" title="Load this loadout into the builder">
+            <span class="bd-bico">${img(sc?.i)}</span><b>${i + 1}</b>
+            <span class="bd-bgear">${WEAPON_SLOTS.map((s) => rowIco(c, b, s)).join("")}<i></i>${ARMOR_SLOTS.map((s) => rowIco(c, b, s)).join("")}</span>
+            ${match ? `<span class="bd-lmatch" title="Matches your EVR build “${esc(match.name)}”">✓</span>` : ""}</button>
+          ${match ? "" : `<button class="btn bd-sm" data-act="savegame" data-i="${i}" title="Save as an EVR build">Save</button>`}
+        </div>`;
+      })
+      .join("")}</div>
+    <div class="bd-dialog-btns"><button class="btn ghost" data-act="closedlg">Close</button></div>`;
+  if (!dlg.open) dlg.showModal();
+}
+
+/** A small modal asking for a name (Enter confirms, Esc or Cancel aborts). */
+function askName(title: string, initial: string, done: (name: string) => void) {
+  document.getElementById("bd-name-dlg")?.remove();
+  document.body.insertAdjacentHTML("beforeend", `<dialog class="bd-dialog" id="bd-name-dlg" aria-labelledby="bd-name-h"><form method="dialog">
+    <h3 id="bd-name-h">${esc(title)}</h3>
+    <input class="bd-input" name="n" maxlength="80" aria-label="Build name" value="${esc(initial)}" autocomplete="off" style="width:100%;margin-bottom:16px">
+    <div class="bd-dialog-btns"><button class="btn primary" value="ok">Create</button><button class="btn ghost" value="cancel" formnovalidate>Cancel</button></div></form></dialog>`);
+  const dlg = document.getElementById("bd-name-dlg") as HTMLDialogElement;
+  const input = dlg.querySelector("input")!;
+  dlg.addEventListener("close", () => {
+    const name = input.value.trim();
+    dlg.remove();
+    if (dlg.returnValue === "ok" && name) done(name);
+  });
+  dlg.showModal();
+  input.select();
 }
 
 /** The first card in the row: start a build for this class, or import one (with a preview to confirm). */
@@ -1376,13 +1427,10 @@ const ACTIONS: Record<string, (t: HTMLElement) => void> = {
   },
   save: () => saveCur(),
   revert: () => revertCur(),
+  loadlist: () => openLoadoutList(),
   new: (t) => guard(() => {
-    cur = newBuild(t.dataset.cls ? Number(t.dataset.cls) : (listCls ?? classChoices()[0] ?? 0));
-    listCls = cur.cls;
-    const sc = Object.values(defs!.subclasses).find((s) => s.cls === cur!.cls && s.el === "Prismatic");
-    cur.name = `${CLASS_NAME(cur.cls)} build ${builds.filter((b) => b.cls === cur!.cls).length + 1}`;
-    if (sc && (!charFor(profile, cur.cls) || subclassInstance(profile, cur.cls, sc.h))) setSubclass(sc);
-    touch();
+    const cls = t.dataset.cls ? Number(t.dataset.cls) : (listCls ?? classChoices()[0] ?? 0);
+    askName(`Name your new ${CLASS_NAME(cls)} build`, `${CLASS_NAME(cls)} build ${builds.filter((b) => b.cls === cls).length + 1}`, (name) => createBuild(cls, name));
   }),
   open: (t) => {
     if (t.dataset.id === cur?.id) return;
@@ -1407,12 +1455,14 @@ const ACTIONS: Record<string, (t: HTMLElement) => void> = {
   savegame: (t) => {
     const l = gameLoadouts(listCls!, ctx()).find((x) => x.i === Number(t.dataset.i));
     if (!l) return;
-    guard(() => {
-      builds = commitBuild(builds, l.b);
-      saveBuilds(builds);
-      cur = structuredClone(builds.find((x) => x.id === l.b.id)!);
-      draw();
-    });
+    guard(() =>
+      askName("Name this EVR build", l.b.name, (name) => {
+        builds = commitBuild(builds, { ...l.b, name });
+        saveBuilds(builds);
+        cur = structuredClone(builds.find((x) => x.id === l.b.id)!);
+        draw();
+      }),
+    );
   },
   untag: (t) => {
     if (!cur) return;
@@ -1473,6 +1523,14 @@ const ACTIONS: Record<string, (t: HTMLElement) => void> = {
   dim: () => dimFlow(),
   import: () => importFlow(),
 };
+
+function createBuild(cls: number, name: string) {
+  cur = newBuild(cls, name);
+  listCls = cls;
+  const sc = Object.values(defs!.subclasses).find((s) => s.cls === cls && s.el === "Prismatic");
+  if (sc && (!charFor(profile, cls) || subclassInstance(profile, cls, sc.h))) setSubclass(sc);
+  touch();
+}
 
 function askDelete(id: string) {
   const b = builds.find((x) => x.id === id);
