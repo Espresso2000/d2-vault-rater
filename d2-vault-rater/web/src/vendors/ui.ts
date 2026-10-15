@@ -166,8 +166,8 @@ function armorCard({ rating: a, sale, buy }: RatedSale<ArmorRating>) {
 }
 
 /** A collapsible card holding one vendor's stock (or one Eververse list); open unless the player closed it. */
-const section = (id: string, head: string, body: string) =>
-  `<details class="vgroup" data-sec="${esc(id)}"${closed.has(id) ? "" : " open"}><summary><div class="vghead">${head}</div><span class="vchev" aria-hidden="true"></span></summary><div class="vgbody">${body}</div></details>`;
+const section = (id: string, head: string, body: string, n = 0) =>
+  `<details class="vgroup" data-sec="${esc(id)}"${n ? ` style="--n:${Math.min(n, 4)}"` : ""}${closed.has(id) ? "" : " open"}><summary><div class="vghead">${head}</div><span class="vchev" aria-hidden="true"></span></summary><div class="vgbody">${body}</div></details>`;
 
 const fact = (k: string, v: unknown) => `<div><span>${esc(k)}</span><b>${esc(v)}</b></div>`;
 
@@ -198,7 +198,7 @@ function vendorBlock(v: RatedVendor) {
   const left = timeLeft(v.refreshes);
   const buys = shown.filter((s) => s.buy === "buy").length;
   const sub = [v.subtitle, `${shown.length} ${kind}${buys ? `, ${buys} worth buying` : ""}`, left && `new stock in ${left}`].filter(Boolean).map((x) => esc(x as string)).join(" · ");
-  return section(String(v.vendorHash), `${v.icon ? `<img class="vico" src="${esc(v.icon)}" alt="">` : ""}<div><h3>${esc(v.name)}</h3><div class="sm">${sub}</div></div>`, `<div class="vcards">${shown.map(card).join("")}</div>`);
+  return section(String(v.vendorHash), `${v.icon ? `<img class="vico" src="${esc(v.icon)}" alt="">` : ""}<div><h3>${esc(v.name)}</h3><div class="sm">${sub}</div></div>`, `<div class="vcards">${shown.map(card).join("")}</div>`, shown.length);
 }
 
 function draw() {
@@ -210,13 +210,14 @@ function draw() {
   const picked = vendor ? gear.filter((v) => String(v.vendorHash) === vendor) : gear;
   const all = picked.flatMap((v) => (kind === "armor" ? v.armor : v.weapons) as RatedSale<unknown>[]);
   const buys = all.filter((s) => s.buy === "buy").length;
+  const blocks = kind === "eververse" ? "" : picked.map(vendorBlock).join("");
   const body = error
     ? `<p class="vr-err">${esc(error)}</p>`
     : !list
       ? `<p class="lede muted">Reading what vendors sell right now…</p>`
       : kind === "eververse"
         ? offersBlock(list)
-        : picked.map(vendorBlock).join("") || `<p class="muted">${onlyBuy ? "Nothing here is worth buying right now." : `No vendor is selling ${kind} right now.`}</p>`;
+        : blocks ? `<div class="vgrid">${blocks}</div>` : `<p class="muted">${onlyBuy ? "Nothing here is worth buying right now." : `No vendor is selling ${kind} right now.`}</p>`;
   const select = (id: string, label: string, opts: [string, string][], cur: string) =>
     `<label class="ctl" style="--h:38px"><span>${label}</span><select id="${id}">${opts.map(([v, t]) => `<option value="${esc(v)}"${v === cur ? " selected" : ""}>${esc(t)}</option>`).join("")}</select></label>`;
   const count = (v: RatedVendor) => (kind === "armor" ? v.armor : v.weapons).length;
