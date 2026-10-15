@@ -549,16 +549,17 @@ details.vsec > summary .vsplit { margin-left: 8px; white-space: nowrap; }
 .vtip .nm { font: 600 15px var(--display); }
 .vtip .sm { color: var(--muted); font-size: 12px; }
 .vtip:has(.vtrows) { width: 320px; }
+.vtel { display: inline-block; padding: 0 7px; margin-right: 4px; border-radius: 999px; font-size: 11px; font-weight: 600; color: var(--el); border: 1px solid var(--el); background: color-mix(in srgb, var(--el) 14%, transparent); }
 .vtmeta { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; font-size: 12px; color: var(--muted); }
 .vtv { font: 700 11px var(--body); letter-spacing: .1em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; }
 .vtv.keep { color: var(--keep); background: rgba(51,227,160,.12); } .vtv.shard { color: var(--shard); background: rgba(255,122,122,.12); } .vtv.review { color: var(--review); background: rgba(242,193,78,.12); }
 .vtrows { display: grid; }
-.vtrow { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 8px; align-items: start; padding: 6px 0; border-top: 1px solid var(--line); }
-.vtrow > span { padding-top: 4px; color: var(--muted); font-size: 12px; }
-.vtrow > div { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; min-width: 0; }
+.vtrow { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 8px; align-items: start; padding: 4px 0; border-top: 1px solid var(--line); }
+.vtrow > span { padding-top: 2px; color: var(--muted); font-size: 12px; }
+.vtrow > div { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; min-width: 0; }
 .vtrow.mw > span { color: var(--gold); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; }
-.pchip { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 2px 10px 2px 3px; border-radius: 999px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #9db8ff; background: rgba(77,125,255,.08); border: 1px dashed rgba(122,160,255,.7); }
-.pchip img { flex: none; width: 20px; height: 20px; border-radius: 50%; }
+.pchip { display: inline-flex; align-items: center; gap: 5px; max-width: 100%; padding: 1px 9px 1px 2px; border-radius: 999px; font-size: 11.5px; line-height: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #9db8ff; background: rgba(77,125,255,.08); border: 1px dashed rgba(122,160,255,.7); }
+.pchip img { flex: none; width: 16px; height: 16px; border-radius: 50%; }
 .pchip.good { color: var(--green); background: rgba(51,227,160,.08); border: 1px solid var(--green); }
 .pchip.sel { color: #fff; font-weight: 600; background: rgba(77,125,255,.32); border-style: solid; }
 .pchip.good.sel { background: rgba(51,227,160,.30); }
@@ -1840,7 +1841,7 @@ function vrMain() {
     + (w.rmw?.length ? `<div class="vtrow mw"><span>Rec masterwork</span><div>${w.rmw.map((o) => chip(o, "mw", "☆ ")).join("")}</div></div>` : "");
   const tipTop = (x, sub) => `<div class="nm">${esc(x.n)}</div><div class="sm">${sub}</div><div class="vtmeta"><span class="vtv ${x.v}">${VERDICT[x.v]}</span><span>${x.sc}</span>${x.pw ? `<span>✦ ${x.pw} Light</span>` : ""}${x.gt ? `<span>Tier ${x.gt}</span>` : ""}${x.eq ? "<span>Equipped</span>" : ""}</div>`;
   const tipHtml = (w, a) => w
-    ? `${tipTop(w, esc(typeLine(w)))}<div class="vtrows">${perkRows(w)}</div>`
+    ? `${tipTop(w, `<span class="vtel" style="--el:var(--${esc(w.e)})">${esc(w.e)}</span> ${esc(typeLine(w))}`)}<div class="vtrows">${perkRows(w)}</div>`
     : `${tipTop(a, `${esc(a.cls)} · ${esc(a.arch || "Legacy")}${setLine(a)}`)}${statBars(a, true)}<div class="sm">${a.tot} total${a.loc ? " · " + esc(a.loc) : ""}</div>`;
   const hideTip = () => $("#vtip")?.remove();
   document.addEventListener("pointerover", (e) => {
@@ -1849,8 +1850,15 @@ function vrMain() {
     if (!w && !a || $("#vtip")?.dataset.for === (w || a).id) return;
     hideTip(); document.body.insertAdjacentHTML("beforeend", `<div class="vtip" id="vtip" role="tooltip" data-for="${(w || a).id}">${tipHtml(w, a)}</div>`);
     const tip = $("#vtip"), r = t.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
-    tip.style.left = `${r.right + 10 + tw < innerWidth ? r.right + 10 : Math.max(8, r.left - 10 - tw)}px`;
-    tip.style.top = `${Math.max(8, Math.min(r.top, innerHeight - th - 8))}px`;
+    // Underneath the tile, lined up with its left edge; above it when there's no room below; beside it when neither fits.
+    const below = r.bottom + 8 + th <= innerHeight, above = r.top - 8 - th >= 8;
+    if (below || above) {
+      tip.style.left = `${Math.max(8, Math.min(r.left, innerWidth - tw - 8))}px`;
+      tip.style.top = `${below ? r.bottom + 8 : r.top - 8 - th}px`;
+    } else {
+      tip.style.left = `${r.right + 10 + tw < innerWidth ? r.right + 10 : Math.max(8, r.left - 10 - tw)}px`;
+      tip.style.top = `${Math.max(8, Math.min(r.top, innerHeight - th - 8))}px`;
+    }
   });
   document.addEventListener("pointerout", (e) => { if (e.target.closest?.("#vaultview .vitem") && !e.relatedTarget?.closest?.(".vitem")) hideTip(); });
   document.addEventListener("dragstart", hideTip);
