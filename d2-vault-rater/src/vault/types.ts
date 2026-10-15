@@ -79,4 +79,6 @@ export interface Vault {
   characters: { id: string; className: ClassName }[];
   weapons: WeaponRecord[];
   armor: ArmorRecord[];
+  /** Armor stat name -> its icon URL, from the manifest. */
+  statIcons?: Record<string, string>;
 }

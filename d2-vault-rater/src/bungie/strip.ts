@@ -4,8 +4,8 @@
  * app ships and stores them (see web/src/strip.ts).
  */
 
-/** Bumped when stripped tables gain fields, so caches made by an older format are rebuilt. 2: plug icons. 3: plug descriptions. */
-export const STRIP_FORMAT = 3;
+/** Bumped when stripped tables gain fields, so caches made by an older format are rebuilt. 2: plug icons. 3: plug descriptions. 4: stat icons. */
+export const STRIP_FORMAT = 4;
 
 /** Plug categories that never matter for rating: cosmetics, armor mods and the like. */
 const COSMETIC = /shader|ornament|skin|emote|ghost|transmat|vehicle|ship|memento|tracker|^enhancements|spawnfx|sparrow|projection|finisher|deprecated|crafting|hologram|social|events\./i;
@@ -62,7 +62,7 @@ export function stripItems(items: Raw, allPlugs = false): Raw {
 
 export const stripNamed = (table: Raw): Raw => {
   const out: Raw = {};
-  for (const [k, d] of Object.entries(table)) out[k] = { hash: d.hash, displayProperties: { name: d.displayProperties?.name ?? "" } };
+  for (const [k, d] of Object.entries(table)) out[k] = { hash: d.hash, displayProperties: { name: d.displayProperties?.name ?? "", ...(d.displayProperties?.icon ? { icon: d.displayProperties.icon } : {}) } };
   return out;
 };
 

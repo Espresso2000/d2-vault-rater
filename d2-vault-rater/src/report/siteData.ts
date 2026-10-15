@@ -115,6 +115,8 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
   for (const r of w.ratings) for (const p of r.perks) for (const [n, d] of Object.entries(p.descriptions ?? {})) perkDescs[n] ??= d;
   const data = {
     perkIcons,
+    // One icon per armor stat, for the highest-stat symbol on armor tiles.
+    statIcons: Object.fromEntries(Object.entries(o.vault?.statIcons ?? {}).map(([n, url]) => [n, imageKey(url) ?? ""])),
     perkDescs,
     generated: new Date().toISOString(),
     preset: o.settings.preset,

@@ -26,7 +26,7 @@ export interface ItemDef {
 
 export interface StatDef {
   hash: number;
-  displayProperties: { name: string };
+  displayProperties: { name: string; icon?: string };
 }
 
 export interface ItemSetDef {

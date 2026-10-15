@@ -29,7 +29,7 @@ export async function loadManifest(opts: { force?: boolean } = {}): Promise<Mani
   const en = meta.jsonWorldComponentContentPaths.en;
   const out: Partial<Manifest> = { version: meta.version };
   // The item table's cache file names its strip format, so an older cache without plug icons is rebuilt.
-  for (const [key, table, strip] of COMPONENTS) out[key] = await liteTable(dir, table, async () => en[table], strip, opts.force, key === "items" ? `.v${STRIP_FORMAT}` : "");
+  for (const [key, table, strip] of COMPONENTS) out[key] = await liteTable(dir, table, async () => en[table], strip, opts.force, key === "items" || key === "stats" ? `.v${STRIP_FORMAT}` : "");
   cached = out as Manifest;
   return cached;
 }

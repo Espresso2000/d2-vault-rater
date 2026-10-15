@@ -85,6 +85,7 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
 
   const weapons: WeaponRecord[] = [];
   const armor: ArmorRecord[] = [];
+  const statIcons: Record<string, string> = {};
 
   for (const { item, where, equipped } of located) {
     const id = item.itemInstanceId;
@@ -161,8 +162,9 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
     } else if (def.itemType === 2 && ARMOR_BUCKETS[bucket]) {
       const stats: Record<string, number> = {};
       for (const s of Object.values(statsC[id]?.stats ?? {})) {
-        const n = m.stats[s.statHash]?.displayProperties?.name;
+        const d = m.stats[s.statHash]?.displayProperties, n = d?.name;
         if (n) stats[n] = s.value;
+        if (n && d?.icon) statIcons[n] ??= bungieUrl(d.icon);
       }
       let archetype: string | null = null;
       for (const s of sockets) {
@@ -202,5 +204,6 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
       .map(([id, c]) => ({ id, className: CLASSES[c.classType] ?? "Any" })),
     weapons,
     armor,
+    statIcons,
   };
 }
