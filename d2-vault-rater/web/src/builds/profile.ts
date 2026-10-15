@@ -70,7 +70,7 @@ export async function fetchBuildProfile(): Promise<BuildProfile> {
         iconHash: l.iconHash,
         nameHash: l.nameHash,
         empty: !l.items?.some((x) => x.itemInstanceId && x.itemInstanceId !== "0"),
-        items: (l.items ?? []).filter((x) => x.itemInstanceId && x.itemInstanceId !== "0").map((x) => ({ id: x.itemInstanceId, plugs: (x.plugItemHashes ?? []).filter(Boolean) })),
+        items: (l.items ?? []).filter((x) => x.itemInstanceId && x.itemInstanceId !== "0").map((x) => ({ id: x.itemInstanceId, plugs: x.plugItemHashes ?? [] })),
       })),
     };
   });

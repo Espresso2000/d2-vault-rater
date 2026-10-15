@@ -330,9 +330,12 @@ export const lastUsed = (b: Build) => (b.applied && b.applied > b.updated ? b.ap
 
 /* ---------- In-game loadouts ---------- */
 
+/** The "nothing here" plug hash in a loadout's plugItemHashes. */
+export const UNSET_PLUG = 2166136261;
+
 export interface GameLoadoutItem {
   id: string;
-  /** Plug hashes the loadout sets on the item: subclass abilities/aspects/fragments, or armor mods. */
+  /** plugItemHashes as Bungie sends them, indexed by socket (0 and UNSET_PLUG mean nothing set): subclass plugs or armor mods. */
   plugs: number[];
 }
 
@@ -345,9 +348,19 @@ export function fromGameLoadout(cls: number, name: string, items: GameLoadoutIte
     if (def) {
       b.subclass = def.h;
       b.plugs = defaultPlugs(def);
-      for (const h of plugs) {
-        const i = def.sockets.findIndex((s) => s.plugs.includes(h));
-        if (i >= 0) b.plugs[i] = h;
+      // plugItemHashes is indexed by socket index (UNSET_PLUG = nothing set there). Trust the index when the plug
+      // belongs to that socket; otherwise put it in the first unfilled socket that takes it (aspects and
+      // fragments share one plug set per group, so searching by hash alone would stack them in one socket).
+      const filled = new Set<number>();
+      const rest: number[] = [];
+      plugs.forEach((h, i) => {
+        if (!h || h === UNSET_PLUG) return;
+        if (def.sockets[i]?.plugs.includes(h) && !filled.has(i)) (filled.add(i), (b.plugs[i] = h));
+        else rest.push(h);
+      });
+      for (const h of rest) {
+        const i = def.sockets.findIndex((s, k) => !filled.has(k) && s.plugs.includes(h));
+        if (i >= 0) (filled.add(i), (b.plugs[i] = h));
       }
       continue;
     }
@@ -377,7 +390,9 @@ export function fromGameLoadout(cls: number, name: string, items: GameLoadoutIte
 export function sameLoadout(a: Build, b: Build, defs: BuildDefs): boolean {
   if (a.cls !== b.cls || a.subclass !== b.subclass) return false;
   const slots = [...WEAPON_SLOTS, ...ARMOR_SLOTS] as BuildSlot[];
-  if (slots.some((s) => (a.items[s]?.id ?? "") !== (b.items[s]?.id ?? ""))) return false;
+  // By instance id; when either side has none (older or hand-made builds), by item hash.
+  const sameItem = (x?: BuildItem, y?: BuildItem) => (!x || !y ? !x === !y : x.id && y.id ? x.id === y.id : x.hash === y.hash);
+  if (slots.some((s) => !sameItem(a.items[s], b.items[s]))) return false;
   const sc = a.subclass ? defs.subclasses[a.subclass] : null;
   const plug = (x: Build, i: number) => (isEmptyPlug(defs.plugs[x.plugs[i]]) ? 0 : x.plugs[i]);
   if (sc && sc.sockets.some((_, i) => plug(a, i) !== plug(b, i))) return false;
