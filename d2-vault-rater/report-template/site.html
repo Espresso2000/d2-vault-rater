@@ -563,8 +563,8 @@ details.vsec > summary .vsplit { margin-left: 8px; white-space: nowrap; }
 .pchip.sel { color: #fff; font-weight: 600; background: rgba(77,125,255,.32); border-style: solid; }
 .pchip.good.sel { background: rgba(51,227,160,.30); }
 .pchip.mw { color: var(--gold); background: rgba(242,193,78,.08); border-color: var(--gold); padding-left: 10px; }
-/* Vault tiles: damage-type glow along the top and right edges (weapons), gear tier as diamonds down the left */
-.vitem.welem::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; box-shadow: inset 0 2px 0 var(--el), inset -2px 0 0 var(--el), 4px -4px 14px -4px var(--el); }
+/* Vault tiles: damage-type glow along the top edge (weapons), gear tier as diamonds down the left */
+.vitem.welem::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; box-shadow: inset 0 2px 0 var(--el), 0 -4px 14px -4px var(--el); }
 .tdia { position: absolute; left: 1px; top: 14px; display: flex; flex-direction: column; gap: 3px; pointer-events: none; }
 .tdia i { width: 4.5px; height: 4.5px; transform: rotate(45deg); background: #f4f1e6; box-shadow: 0 0 2px #000, 0 0 1px #000; }
 .tdia.t5 i { background: #d6ecff; box-shadow: 0 0 3px #6fb8ff, 0 0 1px #000; }
