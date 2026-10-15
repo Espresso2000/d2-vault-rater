@@ -527,6 +527,15 @@ details.group > summary::-webkit-details-marker { display: none; }
 .vgrid { display: grid; grid-template-columns: repeat(var(--chars), minmax(0, 236px)) minmax(0, 1fr); gap: 10px 14px; align-items: start; }
 .vhead { position: sticky; top: calc(var(--bar-h) + var(--tbh, 0px) + 22px); z-index: 2; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 10px 14px; border-radius: 3px 12px; background: var(--ticks), rgba(14,20,48,.94); border: 1px solid var(--line); }
 .vhead b { font: 600 16px var(--display); }
+.vhead.cc b, details.vsec.cc > summary h3 { color: var(--cc); }
+/* Vault mode's collapsible Weapons / Armor / per-character blocks: a full heading like .vhead, with a big chevron inside */
+details.vsec > summary { gap: 14px; margin: 0 0 12px; padding: 12px 16px; border-radius: 3px 12px; background: var(--ticks), rgba(14,20,48,.94); border: 1px solid var(--line); transition: border-color .15s ease; }
+details.vsec > summary:hover, details.vsec > summary:focus-visible { border-color: var(--hover); outline: none; }
+details.vsec > summary .chev { width: 30px; height: 30px; }
+details.vsec > summary .chev::before { width: 8px; height: 8px; border-width: 2px; }
+details.vsec > summary h3 { font: 600 19px var(--display); }
+details.vsec > summary .small { margin-left: auto; text-align: right; }
+details.vsec.cc > summary { border-left: 3px solid var(--cc); }
 .vslot { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; margin-top: 14px; }
 .vslot::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(51,227,160,.45), transparent); }
 .vcell { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px; align-items: start; }
@@ -1664,7 +1673,7 @@ function vrMain() {
     if (!$("#listmode")) return;
     $$("#listmode button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.m === m)));
     $("#vaultview").hidden = m !== "vault"; $("#explorer").classList.toggle("vmode", m === "vault");
-    $("#vmnote").innerHTML = m !== "vault" ? "" : `<label class="vsplit"><input type="checkbox" id="vsplit"${vsplit ? " checked" : ""}> Split the vault by weapon type</label> <label class="vsplit"><input type="checkbox" id="asplit"${asplit ? " checked" : ""}> Split armor by character</label> · ${window.VR_LOCAL && DATA.chars?.length ? "Drag a weapon onto a character or the vault to move it, or onto the big slot to equip it." : "Moving items needs the app (Vault Rater.cmd or the web app)."}`;
+    $("#vmnote").innerHTML = m !== "vault" ? "" : `<label class="vsplit"><input type="checkbox" id="vsplit"${vsplit ? " checked" : ""}> Split the vault by weapon type</label> <label class="vsplit"><input type="checkbox" id="asplit"${asplit ? " checked" : ""}> Split armor by character</label> · ${window.VR_LOCAL && DATA.chars?.length ? "Drag a weapon or armor piece onto a character or the vault to move it, or onto the big slot to equip it." : "Moving items needs the app (Vault Rater.cmd or the web app)."}`;
     $("#vsplit")?.addEventListener("change", (e) => { vsplit = e.target.checked; store.set("vr-vsplit", vsplit ? "on" : "off"); drawVault(); });
     $("#asplit")?.addEventListener("change", (e) => { asplit = e.target.checked; store.set("vr-asplit", asplit ? "on" : "off"); drawVault(); });
     // Vault mode shows weapons only, through the same filters and sort as the full list.
@@ -1701,6 +1710,8 @@ function vrMain() {
   addEventListener("focus", () => autoRefresh(20_000));
   document.addEventListener("visibilitychange", () => autoRefresh(20_000));
   const VSLOTS = ["Kinetic", "Energy", "Power"];
+  /** A collapsible Vault-mode block under a full heading; cls colours it like that class. Open state is remembered like other sections. */
+  const vsec = (id, title, note, body, cls) => `<details class="subsec vsec${cls ? ` cc c-${esc(cls)}` : ""}" data-sec="${id}"${isOpen(id) ? " open" : ""}><summary>${chev}<h3>${title}</h3><span class="small">${note}</span></summary>${body}</details>`;
   function drawVault() {
     const el = $("#vaultview"); if (!el) return;
     const chars = [...(DATA.chars || [])].sort((a, b) => played(b.cls).localeCompare(played(a.cls))), can = !!window.VR_LOCAL && chars.length > 0;
@@ -1710,35 +1721,35 @@ function vrMain() {
     const at = (to, s) => shown.filter((w) => where(w) === to && w.s === s);
     const tile = (w, big) => `<button class="vitem${big ? " big" : ""}${match.has(w.id) ? "" : " nomatch"}${isExotic(w) ? " exotic" : ""} v-${w.v}" data-w="${w.id}"${can && !w.eq ? ' draggable="true"' : ""} title="${esc(w.n)} · ${esc(typeLine(w))} · ${w.sc} · ${VERDICT[w.v]}${w.eq ? " · equipped" : ""}">${img(w.ic)}${tierBadge(w)}${newBadge(w)}<b class="num">${w.sc}</b></button>`;
     const inVault = DATA.weapons.filter((w) => where(w) === "vault").length, armorInVault = DATA.armor.filter((a) => where(a) === "vault").length;
-    el.innerHTML = subsec("v-weapons", "Weapons", plural(DATA.weapons.length, "weapon"), `<div class="vgrid" style="--chars:${chars.length}">
-      ${chars.map((c) => `<div class="vhead"><b>${esc(c.cls)}</b><span class="small muted">${DATA.weapons.filter((w) => w.wh === c.id).length} weapons</span></div>`).join("")}
+    el.innerHTML = vsec("v-weapons", "Weapons", plural(DATA.weapons.length, "weapon"), `<div class="vgrid" style="--chars:${chars.length}">
+      ${chars.map((c) => `<div class="vhead cc c-${esc(c.cls)}"><b>${esc(c.cls)}</b><span class="small muted">${DATA.weapons.filter((w) => w.wh === c.id).length} weapons</span></div>`).join("")}
       <div class="vhead"><b>Vault</b><span class="small muted">${plural(inVault, "weapon")} · ${plural(armorInVault, "armor piece")}</span></div>
       ${VSLOTS.map((s) => `<div class="vslot"><span class="cap">${s}</span></div>` +
         chars.map((c) => { const items = at(c.id, s), eq = DATA.weapons.find((w) => w.wh === c.id && w.s === s && w.eq); return `<div class="vcell"><div class="vdrop" data-to="${c.id}" data-equip="1" title="Drop here to equip">${eq ? tile(eq, true) : '<span class="vempty">Empty</span>'}</div><div class="vdrop vinv" data-to="${c.id}">${items.filter((w) => !w.eq).map((w) => tile(w)).join("")}</div></div>`; }).join("") +
         vaultBox(at("vault", s), tile)).join("")}
-    </div>`) + subsec("v-armor", "Armor", `${plural(DATA.armor.length, "piece")} · border colour is the class: <i class="vkey c-Hunter"></i>Hunter <i class="vkey c-Titan"></i>Titan <i class="vkey c-Warlock"></i>Warlock <i class="vkey c-Warlock exotic"></i>Warlock exotic`, armorSection(chars));
+    </div>`) + vsec("v-armor", "Armor", `${plural(DATA.armor.length, "piece")} · border colour is the class: <i class="vkey c-Hunter"></i>Hunter <i class="vkey c-Titan"></i>Titan <i class="vkey c-Warlock"></i>Warlock <i class="vkey c-Warlock exotic"></i>Warlock exotic`, armorSection(chars, can));
   }
   /** Armor laid out like the weapons: per slot, each character's worn piece and inventory, then the vault by set;
    *  inside a set by class (border colour), tier, then archetype. Split by character: one block per character, vault limited to its class. */
   const ASLOTS = ["Helmet", "Arms", "Chest", "Legs", "Class Item"], ACLS = ["Hunter", "Titan", "Warlock"];
-  function armorSection(chars = []) {
-    const atile = (a, big) => `<button class="vitem${big ? " big" : ""} varmorc-${esc(a.cls)}${isExotic(a) ? " exotic" : ""} v-${a.v}" data-a="${a.id}" title="${esc(a.n)} · ${esc(a.cls)} · ${esc(a.arch || "Legacy")}${a.gt ? ` · Tier ${a.gt}` : ""} · ${a.tot} total · ${a.sc} · ${VERDICT[a.v]}${a.loc ? " · " + esc(a.loc) : ""}">${img(a.ic)}${a.gt ? `<span class="tier tU">T${a.gt}</span>` : ""}${newBadge(a)}<b class="num">${a.sc}</b></button>`;
+  function armorSection(chars = [], can = false) {
+    const atile = (a, big) => `<button class="vitem${big ? " big" : ""} varmor c-${esc(a.cls)}${isExotic(a) ? " exotic" : ""} v-${a.v}" data-a="${a.id}"${can && !a.eq ? ' draggable="true"' : ""} title="${esc(a.n)} · ${esc(a.cls)} · ${esc(a.arch || "Legacy")}${a.gt ? ` · Tier ${a.gt}` : ""} · ${a.tot} total · ${a.sc} · ${VERDICT[a.v]}${a.loc ? " · " + esc(a.loc) : ""}">${img(a.ic)}${a.gt ? `<span class="tier tU">T${a.gt}</span>` : ""}${newBadge(a)}<b class="num">${a.sc}</b></button>`;
     const order = (x, y) => ACLS.indexOf(x.cls) - ACLS.indexOf(y.cls) || (y.gt || 0) - (x.gt || 0) || (x.arch || "~").localeCompare(y.arch || "~") || y.sc - x.sc;
     const groupOf = (a) => (isExotic(a) ? "Exotic" : a.set || "No set");
     const rank = (g) => (g === "Exotic" ? 0 : g === "No set" ? 2 : 1);
     const bySlot = groupBy(DATA.armor, (a) => a.s), inVault = (a) => (a.wh || "vault") === "vault";
-    const vaultSets = (xs) => !xs.length ? '<div class="vbox"><span class="small muted">No armor</span></div>' : `<div class="vbox split">${[...groupBy(xs, groupOf)]
+    const vaultSets = (xs) => !xs.length ? '<div class="vdrop vbox" data-k="a" data-to="vault"><span class="small muted">No armor</span></div>' : `<div class="vdrop vbox split" data-k="a" data-to="vault">${[...groupBy(xs, groupOf)]
       .sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0]))
       .map(([g, gs]) => `<div class="vtype"><div class="cap">${esc(g)}<span>${gs.length}</span></div><div class="vtiles">${gs.sort(order).map((a) => atile(a)).join("")}</div></div>`).join("")}</div>`;
     const grid = (cs, keep) => `<div class="vgrid" style="--chars:${cs.length}">
-      ${cs.map((c) => `<div class="vhead"><b>${esc(c.cls)}</b><span class="small muted">${plural(DATA.armor.filter((a) => a.wh === c.id).length, "piece")}</span></div>`).join("")}
+      ${cs.map((c) => `<div class="vhead cc c-${esc(c.cls)}"><b>${esc(c.cls)}</b><span class="small muted">${plural(DATA.armor.filter((a) => a.wh === c.id).length, "piece")}</span></div>`).join("")}
       <div class="vhead"><b>Vault</b><span class="small muted">${plural(DATA.armor.filter((a) => inVault(a) && keep(a)).length, "armor piece")}</span></div>
       ${ASLOTS.map((slot) => { const xs = bySlot.get(slot) || []; return `<div class="vslot"><span class="cap">${slot}</span></div>` +
-        cs.map((c) => { const mine = xs.filter((a) => a.wh === c.id), eq = mine.find((a) => a.eq); return `<div class="vcell"><div>${eq ? atile(eq, true) : '<span class="vempty">Empty</span>'}</div><div class="vinv">${mine.filter((a) => !a.eq).map((a) => atile(a)).join("")}</div></div>`; }).join("") +
+        cs.map((c) => { const mine = xs.filter((a) => a.wh === c.id), eq = mine.find((a) => a.eq); return `<div class="vcell"><div class="vdrop" data-k="a" data-cls="${esc(c.cls)}" data-to="${c.id}" data-equip="1" title="Drop here to equip">${eq ? atile(eq, true) : '<span class="vempty">Empty</span>'}</div><div class="vdrop vinv" data-k="a" data-cls="${esc(c.cls)}" data-to="${c.id}">${mine.filter((a) => !a.eq).map((a) => atile(a)).join("")}</div></div>`; }).join("") +
         vaultSets(xs.filter((a) => inVault(a) && keep(a))); }).join("")}
     </div>`;
     if (!asplit || !chars.length) return grid(chars, () => true);
-    return chars.map((c) => subsec(`v-armor-${c.id}`, esc(c.cls), `${plural(DATA.armor.filter((a) => a.wh === c.id).length, "piece")} on this character · vault ${esc(c.cls)} armor`, grid([c], (a) => a.cls === c.cls))).join("");
+    return chars.map((c) => vsec(`v-armor-${c.id}`, esc(c.cls), `${plural(DATA.armor.filter((a) => a.wh === c.id).length, "piece")} on this character · vault ${esc(c.cls)} armor`, grid([c], (a) => a.cls === c.cls), c.cls)).join("");
   }
   /** One slot's vault weapons, in the current order; split into a labelled group per weapon type when that's on. */
   function vaultBox(items, tile) {
@@ -1747,29 +1758,31 @@ function vrMain() {
     const types = groupBy(items, (w) => w.t);
     return `<div class="vdrop vbox split" data-to="vault">${[...types].sort((a, b) => a[0].localeCompare(b[0])).map(([t, ws]) => `<div class="vtype"><div class="cap">${esc(t)}<span>${ws.length}</span></div><div class="vtiles">${ws.map((w) => tile(w)).join("")}</div></div>`).join("")}</div>`;
   }
-  // Drag and drop: a weapon dropped on another place moves there; on the big slot it is equipped.
+  // Drag and drop: a weapon or armor piece dropped on another place moves there; on the big slot it is equipped.
   let dragId = null;
   document.addEventListener("dragstart", (e) => {
     const t = e.target.closest?.(".vitem[draggable=true]"); if (!t) return;
-    dragId = t.dataset.w; e.dataTransfer.setData("text/plain", dragId); e.dataTransfer.effectAllowed = "move"; t.classList.add("dragging");
+    dragId = t.dataset.w || t.dataset.a; e.dataTransfer.setData("text/plain", dragId); e.dataTransfer.effectAllowed = "move"; t.classList.add("dragging");
   });
   document.addEventListener("dragend", (e) => { e.target.closest?.(".vitem")?.classList.remove("dragging"); $$(".vdrop.over").forEach((d) => d.classList.remove("over")); dragId = null; });
+  // Weapons drop on weapon places, armor (data-k="a") on armor places, and only on a character of its class.
+  const dropOk = (d) => { const a = A.get(dragId); return a ? d.dataset.k === "a" && (!d.dataset.cls || d.dataset.cls === a.cls) : !d.dataset.k; };
   document.addEventListener("dragover", (e) => {
-    const d = dragId && e.target.closest?.(".vdrop"); if (!d) return;
+    const d = dragId && e.target.closest?.(".vdrop"); if (!d || !dropOk(d)) return;
     e.preventDefault(); e.dataTransfer.dropEffect = "move";
     $$(".vdrop.over").forEach((x) => x !== d && x.classList.remove("over")); d.classList.add("over");
   });
   document.addEventListener("drop", (e) => {
-    const d = dragId && e.target.closest?.(".vdrop"); if (!d) return;
+    const d = dragId && e.target.closest?.(".vdrop"); if (!d || !dropOk(d)) return;
     e.preventDefault(); d.classList.remove("over");
     const id = dragId; dragId = null;
     dropMove(id, d.dataset.to, !!d.dataset.equip);
   });
   async function dropMove(id, to, equip) {
-    const w = W.get(id); if (!w || ((w.wh || "vault") === to && !equip)) return;
+    const w = W.get(id) || A.get(id); if (!w || ((w.wh || "vault") === to && !equip)) return;
     const name = to === "vault" ? "the vault" : `your ${clsOf(to) || "character"}`;
     const t = cornerToast(`${equip ? "Equipping" : "Moving"} ${w.n} ${equip ? "on" : "to"} ${name}…`);
-    $(`.vitem[data-w="${id}"]`)?.classList.add("moving");
+    $(`.vitem[data-w="${id}"], .vitem[data-a="${id}"]`)?.classList.add("moving");
     const m = (await doMove([id], to, equip, null))?.[0];
     const ok = !!m?.ok && !m.error;
     t.done(ok ? `${w.n} ${equip ? "equipped on" : "moved to"} ${name}` : `${m?.ok ? `${w.n} moved, but` : `Couldn't move ${w.n}`}${m?.error ? ": " + m.error : ""}`, ok);
