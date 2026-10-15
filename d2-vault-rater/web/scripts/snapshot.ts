@@ -47,7 +47,11 @@ const buildsFile = `builds-${versionSlug(meta.version)}.json`;
 if (!existsSync(join(out, buildsFile))) {
   const get = async (t: string) => (await fetch("https://www.bungie.net" + meta.jsonWorldComponentContentPaths.en[t])).json();
   console.log("Downloading the Builds tab's definitions…");
-  const defs = stripBuildDefs(meta.version, await get("DestinyInventoryItemDefinition"), await get("DestinyPlugSetDefinition"), await get("DestinySandboxPerkDefinition"), await get("DestinyLoadoutConstantsDefinition"));
+  const defs = stripBuildDefs(meta.version, await get("DestinyInventoryItemDefinition"), await get("DestinyPlugSetDefinition"), await get("DestinySandboxPerkDefinition"), await get("DestinyLoadoutConstantsDefinition"), {
+    names: await get("DestinyLoadoutNameDefinition"),
+    icons: await get("DestinyLoadoutIconDefinition"),
+    colors: await get("DestinyLoadoutColorDefinition"),
+  });
   for (const f of readdirSync(out)) if (/^builds-.*\.json$/.test(f)) rmSync(join(out, f));
   writeFileSync(join(out, buildsFile), JSON.stringify(defs));
   console.log(`Wrote ${buildsFile}`);

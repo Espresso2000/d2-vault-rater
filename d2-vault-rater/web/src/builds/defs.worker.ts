@@ -9,8 +9,11 @@ self.onmessage = async (e: MessageEvent<{ version: string; paths: Record<string,
     const plugSets = await downloadTable(paths, "DestinyPlugSetDefinition");
     const perks = await downloadTable(paths, "DestinySandboxPerkDefinition");
     const constants = await downloadTable(paths, "DestinyLoadoutConstantsDefinition");
+    const names = await downloadTable(paths, "DestinyLoadoutNameDefinition").catch(() => ({}));
+    const icons = await downloadTable(paths, "DestinyLoadoutIconDefinition").catch(() => ({}));
+    const colors = await downloadTable(paths, "DestinyLoadoutColorDefinition").catch(() => ({}));
     const items = await downloadTable(paths, "DestinyInventoryItemDefinition");
-    self.postMessage({ result: stripBuildDefs(version, items, plugSets, perks, constants) });
+    self.postMessage({ result: stripBuildDefs(version, items, plugSets, perks, constants, { names, icons, colors }) });
   } catch (err) {
     self.postMessage({ error: (err as Error).message });
   }

@@ -57,6 +57,8 @@ export interface BuildDefs {
   mods: Record<string, number[]>;
   /** In-game loadout identifiers (DestinyLoadoutConstantsDefinition), for saving to an empty slot. */
   loadout: { colors: number[]; icons: number[]; names: number[] };
+  /** In-game loadout name / icon image / colour swatch image by hash (absent in older cached copies). */
+  loadoutLook?: { names: Record<number, string>; icons: Record<number, string>; colors: Record<number, string> };
 }
 
 const ELEMENT: Record<number, SubclassDef["el"]> = { 2: "Arc", 3: "Solar", 4: "Void", 6: "Stasis", 7: "Strand" };
@@ -75,7 +77,7 @@ export function groupOf(pci: string): SocketGroup {
 
 export const MOD_CATEGORY = /^enhancements\.v2_(general|head|arms|chest|legs|class_item)$/;
 
-export function stripBuildDefs(version: string, items: Raw, plugSets: Raw, perks: Raw, loadoutConstants: Raw = {}): BuildDefs {
+export function stripBuildDefs(version: string, items: Raw, plugSets: Raw, perks: Raw, loadoutConstants: Raw = {}, look: { names?: Raw; icons?: Raw; colors?: Raw } = {}): BuildDefs {
   const lc = Object.values(loadoutConstants)[0] ?? {};
   const out: BuildDefs = {
     version,
@@ -83,7 +85,14 @@ export function stripBuildDefs(version: string, items: Raw, plugSets: Raw, perks
     subclasses: {},
     mods: {},
     loadout: { colors: lc.loadoutColorHashes ?? [], icons: lc.loadoutIconHashes ?? [], names: lc.loadoutNameHashes ?? [] },
+    loadoutLook: { names: {}, icons: {}, colors: {} },
   };
+  const pick = (t: Raw | undefined, field: string, into: Record<number, string>) => {
+    for (const [h, d] of Object.entries(t ?? {})) if ((d as Raw)[field]) into[Number(h)] = (d as Raw)[field];
+  };
+  pick(look.names, "name", out.loadoutLook!.names);
+  pick(look.icons, "iconImagePath", out.loadoutLook!.icons);
+  pick(look.colors, "colorImagePath", out.loadoutLook!.colors);
   const statSet = new Set<number>(STAT_HASHES);
   const addPlug = (h: number) => {
     if (out.plugs[h]) return;

@@ -266,8 +266,10 @@ function gameLoadouts(cls: number, c: Ctx) {
   const sub = (id: string) => ch.subclasses.find((x) => x.id === id)?.hash;
   return ch.loadouts.flatMap((l, i) => {
     if (l.empty) return [];
-    const b = fromGameLoadout(cls, `Loadout ${i + 1}`, l.items, sub, c);
-    return [{ i, b, match: builds.find((x) => x.cls === cls && sameLoadout(x, b, defs!)) }];
+    const look = defs!.loadoutLook;
+    const name = look?.names[l.nameHash] || `Loadout ${i + 1}`;
+    const b = fromGameLoadout(cls, name, l.items, sub, c);
+    return [{ i, b, name, icon: look?.icons[l.iconHash], color: look?.colors[l.colorHash], match: builds.find((x) => x.cls === cls && sameLoadout(x, b, defs!)) }];
   });
 }
 
@@ -276,15 +278,20 @@ const rowIco = (c: Ctx, b: Build, slot: BuildSlot) => {
   return x ? `<span class="bd-gico${x.rarity === "Exotic" ? " exotic" : ""}" title="${esc(x.name)}">${img(x.icon)}</span>` : `<span class="bd-gico none"></span>`;
 };
 
+/** The in-game loadout icon over its colour swatch; falls back to the subclass icon. */
+const loadGlyph = (l: { icon?: string; color?: string }, sub?: string | null) =>
+  l.icon
+    ? `<span class="bd-lglyph"${l.color ? ` style="background-image:url('${esc(bungieUrl(l.color))}')"` : ""}>${img(l.icon)}</span>`
+    : `<span class="bd-bico">${img(sub)}</span>`;
+
 /** A compact card first in the grid: a few slot chips, the count, and a button for the full list. */
 function loadoutCard(cls: number, c: Ctx) {
   const list = gameLoadouts(cls, c);
   if (!list.length) return "";
   const chips = list
-    .slice(0, 4)
-    .map(({ i, b, match }) => {
-      const sc = b.subclass ? defs!.subclasses[b.subclass] : null;
-      return `<span class="bd-lchip" style="--el:var(--${sc?.el ?? "Unknown"})"><span class="bd-bico">${img(sc?.i)}</span><b>${i + 1}</b>${match ? `<i class="bd-lmatch" title="Matches your EVR build “${esc(match.name)}”">✓</i>` : ""}</span>`;
+    .map((l) => {
+      const sc = l.b.subclass ? defs!.subclasses[l.b.subclass] : null;
+      return `<span class="bd-lchip" title="${esc(l.name)}" style="--el:var(--${sc?.el ?? "Unknown"})">${loadGlyph(l, sc?.i)}<b>${l.i + 1}</b>${l.match ? `<i class="bd-lmatch" title="Matches your EVR build “${esc(l.match.name)}”">✓</i>` : ""}</span>`;
     })
     .join("");
   return `<button class="bd-bcard bd-loadcard" data-act="loadlist" aria-label="Show all ${list.length} in-game loadouts">
@@ -311,11 +318,13 @@ function openLoadoutList() {
   }
   dlg.innerHTML = `<h3 id="bd-loadouts-h">In-game loadouts · ${esc(CLASS_NAME(listCls!))}</h3>
     <div class="bd-lrows">${list
-      .map(({ i, b, match }) => {
+      .map((l) => {
+        const { i, b, match } = l;
         const sc = b.subclass ? defs!.subclasses[b.subclass] : null;
         return `<div class="bd-lrow" style="--el:var(--${sc?.el ?? "Unknown"})">
           <button class="bd-lopen" data-act="loadgame" data-i="${i}" title="Load this loadout into the builder">
-            <span class="bd-bico">${img(sc?.i)}</span><b>${i + 1}</b>
+            ${loadGlyph(l, sc?.i)}<span class="bd-lname"><b>${esc(l.name)}</b><small>${i + 1}</small></span>
+            ${l.icon ? `<span class="bd-bico bd-lsub">${img(sc?.i)}</span>` : ""}
             <span class="bd-bgear">${WEAPON_SLOTS.map((s) => rowIco(c, b, s)).join("")}<i></i>${ARMOR_SLOTS.map((s) => rowIco(c, b, s)).join("")}</span>
             ${match ? `<span class="bd-lmatch" title="Matches your EVR build “${esc(match.name)}”">✓</span>` : ""}</button>
           ${match ? "" : `<button class="btn bd-sm" data-act="savegame" data-i="${i}" title="Save as an EVR build">Save</button>`}
@@ -1456,7 +1465,7 @@ const ACTIONS: Record<string, (t: HTMLElement) => void> = {
     const l = gameLoadouts(listCls!, ctx()).find((x) => x.i === Number(t.dataset.i));
     if (!l) return;
     guard(() =>
-      askName("Name this EVR build", l.b.name, (name) => {
+      askName("Name this EVR build", l.name, (name) => {
         builds = commitBuild(builds, { ...l.b, name });
         saveBuilds(builds);
         cur = structuredClone(builds.find((x) => x.id === l.b.id)!);
