@@ -7,12 +7,18 @@
 .vonly input { accent-color: var(--green); }
 
 /* Each vendor (and each Eververse list) is a card that collapses to its header. */
+/* Vendor cards flow side by side, each as wide as its weapons need (up to four across), so vendors
+   selling one or two items share a row instead of each taking the full width. A collapsed card shrinks to its header. */
+.vendors .vgrid { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; min-width: 0; }
+.vendors .vgrid > .vgroup { flex: 0 1 calc(var(--n, 1) * 302px + 26px); max-width: 100%; }
+.vendors .vgrid > .vgroup:not([open]) { flex-basis: 300px; }
 .vgroup { min-width: 0; border-radius: 4px 20px; background: var(--glass); border: 1px solid var(--line); }
 .vgroup > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-radius: inherit; }
 .vgroup > summary::-webkit-details-marker { display: none; }
 .vgroup > summary:hover { background: var(--glass-hi); }
 .vghead { flex: 1; display: flex; align-items: center; gap: 12px; min-width: 0; }
 .vghead > div { min-width: 0; }
+.vghead .sm { white-space: normal; }
 .vgroup h3 { margin: 0; font-size: 19px; font-weight: 600; }
 .vchev { flex: none; width: 10px; height: 10px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(-45deg); transition: transform .15s ease; }
 .vgroup[open] > summary .vchev { transform: rotate(45deg); }
@@ -20,7 +26,7 @@
 .vico { width: 40px; height: 40px; flex: none; border-radius: 10px; background: var(--glass-hi); object-fit: contain; }
 
 /* Cards sit in a grid, so a few weapons never stretch across a wide screen. */
-.vcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(290px, 100%), 340px)); gap: 12px; align-items: start; }
+.vcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(290px, 100%), 1fr)); gap: 12px; align-items: start; }
 .vcard { position: relative; border-radius: 3px 16px; background: var(--glass); border: 1px solid var(--line); transition: border-color .15s ease, background .15s ease; min-width: 0; }
 .vcard:hover { border-color: var(--line-hi); background: var(--spot), var(--glass-hi); }
 .vcard[open] { border-color: var(--line-hi); background: var(--glass-hi); }
