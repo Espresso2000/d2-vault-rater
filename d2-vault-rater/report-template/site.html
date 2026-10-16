@@ -944,7 +944,7 @@ aside.drawer[data-mode=bottom] .dp-id h2 { font-size: 23px; }
 .pk-intr span { font-size: 13px; color: var(--muted); }
 .pk-intr[data-ptip] { cursor: help; border-radius: 8px; }
 .pk-cols { display: flex; overflow-x: auto; scrollbar-width: none; padding-block: 2px; }
-.pk-col { display: grid; justify-items: center; align-content: start; gap: 8px; padding-inline: 10px; flex: none; }
+.pk-col { display: grid; justify-items: center; align-content: start; gap: 8px; padding-inline: 8px; flex: none; }
 .pk-col:first-child { padding-left: 2px; }
 .pk-col + .pk-col { border-left: 1px solid var(--line-hi); }
 .pk-lab { font: 500 9.5px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--faint); white-space: nowrap; }
@@ -964,12 +964,16 @@ aside.drawer[data-mode=bottom] .dp-id h2 { font-size: 23px; }
 .psock.pv { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(242,193,78,.25); border-style: dashed; }
 .psock .ptxt { max-width: 92px; padding: 0 4px; font-size: 11px; line-height: 1.15; text-align: center; color: var(--ink); }
 .psock:has(.ptxt) { width: auto; min-width: 46px; height: auto; min-height: 34px; padding: 5px 8px; border-radius: 12px; }
-.pk-mods { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line); }
+.pk-main { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 14px 0; }
+.pk-main .pk-cols { flex: 0 1 auto; min-width: 0; }
+.pk-side { flex: 1 1 92px; display: grid; gap: 12px; align-content: start; min-width: 92px; padding: 18px 0 0 12px; border-left: 1px solid var(--line-hi); }
+.pk-mods { display: flex; flex-wrap: wrap; gap: 8px; }
 .msock { position: relative; display: grid; place-items: center; width: 42px; height: 42px; padding: 0; border-radius: 6px; border: 1px solid var(--line-hi); background: rgba(5,8,22,.75); }
 .msock img { width: 36px; height: 36px; border-radius: 3px; display: block; }
 .msock.masterwork { border-color: rgba(242,193,78,.6); box-shadow: inset 0 0 12px -4px rgba(242,193,78,.6); }
 .msock:hover { border-color: rgba(238,241,255,.6); }
-.pk-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 11.5px; color: var(--faint); }
+.pk-legend { display: grid; gap: 5px; font-size: 11.5px; color: var(--faint); }
+.pk-legend > span:last-child { margin-top: 2px; line-height: 1.35; }
 .pk-legend i { display: inline-block; width: 10px; height: 10px; margin-right: 5px; border-radius: 50%; vertical-align: -1px; border: 1.5px solid; }
 .pk-legend .lon { border-color: #eef1ff; background: rgba(77,125,255,.6); }
 .pk-legend .lgood { border-color: var(--green); }
@@ -1129,6 +1133,8 @@ body.vr-booting > .topbar, body.vr-booting > main, body.vr-booting > footer { di
   .psock { width: 42px; height: 42px; }
   .psock img { width: 34px; height: 34px; }
   .pk-col { padding-inline: 7px; }
+  .pk-side { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 12px 0 0; border-left: 0; border-top: 1px solid var(--line); }
+  .pk-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; }
   .rad .rk, .rad.top .rk { font-size: 36px; }
   .rad .title h3, .rad.top .title h3 { font-size: 20px; }
   .rad .farm b { font-size: 26px; }
@@ -2732,7 +2738,8 @@ function vrMain() {
     }).join("");
     const mods = (w.md || []).map((x, i) => `<button type="button" class="msock ${x.k === "masterwork" ? "masterwork" : ""}" data-ptip="md${i}" aria-label="${esc(x.n)}">${x.ic ? img(x.ic) : ""}</button>`).join("");
     const legend = `<div class="pk-legend"><span><i class="lon"></i>Equipped</span><span><i class="lgood"></i>Aegis pick</span>${en.size ? '<span><i class="lenh"></i>Enhanced</span>' : ""}<span>Hover or tap a perk for details${window.VR_LOCAL ? ", then apply it" : ""}</span></div>`;
-    return `${frHtml}<div class="pk-cols">${colsHtml}</div>${mods ? `<div class="pk-mods">${mods}</div>` : ""}${legend}<div class="pk-detail" aria-live="polite"></div>`;
+    // Mods and the key sit in the space to the right of the perk columns (under them when the panel is too narrow).
+    return `${frHtml}<div class="pk-main"><div class="pk-cols">${colsHtml}</div><div class="pk-side">${mods ? `<div class="pk-mods">${mods}</div>` : ""}${legend}</div></div><div class="pk-detail" aria-live="polite"></div>`;
   }
   /** What a hover card or the detail card shows for one perk socket, mod, the frame or the Overall score. */
   function ptipData(w, key) {
