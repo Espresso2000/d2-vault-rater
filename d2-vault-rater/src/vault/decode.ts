@@ -1,6 +1,6 @@
 import { DAMAGE_TYPES as DAMAGE, type Manifest, type ItemDef } from "../bungie/defs.js";
 import { bungieUrl } from "../bungie/client.js";
-import type { ArmorRecord, ArmorSlot, ClassName, PerkColumn, Vault, WeaponRecord, WeaponSlot } from "./types.js";
+import type { ArmorRecord, ArmorSlot, ClassName, PerkColumn, Vault, WeaponPlug, WeaponRecord, WeaponSlot } from "./types.js";
 
 export const PROFILE_COMPONENTS = [100, 102, 200, 201, 205, 300, 304, 305, 310];
 
@@ -58,6 +58,12 @@ function plugName(m: Manifest, hash?: number): string {
   return (hash && m.items[hash]?.displayProperties?.name) || "";
 }
 
+/** A plug's name, icon and description, or null for an empty socket. */
+function plugOf(m: Manifest, hash?: number): WeaponPlug | null {
+  const d = hash ? m.items[hash]?.displayProperties : undefined;
+  return d?.name ? { name: d.name, icon: d.icon ? bungieUrl(d.icon) : null, description: d.description ?? "" } : null;
+}
+
 function isEnhanced(m: Manifest, hash: number): boolean {
   return /enhanced/i.test(m.items[hash]?.itemTypeDisplayName ?? "");
 }
@@ -103,10 +109,12 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
     if (def.itemType === 3) {
       const columns: PerkColumn[] = [];
       let frame = "";
+      let intrinsic: WeaponPlug | null = null;
       let masterwork: string | null = null;
+      const mods: NonNullable<WeaponRecord["mods"]> = [];
       const cats = def.sockets?.socketCategories ?? [];
       const intrinsicIdx = cats.find((c) => c.socketCategoryHash === SOCKET_CATEGORY.intrinsic)?.socketIndexes ?? [];
-      for (const i of intrinsicIdx) frame ||= plugName(m, sockets[i]?.plugHash);
+      for (const i of intrinsicIdx) if (!frame) { frame = plugName(m, sockets[i]?.plugHash); intrinsic = plugOf(m, sockets[i]?.plugHash); }
       const perkIdx = cats.find((c) => c.socketCategoryHash === SOCKET_CATEGORY.weaponPerks)?.socketIndexes ?? [];
       let traits = 0;
       let parts = 0;
@@ -139,6 +147,19 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
           const n = plugName(m, s.plugHash);
           masterwork = n.includes(":") ? n.split(":").pop()!.trim() : n || null;
         }
+        const plug = /masterworks\.stat|weapon\.mod_/.test(pci) && s.isVisible !== false ? plugOf(m, s.plugHash) : null;
+        if (plug) mods.push({ ...plug, kind: /masterworks/.test(pci) ? "masterwork" : "mod" });
+      }
+      // Live stats first; the base stats fill in what the live data leaves out.
+      const stats: Record<string, number> = {};
+      for (const st of Object.values(statsC[id]?.stats ?? {})) {
+        const n = m.stats[st.statHash]?.displayProperties?.name;
+        if (n) stats[n] = st.value;
+      }
+      const baseStats: string[] = [];
+      for (const st of Object.values(def.stats?.stats ?? {})) {
+        const n = m.stats[st.statHash]?.displayProperties?.name;
+        if (n && !(n in stats)) { stats[n] = st.value; baseStats.push(n); }
       }
       weapons.push({
         kind: "weapon",
@@ -158,6 +179,10 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
         adept: /\((adept|timelost|harrowed)\)/i.test(name),
         columns,
         masterwork,
+        stats,
+        baseStats,
+        intrinsic,
+        mods,
         icon: bungieUrl(def.displayProperties.icon),
         screenshot: def.screenshot ? bungieUrl(def.screenshot) : null,
         location: { where, equipped },

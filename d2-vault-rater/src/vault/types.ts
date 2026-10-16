@@ -45,9 +45,22 @@ export interface WeaponRecord {
   adept: boolean;
   columns: PerkColumn[];
   masterwork: string | null;
+  /** Stat name -> value: this copy's live stats, then base stats for the ones the live data leaves out. Missing in older vault snapshots. */
+  stats?: Record<string, number>;
+  /** Names of the stats in `stats` that come from the weapon's base stats, not this copy. */
+  baseStats?: string[];
+  /** The intrinsic (frame) perk and the masterwork and weapon mod plugs, for the details panel. Missing in older vault snapshots. */
+  intrinsic?: WeaponPlug | null;
+  mods?: (WeaponPlug & { kind: "masterwork" | "mod" })[];
   icon: string;
   screenshot: string | null;
   location: Location;
+}
+
+export interface WeaponPlug {
+  name: string;
+  icon: string | null;
+  description: string;
 }
 
 export interface ArmorRecord {

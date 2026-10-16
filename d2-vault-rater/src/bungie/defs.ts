@@ -20,6 +20,8 @@ export interface ItemDef {
     socketCategories: { socketCategoryHash: number; socketIndexes: number[] }[];
   };
   plug?: { plugCategoryIdentifier: string };
+  /** A weapon's base stats (its default roll), by stat hash. */
+  stats?: { stats: Record<string, { statHash: number; value: number }> };
   /** Links to DestinyCollectibleDefinition, which holds the "Source: ..." text. */
   collectibleHash?: number;
 }

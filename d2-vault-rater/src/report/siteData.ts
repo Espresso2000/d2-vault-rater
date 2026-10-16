@@ -33,6 +33,9 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
     const rec = recW.get(id) ?? recA.get(id);
     return { tg: o.dim?.tags[id]?.tag ?? null, nt: o.dim?.tags[id]?.notes ?? null, lo: inLoadouts.get(id) ?? [], wh: rec?.location.where ?? null, eq: rec?.location.equipped ?? false };
   };
+  // Enhanced perk names on a weapon, for the gold arrow on its perk sockets.
+  const enhancedOf = (rec?: { columns: { enhanced: string[] }[] }) => { const e = rec?.columns.flatMap((c) => c.enhanced) ?? []; return e.length ? e : undefined; };
+  const plugData = (p: { name: string; icon: string | null; description: string } | null | undefined) => (p ? { n: p.name, ic: imageKey(p.icon), d: p.description || undefined } : undefined);
   const weapons = w.ratings.map((r) => {
     const matched = new Set(Object.values(r.matched).flat());
     return {
@@ -54,6 +57,7 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
     ws: r.weaponScore,
     rs: r.rollScore,
     pk: r.perks.map((p) => ({ k: p.kind, a: p.active, si: p.socket, o: p.options, m: p.options.filter((x) => matched.has(x)) })),
+    en: enhancedOf(recW.get(r.instanceId)),
     v: r.verdict,
     l: r.label,
     c: r.category,
@@ -68,6 +72,11 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
     cr: recW.get(r.instanceId)?.crafted ?? false,
     ad: recW.get(r.instanceId)?.adept ?? false,
     mw: recW.get(r.instanceId)?.masterwork ?? null,
+    // Details panel: stats (names in `bst` are base stats, not this copy's), the intrinsic frame perk and the masterwork and mods.
+    st: recW.get(r.instanceId)?.stats,
+    bst: recW.get(r.instanceId)?.baseStats?.length ? recW.get(r.instanceId)?.baseStats : undefined,
+    fr: plugData(recW.get(r.instanceId)?.intrinsic),
+    md: recW.get(r.instanceId)?.mods?.map((x) => ({ ...plugData(x)!, k: x.kind })),
     rmw: r.recMasterwork?.length ? r.recMasterwork : undefined,
     loc: where(recW.get(r.instanceId)?.location),
     };

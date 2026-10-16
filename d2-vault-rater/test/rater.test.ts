@@ -159,6 +159,20 @@ test("enhanced perks earn a small bonus", () => {
   assert.equal(r.ratings[0].rollScore, Math.round(35 * 1.1 + 5 + 5));
 });
 
+test("weapon details: live stats, base stats for the ones left out, intrinsic frame and masterwork", () => {
+  const mm = manifest();
+  mm.stats[5] = { hash: 5, displayProperties: { name: "Range" } };
+  mm.stats[6] = { hash: 6, displayProperties: { name: "Aim Assistance" } };
+  mm.items[1002] = { ...mm.items[1002], stats: { stats: { 5: { statHash: 5, value: 30 }, 6: { statHash: 6, value: 61 } } } };
+  const raw = profile([{ id: "x", hash: 1002, plugs: [11, 21, 31, 43, 52, 61] }]);
+  raw.itemComponents!.stats!.data!.x = { stats: { 5: { statHash: 5, value: 48 } } };
+  const w = decodeProfile(raw, mm).weapons[0];
+  assert.deepEqual(w.stats, { Range: 48, "Aim Assistance": 61 }, "the live Range wins over the base one");
+  assert.deepEqual(w.baseStats, ["Aim Assistance"]);
+  assert.equal(w.intrinsic?.name, "Lightweight Frame");
+  assert.deepEqual(w.mods?.map((x) => [x.kind, x.name]), [["masterwork", "Masterworked: Reload Speed"]]);
+});
+
 test("armor rating keeps the Tier 5 piece and shards the weaker copy at strict", () => {
   const a = rateArmor(vault(), SettingsSchema.parse({ preset: "strict" }));
   const by = (id: string) => a.ratings.find((x) => x.instanceId === id)!;

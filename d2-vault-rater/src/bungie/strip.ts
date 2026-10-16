@@ -4,8 +4,8 @@
  * app ships and stores them (see web/src/strip.ts).
  */
 
-/** Bumped when stripped tables gain fields, so caches made by an older format are rebuilt. 2: plug icons. 3: plug descriptions. 4: stat icons. */
-export const STRIP_FORMAT = 4;
+/** Bumped when stripped tables gain fields, so caches made by an older format are rebuilt. 2: plug icons. 3: plug descriptions. 4: stat icons. 5: weapon base stats. */
+export const STRIP_FORMAT = 5;
 
 /** Plug categories that never matter for rating: cosmetics, armor mods and the like. */
 const COSMETIC = /shader|ornament|skin|emote|ghost|transmat|vehicle|ship|memento|tracker|^enhancements|spawnfx|sparrow|projection|finisher|deprecated|crafting|hologram|social|events\./i;
@@ -34,6 +34,8 @@ export function stripItems(items: Raw, allPlugs = false): Raw {
         inventory,
         equippingBlock: d.equippingBlock && { ammoType: d.equippingBlock.ammoType },
         sockets: d.sockets && { socketCategories: d.sockets.socketCategories },
+        // Base stats, for the stats the live item data leaves out (hidden ones like Aim Assistance and Zoom).
+        stats: d.stats?.stats && { stats: Object.fromEntries(Object.values(d.stats.stats as Raw).map((x: Raw) => [x.statHash, { statHash: x.statHash, value: x.value }])) },
         collectibleHash: d.collectibleHash,
       };
     } else if (d.itemType === 2) {

@@ -14,7 +14,7 @@
    row of overlined tabs and ends in a slowly drifting wave. Surfaces are flat and faintly lit, with green corner
    ticks on the key panels and a soft light that follows the pointer; the blue-to-green gradient (weighted to green)
    marks what matters. Small labels are mono capitals, like a readout. The Overview opens with the vault's headline
-   numbers; other tabs are collapsible sections with a jump bar. Item details open in a drawer (a sheet on phones). */
+   numbers; other tabs are collapsible sections with a jump bar. Item details open in a panel: a sidebar the page makes room for, a pop-up or a bottom strip (a sheet on phones). */
 :root {
   color-scheme: dark;
   --void: #050816;
@@ -294,8 +294,6 @@ img.broken { background: var(--grad-soft); }
 .pico::before { content: none !important; }
 .pico.good { border-color: rgba(51,227,160,.55); }
 .pico.on { border-color: rgba(238,241,255,.85); box-shadow: 0 0 0 2px rgba(238,241,255,.18); }
-.perkcols .pico:not(.on) { opacity: .55; transition: opacity .15s ease; }
-.perkcols .pico:hover { opacity: 1; }
 .perk.on { color: var(--ink); box-shadow: inset 0 0 0 1px rgba(238,241,255,.6); }
 /* !important: item icon rules like .mini img would otherwise size these too */
 .pico img { width: 34px !important; height: 34px !important; border-radius: 50% !important; display: block; }
@@ -546,7 +544,7 @@ details.vchar > summary:focus-visible { outline: none; }
 .vht { display: flex; align-items: center; gap: 10px; }
 details.vsec > summary .vsplit { margin-left: 8px; white-space: nowrap; }
 @media (max-width: 700px) { details.vsec > summary { flex-wrap: wrap; } details.vsec > summary .small { flex-basis: 100%; margin-left: 0; text-align: left; } }
-.vtip { position: fixed; z-index: 30; display: grid; gap: 6px; width: 270px; padding: 12px 14px; border-radius: 3px 14px; background: rgba(21,28,62,.97); border: 1px solid var(--line-hi); box-shadow: var(--shadow); pointer-events: none; font-size: 13px; }
+.vtip { position: fixed; z-index: 30; display: grid; gap: 6px; width: 270px; padding: 12px 14px; border-radius: 3px 14px; background: #151c3e; border: 1px solid var(--line-hi); box-shadow: var(--shadow); pointer-events: none; font-size: 13px; }
 .vtip .nm { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font: 600 15px var(--display); }
 .vtpw { flex: none; color: var(--gold); font-size: 14px; }
 .vtip .sm { color: var(--muted); font-size: 12px; }
@@ -830,64 +828,207 @@ details.full div { white-space: pre-line; color: var(--muted); font-size: 12.5px
 .elshare { display: flex; gap: 3px; height: 12px; }
 .elshare span { display: block; height: 100%; border-radius: 99px; }
 
-/* ---------- Drawer ---------- */
+/* ---------- Item details panel ---------- */
+/* One panel, three ways to show it (Settings › Display, or the switch in its top bar):
+   dock    a sidebar on the right; the page makes room for it, so the grid reflows and stays usable beside it
+   modal   a pop-up in the middle over a blurred page
+   bottom  a wide strip along the bottom; the page makes room above it
+   Phones always get a sheet from the bottom. Inside, sections sit in one, two or three columns by the panel's width. */
+:root { --dock-w: clamp(400px, 31vw, 560px); --bottom-h: min(48vh, 560px); }
 .scrim { position: fixed; inset: 0; background: rgba(2,4,14,.55); backdrop-filter: blur(4px); z-index: 20; opacity: 0; pointer-events: none; transition: opacity .25s ease; }
 .scrim.open { opacity: 1; pointer-events: auto; }
-aside.drawer { position: fixed; z-index: 21; top: 10px; right: 10px; bottom: 10px; width: min(540px, calc(100% - 20px)); border-radius: 4px 24px; background: rgba(10,15,36,.97); border: 1px solid var(--line-hi); box-shadow: -30px 0 80px -30px rgba(0,0,0,.9); transform: translateX(calc(100% + 20px)); transition: transform .32s cubic-bezier(.2,.8,.2,1); overflow-y: auto; overscroll-behavior: contain; padding-bottom: env(safe-area-inset-bottom, 0px); }
-aside.drawer.open { transform: none; }
-/* Placement (data-place) and modal behaviour (data-modal): bottom-centre dock, and a non-blocking panel that leaves the page clickable */
-aside.drawer[data-place=bottom] { top: auto; left: 50%; right: auto; bottom: 10px; width: min(1000px, calc(100% - 20px)); height: min(74vh, 740px); border-radius: 24px 4px; box-shadow: 0 -24px 80px -30px rgba(0,0,0,.9); transform: translate(-50%, calc(100% + 20px)); }
-aside.drawer[data-place=bottom].open { transform: translate(-50%, 0); }
-aside.drawer[data-place=bottom] .d-art { aspect-ratio: 16 / 3.2; }
-aside.drawer[data-place=bottom] .d-body { display: block; column-count: 2; column-gap: 30px; }
-aside.drawer[data-place=bottom] .d-body > * { break-inside: avoid; margin-bottom: 20px; }
-.d-tools { position: sticky; top: calc(12px + env(safe-area-inset-top, 0px)); height: 0; margin-left: 12px; z-index: 3; display: flex; gap: 6px; flex-wrap: wrap; }
-.d-tool { border: 1px solid var(--line-hi); border-radius: 999px; padding: 5px 11px; font-size: 12px; background: rgba(5,8,22,.6); backdrop-filter: blur(8px); color: var(--ink); }
-.d-tool:hover { background: rgba(5,8,22,.85); }
-.d-art { position: relative; aspect-ratio: 16 / 8; background: var(--grad-soft); overflow: hidden; max-width: 100%; }
-.d-art img.shot { width: 100%; height: 100%; object-fit: cover; display: block; }
-.d-art .bigicon { position: absolute; inset: 0; display: grid; place-items: center; }
-.d-art .bigicon img { width: 108px; height: 108px; border-radius: 18px; box-shadow: 0 16px 50px -10px rgba(54,196,242,.45); }
-.d-art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 45%, rgba(10,15,36,1)); }
-.d-close { position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); right: 12px; z-index: 2; width: 36px; height: 36px; border-radius: 50%; border: 0; background: rgba(5,8,22,.6); backdrop-filter: blur(8px); font-size: 16px; line-height: 1; transition: background .2s ease; }
-.d-close:hover { background: rgba(5,8,22,.85); }
-.d-body { padding: 0 24px 30px; display: grid; gap: 22px; margin-top: -24px; position: relative; z-index: 1; }
-.d-body h2 { font-size: 28px; font-weight: 600; margin-top: 6px; }
-.d-body .sub { color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; margin-top: 8px; }
+aside.drawer { position: fixed; z-index: 21; container: dp / inline-size; top: 0; right: 0; bottom: 0; width: var(--dock-w); background: #0a0f24; border-left: 1px solid var(--line-hi); box-shadow: -30px 0 80px -40px rgba(0,0,0,.9); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--line-hi) transparent; padding-bottom: env(safe-area-inset-bottom, 0px);
+  visibility: hidden; transform: translateX(calc(100% + 24px)); transition: transform .32s cubic-bezier(.2,.8,.2,1), opacity .22s ease, visibility 0s linear .32s; }
+aside.drawer.open { visibility: visible; transform: none; transition-delay: 0s; }
+aside.drawer::before { content: ""; position: fixed; top: 0; bottom: 0; width: 1px; margin-left: -1px; background: linear-gradient(180deg, rgba(51,227,160,.55), rgba(54,196,242,.25) 40%, transparent); pointer-events: none; }
+aside.drawer[data-mode=modal] { top: 50%; left: 50%; right: auto; bottom: auto; width: min(1120px, calc(100% - 48px)); height: min(900px, calc(100% - 48px)); border: 1px solid var(--line-hi); border-radius: 4px 26px; box-shadow: 0 40px 120px -30px rgba(0,0,0,.95); opacity: 0; transform: translate(-50%, -48%) scale(.97); }
+aside.drawer[data-mode=modal].open { opacity: 1; transform: translate(-50%, -50%); }
+aside.drawer[data-mode=modal]::before, aside.drawer[data-mode=bottom]::before { content: none; }
+aside.drawer[data-mode=bottom] { top: auto; left: 12px; right: 12px; width: auto; height: var(--bottom-h); border: 1px solid var(--line-hi); border-bottom: 0; border-radius: 26px 4px 0 0; box-shadow: 0 -30px 80px -40px rgba(0,0,0,.9); transform: translateY(calc(100% + 24px)); }
+aside.drawer[data-mode=bottom].open { transform: none; }
+/* The page makes room for a docked panel, so nothing hides behind it (only where the page is still wide enough beside it). */
+@media (min-width: 1000px) {
+  body.dock-open { padding-right: var(--dock-w); }
+  body.dock-open :is(.totop, .mtoasts) { right: calc(var(--dock-w) + clamp(12px, 2vw, 24px)); }
+}
+@media (min-width: 701px) { body.bottom-open { padding-bottom: var(--bottom-h); } body.bottom-open :is(.totop, .mtoasts) { bottom: calc(var(--bottom-h) + 16px); } }
+
+/* Top bar: stays put while the panel scrolls; the item's name joins it once the big header has scrolled away */
+.dp-bar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 10px; height: calc(58px + env(safe-area-inset-top, 0px)); margin-bottom: calc(-58px - env(safe-area-inset-top, 0px)); padding: env(safe-area-inset-top, 0px) 12px 0 16px; transition: background .2s ease, border-color .2s ease; border-bottom: 1px solid transparent; }
+aside.drawer.scrolled .dp-bar { background: #0a0f24; border-bottom-color: var(--line); }
+.dp-mini { display: flex; align-items: center; gap: 10px; min-width: 0; margin-right: auto; opacity: 0; transform: translateY(4px); transition: opacity .2s ease, transform .2s ease; pointer-events: none; }
+aside.drawer.scrolled .dp-mini { opacity: 1; transform: none; }
+.dp-mini img, .dp-mini .ph { width: 30px; height: 30px; border-radius: 7px; flex: none; }
+.dp-mini b { font: 600 15px var(--display); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dmode { display: inline-flex; padding: 3px; gap: 2px; border-radius: 999px; background: rgba(5,8,22,.65); border: 1px solid var(--line-hi); backdrop-filter: blur(8px); flex: none; }
+.dmode button { display: grid; place-items: center; width: 34px; height: 28px; border: 0; border-radius: 999px; background: none; color: var(--faint); transition: color .15s ease, background .15s ease; }
+.dmode button svg { width: 18px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+.dmode button svg .f { fill: currentColor; stroke: none; }
+.dmode button:hover { color: var(--ink); }
+.dmode button[aria-pressed=true] { color: #04102a; background: var(--grad); }
+.d-close { flex: none; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line-hi); background: rgba(5,8,22,.65); backdrop-filter: blur(8px); font-size: 15px; line-height: 1; transition: background .2s ease, border-color .2s ease; }
+.d-close:hover { background: rgba(5,8,22,.9); border-color: var(--hover); }
+
+/* Header: the weapon's art behind its icon, name and type */
+.dp-hero { position: relative; display: flex; align-items: flex-end; min-height: 210px; padding: 76px 20px 18px; overflow: hidden; isolation: isolate; }
+.dp-hero .shot { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; opacity: .85; }
+.dp-hero::before { content: ""; position: absolute; inset: 0; z-index: -3; background: radial-gradient(70% 90% at 85% 0%, color-mix(in srgb, var(--elc, var(--cyan)) 22%, transparent), transparent 70%), radial-gradient(60% 80% at 0% 100%, rgba(51,227,160,.10), transparent 70%), var(--deep); }
+.dp-hero::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(10,15,36,.15) 0%, rgba(10,15,36,.35) 40%, rgba(10,15,36,.98) 100%), linear-gradient(90deg, rgba(10,15,36,.7), transparent 70%); }
+.dp-id { display: flex; align-items: flex-end; gap: 16px; min-width: 0; }
+.dp-ico { position: relative; flex: none; }
+.dp-ico img, .dp-ico .ph { display: block; width: 72px; height: 72px; border-radius: 12px; border: 1px solid rgba(238,241,255,.25); box-shadow: 0 14px 40px -12px rgba(0,0,0,.9); }
+.dp-ico.exotic img { border-color: rgba(242,193,78,.7); }
+.dp-ico .tier { position: absolute; right: -7px; bottom: -7px; min-width: 24px; height: 22px; }
+.dp-id h2 { font-size: 27px; line-height: 1.08; font-weight: 600; margin-top: 4px; overflow-wrap: anywhere; }
+.dp-id .eyebrow { font-size: 11px; }
+.dp-sub { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 8px; font-size: 13.5px; color: var(--muted); }
+.dp-sub .chip { padding: 3px 10px; font-size: 12px; }
+
+/* Body: sections in one column (narrow), two (pop-up) or three (wide bottom strip) */
+.dp-body { display: grid; gap: 14px; padding: 4px 18px 28px; align-items: start; }
+.dp-col { display: contents; }
+.dp-col > * { order: var(--o, 50); min-width: 0; }
+.dp-body > .dp-explain { order: 99; }
+@container dp (min-width: 760px) {
+  .dp-body { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 16px 20px; padding-inline: 24px; }
+  .dp-col.l, .dp-col.r { display: grid; gap: 14px; align-content: start; }
+  .dp-body > .dp-explain { grid-column: 1 / -1; }
+  .dp-hero { min-height: 230px; padding-inline: 28px; }
+}
+@container dp (min-width: 1240px) {
+  .dp-body { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, 1fr); }
+  .dp-col.r { display: contents; }
+  .dp-col.m, .dp-col.s { display: grid; gap: 14px; align-content: start; }
+}
+aside.drawer[data-mode=bottom] .dp-hero { min-height: 0; padding: 20px 200px 16px 24px; }
+aside.drawer[data-mode=bottom] .dp-ico img, aside.drawer[data-mode=bottom] .dp-ico .ph { width: 56px; height: 56px; }
+aside.drawer[data-mode=bottom] .dp-id h2 { font-size: 23px; }
+.dp-sec { display: grid; gap: 12px; padding: 16px; border-radius: 3px 16px; border: 1px solid var(--line); background: var(--glass); }
+.dp-sec.bare { padding: 0; border: 0; background: none; }
+.dp-h { display: flex; align-items: center; gap: 10px; margin: 0; font: 500 11px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--faint); }
+.dp-h::before { content: "//"; color: var(--green); opacity: .7; }
+.dp-h .aside { margin-left: auto; letter-spacing: .06em; text-transform: none; font: 500 12px var(--body); color: var(--faint); }
+.dp-foot { font-size: 12px; color: var(--faint); }
+
+/* Score cards */
 .breakdown { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.breakdown div { padding: 12px 14px; border-radius: 3px 12px; background: var(--ticks), var(--glass); border: 1px solid var(--line); border-top: 2px solid var(--line-hi); }
-.breakdown div.tl { border-color: color-mix(in srgb, var(--t) 40%, transparent); border-top-color: var(--t); background: linear-gradient(160deg, color-mix(in srgb, var(--t) 16%, transparent), var(--glass)); }
-.breakdown div.tl b { color: var(--t); }
-.breakdown div:first-child { border-top-color: var(--green); background: linear-gradient(160deg, rgba(51,227,160,.1), var(--glass)); }
+.breakdown > div { padding: 12px 14px; border-radius: 3px 12px; background: var(--ticks), var(--glass); border: 1px solid var(--line); border-top: 2px solid var(--line-hi); min-width: 0; }
+.breakdown > div.tl { border-color: color-mix(in srgb, var(--t) 40%, transparent); border-top-color: var(--t); background: linear-gradient(160deg, color-mix(in srgb, var(--t) 16%, transparent), var(--glass)); }
+.breakdown > div.tl b { color: var(--t); }
+.breakdown > div:first-child { border-top-color: var(--green); background: linear-gradient(160deg, rgba(51,227,160,.1), var(--glass)); }
+.breakdown > div[data-ptip] { cursor: help; }
 .breakdown b { display: block; font: 600 24px/1.1 var(--display); }
 .breakdown span { font-size: 12px; color: var(--muted); }
-.facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 18px; font-size: 13.5px; }
-.facts div { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--line); padding-block: 7px; }
-.facts span { color: var(--muted); }
-.facts b { font-weight: 500; }
-.perkcols { display: grid; gap: 10px; }
-.perkcol { display: grid; grid-template-columns: 124px minmax(0, 1fr); gap: 6px 12px; align-items: start; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--glass); }
-/* Label and icons stack in the left column; the selected perk's card (and Apply under it) takes the full width on the right */
-.perkcol .cap { grid-column: 1; grid-row: 1; }
-.perkcol .perkopts { grid-column: 1; grid-row: 2; }
-.perkcol .pinfo { grid-column: 2; grid-row: 1 / span 2; }
-.perkcol .cap { padding-top: 6px; }
-/* The selected perk in each drawer column: symbol, name and description */
-.pinfo { grid-column: 2; display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border-radius: 12px; background: var(--glass-hi); }
-.pinfo img { width: 32px; height: 32px; flex: none; border-radius: 50%; background: rgba(0,0,0,.25); }
-.pinfo b { font-size: 13px; color: var(--ink); }
-.pinfo p { margin: 2px 0 0; font-size: 12.5px; line-height: 1.45; color: var(--muted); white-space: pre-line; }
-/* Options can be clicked to preview them; the previewed one gets a dashed gold ring, the equipped one keeps its solid ring */
-.perkcol .perkopts > * { cursor: pointer; }
-.papply { grid-column: 2; grid-row: 3; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
-.perkcols .pico.pv, .perk.pv { opacity: 1; box-shadow: 0 0 0 2px var(--gold); outline: 2px dashed rgba(0,0,0,.5); outline-offset: -2px; }
+
+/* Verdict and why */
+.dp-verdict { border-left: 3px solid var(--vc, var(--line-hi)); }
+.dp-verdict.keep { --vc: var(--keep); } .dp-verdict.shard { --vc: var(--shard); } .dp-verdict.review { --vc: var(--review); }
+.dp-vhead { display: flex; align-items: center; gap: 10px; }
+.dp-vhead .vtv { font-size: 12px; padding: 4px 11px; }
+.dp-vhead .small { color: var(--faint); }
+.reasons { margin: 0; padding-left: 18px; color: var(--ink); display: grid; gap: 5px; font-size: 14px; }
+.reasons li::marker { color: var(--vc, var(--green)); }
+.notes { padding: 12px 14px; border-radius: 3px 12px; border-left: 2px solid var(--green); background: var(--glass); color: var(--muted); font-size: 14px; }
+.dp-quote { margin: 0; padding: 10px 12px; border-radius: 3px 10px; background: var(--glass-hi); color: var(--muted); font-size: 13.5px; }
+.dp-quote b { color: var(--ink); font-weight: 600; }
+
+/* Perks, laid out like the game's weapon screen: the frame on top, one column of round sockets per perk slot, then mods */
+.pk-intr { display: flex; align-items: center; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.pk-intr img, .pk-intr .ph { width: 42px; height: 42px; flex: none; border-radius: 8px; background: rgba(0,0,0,.3); }
+.pk-intr b { display: block; font: 600 16px/1.2 var(--display); }
+.pk-intr span { font-size: 13px; color: var(--muted); }
+.pk-intr[data-ptip] { cursor: help; border-radius: 8px; }
+.pk-cols { display: flex; overflow-x: auto; scrollbar-width: none; padding-block: 2px; }
+.pk-col { display: grid; justify-items: center; align-content: start; gap: 8px; padding-inline: 10px; flex: none; }
+.pk-col:first-child { padding-left: 2px; }
+.pk-col + .pk-col { border-left: 1px solid var(--line-hi); }
+.pk-lab { font: 500 9.5px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--faint); white-space: nowrap; }
+.pk-stack { display: grid; gap: 8px; justify-items: center; }
+.psock { position: relative; display: grid; place-items: center; width: 46px; height: 46px; padding: 0; border-radius: 50%; border: 1.5px solid var(--line-hi); background: radial-gradient(circle at 50% 35%, rgba(150,170,255,.14), rgba(5,8,22,.9) 72%); color: var(--muted); transition: transform .12s ease, border-color .15s ease, box-shadow .15s ease, opacity .15s ease; }
+.psock img { width: 38px; height: 38px; border-radius: 50%; display: block; opacity: .62; transition: opacity .15s ease; }
+.psock:hover { transform: translateY(-1px); border-color: rgba(238,241,255,.55); }
+.psock:hover img, .psock.on img, .psock.pv img { opacity: 1; }
+/* Equipped: lit from inside with a bright ring */
+.psock.on { border-color: rgba(238,241,255,.92); background: radial-gradient(circle at 50% 40%, rgba(77,125,255,.6), rgba(54,196,242,.25) 60%, rgba(5,8,22,.9) 100%); box-shadow: 0 0 0 3px rgba(238,241,255,.12), 0 0 18px -2px rgba(54,196,242,.55); }
+/* Aegis's pick: green ring and a check in the corner */
+.psock.good { border-color: rgba(51,227,160,.7); }
+.psock.good.on { border-color: #b9f5dc; box-shadow: 0 0 0 3px rgba(51,227,160,.2), 0 0 18px -2px rgba(51,227,160,.6); }
+.psock.good::after { content: "✓"; position: absolute; right: -3px; bottom: -3px; display: grid; place-items: center; width: 16px; height: 16px; border-radius: 50%; background: var(--green); color: #04102a; font: 700 10px/1 var(--body); box-shadow: 0 0 0 2px rgba(10,15,36,1); }
+/* Enhanced: the game's gold arrow */
+.psock.enh::before { content: ""; position: absolute; left: -2px; top: -2px; width: 12px; height: 14px; background: linear-gradient(var(--gold), #c98a1b); clip-path: polygon(50% 0, 100% 45%, 68% 45%, 68% 100%, 32% 100%, 32% 45%, 0 45%); filter: drop-shadow(0 0 2px rgba(0,0,0,.9)); }
+.psock.pv { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(242,193,78,.25); border-style: dashed; }
+.psock .ptxt { max-width: 92px; padding: 0 4px; font-size: 11px; line-height: 1.15; text-align: center; color: var(--ink); }
+.psock:has(.ptxt) { width: auto; min-width: 46px; height: auto; min-height: 34px; padding: 5px 8px; border-radius: 12px; }
+.pk-mods { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line); }
+.msock { position: relative; display: grid; place-items: center; width: 42px; height: 42px; padding: 0; border-radius: 6px; border: 1px solid var(--line-hi); background: rgba(5,8,22,.75); }
+.msock img { width: 36px; height: 36px; border-radius: 3px; display: block; }
+.msock.masterwork { border-color: rgba(242,193,78,.6); box-shadow: inset 0 0 12px -4px rgba(242,193,78,.6); }
+.msock:hover { border-color: rgba(238,241,255,.6); }
+.pk-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 11.5px; color: var(--faint); }
+.pk-legend i { display: inline-block; width: 10px; height: 10px; margin-right: 5px; border-radius: 50%; vertical-align: -1px; border: 1.5px solid; }
+.pk-legend .lon { border-color: #eef1ff; background: rgba(77,125,255,.6); }
+.pk-legend .lgood { border-color: var(--green); }
+.pk-legend .lenh { width: 9px; height: 10px; border: 0; border-radius: 0; background: var(--gold); clip-path: polygon(50% 0, 100% 45%, 68% 45%, 68% 100%, 32% 100%, 32% 45%, 0 45%); }
+/* The perk you clicked: what it does, and Apply to switch it in game */
+.pk-detail:empty { display: none; }
+.pk-card { display: flex; gap: 12px; align-items: flex-start; padding: 12px; border-radius: 3px 12px; background: var(--glass-hi); border: 1px solid var(--line); }
+.pk-card img { width: 40px; height: 40px; flex: none; border-radius: 50%; background: rgba(0,0,0,.3); }
+.pk-card b { font: 600 14.5px var(--display); }
+.pk-card p { margin-top: 3px; font-size: 13px; line-height: 1.45; color: var(--muted); white-space: pre-line; }
+.pk-card .papply { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-top: 10px; }
+.ptags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.ptags span { font: 600 10.5px/1 var(--body); letter-spacing: .04em; padding: 3px 7px; border-radius: 999px; background: var(--glass-hi); color: var(--muted); }
+.ptags .t-on { color: #cfe0ff; background: rgba(77,125,255,.2); }
+.ptags .t-good { color: #b9f5dc; background: rgba(51,227,160,.14); }
+.ptags .t-enh { color: #ffe3a3; background: rgba(242,193,78,.14); }
+/* Hover card for perks, mods, the frame and the Overall score */
+.vtip.ptip { width: 290px; }
+.vtip.ptip .ph { display: flex; gap: 10px; align-items: center; }
+.vtip.ptip .ph img { width: 36px; height: 36px; flex: none; border-radius: 50%; background: rgba(0,0,0,.3); }
+.vtip.ptip .ph.sq img { border-radius: 4px; }
+.vtip.ptip p { margin: 0; color: var(--muted); font-size: 12.5px; line-height: 1.45; white-space: pre-line; }
+.vtip.ptip .sum { display: grid; grid-template-columns: 1fr auto; gap: 3px 14px; font-size: 12.5px; color: var(--muted); }
+.vtip.ptip .sum b { color: var(--ink); font-weight: 600; text-align: right; }
+.vtip.ptip .sum .tot { padding-top: 5px; border-top: 1px solid var(--line-hi); color: var(--ink); }
+
+/* Stats, like the game's: name, number, bar */
+.wstats { display: grid; grid-template-columns: max-content 3.2ch minmax(0, 1fr); gap: 5px 10px; align-items: center; font-size: 13.5px; }
+.wst { display: contents; }
+.wst > span { text-align: right; color: var(--muted); white-space: nowrap; }
+.wst > b { text-align: right; font: 600 13.5px var(--body); font-variant-numeric: tabular-nums; }
+.wbar { position: relative; height: 12px; background: rgba(150,170,255,.08); border-radius: 2px; overflow: hidden; }
+.wbar i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, rgba(238,241,255,.82), #eef1ff); border-radius: 2px 0 0 2px; }
+.wst.mw > span, .wst.mw > b { color: var(--gold); }
+.wst.mw .wbar i { background: linear-gradient(90deg, rgba(238,241,255,.82), #eef1ff calc(100% - 4px), var(--gold) calc(100% - 4px)); }
+.wst.base > span, .wst.base > b { color: var(--faint); }
+.wst.base .wbar i { background: repeating-linear-gradient(135deg, rgba(150,170,255,.38) 0 4px, rgba(150,170,255,.22) 4px 8px); }
+.wst .recoil { width: 34px; height: 18px; overflow: visible; }
+.wst .recoil .bg { fill: rgba(150,170,255,.12); }
+.wst .recoil .cone { fill: #eef1ff; }
+.wst.base .recoil .cone { fill: rgba(150,170,255,.5); }
+.wsep { grid-column: 1 / -1; height: 1px; background: var(--line); margin-block: 3px; }
+
+/* Where to get it, facts and other copies */
 .wherebox { display: grid; gap: 8px; padding: 14px 16px; border-radius: 14px; border: 1px solid rgba(51,227,160,.2); background: linear-gradient(120deg, rgba(51,227,160,.07), var(--glass) 60%); }
 .wherebox .line { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; font-size: 14px; }
 .wherebox .line span:first-child { color: var(--faint); font-size: 12.5px; padding-top: 1px; }
 .wherebox .go { justify-self: start; background: var(--grad); color: #04102a; border: 0; border-radius: 999px; padding: 6px 13px; font-weight: 600; font-size: 13px; }
-.reasons { margin: 0; padding-left: 18px; color: var(--ink); display: grid; gap: 5px; font-size: 14px; }
-.reasons li::marker { color: var(--green); }
-.notes { padding: 12px 14px; border-radius: 3px 12px; border-left: 2px solid var(--green); background: var(--glass); color: var(--muted); font-size: 14px; }
+.facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(180px, 100%), 1fr)); gap: 0 18px; font-size: 13.5px; }
+.facts div { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--line); padding-block: 7px; min-width: 0; }
+.facts span { color: var(--muted); }
+.facts b { font-weight: 500; text-align: right; }
+.dp-sec .dimpanel { padding: 0; border: 0; background: none; }
+.dp-sec .dimpanel + .dimpanel { padding-top: 12px; border-top: 1px solid var(--line); border-radius: 0; }
+.dp-sec .list { gap: 6px; }
+/* Explanation: tucked away until asked for */
+.dp-explain { border-radius: 3px 14px; border: 1px solid var(--line); background: var(--glass); }
+.dp-explain > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 12px 16px; font: 600 14px var(--display); color: var(--muted); user-select: none; }
+.dp-explain > summary::-webkit-details-marker { display: none; }
+.dp-explain > summary:hover { color: var(--ink); }
+.dp-explain > summary .chev { width: 20px; height: 20px; }
+.dp-explain > summary .chev::before { width: 5px; height: 5px; border-width: 1.5px; }
+.dp-explain > div { display: grid; gap: 8px; padding: 0 16px 16px 46px; font-size: 13.5px; color: var(--muted); }
+.dp-explain b { color: var(--ink); }
 
 /* ---------- Footer, floating buttons and messages ---------- */
 footer { position: relative; padding-block: 32px 64px; color: var(--faint); font-size: 13px; border-top: 1px solid var(--line); }
@@ -965,17 +1106,24 @@ body.vr-booting > .topbar, body.vr-booting > main, body.vr-booting > footer { di
   .itile .tb { padding: 6px 8px 10px; }
   details.sec > summary p { padding-left: 0; }
   .jumpbar .cap { display: none; }
-  aside.drawer, aside.drawer[data-place=bottom] { top: auto; left: 0; right: 0; bottom: 0; height: 88vh; width: 100%; border-radius: 22px 22px 0 0; border-width: 1px 0 0; transform: translateY(102%); }
-  aside.drawer.open, aside.drawer[data-place=bottom].open { transform: none; }
-  aside.drawer[data-modal=float] { height: 62vh; }
-  aside.drawer[data-place=bottom] .d-body { display: grid; column-count: auto; }
-  aside.drawer[data-place=bottom] .d-body > * { margin-bottom: 0; }
-  aside.drawer[data-place=bottom] .d-art { aspect-ratio: 16 / 8; }
+  /* Phones: every mode is a sheet from the bottom, with a grab handle */
+  aside.drawer, aside.drawer[data-mode] { top: auto; left: 0; right: 0; bottom: 0; width: 100%; height: 88vh; border: 0; border-top: 1px solid var(--line-hi); border-radius: 22px 22px 0 0; opacity: 1; transform: translateY(102%); }
+  aside.drawer.open, aside.drawer[data-mode].open { transform: none; }
+  aside.drawer::before { content: none; }
+  .dp-bar::before { content: ""; position: absolute; left: 50%; top: 7px; width: 40px; height: 4px; margin-left: -20px; border-radius: 99px; background: rgba(238,241,255,.25); }
+  .dmode { display: none; }
+  .dp-hero, aside.drawer[data-mode=bottom] .dp-hero { min-height: 190px; padding: 70px 16px 16px; }
+  .dp-ico img, .dp-ico .ph { width: 60px; height: 60px; }
+  .dp-id { gap: 13px; }
+  .dp-id h2 { font-size: 23px; }
+  .dp-body { padding-inline: 12px; }
+  .dp-sec { padding: 14px; }
   .breakdown b { font-size: 19px; }
-  .perkcol { grid-template-columns: minmax(0, 1fr); gap: 4px; }
-  .perkcol .cap { padding-top: 0; }
-  .perkcol .cap, .perkcol .perkopts, .perkcol .pinfo, .papply { grid-column: 1; grid-row: auto; }
-  .facts { grid-template-columns: minmax(0, 1fr); }
+  .breakdown > div { padding: 10px 11px; }
+  .wherebox .line { grid-template-columns: 82px minmax(0, 1fr); }
+  .psock { width: 42px; height: 42px; }
+  .psock img { width: 34px; height: 34px; }
+  .pk-col { padding-inline: 7px; }
   .rad .rk, .rad.top .rk { font-size: 36px; }
   .rad .title h3, .rad.top .title h3 { font-size: 20px; }
   .rad .farm b { font-size: 26px; }
@@ -1048,7 +1196,7 @@ body.vr-booting > .topbar, body.vr-booting > main, body.vr-booting > footer { di
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <div class="scrim" id="scrim"></div>
-<aside class="drawer" id="drawer" data-place="side" aria-modal="true" role="dialog" aria-label="Item details"></aside>
+<aside class="drawer" id="drawer" data-mode="dock" aria-modal="false" role="dialog" aria-label="Item details"></aside>
 
 <script>
 let DATA = /*__DATA__*/null;
@@ -1355,12 +1503,7 @@ function vrMain() {
     const u = perkSymbols && src(PERK_ICON[o]);
     return u ? `<span class="${c ? c + " " : ""}pico" title="${esc(o)}"><img src="${u}" alt="${esc(o)}" loading="lazy" decoding="async"></span>` : `<span${c ? ` class="${c}"` : ""}>${esc(o)}</span>`;
   };
-  /** The selected perk's symbol, name and what it does, for the weapon drawer. Older reports have no descriptions: the name alone shows. */
   const PERK_DESC = DATA.perkDescs || {};
-  const perkInfo = (o) => {
-    const u = src(PERK_ICON[o]);
-    return `<div class="pinfo">${u ? `<img src="${u}" alt="" loading="lazy" decoding="async">` : ""}<div><b>${esc(o)}</b>${PERK_DESC[o] ? `<p>${esc(PERK_DESC[o])}</p>` : ""}</div></div>`;
-  };
   // Perk columns in the game's order: barrel, magazine, the two traits, then the origin (foundry) trait.
   const PERK_ORDER = ["barrel", "magazine", "perk1", "perk2", "origin"];
   const rank = (k) => (PERK_ORDER.includes(k) ? PERK_ORDER.indexOf(k) : 99);
@@ -2182,10 +2325,10 @@ function vrMain() {
       <fieldset><legend>Display</legend><p class="small muted">Changes the page straight away; nothing is re-rated.</p>
         <div class="toggles" id="perkmode"><label><input type="radio" name="perkmode" value="symbols" ${perkSymbols ? "checked" : ""}> <span>Show perks as symbols, with the name on hover</span></label>
         <label><input type="radio" name="perkmode" value="names" ${perkSymbols ? "" : "checked"}> <span>Show perk names</span></label></div>
-        <div class="toggles" id="dplace"><label><input type="radio" name="dplace" value="side" ${dPlace === "side" ? "checked" : ""}> <span>Item details open in a side panel</span></label>
-        <label><input type="radio" name="dplace" value="bottom" ${dPlace === "bottom" ? "checked" : ""}> <span>Item details open at the bottom centre</span></label></div>
-        <div class="toggles" id="dmodal"><label><input type="radio" name="dmodal" value="block" ${dFloat ? "" : "checked"}> <span>Blur the page behind the details and block it until closed</span></label>
-        <label><input type="radio" name="dmodal" value="float" ${dFloat ? "checked" : ""}> <span>No blur: keep the rest of the page clickable</span></label></div></fieldset>
+        <div class="toggles" id="dmode"><span class="small muted">Item details open as</span>
+        <label><input type="radio" name="dmode" value="dock" ${dMode === "dock" ? "checked" : ""}> <span>A sidebar: the page makes room, so you can keep browsing beside it</span></label>
+        <label><input type="radio" name="dmode" value="modal" ${dMode === "modal" ? "checked" : ""}> <span>A pop-up in the middle, with the page blurred behind it</span></label>
+        <label><input type="radio" name="dmode" value="bottom" ${dMode === "bottom" ? "checked" : ""}> <span>A strip along the bottom</span></label></div></fieldset>
       <fieldset><legend>Strictness</legend><div class="presets">${Object.entries(PRESET_INFO).map(([k, [l, d]]) => `<label><span><input type="radio" name="preset" value="${k}" ${st.preset === k ? "checked" : ""}> <b>${l}</b></span><span>${d}</span></label>`).join("")}</div>
         <div class="tablewrap"><table class="prestable"><tr><th></th><th>Lenient</th><th>Balanced</th><th>Strict</th><th>Ruthless</th></tr>
           <tr><td>Lowest tier kept</td><td>C</td><td>B</td><td>A</td><td>S</td></tr><tr><td>Roll score to keep a spare</td><td>50</td><td>70</td><td>80</td><td>90</td></tr>
@@ -2207,8 +2350,7 @@ function vrMain() {
       perkSymbols = e.target.value === "symbols"; store.set("vr-perks", perkSymbols ? "symbols" : "names");
       for (const k of Object.keys(rendered)) if (k !== "settings") delete rendered[k];
     };
-    $("#dplace").onchange = (e) => { dPlace = e.target.value; store.set("vr-place", dPlace); applyDrawerMode(); };
-    $("#dmodal").onchange = (e) => { dFloat = e.target.value === "float"; store.set("vr-modal", dFloat ? "float" : "block"); applyDrawerMode(); };
+    $("#dmode").onchange = (e) => setDrawerMode(e.target.value);
     $("#setform").onsubmit = async (e) => {
       e.preventDefault();
       const f = e.target, byWeaponType = {};
@@ -2340,35 +2482,79 @@ function vrMain() {
     $("#p-wrapped").innerHTML = `<div><div class="sec-head"><h2>${NAME ? esc(NAME) + "’s " : ""}Destiny Wrapped</h2><p>${X ? "From your Bungie account stats and your vault." : "From your vault. Account stats were not available this time."}</p></div><div class="slides">${slides.join("")}</div></div>`;
   };
 
-  /* ---------- Drawer ---------- */
+  /* ---------- Item details panel ---------- */
   const drawer = $("#drawer"), scrim = $("#scrim");
   let lastFocus = null;
-  // Display settings, saved with the other page preferences: where the panel docks and whether it blocks the page.
-  let dPlace = store.get("vr-place") === "bottom" ? "bottom" : "side", dFloat = store.get("vr-modal") === "float";
+  // Where the panel shows, saved with the other page preferences: docked at the side (the page makes room), a pop-up
+  // over a blurred page, or a strip along the bottom. Older saved choices map over: bottom stays bottom.
+  const DMODES = {
+    dock: ["Sidebar", '<rect x="1" y="1" width="16" height="12" rx="2"/><rect class="f" x="11" y="3" width="4.5" height="8" rx="1"/>'],
+    modal: ["Pop-up", '<rect x="1" y="1" width="16" height="12" rx="2"/><rect class="f" x="5" y="3.5" width="8" height="7" rx="1"/>'],
+    bottom: ["Bottom", '<rect x="1" y="1" width="16" height="12" rx="2"/><rect class="f" x="3" y="8" width="12" height="3.5" rx="1"/>'],
+  };
+  let dMode = store.get("vr-dmode") || (store.get("vr-place") === "bottom" ? "bottom" : "dock");
+  if (!DMODES[dMode]) dMode = "dock";
+  const phone = matchMedia("(max-width: 700px)");
+  const drawerOpen = () => drawer.classList.contains("open");
   function applyDrawerMode() {
-    drawer.dataset.place = dPlace; drawer.dataset.modal = dFloat ? "float" : "block";
-    drawer.setAttribute("aria-modal", String(!dFloat));
-    scrim.classList.toggle("open", drawer.classList.contains("open") && !dFloat);
-    const t = $(".d-tools", drawer);
-    if (t) t.innerHTML = `<button class="d-tool" type="button" data-dtool="place">${dPlace === "side" ? "Dock at bottom" : "Dock at side"}</button><button class="d-tool" type="button" data-dtool="modal">${dFloat ? "Dim page" : "Keep page usable"}</button>`;
+    const open = drawerOpen(), modal = dMode === "modal" || phone.matches;
+    drawer.dataset.mode = dMode;
+    drawer.setAttribute("aria-modal", String(modal));
+    scrim.classList.toggle("open", open && modal);
+    document.body.classList.toggle("dock-open", open && dMode === "dock");
+    document.body.classList.toggle("bottom-open", open && dMode === "bottom");
+    $$(".dmode button", drawer).forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.dmode === dMode)));
   }
-  function openDrawer(html) {
-    lastFocus = document.activeElement;
-    drawer.innerHTML = `<div class="d-tools"></div>` + html; drawer.scrollTop = 0;
+  phone.addEventListener?.("change", applyDrawerMode);
+  function setDrawerMode(m) {
+    if (!DMODES[m]) return;
+    dMode = m; store.set("vr-dmode", m); applyDrawerMode();
+    $$("#dmode input").forEach((i) => (i.checked = i.value === m));
+    if (m !== "modal") keepInView();
+  }
+  /** The item open in the panel gets an outline wherever it shows (it survives the page redrawing). */
+  const openMark = document.head.appendChild(document.createElement("style"));
+  const markOpen = (id) => (openMark.textContent = id ? `[data-w="${CSS.escape(id)}"]:not(#drawer *), [data-a="${CSS.escape(id)}"]:not(#drawer *) { outline: 2px solid var(--green) !important; outline-offset: 2px; box-shadow: 0 0 26px -6px rgba(51,227,160,.55) !important; }` : "");
+  // When the page makes room for the panel, the item you clicked can slide out of view: bring it back.
+  const keepInView = () => requestAnimationFrame(() => { const el = lastFocus?.isConnected && lastFocus.closest?.("[data-w], [data-a]"); if (el && !phone.matches) el.scrollIntoView({ block: "nearest", inline: "nearest" }); });
+  /** The panel's frame: the top bar (name once scrolled, display switch, close), the header, then the sections. */
+  function openDrawer({ id, ico, art, el, eyebrow, gold, title, tier, sub, body }) {
+    const wasOpen = drawerOpen();
+    if (!wasOpen || !drawer.contains(document.activeElement)) lastFocus = document.activeElement;
+    hidePtip();
+    drawer.dataset.item = id || "";
+    drawer.classList.remove("scrolled");
+    drawer.innerHTML = `<div class="dp-bar"><div class="dp-mini" aria-hidden="true">${img(ico)}<b>${esc(title)}</b></div>
+        <div class="dmode" role="group" aria-label="Show details as">${Object.entries(DMODES).map(([k, [l, svg]]) => `<button type="button" data-dmode="${k}" title="${l}" aria-label="${l}"><svg viewBox="0 0 18 14" aria-hidden="true">${svg}</svg></button>`).join("")}</div>
+        <button class="d-close" type="button" aria-label="Close">✕</button></div>
+      <header class="dp-hero"${el ? ` style="--elc:var(--${esc(el)})"` : ""}>${art ? `<img class="shot" src="${art}" alt="">` : ""}
+        <div class="dp-id"><span class="dp-ico${gold ? " exotic" : ""}">${img(ico)}${tier || ""}</span>
+          <div style="min-width:0"><div class="eyebrow"${gold ? ' style="color:var(--gold)"' : ""}>${eyebrow}</div><h2 id="dp-title">${esc(title)}</h2><div class="dp-sub">${sub}</div></div></div></header>
+      ${body}`;
+    drawer.setAttribute("aria-labelledby", "dp-title");
+    drawer.scrollTop = 0;
     drawer.classList.add("open"); applyDrawerMode();
-    $(".d-close", drawer).focus();
+    markOpen(id);
+    if (!wasOpen) { $(".d-close", drawer).focus({ preventScroll: true }); keepInView(); }
   }
-  function closeDrawer() { drawer.classList.remove("open"); scrim.classList.remove("open"); if (lastFocus) lastFocus.focus(); }
+  function closeDrawer() {
+    drawer.classList.remove("open"); hidePtip(); markOpen(null); applyDrawerMode();
+    if (lastFocus?.isConnected) lastFocus.focus({ preventScroll: true });
+  }
+  drawer.addEventListener("scroll", () => drawer.classList.toggle("scrolled", drawer.scrollTop > ($(".dp-hero", drawer)?.offsetHeight || 160) - 70), { passive: true });
   drawer.addEventListener("click", (e) => {
-    const t = e.target.closest("[data-dtool]"); if (!t) return;
-    if (t.dataset.dtool === "place") { dPlace = dPlace === "side" ? "bottom" : "side"; store.set("vr-place", dPlace); }
-    else { dFloat = !dFloat; store.set("vr-modal", dFloat ? "float" : "block"); }
-    applyDrawerMode();
+    const m = e.target.closest("[data-dmode]"); if (m) return setDrawerMode(m.dataset.dmode);
+    if (e.target.closest(".d-close")) closeDrawer();
   });
   scrim.onclick = closeDrawer;
-  drawer.addEventListener("click", (e) => { if (e.target.closest(".d-close")) closeDrawer(); });
-  addEventListener("keydown", (e) => { if (e.key === "Escape" && drawer.classList.contains("open")) closeDrawer(); });
+  addEventListener("keydown", (e) => { if (e.key === "Escape" && drawerOpen() && !e.defaultPrevented) { if ($("#ptip")) return hidePtip(); closeDrawer(); } });
+  /** Layout: `l` is the left column, `m` and `s` share the right (or take a column each when the panel is wide).
+   * In one column every section keeps its own order (--o), so the most useful ones come first. */
+  const dpLayout = (l, m, s, foot = "") => `<div class="dp-body"><div class="dp-col l">${l.join("")}</div><div class="dp-col r"><div class="dp-col m">${m.join("")}</div><div class="dp-col s">${s.join("")}</div></div>${foot}</div>`;
+  const dpSec = (o, title, body, cls = "", aside = "") => (body ? `<section class="dp-sec ${cls}" style="--o:${o}">${title ? `<h3 class="dp-h">${title}${aside ? `<span class="aside">${aside}</span>` : ""}</h3>` : ""}${body}</section>` : "");
+  const dpExplain = (html) => `<details class="dp-explain"><summary><span class="chev" aria-hidden="true"></span>Explanation</summary><div>${html}</div></details>`;
   const COL = { barrel: "Barrel", magazine: "Magazine", perk1: "Trait 1", perk2: "Trait 2", origin: "Origin trait", masterwork: "Masterwork", other: "Other" };
+  const COL_SHORT = { barrel: "Barrel", magazine: "Mag", perk1: "Trait", perk2: "Trait", origin: "Origin", other: "Other" };
   const fact = (k, v) => (v === null || v === undefined || v === "" ? "" : `<div><span>${k}</span><b>${esc(v)}</b></div>`);
 
   const whereBox = (src) => {
@@ -2394,14 +2580,16 @@ function vrMain() {
   });
   function openLoot(key, i) {
     const act = (DATA.rads || []).find((r) => r.key === key), w = act?.weapons[i]; if (!w) return;
-    openDrawer(`<button class="d-close" aria-label="Close">✕</button><div class="d-art">${src(act.image) ? `<img class="shot" src="${src(act.image)}" alt="">` : ""}<div class="bigicon">${img(w.icon)}</div></div>
-      <div class="d-body">
-        <div><div class="eyebrow" style="${w.rarity === "Exotic" ? "color:var(--gold)" : ""}">${esc(w.rarity)} · not in your vault</div><h2>${esc(w.name)}</h2>
-          <div class="sub">${esc([w.frame && w.frame.replace(/ Frame$/, ""), w.type].filter(Boolean).join(" "))} ${elDot(w.element)} <span class="st chase">Chase</span></div></div>
-        ${whereBox(w.src || { activity: { key: act.key, name: act.name } })}
-        <div class="breakdown"><div><b class="num">${w.tier || "—"}</b><span>Aegis tier</span></div><div><b class="num">${w.aegisRank ?? "—"}</b><span>Rank${w.tab ? " in " + esc(w.tab) : ""}</span></div><div><b class="num">${act.score}</b><span>${esc(act.name)} farm score</span></div></div>
-        ${w.notes ? `<div class="notes"><b style="color:var(--ink)">Aegis:</b> ${esc(w.notes)}</div>` : ""}
-      </div>`);
+    openDrawer({
+      ico: w.icon, art: src(act.image), el: w.element, gold: w.rarity === "Exotic", title: w.name,
+      eyebrow: `${esc(w.rarity)} · not in your vault`,
+      tier: `<span class="tier t${w.tier || "U"}">${w.tier || "—"}</span>`,
+      sub: `<span>${esc([w.frame && w.frame.replace(/ Frame$/, ""), w.type].filter(Boolean).join(" "))}</span> ${elDot(w.element)} <span class="st chase">Chase</span>`,
+      body: dpLayout(
+        [dpSec(1, "", `<div class="breakdown"><div${w.tier ? ` class="t${w.tier} tl"` : ""}><b class="num">${w.tier || "—"}</b><span>Aegis tier</span></div><div><b class="num">${w.aegisRank ?? "—"}</b><span>Rank${w.tab ? " in " + esc(w.tab) : ""}</span></div><div><b class="num">${act.score}</b><span>${esc(act.name)} farm score</span></div></div>`, "bare"),
+          w.notes ? dpSec(2, "Aegis says", `<p class="dp-quote">${esc(w.notes)}</p>`) : ""],
+        [dpSec(3, "", whereBox(w.src || { activity: { key: act.key, name: act.name } }), "bare")], []),
+    });
   }
   document.addEventListener("click", (e) => { const b = e.target.closest("[data-loot]"); if (!b) return; const [k, i] = b.dataset.loot.split("|"); openLoot(k, Number(i)); });
   const CLASS_OF_TYPE = { 0: "Titan", 1: "Hunter", 2: "Warlock" };
@@ -2444,8 +2632,9 @@ function vrMain() {
     const id = drawer.dataset.item;
     b.disabled = true;
     await doMove([id], b.dataset.move, $("#moveequip", drawer)?.checked && b.dataset.move !== "vault", $("#movemsg", drawer));
-    const msg = $("#movemsg", drawer)?.textContent;
+    const msg = $("#movemsg", drawer)?.textContent, top = drawer.scrollTop;
     (W.get(id) ? openWeapon : openArmor)(id);
+    drawer.scrollTop = top;
     if (msg) $("#movemsg", drawer).textContent = msg;
   });
   // Pull a DIM loadout to its character
@@ -2489,41 +2678,103 @@ function vrMain() {
     } catch (err) { $("#dimmsg").textContent = "Couldn't save: " + err.message; }
     save.disabled = false;
   });
-  function openWeapon(id) {
-    const w = W.get(id); if (!w) return; markSeen(id);
-    drawer.dataset.item = id;
-    const good = new Set(w.pk.flatMap((p) => p.m));
-    const art = src(w.ss) ? `<img class="shot" src="${src(w.ss)}" alt="">` : `<div class="bigicon">${img(w.ic)}</div>`;
-    const copies = DATA.weapons.filter((x) => x.n === w.n && x.id !== w.id).sort((a, b) => b.sc - a.sc);
-    openDrawer(`<button class="d-close" aria-label="Close">✕</button><div class="d-art">${art}</div>
-      <div class="d-body">
-        <div><div class="eyebrow" style="${isExotic(w) ? "color:var(--gold)" : ""}">${esc(w.s)} · ${esc(w.r)}</div><h2>${esc(w.n)}</h2>
-          <div class="sub">${esc(typeLine(w))} ${elDot(w.e)} ${verdict(w.v)} ${w.lk ? '<span class="chip">🔒 Locked</span>' : ""} ${w.god ? '<span class="chip" style="color:var(--green)">Wishlist god roll</span>' : ""}</div></div>
-        <div class="breakdown"><div tabindex="0" title="${w.tier ? `Aegis tier ${w.tier}${w.rank ? " #" + w.rank : ""}` : `Wishlist rating ${w.ws}`} · Roll score ${w.rs}"><b class="num grad-text">${w.sc}</b><span>Overall score</span></div><div${w.tier ? ` class="t${w.tier} tl"` : ""}>${w.tier ? `<b class="num">${w.tier}</b><span>Aegis tier${w.rank ? " · #" + w.rank : ""}</span>` : `<b class="num">${w.ws}</b><span>Not in Aegis (wishlist)</span>`}</div><div><b class="num">${w.rs}</b><span>Roll score</span></div></div>
-        <div><div class="cap" style="margin-bottom:8px">Why ${VERDICT[w.v].toLowerCase()}</div><ul class="reasons">${w.why.map((r) => `<li>${esc(r)}</li>`).join("")}</ul></div>
-        ${w.notes ? `<div class="notes"><b style="color:var(--ink)">Aegis:</b> ${esc(w.notes)}</div>` : ""}
-        <div class="perkcols">${perkCols(w).map((p, ci) => `<div class="perkcol" data-col="${ci}"><div class="cap">${COL[p.k] || esc(p.k)}</div><div class="perkopts">${p.o.map((o) => perk(o, good.has(o), (p.a || p.o[0]) === o ? "perk on" : "perk")).join("")}</div>${perkInfo(p.a || p.o[0])}</div>`).join("")}</div>
-        <div class="facts">${fact("Ammo", w.am)}${fact("Power", w.pw)}${fact("Masterwork", w.mw)}${fact("Gear tier", w.gt ? "Tier " + w.gt : null)}${fact("Where", w.loc)}${fact("Crafted", w.cr ? "Yes" : null)}${fact("Adept", w.ad ? "Yes" : null)}${fact("Aegis list", w.tab)}</div>
-        ${movePanel(w, false)}
-        ${dimPanel(w)}
-        ${whereBox(w.src)}
-        ${copies.length ? `<div><div class="cap" style="margin-bottom:8px">Other copies (${copies.length})</div><div class="list">${copies.map(weaponRow).join("")}</div></div>` : ""}
-        <div class="notes"><b style="color:var(--ink)">What Overall score means:</b> a 0-100 rating of this copy, 60% weapon plus 40% roll. The weapon part comes from its Aegis tier (S 100, A 85, B 70, C 50, D 30, up to 5 more for a high rank in its tier; unlisted weapons use their wishlist tier). The roll part is how well this copy's perks match Aegis's picks, mostly the two traits (35% each), then barrel, magazine, origin trait and masterwork. Keep or Shard also depends on your Strictness, duplicate copies and the wishlist, so the score alone doesn't decide it.</div>
-      </div>`);
+
+  /* Weapon stats in the game's order. Bars for 0-100 stats; plain numbers for rate of fire, times and sizes; a dial for recoil. */
+  const WSTATS = ["Rounds Per Minute", "Charge Time", "Draw Time", "Swing Speed", "Impact", "Blast Radius", "Velocity", "Range", "Accuracy", "Stability", "Handling", "Reload Speed", "Charge Rate", "Guard Efficiency", "Guard Resistance", "Guard Endurance", "Shield Duration", "Persistence", "Heat Generated", "Cooling Efficiency", "Vent Speed", "Aim Assistance", "Airborne Effectiveness", "Zoom", "Ammo Generation", "Recoil Direction", "Magazine", "Ammo Capacity"];
+  const WSTAT_NUM = new Set(["Rounds Per Minute", "Charge Time", "Draw Time", "Magazine", "Ammo Capacity"]);
+  const WSTAT_LABEL = { "Rounds Per Minute": "RPM", "Airborne Effectiveness": "Airborne", "Ammo Generation": "Ammo Gen", "Charge Time": "Charge Time (ms)", "Draw Time": "Draw Time (ms)" };
+  /** The recoil dial: a wedge pointing where the gun kicks. 100 goes straight up; lower values wander and widen (as DIM draws it). */
+  const recoilDial = (v) => {
+    const dir = Math.sin((v + 5) * ((2 * Math.PI) / 20)) * (100 - v) * (Math.PI / 180), spread = 0.1 + (100 - v) / 100 * 0.55;
+    const pt = (a) => `${(18 + Math.sin(a) * 16).toFixed(2)},${(17 - Math.cos(a) * 16).toFixed(2)}`;
+    return `<svg class="recoil" viewBox="0 0 36 18" aria-hidden="true"><path class="bg" d="M2,17 A16,16 0 0 1 34,17 Z"/><path class="cone" d="M18,17 L${pt(dir - spread)} A16,16 0 0 1 ${pt(dir + spread)} Z"/></svg>`;
+  };
+  const statBlock = (w) => {
+    const st = w.st; if (!st) return "";
+    const base = new Set(w.bst || []), mw = (w.mw || "").toLowerCase();
+    const names = WSTATS.filter((n) => st[n] != null && (st[n] > 0 || n === "Recoil Direction"));
+    if (!names.length) return "";
+    const row = (n) => {
+      const v = st[n], cls = [mw && n.toLowerCase() === mw ? "mw" : "", base.has(n) ? "base" : ""].filter(Boolean).join(" ");
+      const tip = base.has(n) ? ` title="Base value: Bungie doesn't send this stat for your copy, so its perks may change it"` : mw && n.toLowerCase() === mw ? ' title="Masterworked"' : "";
+      const vis = WSTAT_NUM.has(n) ? "<i></i>" : n === "Recoil Direction" ? recoilDial(v) : `<div class="wbar"><i style="width:${Math.max(0, Math.min(100, v))}%"></i></div>`;
+      return `<div class="wst${cls ? " " + cls : ""}"${tip}><span>${esc(WSTAT_LABEL[n] || n)}</span><b>${v}</b>${vis}</div>`;
+    };
+    const lead = names.filter((n) => n === "Rounds Per Minute" || n === "Charge Time" || n === "Draw Time");
+    const rest = names.filter((n) => !lead.includes(n));
+    return `<div class="wstats">${lead.map(row).join("")}${lead.length && rest.length ? '<div class="wsep"></div>' : ""}${rest.map(row).join("")}</div>${base.size ? `<p class="dp-foot">Faded stats are the weapon's base values. Bungie doesn't send them for your copy, so its perks may change them.</p>` : ""}`;
+  };
+  const statAside = (w) => (w.am ? `${esc(w.am)} ammo` : "");
+
+  /* Perks: the frame, then a column of round sockets per perk slot, then the masterwork and mods. Hover (or focus) a
+     socket for what it does; click one to compare it with the equipped perk and, through the local app, apply it. */
+  const perkTagsHtml = (on, good, enh) => `<div class="ptags">${on ? '<span class="t-on">Equipped</span>' : ""}${good ? '<span class="t-good">Aegis pick</span>' : ""}${enh ? '<span class="t-enh">Enhanced</span>' : ""}</div>`;
+  function perkGrid(w) {
+    const cols = perkCols(w), en = new Set(w.en || []), st = w.st || {};
+    const fr = w.fr || (w.f ? { n: w.f } : null);
+    const head = [st["Rounds Per Minute"] && `${st["Rounds Per Minute"]} rpm`, st["Charge Time"] && `${st["Charge Time"]} ms charge`, st["Draw Time"] && `${st["Draw Time"]} ms draw`, st.Impact && `${st.Impact} impact`].filter(Boolean).slice(0, 2).join(" / ");
+    const frHtml = fr ? `<div class="pk-intr"${fr.d ? ' data-ptip="fr" tabindex="0"' : ""}>${fr.ic ? img(fr.ic) : ""}<div><b>${esc(fr.n)}</b>${head ? `<span>${esc(head)}</span>` : ""}</div></div>` : "";
+    const colsHtml = cols.map((p, ci) => {
+      const eq = p.a || p.o[0];
+      return `<div class="pk-col" data-col="${ci}"><div class="pk-lab">${COL_SHORT[p.k] || esc(p.k)}</div><div class="pk-stack">${p.o.map((o, oi) => {
+        const u = src(PERK_ICON[o]) || w.pi?.[o], on = o === eq, good = p.m.includes(o), enh = en.has(o);
+        return `<button type="button" class="psock${on ? " on" : ""}${good ? " good" : ""}${enh ? " enh" : ""}" data-ptip="${ci}.${oi}" aria-label="${esc(o)}${on ? ", equipped" : ""}${good ? ", Aegis pick" : ""}">${u ? `<img src="${u}" alt="" loading="lazy" decoding="async">` : `<span class="ptxt">${esc(o)}</span>`}</button>`;
+      }).join("")}</div></div>`;
+    }).join("");
+    const mods = (w.md || []).map((x, i) => `<button type="button" class="msock ${x.k === "masterwork" ? "masterwork" : ""}" data-ptip="md${i}" aria-label="${esc(x.n)}">${x.ic ? img(x.ic) : ""}</button>`).join("");
+    const legend = `<div class="pk-legend"><span><i class="lon"></i>Equipped</span><span><i class="lgood"></i>Aegis pick</span>${en.size ? '<span><i class="lenh"></i>Enhanced</span>' : ""}<span>Hover or tap a perk for details${window.VR_LOCAL ? ", then apply it" : ""}</span></div>`;
+    return `${frHtml}<div class="pk-cols">${colsHtml}</div>${mods ? `<div class="pk-mods">${mods}</div>` : ""}${legend}<div class="pk-detail" aria-live="polite"></div>`;
   }
-  // Clicking another option in a weapon's perk column previews it in that column's card; the equipped one keeps its ring.
+  /** What a hover card or the detail card shows for one perk socket, mod, the frame or the Overall score. */
+  function ptipData(w, key) {
+    if (key === "score") return { score: true };
+    if (key === "fr") { const fr = w.fr || { n: w.f }; return { n: fr.n, ic: fr.ic, d: fr.d, sub: "Intrinsic" }; }
+    if (key.startsWith("md")) { const x = w.md?.[Number(key.slice(2))]; return x && { n: x.n, ic: x.ic, d: x.d, sub: x.k === "masterwork" ? "Masterwork" : "Weapon mod", sq: true }; }
+    const [ci, oi] = key.split(".").map(Number), p = perkCols(w)[ci], o = p?.o[oi];
+    if (!o) return null;
+    return { n: o, u: src(PERK_ICON[o]) || w.pi?.[o], d: PERK_DESC[o], sub: COL[p.k] || p.k, on: o === (p.a || p.o[0]), good: p.m.includes(o), enh: (w.en || []).includes(o), ci, p, o };
+  }
+  const scoreTip = (w) => {
+    const wp = Math.round(w.ws * 0.6), rp = Math.round(w.rs * 0.4);
+    return `<div class="nm"><span>Overall score ${w.sc}</span></div><div class="sum"><span>${w.tier ? `Aegis tier ${w.tier}${w.rank ? " #" + w.rank : ""}` : "Wishlist rating"} · ${w.ws} × 60%</span><b>${wp}</b><span>Roll score · ${w.rs} × 40%</span><b>${rp}</b><span class="tot">Overall</span><b class="tot">${w.sc}</b></div>`;
+  };
+  const ptipHtml = (w, t) => t.score ? scoreTip(w)
+    : `<div class="ph${t.sq ? " sq" : ""}">${t.u ? `<img src="${t.u}" alt="">` : t.ic ? img(t.ic) : ""}<div><div class="nm"><span>${esc(t.n)}</span></div><div class="sm">${esc(t.sub)}</div></div></div>${t.on || t.good || t.enh ? perkTagsHtml(t.on, t.good, t.enh) : ""}${t.d ? `<p>${esc(t.d)}</p>` : '<p class="sm">No description in this report.</p>'}`;
+  function hidePtip() { $("#ptip")?.remove(); }
+  function showPtip(el) {
+    const w = W.get(drawer.dataset.item), t = w && ptipData(w, el.dataset.ptip);
+    if (!t) return;
+    hidePtip(); hideTip();
+    document.body.insertAdjacentHTML("beforeend", `<div class="vtip ptip" id="ptip" role="tooltip" data-for="${esc(el.dataset.ptip)}">${ptipHtml(w, t)}</div>`);
+    const tip = $("#ptip"), r = el.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
+    const below = r.bottom + 8 + th <= innerHeight;
+    tip.style.left = `${Math.max(8, Math.min(r.left + r.width / 2 - tw / 2, innerWidth - tw - 8))}px`;
+    tip.style.top = `${below ? r.bottom + 8 : Math.max(8, r.top - 8 - th)}px`;
+  }
+  drawer.addEventListener("pointerover", (e) => { const el = e.pointerType === "mouse" && e.target.closest("[data-ptip]"); if (el && $("#ptip")?.dataset.for !== el.dataset.ptip) showPtip(el); });
+  drawer.addEventListener("pointerout", (e) => { const el = e.target.closest("[data-ptip]"); if (el && !el.contains(e.relatedTarget)) hidePtip(); });
+  drawer.addEventListener("focusin", (e) => { const el = e.target.closest("[data-ptip]"); if (el && el.matches(":focus-visible")) showPtip(el); });
+  drawer.addEventListener("focusout", hidePtip);
+  drawer.addEventListener("scroll", hidePtip, { passive: true });
+  // A tap on the Overall score (no hover on phones) shows its breakdown for a few seconds.
+  let ptipTimer = 0;
   drawer.addEventListener("click", (e) => {
-    const opt = e.target.closest(".perkcol .perkopts > *"), colEl = opt?.closest(".perkcol"), w = W.get(drawer.dataset.item);
-    if (!opt || !w) return;
-    const p = perkCols(w)[Number(colEl.dataset.col)], o = p?.o[[...opt.parentNode.children].indexOf(opt)];
-    if (!o) return;
-    const eq = p.a || p.o[0], ci = colEl.dataset.col;
-    for (const x of opt.parentNode.children) x.classList.toggle("pv", x === opt && o !== eq);
-    colEl.querySelector(".papply")?.remove();
-    // Apply switches the perk in game; only through the local app, and only for columns that know their socket.
-    colEl.querySelector(".pinfo").outerHTML = perkInfo(o);
-    if (o !== eq && window.VR_LOCAL && p.si != null)
-      colEl.querySelector(".perkopts").insertAdjacentHTML("afterend", `<div class="papply"><button class="movebtn" data-apply="${ci}" data-perk="${esc(o)}" title="Switches it on the weapon in game. You need to be in orbit, a social space or offline.">Apply ${esc(o)}</button><span class="small muted" aria-live="polite"></span></div>`);
+    const el = e.target.closest('[data-ptip="score"], [data-ptip="fr"], [data-ptip^="md"]'); if (!el) return;
+    showPtip(el); clearTimeout(ptipTimer); ptipTimer = setTimeout(hidePtip, 4000);
+  });
+  // Clicking a perk socket shows its card under the grid; another option gets an Apply button (local app, known socket).
+  drawer.addEventListener("click", (e) => {
+    const s = e.target.closest(".psock"), w = W.get(drawer.dataset.item);
+    if (!s || !w) return;
+    const t = ptipData(w, s.dataset.ptip); if (!t) return;
+    const wasPv = s.classList.contains("pv");
+    $$(".psock.pv", drawer).forEach((x) => x.classList.remove("pv"));
+    const box = $(".pk-detail", drawer);
+    if (wasPv) { box.innerHTML = ""; return; }
+    s.classList.add("pv"); hidePtip();
+    const apply = !t.on && window.VR_LOCAL && t.p.si != null
+      ? `<div class="papply"><button class="movebtn" data-apply="${t.ci}" data-perk="${esc(t.o)}" title="Switches it on the weapon in game. You need to be in orbit, a social space or offline.">Apply ${esc(t.o)}</button><span class="small muted" aria-live="polite"></span></div>` : "";
+    box.innerHTML = `<div class="pk-card">${t.u ? `<img src="${t.u}" alt="">` : ""}<div style="min-width:0"><b>${esc(t.o)}</b> <span class="small muted">${esc(t.sub)}</span>${perkTagsHtml(t.on, t.good, t.enh)}${t.d ? `<p>${esc(t.d)}</p>` : ""}${!t.on ? `<p class="small">Equipped now: <b>${esc(t.p.a || t.p.o[0])}</b></p>` : ""}${apply}</div></div>`;
   });
   drawer.addEventListener("click", async (e) => {
     const b = e.target.closest("[data-apply]"), id = drawer.dataset.item, w = W.get(id);
@@ -2535,30 +2786,52 @@ function vrMain() {
       if (!res.ok) throw new Error(res.error);
       p.a = o;
       rerender();
+      const top = drawer.scrollTop;
       openWeapon(id);
-      $(`.perkcol[data-col="${b.dataset.apply}"] .pinfo`, drawer)?.insertAdjacentHTML("afterend", `<div class="papply"><span class="small" style="color:var(--green)">Switched to ${esc(o)} in game.</span></div>`);
+      drawer.scrollTop = top;
+      $(".pk-detail", drawer).innerHTML = `<p class="small" style="color:var(--green)">Switched to ${esc(o)} in game.</p>`;
     } catch (err) {
       b.disabled = false; msg.textContent = "Couldn't switch: " + err.message;
     }
   });
+
+  function openWeapon(id) {
+    const w = W.get(id); if (!w) return; markSeen(id);
+    const copies = DATA.weapons.filter((x) => x.n === w.n && x.id !== w.id).sort((a, b) => b.sc - a.sc);
+    const scores = `<div class="breakdown"><div data-ptip="score" tabindex="0" aria-label="Overall score ${w.sc}: ${w.tier ? `Aegis tier ${w.tier}` : `wishlist rating ${w.ws}`} and roll score ${w.rs}"><b class="num grad-text">${w.sc}</b><span>Overall score</span></div><div${w.tier ? ` class="t${w.tier} tl"` : ""}>${w.tier ? `<b class="num">${w.tier}</b><span>Aegis tier${w.rank ? " · #" + w.rank : ""}</span>` : `<b class="num">${w.ws}</b><span>Not in Aegis (wishlist)</span>`}</div><div><b class="num">${w.rs}</b><span>Roll score</span></div></div>`;
+    const why = `<div class="dp-vhead"><span class="vtv ${w.v}">${VERDICT[w.v]}</span><span class="small">${w.v === "keep" ? "Worth a vault slot" : w.v === "shard" ? "Safe to dismantle" : "Your call"}</span></div><ul class="reasons">${w.why.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>${w.notes ? `<p class="dp-quote"><b>Aegis:</b> ${esc(w.notes)}</p>` : ""}`;
+    const facts = `<div class="facts">${fact("Ammo", w.am)}${fact("Power", w.pw)}${fact("Masterwork", w.mw)}${fact("Gear tier", w.gt ? "Tier " + w.gt : null)}${fact("Where", w.loc)}${fact("Crafted", w.cr ? "Yes" : null)}${fact("Adept", w.ad ? "Yes" : null)}${fact("Aegis list", w.tab)}</div>`;
+    const actions = movePanel(w, false) + dimPanel(w);
+    openDrawer({
+      id, ico: w.ic, art: src(w.ss), el: w.e, gold: isExotic(w), title: w.n,
+      eyebrow: `${esc(w.s)} · ${esc(w.r)}`, tier: tierBadge(w),
+      sub: `<span>${esc(typeLine(w))}</span> ${elDot(w.e)}${w.pw ? `<span class="vtpw">✦ ${w.pw}</span>` : ""}${w.lk ? '<span class="chip">🔒 Locked</span>' : ""}${w.god ? '<span class="chip" style="color:var(--green)">Wishlist god roll</span>' : ""}${w.loc && w.loc !== "Vault" ? `<span class="chip">${esc(w.loc)}</span>` : ""}`,
+      body: dpLayout(
+        [dpSec(1, "", scores, "bare"), dpSec(2, "Verdict", why, `dp-verdict ${w.v}`), dpSec(5, "", whereBox(w.src), "bare"), dpSec(6, "Actions", actions), dpSec(8, "Details", facts)],
+        [dpSec(3, "Perks", perkGrid(w), "", w.god ? "Wishlist god roll" : "")],
+        [dpSec(4, "Stats", statBlock(w), "", statAside(w)), copies.length ? dpSec(7, `Other copies · ${copies.length}`, `<div class="list">${copies.map(weaponRow).join("")}</div>`) : ""],
+        dpExplain(`<p><b>Overall score</b> is a 0-100 rating of this copy: 60% weapon plus 40% roll.</p><p><b>Weapon:</b> its Aegis tier (S 100, A 85, B 70, C 50, D 30), up to 5 more for a high rank in its tier. Weapons Aegis doesn't list use their wishlist rating.</p><p><b>Roll:</b> how well this copy's perks match Aegis's picks: each trait column is worth 35%, barrel and magazine 10% each, origin trait and masterwork 5% each.</p><p><b>Keep or Shard</b> also depends on your Strictness, duplicate copies and the wishlist, so the score alone doesn't decide it.</p>`),
+      ),
+    });
+  }
   function openArmor(id) {
     const a = A.get(id); if (!a) return; markSeen(id);
-    drawer.dataset.item = id;
     const others = DATA.armor.filter((x) => x.id !== a.id && x.cls === a.cls && x.s === a.s && (x.arch || "") === (a.arch || "")).sort((x, y) => y.sc - x.sc).slice(0, 6);
-    openDrawer(`<button class="d-close" aria-label="Close">✕</button><div class="d-art"><div class="bigicon">${img(a.ic)}</div></div>
-      <div class="d-body">
-        <div><div class="eyebrow" style="${isExotic(a) ? "color:var(--gold)" : ""}">${esc(a.cls)} · ${esc(a.s)} · ${esc(a.r)}</div><h2>${esc(a.n)}</h2>
-          <div class="sub">${esc(a.arch || "Legacy armor")}${setLine(a)} ${verdict(a.v)} ${a.lk ? '<span class="chip">🔒 Locked</span>' : ""}</div></div>
-        <div class="breakdown"><div><b class="num grad-text">${a.sc}</b><span>Armor score</span></div><div><b class="num">${a.tot}</b><span>Stat total</span></div><div><b class="num">${gearTier(a)}</b><span>Gear tier</span></div></div>
-        <div><div class="cap" style="margin-bottom:8px">Why ${VERDICT[a.v].toLowerCase()}</div><ul class="reasons">${a.why.map((r) => `<li>${esc(r)}</li>`).join("")}</ul></div>
-        <div><div class="cap" style="margin-bottom:8px">Stats</div>${statBars(a, true)}</div>
-        <div class="breakdown" style="grid-template-columns:repeat(4,minmax(0,1fr))">${[["Stats", a.parts.stats], ["Build fit", a.parts.buildFit], ["Set", a.parts.set], ["Tier / exotic", a.parts.extras]].map(([l, v]) => `<div><b class="num" style="font-size:17px">${Math.round(v)}</b><span>${l}</span></div>`).join("")}</div>
-        <div class="facts">${fact("Where", a.loc)}${fact("Archetype", a.arch || "Legacy")}</div>
-        ${movePanel(a, true)}
-        ${dimPanel(a)}
-        ${a.si ? `<div><div class="cap" style="margin-bottom:10px">${esc(a.si.name)} set · ${a.si.ownedSlots} of 5 slots owned · rating ${a.si.value}</div><div class="stack">${(DATA.sets?.[a.si.name]?.bonuses || a.si.bonuses).map((b) => bonusRow(b, a.si.ownedSlots)).join("") || '<p class="small muted">Not on the set list yet.</p>'}</div></div>` : ""}
-        ${others.length ? `<div><div class="cap" style="margin-bottom:8px">Same slot and archetype</div><div class="list">${others.map(armorRow).join("")}</div></div>` : ""}
-      </div>`);
+    const scores = `<div class="breakdown"><div><b class="num grad-text">${a.sc}</b><span>Armor score</span></div><div><b class="num">${a.tot}</b><span>Stat total</span></div><div><b class="num">${gearTier(a)}</b><span>Gear tier</span></div></div>`;
+    const why = `<div class="dp-vhead"><span class="vtv ${a.v}">${VERDICT[a.v]}</span></div><ul class="reasons">${a.why.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>`;
+    const parts = `<div class="breakdown" style="grid-template-columns:repeat(4,minmax(0,1fr))">${[["Stats", a.parts.stats], ["Build fit", a.parts.buildFit], ["Set", a.parts.set], ["Tier / exotic", a.parts.extras]].map(([l, v]) => `<div><b class="num" style="font-size:17px">${Math.round(v)}</b><span>${l}</span></div>`).join("")}</div>`;
+    const set = a.si ? `<div class="stack">${(DATA.sets?.[a.si.name]?.bonuses || a.si.bonuses).map((b) => bonusRow(b, a.si.ownedSlots)).join("") || '<p class="small muted">Not on the set list yet.</p>'}</div>` : "";
+    openDrawer({
+      id, ico: a.ic, gold: isExotic(a), title: a.n,
+      eyebrow: `${esc(a.cls)} · ${esc(a.s)} · ${esc(a.r)}`,
+      sub: `<span>${esc(a.arch || "Legacy armor")}${setLine(a)}</span>${a.pw ? `<span class="vtpw">✦ ${a.pw}</span>` : ""}${a.lk ? '<span class="chip">🔒 Locked</span>' : ""}${a.loc && a.loc !== "Vault" ? `<span class="chip">${esc(a.loc)}</span>` : ""}`,
+      body: dpLayout(
+        [dpSec(1, "", scores, "bare"), dpSec(2, "Verdict", why, `dp-verdict ${a.v}`), dpSec(5, "Actions", movePanel(a, true) + dimPanel(a)), dpSec(6, "Details", `<div class="facts">${fact("Where", a.loc)}${fact("Archetype", a.arch || "Legacy")}${fact("Power", a.pw)}</div>`)],
+        [dpSec(3, "Stats", statBars(a, true) + parts, "", `${a.tot} total`)],
+        [set ? dpSec(4, `${esc(a.si.name)} set`, set, "", `${a.si.ownedSlots} of 5 owned · rating ${a.si.value}`) : "", others.length ? dpSec(7, "Same slot and archetype", `<div class="list">${others.map(armorRow).join("")}</div>`) : ""],
+        dpExplain(`<p><b>Armor score</b> is 40% stats compared with a Tier 5 roll, 25% fit to your build stats, 25% the set bonus (Aegis S-F) and 10% for Tier 5 or exotic.</p><p>The four smaller numbers under Stats are those parts, each out of 100.</p>`),
+      ),
+    });
   }
 
   /* ---------- Boot ---------- */
