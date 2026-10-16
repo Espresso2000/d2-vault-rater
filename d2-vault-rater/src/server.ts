@@ -327,7 +327,7 @@ server.registerTool(
     return Object.fromEntries(
       Object.entries(all)
         .filter(([k]) => !activity || activityMatches(k, activity))
-        .map(([k, list]) => [k, list.map((e) => ({ encounter: e.name, kind: e.kind, tip: e.tip, loadout: e.picks.map((p) => `${ROLE_LABEL[p.role]}: ${p.name}${p.meta ? " (meta)" : ""}`), worthGetting: e.missing }))]),
+        .map(([k, list]) => [k, list.map((e) => ({ encounter: e.name, kind: e.kind, tip: e.tip, shields: e.shields?.map((sh) => `${sh.element} (${sh.on})`), champions: e.champions, range: e.range, dps: e.dps, loadout: e.picks.map((p) => `${ROLE_LABEL[p.role]}: ${p.name}${p.why ? ` (${p.why})` : p.meta ? " (meta)" : ""}`), worthGetting: e.missing }))]),
     );
   }),
 );

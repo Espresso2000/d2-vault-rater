@@ -1,0 +1,5216 @@
+{
+ "$comment": "Raid and dungeon encounters for the R&Ds encounter guide. Every fact was checked against the listed sources (at least two per encounter) on the date below; 'notes' records where guides disagreed and which way this file went. Shields and champions are normal difficulty only; master-only ones are in notes. 'recommended' is what guides said, mostly written before the final sandbox; 'meta' is the subset of named weapons the planner rewards.",
+ "verified": "2026-10-16",
+ "activities": {
+  "desert-perpetual": [
+   {
+    "name": "Iatros, Inward-Turned",
+    "kind": "boss",
+    "tip": "Moving Wyvern with a hard-to-hit crit; bring a forgiving, non-precision heavy (rockets/GL or Thunderlord) and something to clear Minotaurs/imps fast for the Chronon runner.",
+    "roles": [
+     "boss-sustained",
+     "add-clear",
+     "support"
+    ],
+    "meta": [
+     "Thunderlord",
+     "Gjallarhorn",
+     "Outbreak Perfected",
+     "Divinity"
+    ],
+    "types": [
+     "Rocket Launcher",
+     "Machine Gun",
+     "Grenade Launcher",
+     "Shotgun",
+     "Pulse Rifle"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "sustained",
+     "bossMoves": true
+    },
+    "enemies": [
+     "Vex"
+    ],
+    "recommended": [
+     {
+      "weapon": "Gjallarhorn + Rocket Launchers",
+      "why": "Non-precision burst on a constantly moving target (Shacknews)",
+      "sources": [
+       "https://www.shacknews.com/article/145172/the-desert-perpetual-raid-guide-destiny-2"
+      ]
+     },
+     {
+      "weapon": "Thunderlord",
+      "why": "Bolt charges; easy to land vs moving Wyvern; single-shot crit weapons struggle (LePrestore)",
+      "sources": [
+       "https://leprestore.com/guides/destiny-2/the-desert-perpetual-guide/"
+      ]
+     },
+     {
+      "weapon": "Heavy Grenade Launchers",
+      "why": "Strong with buffs, splash on big moving target (Shacknews)",
+      "sources": [
+       "https://www.shacknews.com/article/145172/the-desert-perpetual-raid-guide-destiny-2"
+      ]
+     },
+     {
+      "weapon": "Legend of Acrius / Outbreak Perfected + Divinity",
+      "why": "Acrius with catalyst recommended; Outbreak only if Divinity cage is kept up (Shacknews)",
+      "sources": [
+       "https://www.shacknews.com/article/145172/the-desert-perpetual-raid-guide-destiny-2"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/145172/the-desert-perpetual-raid-guide-destiny-2",
+     "https://www.destinypedia.com/The_Desert_Perpetual",
+     "https://deltiasgaming.com/?p=332135",
+     "https://grindout.com/destiny-2/guides/desert-perpetual",
+     "https://leprestore.com/guides/destiny-2/the-desert-perpetual-guide/",
+     "https://www.sportskeeda.com/mmo/destiny-2-the-desert-perpetual-raid-boss-guide-iatros-inward-turned"
+    ],
+    "confidence": "medium",
+    "notes": "Name spelling Inward-Tuned vs Inward-Turned; chose Turned (Destinypedia + 3 others). No source lists elemental shields/champions on normal."
+   },
+   {
+    "name": "Agraios, Inherent",
+    "kind": "boss",
+    "tip": "Short ~15s burst windows on a big-headed sniper boss: bring precision heavy (LFR) plus snipers, and add clear for Hydras/Wyverns/sniper Hobgoblins.",
+    "roles": [
+     "boss-burst",
+     "precision",
+     "add-clear"
+    ],
+    "meta": [
+     "Queenbreaker",
+     "Sleeper Simulant",
+     "Thunderlord"
+    ],
+    "types": [
+     "Linear Fusion Rifle",
+     "Sniper Rifle",
+     "Machine Gun",
+     "Pulse Rifle"
+    ],
+    "range": "mixed",
+    "dps": {
+     "style": "burst"
+    },
+    "enemies": [
+     "Vex"
+    ],
+    "recommended": [
+     {
+      "weapon": "Linear Fusion Rifles (Queenbreaker, Sleeper Simulant, legendary LFRs)",
+      "why": "Large head crit, short burst windows (Shacknews, LePrestore)",
+      "sources": [
+       "https://www.shacknews.com/article/145172/the-desert-perpetual-raid-guide-destiny-2",
+       "https://leprestore.com/guides/destiny-2/the-desert-perpetual-guide/"
+      ]
+     },
+     {
+      "weapon": "Sniper Rifle",
+      "why": "Precision special for big crit (Shacknews)",
+      "sources": [
+       "https://www.shacknews.com/article/145172/the-desert-perpetual-raid-guide-destiny-2"
+      ]
+     },
+     {
+      "weapon": "Thunderlord",
+      "why": "Listed DPS option (LePrestore)",
+      "sources": [
+       "https://leprestore.com/guides/destiny-2/the-desert-perpetual-guide/"
+      ]
+     },
+     {
+      "weapon": "Outbreak Perfected",
+      "why": "Disabled in contest, expected strong afterwards (Shacknews)",
+      "sources": [
+       "https://www.shacknews.com/article/145172/the-desert-perpetual-raid-guide-destiny-2"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/145172/the-desert-perpetual-raid-guide-destiny-2",
+     "https://www.destinypedia.com/The_Desert_Perpetual",
+     "https://deltiasgaming.com/?p=332135",
+     "https://grindout.com/destiny-2/guides/desert-perpetual",
+     "https://leprestore.com/guides/destiny-2/the-desert-perpetual-guide/"
+    ],
+    "confidence": "medium",
+    "notes": "Portal count 5 (Shacknews/Grindout) vs 6 with 5 charged (LePrestore); irrelevant to loadout."
+   },
+   {
+    "name": "Epoptes, Lord of Quanta",
+    "kind": "boss",
+    "tip": "Lots of precise eye-shooting and a precision-heavy boss: bring an accurate primary, Thunderlord or a sniper, and add clear for Cyclops/Hydra side rooms.",
+    "roles": [
+     "precision",
+     "boss-sustained",
+     "add-clear"
+    ],
+    "meta": [
+     "Outbreak Perfected",
+     "Thunderlord"
+    ],
+    "types": [
+     "Pulse Rifle",
+     "Machine Gun",
+     "Sniper Rifle",
+     "Trace Rifle"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "sustained"
+    },
+    "enemies": [
+     "Vex"
+    ],
+    "recommended": [
+     {
+      "weapon": "Outbreak Perfected",
+      "why": "Strongest per Shacknews; precision on respawning eyes",
+      "sources": [
+       "https://www.shacknews.com/article/145172/the-desert-perpetual-raid-guide-destiny-2"
+      ]
+     },
+     {
+      "weapon": "Thunderlord",
+      "why": "Recommended by Shacknews and LePrestore",
+      "sources": [
+       "https://www.shacknews.com/article/145172/the-desert-perpetual-raid-guide-destiny-2",
+       "https://leprestore.com/guides/destiny-2/the-desert-perpetual-guide/"
+      ]
+     },
+     {
+      "weapon": "Kinetic Sniper / Trace Rifle",
+      "why": "Precision alternatives (Shacknews)",
+      "sources": [
+       "https://www.shacknews.com/article/145172/the-desert-perpetual-raid-guide-destiny-2"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/145172/the-desert-perpetual-raid-guide-destiny-2",
+     "https://www.destinypedia.com/The_Desert_Perpetual",
+     "https://deltiasgaming.com/?p=332135",
+     "https://grindout.com/destiny-2/guides/desert-perpetual",
+     "https://leprestore.com/guides/destiny-2/the-desert-perpetual-guide/"
+    ],
+    "confidence": "medium",
+    "notes": "Grindout counts 3 large Hydras, Destinypedia names two lens Hydras. Elements: Arc synergy suggested (Thundercrash, Thunderlord with Bolt Charge per LePrestore) but no elemental shields."
+   },
+   {
+    "name": "Koregos, The Worldline",
+    "kind": "boss",
+    "tip": "Very short final-stand burst on rotating eye crits with lasers and Arc pools to dodge; bring top precision burst (Thunderlord, Lord of Wolves, snipers) and save supers.",
+    "roles": [
+     "boss-burst",
+     "precision",
+     "add-clear"
+    ],
+    "meta": [
+     "Thunderlord",
+     "Lord of Wolves",
+     "Sleeper Simulant",
+     "Outbreak Perfected"
+    ],
+    "types": [
+     "Machine Gun",
+     "Pulse Rifle",
+     "Shotgun",
+     "Linear Fusion Rifle",
+     "Sniper Rifle"
+    ],
+    "range": "mixed",
+    "dps": {
+     "style": "burst"
+    },
+    "enemies": [
+     "Vex"
+    ],
+    "recommended": [
+     {
+      "weapon": "Thunderlord",
+      "why": "Precision-friendly DPS (Shacknews, LePrestore)",
+      "sources": [
+       "https://www.shacknews.com/article/145172/the-desert-perpetual-raid-guide-destiny-2",
+       "https://leprestore.com/guides/destiny-2/the-desert-perpetual-guide/"
+      ]
+     },
+     {
+      "weapon": "Outbreak Perfected",
+      "why": "Precision damage (Shacknews)",
+      "sources": [
+       "https://www.shacknews.com/article/145172/the-desert-perpetual-raid-guide-destiny-2"
+      ]
+     },
+     {
+      "weapon": "Lord of Wolves",
+      "why": "Special DPS option (Shacknews, LePrestore)",
+      "sources": [
+       "https://www.shacknews.com/article/145172/the-desert-perpetual-raid-guide-destiny-2",
+       "https://leprestore.com/guides/destiny-2/the-desert-perpetual-guide/"
+      ]
+     },
+     {
+      "weapon": "Sleeper Simulant / Sniper Rifle",
+      "why": "Precision heavy/special on eye crits (LePrestore, Shacknews)",
+      "sources": [
+       "https://leprestore.com/guides/destiny-2/the-desert-perpetual-guide/",
+       "https://www.shacknews.com/article/145172/the-desert-perpetual-raid-guide-destiny-2"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/145172/the-desert-perpetual-raid-guide-destiny-2",
+     "https://www.destinypedia.com/The_Desert_Perpetual",
+     "https://deltiasgaming.com/?p=332135",
+     "https://grindout.com/destiny-2/guides/desert-perpetual",
+     "https://leprestore.com/guides/destiny-2/the-desert-perpetual-guide/"
+    ],
+    "confidence": "medium",
+    "notes": "Koregos vs Keregos spelling; chose Koregos."
+   }
+  ],
+  "salvations-edge": [
+   {
+    "name": "Substratum",
+    "kind": "mechanics",
+    "tip": "Two teams of three clear small rooms fast: bring close-mid add clear, Overload stun for the room champion, and burst for Tormentors/Subjugators.",
+    "roles": [
+     "add-clear",
+     "close",
+     "boss-burst"
+    ],
+    "champions": [
+     "Overload"
+    ],
+    "range": "close",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Vex",
+     "Dread"
+    ],
+    "recommended": [
+     {
+      "weapon": "Overload-capable weapon",
+      "why": "Overload champion in a room (Backdash, Mein-MMO)",
+      "sources": [
+       "https://www.thebackdash.com/destiny/destiny-2-salvations-edge-raid-guide",
+       "https://mein-mmo.de/en/destiny-2-edge-of-redemption-raid-guide-to-all-phases,1155950/5"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/140025/salvations-edge-raid-guide-destiny-2",
+     "https://sportskeeda.com/mmo/destiny-2-master-salvation-s-edge-enemy-guide-all-changes-normal-version",
+     "https://www.thebackdash.com/destiny/destiny-2-salvations-edge-raid-guide",
+     "https://mein-mmo.de/en/destiny-2-edge-of-redemption-raid-guide-to-all-phases,1155950/5"
+    ],
+    "confidence": "medium",
+    "notes": "Shacknews says some third rooms have a Minotaur instead of a champion. Elements: Master adds Arc-shielded Supplicant Harpies and Void-shielded Minotaurs (Sportskeeda); normal has none documented. Master champions: Overload"
+   },
+   {
+    "name": "Herald of Finality (Dissipation)",
+    "kind": "boss",
+    "tip": "Only marked players can damage the head in short windows: bring precision burst (Falling Guillotine-style heavy or Ergo Sum) plus Taken add clear.",
+    "roles": [
+     "sword",
+     "precision",
+     "add-clear"
+    ],
+    "meta": [
+     "Falling Guillotine",
+     "Ergo Sum",
+     "Still Hunt"
+    ],
+    "types": [
+     "Sword"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "burst"
+    },
+    "enemies": [
+     "Taken",
+     "Dread"
+    ],
+    "recommended": [
+     {
+      "weapon": "Falling Guillotine",
+      "why": "Primary damage heavy per Shacknews",
+      "sources": [
+       "https://www.shacknews.com/article/140025/salvations-edge-raid-guide-destiny-2"
+      ]
+     },
+     {
+      "weapon": "Ergo Sum (Wolfpack Rounds)",
+      "why": "Supplemental damage (Shacknews)",
+      "sources": [
+       "https://www.shacknews.com/article/140025/salvations-edge-raid-guide-destiny-2"
+      ]
+     },
+     {
+      "weapon": "Golden Gun + Celestial Nighthawk/Still Hunt",
+      "why": "Precision burst on head (Shacknews)",
+      "sources": [
+       "https://www.shacknews.com/article/140025/salvations-edge-raid-guide-destiny-2"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/140025/salvations-edge-raid-guide-destiny-2",
+     "https://sportskeeda.com/mmo/destiny-2-master-salvation-s-edge-enemy-guide-all-changes-normal-version",
+     "https://www.thebackdash.com/destiny/destiny-2-salvations-edge-raid-guide"
+    ],
+    "confidence": "medium",
+    "notes": "Recs are 2024 contest-era; not re-verified for Monument of Triumph sandbox. Elements: Master: Solar-shielded Taken Revenant Knights (Sportskeeda). Void debuffs (weaken) recommended (Shacknews). Master champions: Overload"
+   },
+   {
+    "name": "Repository",
+    "kind": "mechanics",
+    "tip": "Lane-based add clear across three floors: bring Unstoppable stun and burst for Tormentors and the Incendior at the end of each floor.",
+    "roles": [
+     "add-clear",
+     "boss-burst",
+     "range"
+    ],
+    "champions": [
+     "Unstoppable"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Dread",
+     "Hive"
+    ],
+    "recommended": [
+     {
+      "weapon": "Unstoppable-capable weapon",
+      "why": "Unstoppable Incendior after each floor (Backdash); champion per room (Shacknews)",
+      "sources": [
+       "https://www.thebackdash.com/destiny/destiny-2-salvations-edge-raid-guide",
+       "https://www.shacknews.com/article/140025/salvations-edge-raid-guide-destiny-2"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/140025/salvations-edge-raid-guide-destiny-2",
+     "https://www.thebackdash.com/destiny/destiny-2-salvations-edge-raid-guide",
+     "https://sportskeeda.com/mmo/destiny-2-master-salvation-s-edge-enemy-guide-all-changes-normal-version"
+    ],
+    "confidence": "low",
+    "notes": "Champion type only from Backdash (Unstoppable Incendior); Shacknews says only 'Champion'. Sportskeeda says no master changes. Hive faction inferred from Incendior (Scorn?) - unverified. Master champions: Unstoppable"
+   },
+   {
+    "name": "Verity",
+    "kind": "mechanics",
+    "tip": "Puzzle encounter with Knights and Ogres in tight rooms: bring close-range add clear and something for Unstoppable Ogres; DPS loadout irrelevant.",
+    "roles": [
+     "add-clear",
+     "close",
+     "range"
+    ],
+    "champions": [
+     "Unstoppable"
+    ],
+    "range": "close",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Hive"
+    ],
+    "recommended": [
+     {
+      "weapon": "Unstoppable-capable weapon + close-range ad clear",
+      "why": "Unstoppable Ogres at the end (Shacknews)",
+      "sources": [
+       "https://www.shacknews.com/article/140025/salvations-edge-raid-guide-destiny-2"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/140025/salvations-edge-raid-guide-destiny-2",
+     "https://sportskeeda.com/mmo/destiny-2-master-salvation-s-edge-enemy-guide-all-changes-normal-version",
+     "https://www.thebackdash.com/destiny/destiny-2-salvations-edge-raid-guide"
+    ],
+    "confidence": "low",
+    "notes": "Shacknews mentions Unstoppable Ogres on normal; Sportskeeda lists Unstoppable Ogres as a Master change. Chose Unstoppable for both with low confidence. Elements: Master: Arc-shielded Hive Knights inside and outside (Sportskeeda). Master champions: Unstoppable"
+   },
+   {
+    "name": "Zenith (The Witness)",
+    "kind": "boss",
+    "tip": "Sustained torso DPS while dodging hand attacks and jumping off before the slam: bring high-uptime non-precision heavy like grenade launchers plus buffs/debuffs.",
+    "roles": [
+     "boss-sustained",
+     "add-clear",
+     "support"
+    ],
+    "types": [
+     "Grenade Launcher"
+    ],
+    "range": "mixed",
+    "dps": {
+     "style": "sustained"
+    },
+    "enemies": [
+     "Dread",
+     "Scorn"
+    ],
+    "recommended": [
+     {
+      "weapon": "Heavy Grenade Launchers",
+      "why": "Splash on torso, no crit needed; keep Radiant/Weaken (r/raidsecrets)",
+      "sources": [
+       "https://www.reddit.com/r/raidsecrets/comments/1i7xxm0/witness_damage_gls"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/140025/salvations-edge-raid-guide-destiny-2",
+     "https://sportskeeda.com/mmo/destiny-2-master-salvation-s-edge-enemy-guide-all-changes-normal-version",
+     "https://www.thebackdash.com/destiny/destiny-2-salvations-edge-raid-guide",
+     "https://www.reddit.com/r/raidsecrets/comments/1i7xxm0/witness_damage_gls"
+    ],
+    "confidence": "medium",
+    "notes": "Crit spot unclear; Reddit says head immune, torso fine. Elements: Master: Void-shielded Scorn Chieftains (Sportskeeda)."
+   }
+  ],
+  "crotas-end": [
+   {
+    "name": "The Abyss",
+    "kind": "traversal",
+    "tip": "Dark-maze run ending in a hold-out vs Knights and Unstoppable Ogres: bring close-range add clear, an Unstoppable answer and mobility.",
+    "roles": [
+     "add-clear",
+     "close",
+     "sword"
+    ],
+    "meta": [
+     "Riskrunner",
+     "Leviathan's Breath"
+    ],
+    "champions": [
+     "Unstoppable"
+    ],
+    "types": [
+     "Submachine Gun",
+     "Grenade Launcher",
+     "Combat Bow",
+     "Sword"
+    ],
+    "range": "close",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Hive"
+    ],
+    "recommended": [
+     {
+      "weapon": "Riskrunner",
+      "why": "Arc damage resistance in darkness (Shacknews)",
+      "sources": [
+       "https://www.shacknews.com/article/136793/crotas-end-raid-guide-destiny-2"
+      ]
+     },
+     {
+      "weapon": "Wave-frame Grenade Launcher",
+      "why": "Add clear (PCGamesN)",
+      "sources": [
+       "https://www.pcgamesn.com/destiny-2/crotas-end"
+      ]
+     },
+     {
+      "weapon": "Unstoppable weapons (e.g. Leviathan's Breath, Devil's Ruin)",
+      "why": "Unstoppable Ogres (ProGameGuides, Destructoid)",
+      "sources": [
+       "https://progameguides.com/destiny/best-builds-for-crotas-end-raid-in-destiny-2/",
+       "https://www.destructoid.com/destiny-2-every-encounter-in-crotas-end-explained/"
+      ]
+     },
+     {
+      "weapon": "Sword with Eager Edge",
+      "why": "Mobility through darkness (Shacknews, ProGameGuides)",
+      "sources": [
+       "https://www.shacknews.com/article/136793/crotas-end-raid-guide-destiny-2",
+       "https://progameguides.com/destiny/best-builds-for-crotas-end-raid-in-destiny-2/"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/136793/crotas-end-raid-guide-destiny-2",
+     "https://www.destructoid.com/destiny-2-every-encounter-in-crotas-end-explained/",
+     "https://www.pcgamesn.com/destiny-2/crotas-end",
+     "https://progameguides.com/destiny/best-builds-for-crotas-end-raid-in-destiny-2/"
+    ],
+    "confidence": "medium",
+    "notes": "Master champions not found."
+   },
+   {
+    "name": "The Bridge",
+    "kind": "mechanics",
+    "tip": "Long bridge then indoor fights with endless Hive and Barrier champions: bring a long-range primary/sniper, an anti-Barrier option and close-range backup.",
+    "roles": [
+     "range",
+     "add-clear",
+     "boss-burst"
+    ],
+    "meta": [
+     "Arbalest"
+    ],
+    "champions": [
+     "Barrier"
+    ],
+    "types": [
+     "Sniper Rifle",
+     "Scout Rifle",
+     "Linear Fusion Rifle",
+     "Submachine Gun",
+     "Grenade Launcher"
+    ],
+    "range": "mixed",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Hive"
+    ],
+    "recommended": [
+     {
+      "weapon": "Scout/Sniper Rifle",
+      "why": "Long-range across bridge (Shacknews)",
+      "sources": [
+       "https://www.shacknews.com/article/136793/crotas-end-raid-guide-destiny-2"
+      ]
+     },
+     {
+      "weapon": "Arbalest / anti-Barrier",
+      "why": "Barrier champions (Shacknews, PCGamesN, ProGameGuides)",
+      "sources": [
+       "https://www.shacknews.com/article/136793/crotas-end-raid-guide-destiny-2",
+       "https://www.pcgamesn.com/destiny-2/crotas-end",
+       "https://progameguides.com/destiny/best-builds-for-crotas-end-raid-in-destiny-2/"
+      ]
+     },
+     {
+      "weapon": "SMG",
+      "why": "Indoor close combat (Shacknews)",
+      "sources": [
+       "https://www.shacknews.com/article/136793/crotas-end-raid-guide-destiny-2"
+      ]
+     },
+     {
+      "weapon": "Blinding Grenade Launcher",
+      "why": "Control Swordbearers/Gatekeepers (PCGamesN)",
+      "sources": [
+       "https://www.pcgamesn.com/destiny-2/crotas-end"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/136793/crotas-end-raid-guide-destiny-2",
+     "https://www.destructoid.com/destiny-2-every-encounter-in-crotas-end-explained/",
+     "https://www.pcgamesn.com/destiny-2/crotas-end",
+     "https://progameguides.com/destiny/best-builds-for-crotas-end-raid-in-destiny-2/"
+    ],
+    "confidence": "medium",
+    "notes": "Shacknews notes its guide reflects contest/master; Barrier presence on normal not independently confirmed."
+   },
+   {
+    "name": "Ir Yût, the Deathsinger",
+    "kind": "boss",
+    "tip": "Hard DPS check on a mostly stationary boss after killing Shieldsinger Wizards: bring top heavy DPS (rockets/Gjallarhorn, Leviathan's Breath, LFR) plus Divinity/Tractor.",
+    "roles": [
+     "boss-burst",
+     "support",
+     "add-clear"
+    ],
+    "meta": [
+     "Gjallarhorn",
+     "Leviathan's Breath",
+     "Divinity",
+     "Thunderlord"
+    ],
+    "shields": [
+     {
+      "element": "Arc",
+      "on": "Blistered Knights",
+      "frequency": "some"
+     }
+    ],
+    "types": [
+     "Combat Bow",
+     "Rocket Launcher",
+     "Linear Fusion Rifle",
+     "Machine Gun"
+    ],
+    "range": "mixed",
+    "dps": {
+     "style": "burst"
+    },
+    "enemies": [
+     "Hive"
+    ],
+    "recommended": [
+     {
+      "weapon": "Divinity",
+      "why": "Debuff/crit cage, boss doesn't move much (PCGamesN, Shacknews, Twinfinite)",
+      "sources": [
+       "https://www.pcgamesn.com/destiny-2/crotas-end",
+       "https://www.shacknews.com/article/136793/crotas-end-raid-guide-destiny-2",
+       "https://twinfinite.net/destiny-2/destiny-2-crotas-end-raid-how-to-defeat-ir-yut-the-deathsinger/"
+      ]
+     },
+     {
+      "weapon": "Leviathan's Breath",
+      "why": "Strong DPS (PCGamesN, Twinfinite, Shacknews)",
+      "sources": [
+       "https://www.pcgamesn.com/destiny-2/crotas-end",
+       "https://twinfinite.net/destiny-2/destiny-2-crotas-end-raid-how-to-defeat-ir-yut-the-deathsinger/",
+       "https://www.shacknews.com/article/136793/crotas-end-raid-guide-destiny-2"
+      ]
+     },
+     {
+      "weapon": "Gjallarhorn + Rocket Launchers",
+      "why": "Damage check (ProGameGuides, PCGamesN)",
+      "sources": [
+       "https://progameguides.com/destiny/best-builds-for-crotas-end-raid-in-destiny-2/",
+       "https://www.pcgamesn.com/destiny-2/crotas-end"
+      ]
+     },
+     {
+      "weapon": "Thunderlord / Linear Fusion Rifle",
+      "why": "Alternatives (Shacknews, PCGamesN, Twinfinite Sleeper)",
+      "sources": [
+       "https://www.shacknews.com/article/136793/crotas-end-raid-guide-destiny-2",
+       "https://www.pcgamesn.com/destiny-2/crotas-end",
+       "https://twinfinite.net/destiny-2/destiny-2-crotas-end-raid-how-to-defeat-ir-yut-the-deathsinger/"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/136793/crotas-end-raid-guide-destiny-2",
+     "https://www.destructoid.com/destiny-2-every-encounter-in-crotas-end-explained/",
+     "https://www.pcgamesn.com/destiny-2/crotas-end",
+     "https://progameguides.com/destiny/best-builds-for-crotas-end-raid-in-destiny-2/",
+     "https://twinfinite.net/destiny-2/destiny-2-crotas-end-raid-how-to-defeat-ir-yut-the-deathsinger/"
+    ],
+    "confidence": "medium",
+    "notes": "Arc Knight shields only in PCGamesN; Destructoid/Twinfinite mention no elemental shields. Elements: PCGamesN: Arc-shielded Blistered Knights (single source; not confirmed elsewhere)."
+   },
+   {
+    "name": "Crota, Son of Oryx",
+    "kind": "boss",
+    "tip": "Swords break his shield, then short DPS with Tractor Cannon debuff and a sword/heavy; also need a precision weapon to shoot the Oversoul.",
+    "roles": [
+     "sword",
+     "support",
+     "precision"
+    ],
+    "meta": [
+     "The Lament",
+     "Falling Guillotine",
+     "Tractor Cannon",
+     "Cartesian Coordinate"
+    ],
+    "shields": [
+     {
+      "element": "Solar",
+      "on": "Wizards",
+      "frequency": "some"
+     }
+    ],
+    "types": [
+     "Sword",
+     "Shotgun",
+     "Fusion Rifle"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "burst"
+    },
+    "enemies": [
+     "Hive"
+    ],
+    "recommended": [
+     {
+      "weapon": "The Lament",
+      "why": "Strong DPS after weaken, sustain (Shacknews, Destructoid, ProGameGuides)",
+      "sources": [
+       "https://www.shacknews.com/article/136793/crotas-end-raid-guide-destiny-2",
+       "https://www.destructoid.com/destiny-2-every-encounter-in-crotas-end-explained/",
+       "https://progameguides.com/destiny/best-builds-for-crotas-end-raid-in-destiny-2/"
+      ]
+     },
+     {
+      "weapon": "Tractor Cannon",
+      "why": "Debuff Crota (Shacknews, PCGamesN, ProGameGuides)",
+      "sources": [
+       "https://www.shacknews.com/article/136793/crotas-end-raid-guide-destiny-2",
+       "https://www.pcgamesn.com/destiny-2/crotas-end",
+       "https://progameguides.com/destiny/best-builds-for-crotas-end-raid-in-destiny-2/"
+      ]
+     },
+     {
+      "weapon": "Solar Fusion Rifle (Cartesian Coordinate)",
+      "why": "Solar-shielded Wizards; Vorpal vs boss (ProGameGuides)",
+      "sources": [
+       "https://progameguides.com/destiny/best-builds-for-crotas-end-raid-in-destiny-2/"
+      ]
+     },
+     {
+      "weapon": "Falling Guillotine / Legend of Acrius",
+      "why": "Backup DPS (Shacknews)",
+      "sources": [
+       "https://www.shacknews.com/article/136793/crotas-end-raid-guide-destiny-2"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/136793/crotas-end-raid-guide-destiny-2",
+     "https://www.destructoid.com/destiny-2-every-encounter-in-crotas-end-explained/",
+     "https://www.pcgamesn.com/destiny-2/crotas-end",
+     "https://progameguides.com/destiny/best-builds-for-crotas-end-raid-in-destiny-2/"
+    ],
+    "confidence": "medium",
+    "notes": "Solar Wizard shields only in ProGameGuides; others silent. Elements: ProGameGuides: Solar-shielded Wizards (single source)."
+   }
+  ],
+  "root-of-nightmares": [
+   {
+    "name": "Cataclysm",
+    "kind": "mechanics",
+    "tip": "No boss: bring strong add clear plus something that kills Barrier Colossi and Tormentors fast to extend the Sweeping Terror timer.",
+    "roles": [
+     "add-clear",
+     "boss-sustained",
+     "range"
+    ],
+    "meta": [
+     "Commemoration",
+     "Funnelweb",
+     "Calus Mini-Tool",
+     "Forbearance"
+    ],
+    "champions": [
+     "Barrier"
+    ],
+    "types": [
+     "Machine Gun",
+     "Submachine Gun",
+     "Auto Rifle",
+     "Pulse Rifle",
+     "Grenade Launcher"
+    ],
+    "range": "mixed",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Cabal",
+     "Dread"
+    ],
+    "recommended": [
+     {
+      "weapon": "Machine gun (Void / Volatile, e.g. Commemoration, Thunderlord)",
+      "why": "Ammo economy for add clear, and fast Tormentor kills",
+      "sources": [
+       "https://www.highgroundgaming.com/destiny-2-lightfall-root-of-nightmares-raid-walkthrough-guide/",
+       "https://boosting-ground.com/Destiny2/guides/raid-guides/root-of-nightmares-guide"
+      ]
+     },
+     {
+      "weapon": "SMG / Auto / Pulse (Funnelweb, Calus Mini-Tool, Osteo Striga)",
+      "why": "Add clear while guarding the runners",
+      "sources": [
+       "https://windowscentral.com/gaming/destiny-2-root-of-nightmares-raid-guide-how-to-beat-every-encounter",
+       "https://boosting-ground.com/Destiny2/guides/raid-guides/root-of-nightmares-guide"
+      ]
+     },
+     {
+      "weapon": "Grenade launcher (Forbearance)",
+      "why": "Called top-tier for clearing waves",
+      "sources": [
+       "https://windowscentral.com/gaming/destiny-2-root-of-nightmares-raid-guide-how-to-beat-every-encounter",
+       "https://boosting-ground.com/Destiny2/guides/raid-guides/root-of-nightmares-guide"
+      ]
+     },
+     {
+      "weapon": "Anti-Barrier weapon",
+      "why": "Barrier Colossus spawns with each Tormentor wave",
+      "sources": [
+       "https://www.destinypedia.com/Root_of_Nightmares",
+       "https://www.highgroundgaming.com/destiny-2-lightfall-root-of-nightmares-raid-walkthrough-guide/"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.destinypedia.com/Root_of_Nightmares",
+     "https://www.shacknews.com/article/134475/root-of-nightmare-raid-guide-destiny-2",
+     "https://windowscentral.com/gaming/destiny-2-root-of-nightmares-raid-guide-how-to-beat-every-encounter",
+     "https://boosting-ground.com/Destiny2/guides/raid-guides/root-of-nightmares-guide",
+     "https://www.highgroundgaming.com/destiny-2-lightfall-root-of-nightmares-raid-walkthrough-guide/",
+     "https://shacknews.com/article/135058/master-root-of-nightmares-changes-destiny-2",
+     "https://www.sportskeeda.com/esports/destiny-2-master-root-nightmares-enemy-guide-all-enemy-changes-additions-normal-version"
+    ],
+    "confidence": "high",
+    "notes": "Timer extension per Tormentor: 30s (Windows Central, Boosting Ground) vs 35s (Shacknews). Elements: Void (Volatile) add clear is recommended. Master adds Solar shields on Centurions/Cabal. Master champions: Barrier"
+   },
+   {
+    "name": "Scission",
+    "kind": "mechanics",
+    "tip": "No boss: you need add clear across three floors and an anti-Barrier option, and the buffed player must kill the Redolence enemies.",
+    "roles": [
+     "add-clear",
+     "range",
+     "boss-sustained"
+    ],
+    "champions": [
+     "Barrier"
+    ],
+    "types": [
+     "Machine Gun",
+     "Submachine Gun",
+     "Auto Rifle",
+     "Pulse Rifle",
+     "Sniper Rifle",
+     "Scout Rifle"
+    ],
+    "range": "mixed",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Cabal"
+    ],
+    "recommended": [
+     {
+      "weapon": "Machine gun",
+      "why": "Still best for add clear, per HGG",
+      "sources": [
+       "https://www.highgroundgaming.com/destiny-2-lightfall-root-of-nightmares-raid-walkthrough-guide/"
+      ]
+     },
+     {
+      "weapon": "SMG / Auto / Pulse primaries",
+      "why": "Same ad-clear loadout as Cataclysm",
+      "sources": [
+       "https://windowscentral.com/gaming/destiny-2-root-of-nightmares-raid-guide-how-to-beat-every-encounter"
+      ]
+     },
+     {
+      "weapon": "Scout / Pulse / Sniper",
+      "why": "Shooting launcher crystals across the gap",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/raid-guides/root-of-nightmares-guide"
+      ]
+     },
+     {
+      "weapon": "Anti-Barrier weapon",
+      "why": "A Barrier Colossus appears near the end of each chain",
+      "sources": [
+       "https://www.destinypedia.com/Root_of_Nightmares",
+       "https://www.sportskeeda.com/esports/destiny-2-master-root-nightmares-enemy-guide-all-enemy-changes-additions-normal-version"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.destinypedia.com/Root_of_Nightmares",
+     "https://www.Destinypedia.com/Redolence_of_Splendor",
+     "https://www.shacknews.com/article/134475/root-of-nightmare-raid-guide-destiny-2",
+     "https://windowscentral.com/gaming/destiny-2-root-of-nightmares-raid-guide-how-to-beat-every-encounter",
+     "https://boosting-ground.com/Destiny2/guides/raid-guides/root-of-nightmares-guide",
+     "https://www.highgroundgaming.com/destiny-2-lightfall-root-of-nightmares-raid-walkthrough-guide/",
+     "https://www.sportskeeda.com/esports/destiny-2-master-root-nightmares-enemy-guide-all-enemy-changes-additions-normal-version"
+    ],
+    "confidence": "high",
+    "notes": "None significant. Master adds Unstoppable Incendiors (Sportskeeda, Boosting Ground). Master champions: Barrier, Unstoppable"
+   },
+   {
+    "name": "Macrocosm",
+    "kind": "boss",
+    "tip": "Burst DPS in short plate windows: rockets and LFRs that dump damage fast, plus Solar shield-breaking for the Centurions.",
+    "roles": [
+     "boss-burst",
+     "add-clear",
+     "support"
+    ],
+    "meta": [
+     "Gjallarhorn",
+     "Thunderlord",
+     "Divinity",
+     "Witherhoard"
+    ],
+    "shields": [
+     {
+      "element": "Solar",
+      "on": "Honored Centurions",
+      "frequency": "some"
+     }
+    ],
+    "types": [
+     "Rocket Launcher",
+     "Linear Fusion Rifle",
+     "Machine Gun",
+     "Grenade Launcher"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "burst"
+    },
+    "enemies": [
+     "Cabal"
+    ],
+    "recommended": [
+     {
+      "weapon": "Rocket launchers (Gjallarhorn + Explosive Light / ALH legendaries)",
+      "why": "Burst during short plate windows",
+      "sources": [
+       "https://www.highgroundgaming.com/destiny-2-lightfall-root-of-nightmares-raid-walkthrough-guide/",
+       "https://boosting-ground.com/Destiny2/guides/raid-guides/root-of-nightmares-guide",
+       "https://windowscentral.com/gaming/destiny-2-root-of-nightmares-raid-guide-how-to-beat-every-encounter"
+      ]
+     },
+     {
+      "weapon": "Linear fusion rifle",
+      "why": "Burst precision damage",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/raid-guides/root-of-nightmares-guide"
+      ]
+     },
+     {
+      "weapon": "Thunderlord + Divinity",
+      "why": "Alternative comp named by HGG",
+      "sources": [
+       "https://www.highgroundgaming.com/destiny-2-lightfall-root-of-nightmares-raid-walkthrough-guide/",
+       "https://windowscentral.com/gaming/destiny-2-root-of-nightmares-raid-guide-how-to-beat-every-encounter"
+      ]
+     },
+     {
+      "weapon": "Witherhoard",
+      "why": "Passive damage between plate moves",
+      "sources": [
+       "https://windowscentral.com/gaming/destiny-2-root-of-nightmares-raid-guide-how-to-beat-every-encounter",
+       "https://boosting-ground.com/Destiny2/guides/raid-guides/root-of-nightmares-guide"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.destinypedia.com/Root_of_Nightmares",
+     "https://destinypedia.com/Terrestrial_Lieutenant",
+     "https://www.shacknews.com/article/134475/root-of-nightmare-raid-guide-destiny-2",
+     "https://www.ggrecon.com/guides/destiny-2-root-of-nightmares/",
+     "https://windowscentral.com/gaming/destiny-2-root-of-nightmares-raid-guide-how-to-beat-every-encounter",
+     "https://boosting-ground.com/Destiny2/guides/raid-guides/root-of-nightmares-guide",
+     "https://www.highgroundgaming.com/destiny-2-lightfall-root-of-nightmares-raid-walkthrough-guide/",
+     "https://shacknews.com/article/135058/master-root-of-nightmares-changes-destiny-2",
+     "https://www.sportskeeda.com/esports/destiny-2-master-root-nightmares-enemy-guide-all-enemy-changes-additions-normal-version"
+    ],
+    "confidence": "medium",
+    "notes": "Normal champions: Sportskeeda and Destinypedia say yellow-bar Colossi on normal, Barrier on master; Boosting Ground implies Barrier. Chose none on normal. Elements: Bring Solar for Honored Centurions (Destinypedia lists them as Solar-shielded on normal; Shacknews confirms Solar on master). Master champions: Barrier"
+   },
+   {
+    "name": "Nezarec, Final God of Pain",
+    "kind": "boss",
+    "tip": "A roughly 30s damage window on a roaming boss: bring rockets, or Thunderlord with Divinity, and keep ammo for final stand.",
+    "roles": [
+     "boss-burst",
+     "precision",
+     "support"
+    ],
+    "meta": [
+     "Gjallarhorn",
+     "Thunderlord",
+     "Divinity",
+     "Succession"
+    ],
+    "types": [
+     "Rocket Launcher",
+     "Machine Gun",
+     "Sniper Rifle"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "burst",
+     "bossMoves": true
+    },
+    "enemies": [
+     "Cabal",
+     "Dread"
+    ],
+    "recommended": [
+     {
+      "weapon": "Rocket launchers (Gjallarhorn + legendary)",
+      "why": "Main damage in short windows",
+      "sources": [
+       "https://www.shacknews.com/article/134475/root-of-nightmare-raid-guide-destiny-2",
+       "https://boosting-ground.com/Destiny2/guides/raid-guides/root-of-nightmares-guide",
+       "https://windowscentral.com/gaming/destiny-2-root-of-nightmares-raid-guide-how-to-beat-every-encounter"
+      ]
+     },
+     {
+      "weapon": "Thunderlord + Divinity",
+      "why": "Called very consistent and easy to use",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/raid-guides/root-of-nightmares-guide",
+       "https://www.shacknews.com/article/134475/root-of-nightmare-raid-guide-destiny-2"
+      ]
+     },
+     {
+      "weapon": "Precision weapon for weak spots (e.g. Succession sniper)",
+      "why": "For taunters shooting the shoulders and chest",
+      "sources": [
+       "https://windowscentral.com/gaming/destiny-2-root-of-nightmares-raid-guide-how-to-beat-every-encounter"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.destinypedia.com/Root_of_Nightmares",
+     "https://www.shacknews.com/article/134475/root-of-nightmare-raid-guide-destiny-2",
+     "https://www.ggrecon.com/guides/destiny-2-root-of-nightmares/",
+     "https://windowscentral.com/gaming/destiny-2-root-of-nightmares-raid-guide-how-to-beat-every-encounter",
+     "https://boosting-ground.com/Destiny2/guides/raid-guides/root-of-nightmares-guide",
+     "https://www.highgroundgaming.com/destiny-2-lightfall-root-of-nightmares-raid-walkthrough-guide/",
+     "https://shacknews.com/article/135058/master-root-of-nightmares-changes-destiny-2",
+     "https://www.sportskeeda.com/esports/destiny-2-master-root-nightmares-enemy-guide-all-enemy-changes-additions-normal-version"
+    ],
+    "confidence": "high",
+    "notes": "Sources are 2023-era. No current-sandbox (2026) loadout source was found. Elements: No shield requirement. The Well of Radiance Solar Warlock is called near-essential. Master champions: Barrier"
+   }
+  ],
+  "kings-fall": [
+   {
+    "name": "Hall of Souls",
+    "kind": "mechanics",
+    "tip": "Light add clear for Taken while relic runners open the portal; the encounter is low pressure on normal.",
+    "roles": [
+     "add-clear",
+     "close",
+     "range"
+    ],
+    "types": [
+     "Submachine Gun",
+     "Auto Rifle",
+     "Fusion Rifle"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Taken",
+     "Hive"
+    ],
+    "recommended": [
+     {
+      "weapon": "Auto rifle / SMG",
+      "why": "Add clear",
+      "sources": [
+       "https://progameguides.com/destiny/best-kings-fall-raid-loadout-armor-weapons-and-mods/"
+      ]
+     },
+     {
+      "weapon": "Fusion rifle",
+      "why": "Open doors quickly",
+      "sources": [
+       "https://progameguides.com/destiny/best-kings-fall-raid-loadout-armor-weapons-and-mods/"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.destinypedia.com/King%27s_Fall",
+     "https://shacknews.com/article/132394/master-kings-fall-changes-destiny-2",
+     "https://sportskeeda.com/esports/destiny-2-master-king-s-fall-enemy-guide-all-enemy-changes-additions-normal-version",
+     "https://progameguides.com/destiny/best-kings-fall-raid-loadout-armor-weapons-and-mods/"
+    ],
+    "confidence": "medium",
+    "notes": "Name: MISSING from tool list: opening relic/statue encounter before the Basilica (Destinypedia). Add it, or skip it if the tool ignores non-boss openers. Master shields: Shacknews says Arc on Captains; Sportskeeda says all three elements. Elements: Master only: Arc shields on Taken Captains. Master champions: Unstoppable, Overload"
+   },
+   {
+    "name": "Basilica (Totems)",
+    "kind": "mechanics",
+    "tip": "No boss: you need fast Wizard and Knight kills plus an Unstoppable answer for the Ogres.",
+    "roles": [
+     "add-clear",
+     "close",
+     "boss-sustained"
+    ],
+    "meta": [
+     "Thunderlord",
+     "Xenophage",
+     "Forbearance"
+    ],
+    "champions": [
+     "Unstoppable"
+    ],
+    "types": [
+     "Shotgun",
+     "Fusion Rifle",
+     "Machine Gun",
+     "Grenade Launcher"
+    ],
+    "range": "mixed",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Hive",
+     "Taken"
+    ],
+    "recommended": [
+     {
+      "weapon": "Pulse rifle with Unstoppable",
+      "why": "Handles the Unstoppable Ogres",
+      "sources": [
+       "https://www.pcgamesn.com/destiny-2/best-kings-fall-weapons",
+       "https://progameguides.com/destiny/best-kings-fall-raid-loadout-armor-weapons-and-mods/"
+      ]
+     },
+     {
+      "weapon": "Shotgun / fusion rifle",
+      "why": "Quick Knight and Wizard kills",
+      "sources": [
+       "https://www.pcgamesn.com/destiny-2/best-kings-fall-weapons",
+       "https://Gamespot.com/articles/destiny-2-kings-fall-raid-guide-how-to-beat-every-encounter-and-open-every-secret-chest/1100-6506998/"
+      ]
+     },
+     {
+      "weapon": "Thunderlord / Xenophage (machine gun)",
+      "why": "Mows down groups",
+      "sources": [
+       "https://www.shacknews.com/article/131935/kings-fall-raid-guide-destiny-2?amphtml=1",
+       "https://www.pcgamesn.com/destiny-2/best-kings-fall-weapons"
+      ]
+     },
+     {
+      "weapon": "Grenade launcher (Forbearance)",
+      "why": "Group clear",
+      "sources": [
+       "https://www.shacknews.com/article/131935/kings-fall-raid-guide-destiny-2?amphtml=1"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.destinypedia.com/King%27s_Fall",
+     "https://Gamespot.com/articles/destiny-2-kings-fall-raid-guide-how-to-beat-every-encounter-and-open-every-secret-chest/1100-6506998/",
+     "https://www.shacknews.com/article/131935/kings-fall-raid-guide-destiny-2?amphtml=1",
+     "https://www.pcgamesn.com/destiny-2/best-kings-fall-weapons",
+     "https://progameguides.com/destiny/best-kings-fall-raid-loadout-armor-weapons-and-mods/",
+     "https://shacknews.com/article/132394/master-kings-fall-changes-destiny-2",
+     "https://sportskeeda.com/esports/destiny-2-master-king-s-fall-enemy-guide-all-enemy-changes-additions-normal-version"
+    ],
+    "confidence": "high",
+    "notes": "None. Gamespot says these are the only champions in the normal raid. Elements: Master only: Solar shields on Hive Wizards. Master champions: Unstoppable"
+   },
+   {
+    "name": "Warpriest",
+    "kind": "boss",
+    "tip": "A DPS check from inside the aura bubble, so bring precision heavy like LFRs; Solar helps on shielded Wizards.",
+    "roles": [
+     "boss-sustained",
+     "precision",
+     "add-clear"
+    ],
+    "meta": [
+     "Taipan-4fr",
+     "Stormchaser",
+     "Whisper of the Worm",
+     "Izanagi's Burden",
+     "Divinity"
+    ],
+    "shields": [
+     {
+      "element": "Solar",
+      "on": "Hive Wizards",
+      "frequency": "some"
+     }
+    ],
+    "types": [
+     "Linear Fusion Rifle",
+     "Sniper Rifle",
+     "Shotgun"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "sustained"
+    },
+    "enemies": [
+     "Hive",
+     "Taken"
+    ],
+    "recommended": [
+     {
+      "weapon": "Linear fusion rifle (Taipan-4FR, Stormchaser)",
+      "why": "Top precision damage inside the aura",
+      "sources": [
+       "https://www.shacknews.com/article/131935/kings-fall-raid-guide-destiny-2?amphtml=1",
+       "https://Gamespot.com/articles/destiny-2-kings-fall-raid-guide-how-to-beat-every-encounter-and-open-every-secret-chest/1100-6506998/",
+       "https://progameguides.com/destiny/best-kings-fall-raid-loadout-armor-weapons-and-mods/"
+      ]
+     },
+     {
+      "weapon": "Sniper rifle (Whisper, Izanagi's)",
+      "why": "Precision boss damage",
+      "sources": [
+       "https://www.pcgamesn.com/destiny-2/best-kings-fall-weapons",
+       "https://Gamespot.com/articles/destiny-2-kings-fall-raid-guide-how-to-beat-every-encounter-and-open-every-secret-chest/1100-6506998/"
+      ]
+     },
+     {
+      "weapon": "Divinity",
+      "why": "Debuff",
+      "sources": [
+       "https://progameguides.com/destiny/best-kings-fall-raid-loadout-armor-weapons-and-mods/",
+       "https://www.shacknews.com/article/131935/kings-fall-raid-guide-destiny-2?amphtml=1"
+      ]
+     },
+     {
+      "weapon": "Shotgun",
+      "why": "Kill Knights fast",
+      "sources": [
+       "https://Gamespot.com/articles/destiny-2-kings-fall-raid-guide-how-to-beat-every-encounter-and-open-every-secret-chest/1100-6506998/"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.destinypedia.com/King%27s_Fall",
+     "https://Gamespot.com/articles/destiny-2-kings-fall-raid-guide-how-to-beat-every-encounter-and-open-every-secret-chest/1100-6506998/",
+     "https://www.shacknews.com/article/131935/kings-fall-raid-guide-destiny-2?amphtml=1",
+     "https://www.pcgamesn.com/destiny-2/best-kings-fall-weapons",
+     "https://progameguides.com/destiny/best-kings-fall-raid-loadout-armor-weapons-and-mods/",
+     "https://shacknews.com/article/132394/master-kings-fall-changes-destiny-2",
+     "https://sportskeeda.com/esports/destiny-2-master-king-s-fall-enemy-guide-all-enemy-changes-additions-normal-version"
+    ],
+    "confidence": "high",
+    "notes": "Normal Solar Wizards come from one source (Gamespot). Master Solar/Void shields are confirmed by two. Elements: Solar for Wizards (Gamespot, normal). Master adds Void on Taken Acolytes. Master champions: Barrier, Overload"
+   },
+   {
+    "name": "Golgoroth",
+    "kind": "boss",
+    "tip": "A stationary boss shot in the belly from the pools, so sustained precision (LFR, slug shotgun) wins; gaze holders want a precise long-range gun.",
+    "roles": [
+     "boss-sustained",
+     "close",
+     "support"
+    ],
+    "meta": [
+     "Izanagi's Burden",
+     "Arbalest",
+     "Tractor Cannon"
+    ],
+    "types": [
+     "Linear Fusion Rifle",
+     "Shotgun",
+     "Sniper Rifle"
+    ],
+    "range": "close",
+    "dps": {
+     "style": "sustained"
+    },
+    "enemies": [
+     "Hive",
+     "Taken"
+    ],
+    "recommended": [
+     {
+      "weapon": "Linear fusion rifle",
+      "why": "Precision damage on the belly",
+      "sources": [
+       "https://www.shacknews.com/article/131935/kings-fall-raid-guide-destiny-2?amphtml=1",
+       "https://Gamespot.com/articles/destiny-2-kings-fall-raid-guide-how-to-beat-every-encounter-and-open-every-secret-chest/1100-6506998/",
+       "https://progameguides.com/destiny/best-kings-fall-raid-loadout-armor-weapons-and-mods/"
+      ]
+     },
+     {
+      "weapon": "Slug shotgun",
+      "why": "Close-range burst from the pool",
+      "sources": [
+       "https://www.shacknews.com/article/131935/kings-fall-raid-guide-destiny-2?amphtml=1",
+       "https://Gamespot.com/articles/destiny-2-kings-fall-raid-guide-how-to-beat-every-encounter-and-open-every-secret-chest/1100-6506998/"
+      ]
+     },
+     {
+      "weapon": "Izanagi's Burden / sniper",
+      "why": "For gaze holders",
+      "sources": [
+       "https://Gamespot.com/articles/destiny-2-kings-fall-raid-guide-how-to-beat-every-encounter-and-open-every-secret-chest/1100-6506998/",
+       "https://www.shacknews.com/article/131935/kings-fall-raid-guide-destiny-2?amphtml=1"
+      ]
+     },
+     {
+      "weapon": "Arbalest / Tractor Cannon",
+      "why": "Grabs the gaze in one shot, or debuffs",
+      "sources": [
+       "https://www.pcgamesn.com/destiny-2/best-kings-fall-weapons",
+       "https://progameguides.com/destiny/best-kings-fall-raid-loadout-armor-weapons-and-mods/"
+      ]
+     }
+    ],
+    "sources": [
+     "https://Gamespot.com/articles/destiny-2-kings-fall-raid-guide-how-to-beat-every-encounter-and-open-every-secret-chest/1100-6506998/",
+     "https://www.shacknews.com/article/131935/kings-fall-raid-guide-destiny-2?amphtml=1",
+     "https://www.pcgamesn.com/destiny-2/best-kings-fall-weapons",
+     "https://progameguides.com/destiny/best-kings-fall-raid-loadout-armor-weapons-and-mods/",
+     "https://shacknews.com/article/132394/master-kings-fall-changes-destiny-2",
+     "https://sportskeeda.com/esports/destiny-2-master-king-s-fall-enemy-guide-all-enemy-changes-additions-normal-version"
+    ],
+    "confidence": "high",
+    "notes": "Rotations before the wipe: Gamespot says six rounds; Shacknews says three full rotations (six marks). Same mechanic, counted differently. Elements: Master only: Solar on Wizards and Void on Taken Wizards. Master champions: Barrier"
+   },
+   {
+    "name": "Daughters of Oryx",
+    "kind": "boss",
+    "tip": "Short burst windows from a ledge against a floating Daughter, so rockets (Gjallarhorn plus legendaries) are king; pack a ranged primary for snipers.",
+    "roles": [
+     "boss-burst",
+     "range",
+     "precision"
+    ],
+    "meta": [
+     "Gjallarhorn"
+    ],
+    "types": [
+     "Rocket Launcher",
+     "Sniper Rifle",
+     "Pulse Rifle",
+     "Scout Rifle"
+    ],
+    "range": "long",
+    "dps": {
+     "style": "burst",
+     "bossMoves": true
+    },
+    "enemies": [
+     "Hive",
+     "Taken"
+    ],
+    "recommended": [
+     {
+      "weapon": "Rocket launchers (Gjallarhorn + legendary)",
+      "why": "Most efficient, especially with Divinity",
+      "sources": [
+       "https://www.shacknews.com/article/131935/kings-fall-raid-guide-destiny-2?amphtml=1",
+       "https://Gamespot.com/articles/destiny-2-kings-fall-raid-guide-how-to-beat-every-encounter-and-open-every-secret-chest/1100-6506998/",
+       "https://www.pcgamesn.com/destiny-2/best-kings-fall-weapons"
+      ]
+     },
+     {
+      "weapon": "Burst sniper rifle",
+      "why": "Secondary damage and snipers",
+      "sources": [
+       "https://Gamespot.com/articles/destiny-2-kings-fall-raid-guide-how-to-beat-every-encounter-and-open-every-secret-chest/1100-6506998/"
+      ]
+     },
+     {
+      "weapon": "Pulse / Scout rifle",
+      "why": "Clear adds at range from fixed plates",
+      "sources": [
+       "https://progameguides.com/destiny/best-kings-fall-raid-loadout-armor-weapons-and-mods/",
+       "https://www.pcgamesn.com/destiny-2/best-kings-fall-weapons"
+      ]
+     }
+    ],
+    "sources": [
+     "https://Gamespot.com/articles/destiny-2-kings-fall-raid-guide-how-to-beat-every-encounter-and-open-every-secret-chest/1100-6506998/",
+     "https://www.shacknews.com/article/131935/kings-fall-raid-guide-destiny-2?amphtml=1",
+     "https://www.pcgamesn.com/destiny-2/best-kings-fall-weapons",
+     "https://progameguides.com/destiny/best-kings-fall-raid-loadout-armor-weapons-and-mods/",
+     "https://shacknews.com/article/132394/master-kings-fall-changes-destiny-2",
+     "https://sportskeeda.com/esports/destiny-2-master-king-s-fall-enemy-guide-all-enemy-changes-additions-normal-version"
+    ],
+    "confidence": "high",
+    "notes": "ProGameGuides prefers LFR/Divinity; most others favour rockets. Chose rockets first. Elements: Master only: Arc on Taken Phalanxes and Captains. Master champions: Barrier"
+   },
+   {
+    "name": "Oryx, the Taken King",
+    "kind": "boss",
+    "tip": "Short stagger windows on Oryx's chest from range, so bring LFRs or snipers plus Divinity; you also need fast Ogre and Knight kills.",
+    "roles": [
+     "boss-burst",
+     "precision",
+     "add-clear"
+    ],
+    "meta": [
+     "Divinity",
+     "Outbreak Perfected",
+     "Trinity Ghoul"
+    ],
+    "types": [
+     "Linear Fusion Rifle",
+     "Sniper Rifle",
+     "Combat Bow",
+     "Pulse Rifle"
+    ],
+    "range": "long",
+    "dps": {
+     "style": "burst",
+     "bossMoves": true
+    },
+    "enemies": [
+     "Taken",
+     "Hive"
+    ],
+    "recommended": [
+     {
+      "weapon": "Linear fusion rifle",
+      "why": "Long-range chest crit damage",
+      "sources": [
+       "https://Gamespot.com/articles/destiny-2-kings-fall-raid-guide-how-to-beat-every-encounter-and-open-every-secret-chest/1100-6506998/",
+       "https://www.shacknews.com/article/131935/kings-fall-raid-guide-destiny-2?amphtml=1",
+       "https://progameguides.com/destiny/best-kings-fall-raid-loadout-armor-weapons-and-mods/"
+      ]
+     },
+     {
+      "weapon": "Sniper rifle",
+      "why": "Damage, and kills Light-Eater Knights at range",
+      "sources": [
+       "https://Gamespot.com/articles/destiny-2-kings-fall-raid-guide-how-to-beat-every-encounter-and-open-every-secret-chest/1100-6506998/",
+       "https://www.shacknews.com/article/131935/kings-fall-raid-guide-destiny-2?amphtml=1"
+      ]
+     },
+     {
+      "weapon": "Divinity",
+      "why": "Debuff",
+      "sources": [
+       "https://www.shacknews.com/article/131935/kings-fall-raid-guide-destiny-2?amphtml=1",
+       "https://progameguides.com/destiny/best-kings-fall-raid-loadout-armor-weapons-and-mods/"
+      ]
+     },
+     {
+      "weapon": "Outbreak Perfected / Trinity Ghoul",
+      "why": "Ammo backup and heavy generation",
+      "sources": [
+       "https://www.shacknews.com/article/131935/kings-fall-raid-guide-destiny-2?amphtml=1",
+       "https://Gamespot.com/articles/destiny-2-kings-fall-raid-guide-how-to-beat-every-encounter-and-open-every-secret-chest/1100-6506998/"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.destinypedia.com/King%27s_Fall",
+     "https://Gamespot.com/articles/destiny-2-kings-fall-raid-guide-how-to-beat-every-encounter-and-open-every-secret-chest/1100-6506998/",
+     "https://www.shacknews.com/article/131935/kings-fall-raid-guide-destiny-2?amphtml=1",
+     "https://www.pcgamesn.com/destiny-2/best-kings-fall-weapons",
+     "https://progameguides.com/destiny/best-kings-fall-raid-loadout-armor-weapons-and-mods/",
+     "https://shacknews.com/article/132394/master-kings-fall-changes-destiny-2",
+     "https://sportskeeda.com/esports/destiny-2-master-king-s-fall-enemy-guide-all-enemy-changes-additions-normal-version"
+    ],
+    "confidence": "high",
+    "notes": "Sources date from 2022. No current-sandbox meta source was found. Elements: Master only: Arc on Light-Eater Knights and the Vessel; Void on Taken Acolytes. Master champions: Overload"
+   }
+  ],
+  "vow-of-the-disciple": [
+   {
+    "name": "Acquisition",
+    "kind": "mechanics",
+    "tip": "No boss: bring add clear plus an Unstoppable answer, and burst (rockets) to delete Glyphkeepers and Abominations quickly.",
+    "roles": [
+     "add-clear",
+     "boss-burst",
+     "range"
+    ],
+    "meta": [
+     "Gjallarhorn",
+     "Salvager's Salvo"
+    ],
+    "shields": [
+     {
+      "element": "Solar",
+      "on": "Scorn Glyphkeepers",
+      "frequency": "some"
+     }
+    ],
+    "champions": [
+     "Unstoppable"
+    ],
+    "types": [
+     "Rocket Launcher",
+     "Grenade Launcher"
+    ],
+    "range": "mixed",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Scorn",
+     "Taken",
+     "Hive"
+    ],
+    "recommended": [
+     {
+      "weapon": "Rocket launcher (Gjallarhorn)",
+      "why": "Quickly removes Glyphkeepers and Abominations",
+      "sources": [
+       "https://destinytracker.com/destiny-2/guides/vow-of-the-disciple-complete-raid-guide-by-suttledge-095cf690",
+       "https://www.blueberries.gg/?p=21492",
+       "https://shacknews.com/article/129163/vow-of-the-disciple-raid-guide-destiny-2"
+      ]
+     },
+     {
+      "weapon": "Grenade launcher (Salvager's Salvo / Blinding)",
+      "why": "Add clear and suppression",
+      "sources": [
+       "https://destinytracker.com/destiny-2/guides/vow-of-the-disciple-complete-raid-guide-by-suttledge-095cf690",
+       "https://shacknews.com/article/129163/vow-of-the-disciple-raid-guide-destiny-2"
+      ]
+     },
+     {
+      "weapon": "Unstoppable-capable primary (Pulse / Hand Cannon)",
+      "why": "For the Unstoppable Abominations",
+      "sources": [
+       "https://www.windowscentral.com/destiny-2-witch-queen-vow-disciple-raid",
+       "https://www.thegamer.com/destiny-2-vow-of-the-disciple-raid-encounters-chests-guide/"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.destinypedia.com/Vow_of_the_Disciple",
+     "https://shacknews.com/article/129163/vow-of-the-disciple-raid-guide-destiny-2",
+     "https://www.blueberries.gg/?p=21492",
+     "https://destinytracker.com/destiny-2/guides/vow-of-the-disciple-complete-raid-guide-by-suttledge-095cf690",
+     "https://www.windowscentral.com/destiny-2-witch-queen-vow-disciple-raid",
+     "https://www.thegamer.com/destiny-2-vow-of-the-disciple-raid-encounters-chests-guide/"
+    ],
+    "confidence": "medium",
+    "notes": "Destinypedia lists no normal champions or shields. Shacknews, Windows Central, TheGamer and DestinyTracker all report Unstoppable on normal, so I kept it. The Solar Glyphkeeper shield on normal comes from Windows Central only. Elements: Windows Central reports Solar shields on Scorn Glyphkeepers (normal). Master adds Solar on Taken Knights. Master champions: Unstoppable, Overload"
+   },
+   {
+    "name": "The Caretaker",
+    "kind": "boss",
+    "tip": "Short 10s plate windows on a walking boss, so you need high burst like LFRs or rockets; good ammo economy helps too.",
+    "roles": [
+     "boss-burst",
+     "precision",
+     "add-clear"
+    ],
+    "meta": [
+     "Threaded Needle",
+     "Outbreak Perfected",
+     "Gjallarhorn",
+     "Witherhoard"
+    ],
+    "types": [
+     "Linear Fusion Rifle",
+     "Pulse Rifle",
+     "Rocket Launcher",
+     "Sniper Rifle",
+     "Grenade Launcher"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "burst",
+     "bossMoves": true
+    },
+    "enemies": [
+     "Scorn",
+     "Taken"
+    ],
+    "recommended": [
+     {
+      "weapon": "Linear fusion rifle (Threaded Needle)",
+      "why": "Ideal per Shacknews; Triple Tap/Field Prep rolls",
+      "sources": [
+       "https://shacknews.com/article/129163/vow-of-the-disciple-raid-guide-destiny-2",
+       "https://www.thegamer.com/destiny-2-vow-of-the-disciple-raid-encounters-chests-guide/"
+      ]
+     },
+     {
+      "weapon": "Outbreak Perfected",
+      "why": "Ammo backup",
+      "sources": [
+       "https://shacknews.com/article/129163/vow-of-the-disciple-raid-guide-destiny-2",
+       "https://destinytracker.com/destiny-2/guides/vow-of-the-disciple-complete-raid-guide-by-suttledge-095cf690"
+      ]
+     },
+     {
+      "weapon": "Rocket launcher (Gjallarhorn / Izanagi swap)",
+      "why": "Burst on plates",
+      "sources": [
+       "https://www.thegamer.com/destiny-2-vow-of-the-disciple-raid-encounters-chests-guide/"
+      ]
+     },
+     {
+      "weapon": "Witherhoard",
+      "why": "Persistent damage and add control",
+      "sources": [
+       "https://www.windowscentral.com/destiny-2-witch-queen-vow-disciple-raid",
+       "https://www.thegamer.com/destiny-2-vow-of-the-disciple-raid-encounters-chests-guide/"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.destinypedia.com/Vow_of_the_Disciple",
+     "https://shacknews.com/article/129163/vow-of-the-disciple-raid-guide-destiny-2",
+     "https://www.blueberries.gg/?p=21492",
+     "https://destinytracker.com/destiny-2/guides/vow-of-the-disciple-complete-raid-guide-by-suttledge-095cf690",
+     "https://www.windowscentral.com/destiny-2-witch-queen-vow-disciple-raid",
+     "https://www.thegamer.com/destiny-2-vow-of-the-disciple-raid-encounters-chests-guide/"
+    ],
+    "confidence": "medium",
+    "notes": "Blueberries (challenge guide) says an Overload Hobgoblin spawns at each offering. Destinypedia says Overload Hobgoblins replace Taken Vandals only on master. Chose master only for Overload. Master champions: Overload"
+   },
+   {
+    "name": "Exhibition",
+    "kind": "mechanics",
+    "tip": "No boss: you need roaming add clear and an Overload answer for the Taken Hobgoblins, while racing the Terminal Resonance timer.",
+    "roles": [
+     "add-clear",
+     "range",
+     "boss-burst"
+    ],
+    "meta": [
+     "Trinity Ghoul",
+     "Riskrunner",
+     "Witherhoard"
+    ],
+    "champions": [
+     "Overload"
+    ],
+    "types": [
+     "Grenade Launcher",
+     "Rocket Launcher",
+     "Submachine Gun",
+     "Combat Bow"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Taken",
+     "Scorn",
+     "Hive"
+    ],
+    "recommended": [
+     {
+      "weapon": "Grenade launcher (Blinding)",
+      "why": "Suppresses Taken around tethers",
+      "sources": [
+       "https://shacknews.com/article/129163/vow-of-the-disciple-raid-guide-destiny-2"
+      ]
+     },
+     {
+      "weapon": "Overload-capable primary",
+      "why": "For the Overload Hobgoblins",
+      "sources": [
+       "https://www.thegamer.com/destiny-2-vow-of-the-disciple-raid-encounters-chests-guide/",
+       "https://www.windowscentral.com/destiny-2-witch-queen-vow-disciple-raid"
+      ]
+     },
+     {
+      "weapon": "Trinity Ghoul / Riskrunner / Witherhoard / Gjallarhorn",
+      "why": "Add clear; Gjallarhorn for long-range burst",
+      "sources": [
+       "https://www.thegamer.com/destiny-2-vow-of-the-disciple-raid-encounters-chests-guide/",
+       "https://shacknews.com/article/129163/vow-of-the-disciple-raid-guide-destiny-2"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.destinypedia.com/Vow_of_the_Disciple",
+     "https://shacknews.com/article/129163/vow-of-the-disciple-raid-guide-destiny-2",
+     "https://www.blueberries.gg/?p=21492",
+     "https://destinytracker.com/destiny-2/guides/vow-of-the-disciple-complete-raid-guide-by-suttledge-095cf690",
+     "https://www.windowscentral.com/destiny-2-witch-queen-vow-disciple-raid",
+     "https://www.thegamer.com/destiny-2-vow-of-the-disciple-raid-encounters-chests-guide/"
+    ],
+    "confidence": "medium",
+    "notes": "Blueberries says both Overload and Unstoppable. Shacknews, TheGamer, Windows Central and the Destinypedia enemy list say Overload. Chose Overload for normal. Elements: Master only: Void shields on non-champion Taken Hobgoblins and Solar on Taken Knights. Master champions: Overload, Unstoppable"
+   },
+   {
+    "name": "Rhulk, Disciple of the Witness",
+    "kind": "boss",
+    "tip": "Rhulk moves and kicks during damage, so bring LFRs or rockets with Divinity and keep supers for final stand.",
+    "roles": [
+     "boss-sustained",
+     "precision",
+     "support"
+    ],
+    "meta": [
+     "Sleeper Simulant",
+     "Divinity",
+     "Izanagi's Burden",
+     "Witherhoard"
+    ],
+    "types": [
+     "Linear Fusion Rifle",
+     "Rocket Launcher",
+     "Sniper Rifle",
+     "Grenade Launcher"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "sustained",
+     "bossMoves": true
+    },
+    "enemies": [
+     "Taken",
+     "Scorn"
+    ],
+    "recommended": [
+     {
+      "weapon": "Linear fusion rifle / Sleeper Simulant",
+      "why": "Damage while he moves",
+      "sources": [
+       "https://shacknews.com/article/129163/vow-of-the-disciple-raid-guide-destiny-2",
+       "https://www.thegamer.com/destiny-2-vow-of-the-disciple-raid-encounters-chests-guide/"
+      ]
+     },
+     {
+      "weapon": "Divinity",
+      "why": "Keeps a 30% debuff and crit bubble on a moving boss",
+      "sources": [
+       "https://shacknews.com/article/129163/vow-of-the-disciple-raid-guide-destiny-2",
+       "https://www.windowscentral.com/destiny-2-witch-queen-vow-disciple-raid",
+       "https://www.thegamer.com/destiny-2-vow-of-the-disciple-raid-encounters-chests-guide/"
+      ]
+     },
+     {
+      "weapon": "Izanagi's Burden + rocket launcher",
+      "why": "Burst swap combo",
+      "sources": [
+       "https://destinytracker.com/destiny-2/guides/vow-of-the-disciple-complete-raid-guide-by-suttledge-095cf690",
+       "https://www.thegamer.com/destiny-2-vow-of-the-disciple-raid-encounters-chests-guide/"
+      ]
+     },
+     {
+      "weapon": "Witherhoard",
+      "why": "Persistent damage",
+      "sources": [
+       "https://www.windowscentral.com/destiny-2-witch-queen-vow-disciple-raid",
+       "https://www.thegamer.com/destiny-2-vow-of-the-disciple-raid-encounters-chests-guide/"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.destinypedia.com/Vow_of_the_Disciple",
+     "https://shacknews.com/article/129163/vow-of-the-disciple-raid-guide-destiny-2",
+     "https://www.blueberries.gg/?p=21492",
+     "https://destinytracker.com/destiny-2/guides/vow-of-the-disciple-complete-raid-guide-by-suttledge-095cf690",
+     "https://www.windowscentral.com/destiny-2-witch-queen-vow-disciple-raid",
+     "https://www.thegamer.com/destiny-2-vow-of-the-disciple-raid-encounters-chests-guide/"
+    ],
+    "confidence": "medium",
+    "notes": "Blueberries says Glyphkeepers spawn as Unstoppable/Overload champions. Destinypedia says Glyphkeepers become champions only on master. Chose none on normal. Master champions: Unstoppable, Overload"
+   }
+  ],
+  "vault-of-glass": [
+   {
+    "name": "Confluxes",
+    "kind": "mechanics",
+    "tip": "Pure add-clear defence: bring strong area damage and an Overload option, and save heavy/supers for Wyverns before they sacrifice.",
+    "roles": [
+     "add-clear",
+     "boss-burst",
+     "close"
+    ],
+    "meta": [
+     "Witherhoard",
+     "Anarchy",
+     "Salvager's Salvo"
+    ],
+    "shields": [
+     {
+      "element": "Void",
+      "on": "Praetorian Minotaurs",
+      "frequency": "some"
+     }
+    ],
+    "champions": [
+     "Overload"
+    ],
+    "types": [
+     "Rocket Launcher",
+     "Grenade Launcher",
+     "Submachine Gun",
+     "Auto Rifle"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Vex"
+    ],
+    "recommended": [
+     {
+      "weapon": "Overload-capable weapon",
+      "why": "Overload Minotaurs rush confluxes",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/raid-guides/vault-of-glass-guide",
+       "https://www.pcgamer.com/destiny-2-vault-of-glass-raid-atheon-vex-mythoclast/"
+      ]
+     },
+     {
+      "weapon": "Rocket / grenade launcher (Witherhoard, Anarchy, Salvager's Salvo)",
+      "why": "Fast Wyvern kills and area control",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/raid-guides/vault-of-glass-guide",
+       "https://www.shacknews.com/article/124508/vault-of-glass-raid-guide-destiny-2"
+      ]
+     },
+     {
+      "weapon": "SMG / auto rifle",
+      "why": "Goblin and Fanatic add clear",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/raid-guides/vault-of-glass-guide"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/124508/vault-of-glass-raid-guide-destiny-2",
+     "https://www.dexerto.com/destiny/ultimate-destiny-2-vault-of-glass-raid-guide-1578682/",
+     "https://www.pcgamer.com/destiny-2-vault-of-glass-raid-atheon-vex-mythoclast/",
+     "https://boosting-ground.com/Destiny2/guides/raid-guides/vault-of-glass-guide"
+    ],
+    "confidence": "medium",
+    "notes": "Normal-mode Overload Minotaurs stated by Shacknews, PC Gamer and boosting-ground; Dexerto silent. Master champion set only partly sourced (Sportskeeda names Barrier). Elements: Void helps against void-shielded Praetorians; only shield type in the raid per PC Gamer. Master champions: Overload, Barrier"
+   },
+   {
+    "name": "Oracles",
+    "kind": "mechanics",
+    "tip": "Precision/explosive weapons that can kill Oracles instantly at range in the right order, plus something for Hobgoblin snipers.",
+    "roles": [
+     "range",
+     "precision",
+     "add-clear"
+    ],
+    "meta": [
+     "Xenophage"
+    ],
+    "types": [
+     "Machine Gun",
+     "Sniper Rifle",
+     "Scout Rifle",
+     "Shotgun",
+     "Fusion Rifle"
+    ],
+    "range": "long",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Vex"
+    ],
+    "recommended": [
+     {
+      "weapon": "Xenophage",
+      "why": "One-shots Oracles with explosive rounds",
+      "sources": [
+       "https://www.shacknews.com/article/124508/vault-of-glass-raid-guide-destiny-2",
+       "https://www.pcgamer.com/destiny-2-vault-of-glass-raid-atheon-vex-mythoclast/"
+      ]
+     },
+     {
+      "weapon": "Scout rifle / sniper rifle",
+      "why": "Long-range Oracle and Hobgoblin kills",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/raid-guides/vault-of-glass-guide"
+      ]
+     },
+     {
+      "weapon": "Shotgun / fusion rifle",
+      "why": "Minotaurs that close in",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/raid-guides/vault-of-glass-guide"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/124508/vault-of-glass-raid-guide-destiny-2",
+     "https://www.dexerto.com/destiny/ultimate-destiny-2-vault-of-glass-raid-guide-1578682/",
+     "https://boosting-ground.com/Destiny2/guides/raid-guides/vault-of-glass-guide",
+     "https://www.pcgamer.com/destiny-2-vault-of-glass-raid-atheon-vex-mythoclast/"
+    ],
+    "confidence": "high",
+    "notes": "Master Barrier Hobgoblins only from boosting-ground (single source). Master champions: Barrier"
+   },
+   {
+    "name": "The Templar",
+    "kind": "boss",
+    "tip": "Precision burst on the Templar's crit spot during a short window after the Relic breaks its shield; block its teleport to extend damage.",
+    "roles": [
+     "boss-burst",
+     "precision",
+     "add-clear"
+    ],
+    "meta": [
+     "Sleeper Simulant",
+     "One Thousand Voices",
+     "Gjallarhorn",
+     "Anarchy"
+    ],
+    "shields": [
+     {
+      "element": "Void",
+      "on": "Praetorian Minotaurs",
+      "frequency": "some"
+     }
+    ],
+    "types": [
+     "Linear Fusion Rifle",
+     "Fusion Rifle",
+     "Rocket Launcher",
+     "Grenade Launcher",
+     "Sniper Rifle",
+     "Shotgun"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "burst",
+     "bossMoves": true
+    },
+    "enemies": [
+     "Vex"
+    ],
+    "recommended": [
+     {
+      "weapon": "Linear fusion rifle (Sleeper, 1K Voices)",
+      "why": "High precision burst on stationary crit",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/raid-guides/vault-of-glass-guide"
+      ]
+     },
+     {
+      "weapon": "Rocket launcher (Gjallarhorn)",
+      "why": "Burst in short shield-down window",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/raid-guides/vault-of-glass-guide"
+      ]
+     },
+     {
+      "weapon": "Sniper rifle / slug shotgun + Anarchy",
+      "why": "Precision damage and passive DPS",
+      "sources": [
+       "https://www.shacknews.com/article/124508/vault-of-glass-raid-guide-destiny-2",
+       "https://boosting-ground.com/Destiny2/guides/raid-guides/vault-of-glass-guide"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/124508/vault-of-glass-raid-guide-destiny-2",
+     "https://www.dexerto.com/destiny/ultimate-destiny-2-vault-of-glass-raid-guide-1578682/",
+     "https://www.pcgamer.com/destiny-2-vault-of-glass-raid-atheon-vex-mythoclast/",
+     "https://boosting-ground.com/Destiny2/guides/raid-guides/vault-of-glass-guide"
+    ],
+    "confidence": "high",
+    "notes": "Crit described as 'nose' (Shacknews) vs 'eye' (boosting-ground); same spot. Master champions: Overload"
+   },
+   {
+    "name": "Gorgons' Labyrinth",
+    "kind": "traversal",
+    "tip": "Stealth maze with no combat; loadout barely matters beyond a heavy weapon in case a Gorgon must die.",
+    "roles": [
+     "add-clear",
+     "boss-burst",
+     "range"
+    ],
+    "types": [
+     "Rocket Launcher"
+    ],
+    "range": "mixed",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Vex"
+    ],
+    "recommended": [
+     {
+      "weapon": "Rocket launcher",
+      "why": "Emergency Gorgon kills / challenge",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/raid-guides/vault-of-glass-guide",
+       "https://www.dexerto.com/destiny/ultimate-destiny-2-vault-of-glass-raid-guide-1578682/"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/124508/vault-of-glass-raid-guide-destiny-2",
+     "https://www.dexerto.com/destiny/ultimate-destiny-2-vault-of-glass-raid-guide-1578682/",
+     "https://boosting-ground.com/Destiny2/guides/raid-guides/vault-of-glass-guide"
+    ],
+    "confidence": "high"
+   },
+   {
+    "name": "Gatekeepers",
+    "kind": "mechanics",
+    "tip": "Heavy add clear with burst for Gatekeeper Hydras and Wyverns plus an Overload answer; Relic handles Praetorian shields.",
+    "roles": [
+     "add-clear",
+     "boss-burst",
+     "close"
+    ],
+    "meta": [
+     "Xenophage"
+    ],
+    "shields": [
+     {
+      "element": "Void",
+      "on": "Praetorian Minotaurs",
+      "frequency": "some"
+     }
+    ],
+    "champions": [
+     "Overload"
+    ],
+    "types": [
+     "Rocket Launcher",
+     "Machine Gun",
+     "Submachine Gun",
+     "Auto Rifle"
+    ],
+    "range": "mixed",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Vex"
+    ],
+    "recommended": [
+     {
+      "weapon": "Overload-capable weapon",
+      "why": "Overload Minotaurs contest plates",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/raid-guides/vault-of-glass-guide",
+       "https://www.shacknews.com/article/124508/vault-of-glass-raid-guide-destiny-2"
+      ]
+     },
+     {
+      "weapon": "Xenophage / rocket launcher",
+      "why": "Burst Hydras and Wyverns",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/raid-guides/vault-of-glass-guide"
+      ]
+     },
+     {
+      "weapon": "Primary add-clear (SMG/auto)",
+      "why": "Goblin waves on plates",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/raid-guides/vault-of-glass-guide"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/124508/vault-of-glass-raid-guide-destiny-2",
+     "https://www.dexerto.com/destiny/ultimate-destiny-2-vault-of-glass-raid-guide-1578682/",
+     "https://boosting-ground.com/Destiny2/guides/raid-guides/vault-of-glass-guide"
+    ],
+    "confidence": "medium",
+    "notes": "Dexerto calls side Minotaurs 'immune' (Relic) while others note Overload Minotaurs; both appear. Master champions: Overload, Barrier"
+   },
+   {
+    "name": "Atheon, Time's Conflux",
+    "kind": "boss",
+    "tip": "Short 30-second Time's Vengeance burst from the central platform: highest burst heavy plus supers; Oracle-killing weapon for the away team.",
+    "roles": [
+     "boss-burst",
+     "precision",
+     "range"
+    ],
+    "meta": [
+     "Gjallarhorn",
+     "Anarchy",
+     "Xenophage"
+    ],
+    "types": [
+     "Rocket Launcher",
+     "Linear Fusion Rifle",
+     "Sniper Rifle",
+     "Grenade Launcher",
+     "Machine Gun"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "burst"
+    },
+    "enemies": [
+     "Vex"
+    ],
+    "recommended": [
+     {
+      "weapon": "Rocket launcher (Gjallarhorn / cluster)",
+      "why": "Max burst in 30s window",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/raid-guides/vault-of-glass-guide",
+       "https://www.shacknews.com/article/124508/vault-of-glass-raid-guide-destiny-2"
+      ]
+     },
+     {
+      "weapon": "Linear fusion / sniper rifle",
+      "why": "Precision damage on a still boss",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/raid-guides/vault-of-glass-guide",
+       "https://www.shacknews.com/article/124508/vault-of-glass-raid-guide-destiny-2"
+      ]
+     },
+     {
+      "weapon": "Anarchy / Xenophage",
+      "why": "Damage between supers; Oracles",
+      "sources": [
+       "https://www.pcgamer.com/destiny-2-vault-of-glass-raid-atheon-vex-mythoclast/",
+       "https://boosting-ground.com/Destiny2/guides/raid-guides/vault-of-glass-guide"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/124508/vault-of-glass-raid-guide-destiny-2",
+     "https://www.dexerto.com/destiny/ultimate-destiny-2-vault-of-glass-raid-guide-1578682/",
+     "https://www.pcgamer.com/destiny-2-vault-of-glass-raid-atheon-vex-mythoclast/",
+     "https://boosting-ground.com/Destiny2/guides/raid-guides/vault-of-glass-guide"
+    ],
+    "confidence": "high"
+   }
+  ],
+  "deep-stone-crypt": [
+   {
+    "name": "Crypt Security",
+    "kind": "mechanics",
+    "tip": "Mostly add clear and fuse damage; bring an Overload option for Captains and a heavy that hits fuses well.",
+    "roles": [
+     "boss-sustained",
+     "add-clear",
+     "close"
+    ],
+    "meta": [
+     "Xenophage",
+     "The Fourth Horseman"
+    ],
+    "shields": [
+     {
+      "element": "Void",
+      "on": "Captains",
+      "frequency": "some"
+     }
+    ],
+    "champions": [
+     "Overload"
+    ],
+    "types": [
+     "Machine Gun",
+     "Grenade Launcher",
+     "Submachine Gun"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "sustained"
+    },
+    "enemies": [
+     "Fallen"
+    ],
+    "recommended": [
+     {
+      "weapon": "Xenophage / machine gun (Fourth Horseman per guide)",
+      "why": "Fuse damage and ad clear",
+      "sources": [
+       "https://www.shacknews.com/article/121651/deep-stone-crypt-raid-guide-destiny-2"
+      ]
+     },
+     {
+      "weapon": "Overload-capable weapon",
+      "why": "Overload Captains",
+      "sources": [
+       "https://www.shacknews.com/article/121651/deep-stone-crypt-raid-guide-destiny-2",
+       "https://www.pcgamer.com/destiny-2-beyond-light-raid-release-date/"
+      ]
+     },
+     {
+      "weapon": "Void SMG / grenade launcher",
+      "why": "Void-shielded Captains",
+      "sources": [
+       "https://www.pcgamer.com/destiny-2-beyond-light-raid-release-date/"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/121651/deep-stone-crypt-raid-guide-destiny-2",
+     "https://www.pcgamer.com/destiny-2-beyond-light-raid-release-date/",
+     "https://primagames.com/gaming/destiny-2-taniks-guide-deep-stone-crypt-raid"
+    ],
+    "confidence": "medium",
+    "notes": "Master DSC champion set not found in sources; left empty. Elements: Only Void shields in the raid (PC Gamer, Prima)."
+   },
+   {
+    "name": "Atraks-1, Fallen Exo",
+    "kind": "boss",
+    "tip": "Coordinated close-range burst on clones that vanish shortly after being damaged; swords and high-burst weapons shine.",
+    "roles": [
+     "sword",
+     "precision",
+     "add-clear"
+    ],
+    "meta": [
+     "The Lament",
+     "Falling Guillotine",
+     "Riskrunner"
+    ],
+    "shields": [
+     {
+      "element": "Void",
+      "on": "Captains",
+      "frequency": "rare"
+     }
+    ],
+    "champions": [
+     "Overload"
+    ],
+    "types": [
+     "Sword",
+     "Sniper Rifle",
+     "Submachine Gun"
+    ],
+    "range": "close",
+    "dps": {
+     "style": "burst",
+     "bossMoves": true
+    },
+    "enemies": [
+     "Fallen"
+    ],
+    "recommended": [
+     {
+      "weapon": "Sword (The Lament, Falling Guillotine)",
+      "why": "Highest burst at clone range",
+      "sources": [
+       "https://www.shacknews.com/article/121651/deep-stone-crypt-raid-guide-destiny-2",
+       "https://primagames.com/gaming/destiny-2-atraks-1-deep-stone-crypt-guide",
+       "https://www.pcgamer.com/destiny-2-beyond-light-raid-release-date/"
+      ]
+     },
+     {
+      "weapon": "Sniper rifle",
+      "why": "Quick burst before clone teleports",
+      "sources": [
+       "https://primagames.com/gaming/destiny-2-atraks-1-deep-stone-crypt-guide"
+      ]
+     },
+     {
+      "weapon": "Arc SMG (Riskrunner)",
+      "why": "Servitor/Shank clear",
+      "sources": [
+       "https://primagames.com/gaming/destiny-2-atraks-1-deep-stone-crypt-guide",
+       "https://www.pcgamer.com/destiny-2-beyond-light-raid-release-date/"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/121651/deep-stone-crypt-raid-guide-destiny-2",
+     "https://primagames.com/gaming/destiny-2-atraks-1-deep-stone-crypt-guide",
+     "https://www.pcgamer.com/destiny-2-beyond-light-raid-release-date/"
+    ],
+    "confidence": "medium",
+    "notes": "Champions here not explicitly placed by sources; raid-wide Overload inferred."
+   },
+   {
+    "name": "Rapture",
+    "kind": "mechanics",
+    "tip": "No boss damage; strong add clear and survivability while carrying nuclear cores, with Overload cover.",
+    "roles": [
+     "add-clear",
+     "boss-burst",
+     "range"
+    ],
+    "meta": [
+     "Witherhoard"
+    ],
+    "shields": [
+     {
+      "element": "Void",
+      "on": "Captains",
+      "frequency": "some"
+     }
+    ],
+    "champions": [
+     "Overload"
+    ],
+    "types": [
+     "Grenade Launcher",
+     "Submachine Gun",
+     "Auto Rifle"
+    ],
+    "range": "mixed",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Fallen"
+    ],
+    "recommended": [
+     {
+      "weapon": "Overload-capable weapon",
+      "why": "Overload champions spawn",
+      "sources": [
+       "https://www.pcgamer.com/destiny-2-beyond-light-raid-release-date/"
+      ]
+     },
+     {
+      "weapon": "Grenade launcher / Witherhoard",
+      "why": "Area add clear",
+      "sources": [
+       "https://www.pcgamer.com/destiny-2-beyond-light-raid-release-date/"
+      ]
+     },
+     {
+      "weapon": "Void SMG/auto",
+      "why": "Void-shielded Captains",
+      "sources": [
+       "https://www.pcgamer.com/destiny-2-beyond-light-raid-release-date/"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/121651/deep-stone-crypt-raid-guide-destiny-2",
+     "https://www.pcgamer.com/destiny-2-beyond-light-raid-release-date/"
+    ],
+    "confidence": "medium",
+    "notes": "Name: Conflated: 'Rapture' (Taniks, Reborn / Prevent Europa's Destruction, nuke-core encounter) is the real 3rd encounter; 'The Descent' is the jumping puzzle after it. Suggest renaming to 'Rapture'. Shacknews orders Descent before Taniks Reborn; PC Gamer orders chamber then Europa defence. In-game, Rapture precedes the Descent jump. Elements: Void for shields."
+   },
+   {
+    "name": "Taniks, the Abomination",
+    "kind": "boss",
+    "tip": "Precision DPS from between the rings with periodic knockbacks, then a teleporting final stand that rewards snipers and burst.",
+    "roles": [
+     "precision",
+     "boss-sustained",
+     "add-clear"
+    ],
+    "meta": [
+     "Izanagi's Burden",
+     "Divinity"
+    ],
+    "shields": [
+     {
+      "element": "Void",
+      "on": "Captains",
+      "frequency": "some"
+     }
+    ],
+    "champions": [
+     "Overload"
+    ],
+    "types": [
+     "Sniper Rifle",
+     "Grenade Launcher",
+     "Shotgun"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "sustained",
+     "bossMoves": true
+    },
+    "enemies": [
+     "Fallen"
+    ],
+    "recommended": [
+     {
+      "weapon": "Sniper rifle (Izanagi's Burden etc.)",
+      "why": "Precision and final-stand teleports",
+      "sources": [
+       "https://www.shacknews.com/article/121651/deep-stone-crypt-raid-guide-destiny-2",
+       "https://primagames.com/gaming/destiny-2-taniks-guide-deep-stone-crypt-raid"
+      ]
+     },
+     {
+      "weapon": "Divinity",
+      "why": "Creates crit spot / debuff",
+      "sources": [
+       "https://www.shacknews.com/article/121651/deep-stone-crypt-raid-guide-destiny-2",
+       "https://primagames.com/gaming/destiny-2-taniks-guide-deep-stone-crypt-raid"
+      ]
+     },
+     {
+      "weapon": "Slug shotgun / spike grenade launcher",
+      "why": "Burst damage options listed",
+      "sources": [
+       "https://www.shacknews.com/article/121651/deep-stone-crypt-raid-guide-destiny-2",
+       "https://primagames.com/gaming/destiny-2-taniks-guide-deep-stone-crypt-raid"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/121651/deep-stone-crypt-raid-guide-destiny-2",
+     "https://primagames.com/gaming/destiny-2-taniks-guide-deep-stone-crypt-raid",
+     "https://www.pcgamer.com/destiny-2-beyond-light-raid-release-date/"
+    ],
+    "confidence": "medium",
+    "notes": "Sword viability unclear: Prima says sword for adds only. Elements: Void-shielded Captains in add phase."
+   }
+  ],
+  "garden-of-salvation": [
+   {
+    "name": "Evade the Consecrated Mind",
+    "kind": "traversal",
+    "tip": "Moving add clear with Overload for Minotaurs and long-range answers for Cyclopes and Hydras.",
+    "roles": [
+     "add-clear",
+     "range",
+     "precision"
+    ],
+    "shields": [
+     {
+      "element": "Void",
+      "on": "Minotaurs",
+      "frequency": "some"
+     }
+    ],
+    "champions": [
+     "Overload"
+    ],
+    "types": [
+     "Sniper Rifle",
+     "Grenade Launcher",
+     "Submachine Gun"
+    ],
+    "range": "mixed",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Vex"
+    ],
+    "recommended": [
+     {
+      "weapon": "Overload-capable weapon",
+      "why": "Overload Minotaurs",
+      "sources": [
+       "https://shacknews.com/article/114369/garden-of-salvation-raid-guide-destiny-2",
+       "https://www.powerpyx.com/destiny-2-garden-of-salvation-raid-walkthrough/",
+       "https://gamespot.com/articles/destiny-2-garden-of-salvation-raid-guide-how-to-be/1100-6470481/"
+      ]
+     },
+     {
+      "weapon": "Sniper rifle",
+      "why": "One-shot Cyclopes from range",
+      "sources": [
+       "https://gamespot.com/articles/destiny-2-garden-of-salvation-raid-guide-how-to-be/1100-6470481/"
+      ]
+     },
+     {
+      "weapon": "Grenade launcher / SMG",
+      "why": "Hydras, Minotaurs, general clear",
+      "sources": [
+       "https://www.powerpyx.com/destiny-2-garden-of-salvation-raid-walkthrough/"
+      ]
+     }
+    ],
+    "sources": [
+     "https://shacknews.com/article/114369/garden-of-salvation-raid-guide-destiny-2",
+     "https://www.powerpyx.com/destiny-2-garden-of-salvation-raid-walkthrough/",
+     "https://gamespot.com/articles/destiny-2-garden-of-salvation-raid-guide-how-to-be/1100-6470481/",
+     "https://destinypedia.com/Garden_of_Salvation",
+     "https://grindout.com/destiny-2/guides/garden-of-salvation"
+    ],
+    "confidence": "high",
+    "notes": "Grindout also mentions Barrier here; Shacknews/PowerPyx/GameSpot only Overload. Chose Overload. Elements: Void secondary helps on void-shielded Minotaurs."
+   },
+   {
+    "name": "Summon the Consecrated Mind",
+    "kind": "mechanics",
+    "tip": "Relay defence: Anti-Barrier for Hobgoblins, area add clear and burst for Angelic Hydras.",
+    "roles": [
+     "add-clear",
+     "boss-burst",
+     "range"
+    ],
+    "meta": [
+     "Recluse"
+    ],
+    "champions": [
+     "Barrier"
+    ],
+    "types": [
+     "Rocket Launcher",
+     "Submachine Gun"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Vex"
+    ],
+    "recommended": [
+     {
+      "weapon": "Anti-Barrier capable weapon (auto/SMG/scout)",
+      "why": "Barrier Hobgoblins at relays",
+      "sources": [
+       "https://www.powerpyx.com/destiny-2-garden-of-salvation-raid-walkthrough/",
+       "https://shacknews.com/article/114369/garden-of-salvation-raid-guide-destiny-2"
+      ]
+     },
+     {
+      "weapon": "Grenade / rocket launcher",
+      "why": "Hydras and Hobgoblins",
+      "sources": [
+       "https://www.powerpyx.com/destiny-2-garden-of-salvation-raid-walkthrough/"
+      ]
+     },
+     {
+      "weapon": "SMG (Recluse)",
+      "why": "Small-enemy clear",
+      "sources": [
+       "https://gamespot.com/articles/destiny-2-garden-of-salvation-raid-guide-how-to-be/1100-6470481/"
+      ]
+     }
+    ],
+    "sources": [
+     "https://shacknews.com/article/114369/garden-of-salvation-raid-guide-destiny-2",
+     "https://www.powerpyx.com/destiny-2-garden-of-salvation-raid-walkthrough/",
+     "https://gamespot.com/articles/destiny-2-garden-of-salvation-raid-guide-how-to-be/1100-6470481/",
+     "https://destinypedia.com/Garden_of_Salvation"
+    ],
+    "confidence": "high"
+   },
+   {
+    "name": "Consecrated Mind, Sol Inherent",
+    "kind": "boss",
+    "tip": "Precision sniping of eyes and the retreating weak point; snipers and precision burst over rockets.",
+    "roles": [
+     "precision",
+     "boss-sustained",
+     "support"
+    ],
+    "meta": [
+     "Izanagi's Burden",
+     "Whisper of the Worm",
+     "Divinity"
+    ],
+    "shields": [
+     {
+      "element": "Void",
+      "on": "Minotaurs",
+      "frequency": "some"
+     }
+    ],
+    "types": [
+     "Sniper Rifle",
+     "Grenade Launcher"
+    ],
+    "range": "long",
+    "dps": {
+     "style": "sustained",
+     "bossMoves": true
+    },
+    "enemies": [
+     "Vex"
+    ],
+    "recommended": [
+     {
+      "weapon": "Sniper rifle (Izanagi's Burden, Whisper)",
+      "why": "Precision on moving weak point",
+      "sources": [
+       "https://shacknews.com/article/114369/garden-of-salvation-raid-guide-destiny-2",
+       "https://www.powerpyx.com/destiny-2-garden-of-salvation-raid-walkthrough/",
+       "https://gamespot.com/articles/destiny-2-garden-of-salvation-raid-guide-how-to-be/1100-6470481/"
+      ]
+     },
+     {
+      "weapon": "Spike grenade launcher",
+      "why": "Burst option",
+      "sources": [
+       "https://gamespot.com/articles/destiny-2-garden-of-salvation-raid-guide-how-to-be/1100-6470481/"
+      ]
+     },
+     {
+      "weapon": "Void special/primary",
+      "why": "Minotaurs (mote carriers)",
+      "sources": [
+       "https://www.powerpyx.com/destiny-2-garden-of-salvation-raid-walkthrough/"
+      ]
+     }
+    ],
+    "sources": [
+     "https://shacknews.com/article/114369/garden-of-salvation-raid-guide-destiny-2",
+     "https://www.powerpyx.com/destiny-2-garden-of-salvation-raid-walkthrough/",
+     "https://gamespot.com/articles/destiny-2-garden-of-salvation-raid-guide-how-to-be/1100-6470481/",
+     "https://destinypedia.com/Garden_of_Salvation"
+    ],
+    "confidence": "medium",
+    "notes": "No source names champions here; left empty."
+   },
+   {
+    "name": "Sanctified Mind, Sol Inherent",
+    "kind": "boss",
+    "tip": "Precision damage on a hovering boss while staying alive on breaking platforms; snipers and healing support.",
+    "roles": [
+     "precision",
+     "boss-sustained",
+     "support"
+    ],
+    "meta": [
+     "Whisper of the Worm",
+     "Izanagi's Burden",
+     "Divinity"
+    ],
+    "types": [
+     "Sniper Rifle",
+     "Grenade Launcher",
+     "Machine Gun"
+    ],
+    "range": "long",
+    "dps": {
+     "style": "sustained",
+     "bossMoves": true
+    },
+    "enemies": [
+     "Vex"
+    ],
+    "recommended": [
+     {
+      "weapon": "Sniper rifle (Whisper / Izanagi's)",
+      "why": "Crit on hovering core",
+      "sources": [
+       "https://shacknews.com/article/114369/garden-of-salvation-raid-guide-destiny-2",
+       "https://www.powerpyx.com/destiny-2-garden-of-salvation-raid-walkthrough/",
+       "https://gamespot.com/articles/destiny-2-garden-of-salvation-raid-guide-how-to-be/1100-6470481/"
+      ]
+     },
+     {
+      "weapon": "Spike grenade launcher",
+      "why": "Burst",
+      "sources": [
+       "https://shacknews.com/article/114369/garden-of-salvation-raid-guide-destiny-2"
+      ]
+     },
+     {
+      "weapon": "Machine gun",
+      "why": "Sustained DPS option",
+      "sources": [
+       "https://www.powerpyx.com/destiny-2-garden-of-salvation-raid-walkthrough/"
+      ]
+     }
+    ],
+    "sources": [
+     "https://shacknews.com/article/114369/garden-of-salvation-raid-guide-destiny-2",
+     "https://www.powerpyx.com/destiny-2-garden-of-salvation-raid-walkthrough/",
+     "https://gamespot.com/articles/destiny-2-garden-of-salvation-raid-guide-how-to-be/1100-6470481/",
+     "https://grindout.com/destiny-2/guides/garden-of-salvation"
+    ],
+    "confidence": "medium",
+    "notes": "Phase count: Grindout says one phase in current sandbox; GameSpot 2-3 phases at launch."
+   }
+  ],
+  "last-wish": [
+   {
+    "name": "Kalli, the Corrupted",
+    "kind": "boss",
+    "tip": "Burst DPS in the center between wipe mechanics; boss teleports between plates during the plate phase.",
+    "roles": [
+     "boss-burst",
+     "add-clear",
+     "precision"
+    ],
+    "meta": [
+     "Sleeper Simulant"
+    ],
+    "types": [
+     "Linear Fusion Rifle",
+     "Rocket Launcher"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "burst",
+     "bossMoves": true
+    },
+    "enemies": [
+     "Taken"
+    ],
+    "recommended": [
+     {
+      "weapon": "Linear fusion (Sleeper)",
+      "why": "Burst damage",
+      "sources": [
+       "https://www.shacknews.com/article/107313/destiny-2-last-wish-raid-guide"
+      ]
+     },
+     {
+      "weapon": "Rocket launcher",
+      "why": "Burst in short windows",
+      "sources": [
+       "https://grindout.com/destiny-2/guides/last-wish"
+      ]
+     },
+     {
+      "weapon": "Primary add clear",
+      "why": "Knights/Psions",
+      "sources": [
+       "https://destiny.fandom.com/wiki/Last_Wish"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/107313/destiny-2-last-wish-raid-guide",
+     "https://destiny.fandom.com/wiki/Last_Wish",
+     "https://grindout.com/destiny-2/guides/last-wish",
+     "https://www.blueberries.gg/?p=36850"
+    ],
+    "confidence": "medium",
+    "notes": "Shacknews: 9 plates; Grindout: 6 outer plates."
+   },
+   {
+    "name": "Shuro Chi, the Corrupted",
+    "kind": "boss",
+    "tip": "Short burst windows after shield break; strong add clear and a Well for the final floor.",
+    "roles": [
+     "boss-burst",
+     "add-clear",
+     "close"
+    ],
+    "meta": [
+     "Sleeper Simulant"
+    ],
+    "types": [
+     "Linear Fusion Rifle",
+     "Shotgun",
+     "Submachine Gun",
+     "Auto Rifle"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "burst"
+    },
+    "enemies": [
+     "Taken"
+    ],
+    "recommended": [
+     {
+      "weapon": "Linear fusion (Sleeper)",
+      "why": "Burst",
+      "sources": [
+       "https://www.shacknews.com/article/107313/destiny-2-last-wish-raid-guide",
+       "https://destiny.fandom.com/wiki/Last_Wish"
+      ]
+     },
+     {
+      "weapon": "Shotgun",
+      "why": "Close add clear/burst",
+      "sources": [
+       "https://destiny.fandom.com/wiki/Last_Wish"
+      ]
+     },
+     {
+      "weapon": "Auto rifle/SMG",
+      "why": "Add clear",
+      "sources": [
+       "https://grindout.com/destiny-2/guides/last-wish"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/107313/destiny-2-last-wish-raid-guide",
+     "https://destiny.fandom.com/wiki/Last_Wish",
+     "https://grindout.com/destiny-2/guides/last-wish"
+    ],
+    "confidence": "medium",
+    "notes": "Fandom mentions Fallen Captains; Shacknews says Taken Captain. Chose Taken only."
+   },
+   {
+    "name": "Morgeth, the Spirekeeper",
+    "kind": "boss",
+    "tip": "Sustained precision on Morgeth's back crit from a safe position; sniper and boss DPS weapon.",
+    "roles": [
+     "boss-sustained",
+     "precision",
+     "close"
+    ],
+    "meta": [
+     "Lord of Wolves"
+    ],
+    "types": [
+     "Sniper Rifle",
+     "Linear Fusion Rifle",
+     "Shotgun"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "sustained"
+    },
+    "enemies": [
+     "Taken"
+    ],
+    "recommended": [
+     {
+      "weapon": "Sniper rifle",
+      "why": "Back crit",
+      "sources": [
+       "https://destiny.fandom.com/wiki/Last_Wish",
+       "https://www.shacknews.com/article/107313/destiny-2-last-wish-raid-guide"
+      ]
+     },
+     {
+      "weapon": "Linear fusion",
+      "why": "Burst on crit",
+      "sources": [
+       "https://www.shacknews.com/article/107313/destiny-2-last-wish-raid-guide"
+      ]
+     },
+     {
+      "weapon": "Shotgun (Lord of Wolves)",
+      "why": "Close-range burst",
+      "sources": [
+       "https://grindout.com/destiny-2/guides/last-wish"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/107313/destiny-2-last-wish-raid-guide",
+     "https://destiny.fandom.com/wiki/Last_Wish",
+     "https://grindout.com/destiny-2/guides/last-wish"
+    ],
+    "confidence": "medium"
+   },
+   {
+    "name": "The Vault",
+    "kind": "mechanics",
+    "tip": "No boss: burst Might of Riven Knights before they reach locks; shotguns, fusions and heavy freely.",
+    "roles": [
+     "close",
+     "add-clear",
+     "support"
+    ],
+    "meta": [
+     "Tractor Cannon"
+    ],
+    "types": [
+     "Shotgun",
+     "Fusion Rifle"
+    ],
+    "range": "close",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Taken"
+    ],
+    "recommended": [
+     {
+      "weapon": "Shotgun",
+      "why": "Knight burst",
+      "sources": [
+       "https://www.shacknews.com/article/107313/destiny-2-last-wish-raid-guide",
+       "https://www.blueberries.gg/?p=36850"
+      ]
+     },
+     {
+      "weapon": "Fusion rifle",
+      "why": "Knight burst",
+      "sources": [
+       "https://www.blueberries.gg/?p=36850"
+      ]
+     },
+     {
+      "weapon": "Tractor Cannon",
+      "why": "Stuns Knights",
+      "sources": [
+       "https://www.shacknews.com/article/107313/destiny-2-last-wish-raid-guide"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/107313/destiny-2-last-wish-raid-guide",
+     "https://www.blueberries.gg/?p=36850",
+     "https://grindout.com/destiny-2/guides/last-wish"
+    ],
+    "confidence": "high"
+   },
+   {
+    "name": "Riven of a Thousand Voices",
+    "kind": "boss",
+    "tip": "Burst rockets/precision into Riven's mouth during short windows; cluster-bomb rockets are classic.",
+    "roles": [
+     "boss-burst",
+     "precision",
+     "add-clear"
+    ],
+    "meta": [
+     "Whisper of the Worm",
+     "Divinity"
+    ],
+    "types": [
+     "Rocket Launcher",
+     "Sniper Rifle"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "burst",
+     "bossMoves": true
+    },
+    "enemies": [
+     "Taken"
+    ],
+    "recommended": [
+     {
+      "weapon": "Rocket launcher (cluster bombs)",
+      "why": "Classic Riven cheese burst",
+      "sources": [
+       "https://primagames.com/news/destiny-2-forsaken-riven-cheese",
+       "https://mein-mmo.de/en/destiny-2-raid-endboss-cluster,274699/"
+      ]
+     },
+     {
+      "weapon": "Sniper rifle",
+      "why": "Precision on mouth/eyes",
+      "sources": [
+       "https://www.shacknews.com/article/107313/destiny-2-last-wish-raid-guide"
+      ]
+     },
+     {
+      "weapon": "Primary add clear",
+      "why": "Ogres/Goblins",
+      "sources": [
+       "https://grindout.com/destiny-2/guides/last-wish"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/107313/destiny-2-last-wish-raid-guide",
+     "https://primagames.com/news/destiny-2-forsaken-riven-cheese",
+     "https://mein-mmo.de/en/destiny-2-raid-endboss-cluster,274699/",
+     "https://grindout.com/destiny-2/guides/last-wish",
+     "https://destiny.fandom.com/wiki/Last_Wish"
+    ],
+    "confidence": "medium"
+   },
+   {
+    "name": "Queenswalk",
+    "kind": "traversal",
+    "tip": "No boss: keep the carrier alive; fast add clear in the bubble.",
+    "roles": [
+     "add-clear",
+     "close",
+     "range"
+    ],
+    "range": "close",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Taken"
+    ],
+    "recommended": [
+     {
+      "weapon": "Primary add clear",
+      "why": "Taken waves",
+      "sources": [
+       "https://destiny.fandom.com/wiki/Last_Wish",
+       "https://grindout.com/destiny-2/guides/last-wish"
+      ]
+     }
+    ],
+    "sources": [
+     "https://destiny.fandom.com/wiki/Last_Wish",
+     "https://grindout.com/destiny-2/guides/last-wish",
+     "https://www.shacknews.com/article/107313/destiny-2-last-wish-raid-guide"
+    ],
+    "confidence": "medium"
+   }
+  ],
+  "equilibrium": [
+   {
+    "name": "The Harvester",
+    "kind": "mechanics",
+    "tip": "Add-clear fight with no boss DPS: bring strong add clear for Cabal waves and some burst for Behemoth walkers; stay off drop-pod landing spots.",
+    "roles": [
+     "add-clear",
+     "boss-sustained",
+     "range"
+    ],
+    "meta": [
+     "Finality's Auger"
+    ],
+    "types": [
+     "Sword",
+     "Machine Gun"
+    ],
+    "range": "mixed",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Cabal",
+     "Taken"
+    ],
+    "recommended": [
+     {
+      "weapon": "Wolfsbane (axe) / Praxic Blade",
+      "why": "Used in solo-flawless builds for the whole dungeon",
+      "sources": [
+       "https://gamesfuze.com/guides/how-to-solo-flawless-the-equilibrium-dungeon-loadout-traversal-guide/"
+      ]
+     },
+     {
+      "weapon": "Machine gun / Finality's Auger",
+      "why": "General dungeon loadout pick for add clear and heavy targets",
+      "sources": [
+       "https://grindout.com/destiny-2/guides/equilibrium-guide"
+      ]
+     }
+    ],
+    "sources": [
+     "https://destinypedia.com/Equilibrium",
+     "https://grindout.com/destiny-2/guides/equilibrium-guide",
+     "https://progametalk.com/destiny-2/equilibrium-dungeon-walkthrough/",
+     "https://www.shacknews.com/article/147168/how-to-complete-the-equilibrium-dungeon-in-destiny-2?amphtml=1",
+     "https://noobfeed.com/articles/destiny-2-renegades-beat-equilibrium-dungeon",
+     "https://thegamepost.com/destiny-2-equilibrium-dungeon-guide/",
+     "https://kyberscorner.com/destiny-2-equilibrium-dungeon/"
+    ],
+    "confidence": "medium",
+    "notes": "Name: Mostly ok. Guides (Grindout, ProGameTalk, Kyber's Corner, GameRant) call it 'Harvester'; the in-game objective per Destinypedia is 'Defeat the Barant Imperium Forces' (the Harvester is the ship you board after it). Suggest 'The Harvester (Barant Imperium Forces)'. Name: guides say 'Harvester', in-game objective 'Defeat the Barant Imperium Forces'. Shacknews treats it as a pure add clear; NoobFeed describes generator-shield walls. No source lists champions."
+   },
+   {
+    "name": "Harrow, Dredgen Apprentice",
+    "kind": "boss",
+    "tip": "Melee-range gladiator boss with short ~30 s windows after shield breaks: bring high-burst heavy and a close-range option; he charges a lethal AoE explosion so keep cover nearby.",
+    "roles": [
+     "boss-burst",
+     "close",
+     "add-clear"
+    ],
+    "meta": [
+     "Praxic Blade",
+     "Legend of Acrius",
+     "Parasite"
+    ],
+    "types": [
+     "Grenade Launcher",
+     "Sword",
+     "Shotgun"
+    ],
+    "range": "close",
+    "dps": {
+     "style": "burst",
+     "bossMoves": true
+    },
+    "enemies": [
+     "Cabal",
+     "Taken"
+    ],
+    "recommended": [
+     {
+      "weapon": "Praxic Blade, Legend of Acrius, Parasite",
+      "why": "High burst damage for short windows (Shacknews, Grindout)",
+      "sources": [
+       "https://www.shacknews.com/article/147168/how-to-complete-the-equilibrium-dungeon-in-destiny-2?amphtml=1",
+       "https://grindout.com/destiny-2/guides/equilibrium-guide"
+      ]
+     },
+     {
+      "weapon": "Wolfsbane (axe)",
+      "why": "Close-range boss; NoobFeed recommends close-range weapons",
+      "sources": [
+       "https://noobfeed.com/articles/destiny-2-renegades-beat-equilibrium-dungeon"
+      ]
+     }
+    ],
+    "sources": [
+     "https://destinypedia.com/Equilibrium",
+     "https://grindout.com/destiny-2/guides/equilibrium-guide",
+     "https://progametalk.com/destiny-2/equilibrium-dungeon-walkthrough/",
+     "https://www.shacknews.com/article/147168/how-to-complete-the-equilibrium-dungeon-in-destiny-2?amphtml=1",
+     "https://noobfeed.com/articles/destiny-2-renegades-beat-equilibrium-dungeon",
+     "https://thegamepost.com/destiny-2-equilibrium-dungeon-guide/"
+    ],
+    "confidence": "medium",
+    "notes": "Sources differ on shield removal detail (pits vs Arc coils vs generator) but agree on burst/close-range. Champions not mentioned anywhere."
+   },
+   {
+    "name": "Dredgen Sere",
+    "kind": "boss",
+    "tip": "Final boss with burst windows after orb mechanics: bring high-burst heavy (Parasite/rockets) plus a precision weapon to shoot his hands and stop 'Face Your Death'; stay back from his opening slam.",
+    "roles": [
+     "boss-burst",
+     "precision",
+     "add-clear"
+    ],
+    "meta": [
+     "Parasite",
+     "Gjallarhorn",
+     "Finality's Auger",
+     "Mint Retrograde"
+    ],
+    "types": [
+     "Grenade Launcher",
+     "Rocket Launcher",
+     "Machine Gun",
+     "Sniper Rifle"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "burst"
+    },
+    "enemies": [
+     "Cabal",
+     "Taken"
+    ],
+    "recommended": [
+     {
+      "weapon": "Parasite",
+      "why": "Burst damage (Grindout, Shacknews)",
+      "sources": [
+       "https://grindout.com/destiny-2/guides/equilibrium-guide",
+       "https://www.shacknews.com/article/147168/how-to-complete-the-equilibrium-dungeon-in-destiny-2?amphtml=1"
+      ]
+     },
+     {
+      "weapon": "Gjallarhorn / rocket launchers",
+      "why": "High burst damage",
+      "sources": [
+       "https://www.shacknews.com/article/147168/how-to-complete-the-equilibrium-dungeon-in-destiny-2?amphtml=1"
+      ]
+     },
+     {
+      "weapon": "Finality's Auger, Mint Retrograde, sniper rifles",
+      "why": "Damage plus precision from Well",
+      "sources": [
+       "https://noobfeed.com/articles/destiny-2-renegades-beat-equilibrium-dungeon"
+      ]
+     }
+    ],
+    "sources": [
+     "https://destinypedia.com/Equilibrium",
+     "https://grindout.com/destiny-2/guides/equilibrium-guide",
+     "https://progametalk.com/destiny-2/equilibrium-dungeon-walkthrough/",
+     "https://www.shacknews.com/article/147168/how-to-complete-the-equilibrium-dungeon-in-destiny-2?amphtml=1",
+     "https://noobfeed.com/articles/destiny-2-renegades-beat-equilibrium-dungeon",
+     "https://gamesfuze.com/guides/how-to-solo-flawless-the-equilibrium-dungeon-loadout-traversal-guide/"
+    ],
+    "confidence": "medium",
+    "notes": "Timesaver.gg names the final boss 'Dredgen Bael' (error; ignored). Phase length unknown. Elements: Well of Radiance recommended by multiple guides (Solar support)."
+   }
+  ],
+  "sundered-doctrine": [
+   {
+    "name": "Solve the Riddle",
+    "kind": "mechanics",
+    "tip": "Puzzle encounter with Subjugators and Grims and no boss DPS: bring solid add clear and something to burst down Subjugators and a possible Tormentor.",
+    "roles": [
+     "add-clear",
+     "boss-burst",
+     "range"
+    ],
+    "meta": [
+     "Queenbreaker",
+     "Grand Overture"
+    ],
+    "types": [
+     "Linear Fusion Rifle",
+     "Grenade Launcher"
+    ],
+    "range": "mixed",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Dread",
+     "Hive"
+    ],
+    "recommended": [
+     {
+      "weapon": "Queensbreaker",
+      "why": "Blinds whole rooms",
+      "sources": [
+       "https://thegamepost.com/destiny-2-sundered-doctrine-dungeon-guide/"
+      ]
+     },
+     {
+      "weapon": "Grand Overture + Strand abilities",
+      "why": "Control Subjugators",
+      "sources": [
+       "https://grindout.com/destiny-2/guides/sundered-doctrine"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.destinypedia.com/Sundered_Doctrine",
+     "https://www.light.gg/db/legend/2105055614/sundered-doctrine/",
+     "https://thegamepost.com/destiny-2-sundered-doctrine-dungeon-guide/",
+     "https://grindout.com/destiny-2/guides/sundered-doctrine",
+     "https://dving.net/guides/destiny-2-guides/sundered-doctrine",
+     "https://deltiasgaming.com/?p=138004"
+    ],
+    "confidence": "medium",
+    "notes": "None significant; champions not documented."
+   },
+   {
+    "name": "Zoetic Lockset",
+    "kind": "boss",
+    "tip": "Long, high-health DPS on four stationary Shriekers: bring sustained precision heavy (LFRs, Sleeper) or Grand Overture and ammo support.",
+    "roles": [
+     "boss-sustained",
+     "precision",
+     "add-clear"
+    ],
+    "meta": [
+     "Sleeper Simulant",
+     "Grand Overture",
+     "Queenbreaker"
+    ],
+    "types": [
+     "Linear Fusion Rifle",
+     "Grenade Launcher"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "sustained"
+    },
+    "enemies": [
+     "Hive",
+     "Dread"
+    ],
+    "recommended": [
+     {
+      "weapon": "Sleeper Simulant / linear fusion rifles",
+      "why": "Max damage on stationary targets",
+      "sources": [
+       "https://thegamepost.com/destiny-2-sundered-doctrine-dungeon-guide/",
+       "https://grindout.com/destiny-2/guides/sundered-doctrine"
+      ]
+     },
+     {
+      "weapon": "Grand Overture",
+      "why": "Strong sustained DPS",
+      "sources": [
+       "https://thegamepost.com/destiny-2-sundered-doctrine-dungeon-guide/",
+       "https://grindout.com/destiny-2/guides/sundered-doctrine"
+      ]
+     },
+     {
+      "weapon": "Queensbreaker (catalyst)",
+      "why": "Damage option",
+      "sources": [
+       "https://grindout.com/destiny-2/guides/sundered-doctrine"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.destinypedia.com/Sundered_Doctrine",
+     "https://thegamepost.com/destiny-2-sundered-doctrine-dungeon-guide/",
+     "https://grindout.com/destiny-2/guides/sundered-doctrine",
+     "https://dving.net/guides/destiny-2-guides/sundered-doctrine"
+    ],
+    "confidence": "high",
+    "notes": "None."
+   },
+   {
+    "name": "Kerrev, the Erased",
+    "kind": "boss",
+    "tip": "Mobile, hard-hitting Dread boss that suspends players: bring precision heavy (LFR/rockets), Divinity for an easy crit bubble, and avoid melee heavy weapons.",
+    "roles": [
+     "boss-burst",
+     "precision",
+     "support"
+    ],
+    "meta": [
+     "Divinity",
+     "Queenbreaker"
+    ],
+    "types": [
+     "Linear Fusion Rifle",
+     "Rocket Launcher",
+     "Grenade Launcher"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "burst",
+     "bossMoves": true
+    },
+    "enemies": [
+     "Dread",
+     "Hive"
+    ],
+    "recommended": [
+     {
+      "weapon": "Linear fusion rifles",
+      "why": "Strong if you land crits",
+      "sources": [
+       "https://thegamepost.com/destiny-2-sundered-doctrine-dungeon-guide/",
+       "https://deltiasgaming.com/?p=140284"
+      ]
+     },
+     {
+      "weapon": "Divinity",
+      "why": "Stabilizes boss and crit bubble",
+      "sources": [
+       "https://grindout.com/destiny-2/guides/sundered-doctrine",
+       "https://deltiasgaming.com/?p=140284"
+      ]
+     },
+     {
+      "weapon": "Rocket launchers / Bait and Switch grenade launchers",
+      "why": "Burst damage",
+      "sources": [
+       "https://deltiasgaming.com/?p=140284",
+       "https://thegamepost.com/destiny-2-sundered-doctrine-dungeon-guide/"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.destinypedia.com/Sundered_Doctrine",
+     "https://thegamepost.com/destiny-2-sundered-doctrine-dungeon-guide/",
+     "https://grindout.com/destiny-2/guides/sundered-doctrine",
+     "https://deltiasgaming.com/?p=140284",
+     "https://dotesports.com/destiny/news/how-to-defeat-kerrev-the-erased-and-beat-the-third-encounter-in-sundered-doctrine-in-destiny-2",
+     "https://dving.net/guides/destiny-2-guides/sundered-doctrine"
+    ],
+    "confidence": "high",
+    "notes": "Grindout says light 'lie' symbols; Destinypedia says choose truth or lie side. Mechanic detail only; no loadout impact. Elements: Kerrev's attacks apply Strand debuffs; Strand resistance mods advised (Deltia's)."
+   }
+  ],
+  "vespers-host": [
+   {
+    "name": "Activation",
+    "kind": "mechanics",
+    "tip": "Fallen add-clear and nuke-core running ending on a tanky Brig: bring strong add clear and save heavy/Super for the final Brig.",
+    "roles": [
+     "add-clear",
+     "boss-burst",
+     "range"
+    ],
+    "range": "mixed",
+    "dps": {
+     "style": "burst"
+    },
+    "enemies": [
+     "Fallen"
+    ],
+    "recommended": [
+     {
+      "weapon": "Heavy ammo for final Brig",
+      "why": "Final Brig much tankier (Shacknews, KeenGamer)",
+      "sources": [
+       "https://www.shacknews.com/article/141768/destiny-2-vespers-host-guide",
+       "https://keengamer.com/articles/guides/destiny-2-vespers-host-dungeon-guide-all-encounters-explained/"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/141768/destiny-2-vespers-host-guide",
+     "https://www.destinypedia.com/Vesper%27s_Host",
+     "https://keengamer.com/articles/guides/destiny-2-vespers-host-dungeon-guide-all-encounters-explained/",
+     "https://www.pcgamesn.com/destiny-2/vespers-host"
+    ],
+    "confidence": "medium",
+    "notes": "Encounter naming varies (Activation / Reboot the Station)."
+   },
+   {
+    "name": "Raneiks Unified",
+    "kind": "boss",
+    "tip": "Servitor boss that splits into numbered pieces with ~25 s windows: bring AoE burst (Parasite, grenade launchers, Dragon's Breath) and Solar ignition/Consecration.",
+    "roles": [
+     "boss-burst",
+     "support",
+     "add-clear"
+    ],
+    "meta": [
+     "Parasite",
+     "Dragon's Breath",
+     "Tractor Cannon"
+    ],
+    "types": [
+     "Grenade Launcher",
+     "Rocket Launcher",
+     "Shotgun"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "burst",
+     "bossMoves": true
+    },
+    "enemies": [
+     "Fallen"
+    ],
+    "recommended": [
+     {
+      "weapon": "Parasite",
+      "why": "Fast big damage (Shacknews, Sportskeeda with Concussive Reload)",
+      "sources": [
+       "https://www.shacknews.com/article/141768/destiny-2-vespers-host-guide",
+       "https://sportskeeda.com/mmo/destiny-2-vesper-s-host-boss-encounter-guide-raneiks-unified"
+      ]
+     },
+     {
+      "weapon": "Dragon's Breath / grenade launchers",
+      "why": "AoE across split Servitors",
+      "sources": [
+       "https://www.shacknews.com/article/141768/destiny-2-vespers-host-guide",
+       "https://keengamer.com/articles/guides/destiny-2-vespers-host-dungeon-guide-all-encounters-explained/"
+      ]
+     },
+     {
+      "weapon": "Tractor Cannon",
+      "why": "Damage debuff",
+      "sources": [
+       "https://www.shacknews.com/article/141768/destiny-2-vespers-host-guide"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/141768/destiny-2-vespers-host-guide",
+     "https://sportskeeda.com/mmo/destiny-2-vesper-s-host-boss-encounter-guide-raneiks-unified",
+     "https://keengamer.com/articles/guides/destiny-2-vespers-host-dungeon-guide-all-encounters-explained/",
+     "https://www.destinypedia.com/Vesper%27s_Host"
+    ],
+    "confidence": "medium",
+    "notes": "None. Elements: Solar (Consecration Titan, Song of Flame ignitions) favored; Void resistance for suppressor carrier (Sportskeeda)."
+   },
+   {
+    "name": "The Corrupted Puppeteer",
+    "kind": "boss",
+    "tip": "Teleporting boss with arena-wide lightning: bring mobile sustained damage (Grand Overture, grenade launchers, Whisper) and keep moving or sit in Well.",
+    "roles": [
+     "boss-sustained",
+     "precision",
+     "add-clear"
+    ],
+    "meta": [
+     "Grand Overture",
+     "Whisper of the Worm",
+     "Edge Transit"
+    ],
+    "types": [
+     "Grenade Launcher",
+     "Sniper Rifle"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "sustained",
+     "bossMoves": true
+    },
+    "enemies": [
+     "Fallen"
+    ],
+    "recommended": [
+     {
+      "weapon": "Grand Overture",
+      "why": "Sustained DPS (Shacknews, Sportskeeda)",
+      "sources": [
+       "https://www.shacknews.com/article/141768/destiny-2-vespers-host-guide",
+       "https://sportskeeda.com/mmo/destiny-2-vesper-s-host-boss-encounter-guide-the-corrupted-puppeteer"
+      ]
+     },
+     {
+      "weapon": "Whisper of the Worm",
+      "why": "Precision DPS",
+      "sources": [
+       "https://sportskeeda.com/mmo/destiny-2-vesper-s-host-boss-encounter-guide-the-corrupted-puppeteer"
+      ]
+     },
+     {
+      "weapon": "Bait and Switch grenade launchers / Edge Transit",
+      "why": "Grenade launchers from Well",
+      "sources": [
+       "https://sportskeeda.com/mmo/destiny-2-vesper-s-host-boss-encounter-guide-the-corrupted-puppeteer",
+       "https://www.shacknews.com/article/141768/destiny-2-vespers-host-guide",
+       "https://www.pcgamesn.com/destiny-2/vespers-host"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.destinypedia.com/Vesper%27s_Host",
+     "https://www.light.gg/db/legend/2723381343/vespers-host/",
+     "https://www.shacknews.com/article/141768/destiny-2-vespers-host-guide",
+     "https://sportskeeda.com/mmo/destiny-2-vesper-s-host-boss-encounter-guide-the-corrupted-puppeteer",
+     "https://keengamer.com/articles/guides/destiny-2-vespers-host-dungeon-guide-all-encounters-explained/",
+     "https://www.pcgamesn.com/destiny-2/vespers-host"
+    ],
+    "confidence": "high",
+    "notes": "Name: CORRECTION: current list says 'Insurrection Prime' - wrong. The final boss is 'The Corrupted Puppeteer' (a corrupted Atraks), confirmed by Destinypedia, light.gg ('Corrupted Puppeteer defeated'), Shacknews, Sportskeeda, PCGamesN. Number of core deposits differs (two vs three) between Shacknews and PCGamesN; not loadout-relevant. Elements: Arc resistance helps against lightning strikes (Sportskeeda)."
+   }
+  ],
+  "warlords-ruin": [
+   {
+    "name": "Rathil, First Broken Knight of Fikrul",
+    "kind": "boss",
+    "tip": "Grounded, low-health boss with an easy crit: snipers, shotguns or swords all work; bring precision to shoot Acolyte Eyes from your cage.",
+    "roles": [
+     "sword",
+     "precision",
+     "close"
+    ],
+    "meta": [
+     "The Lament",
+     "Bequest",
+     "Dragon's Breath"
+    ],
+    "types": [
+     "Sword",
+     "Sniper Rifle",
+     "Shotgun",
+     "Rocket Launcher"
+    ],
+    "range": "mixed",
+    "dps": {
+     "style": "burst"
+    },
+    "enemies": [
+     "Scorn",
+     "Taken"
+    ],
+    "recommended": [
+     {
+      "weapon": "Swords (The Lament, Bequest)",
+      "why": "Close-range DPS on grounded boss",
+      "sources": [
+       "https://tracker.gg/destiny-2/articles/guide-warlords-ruin",
+       "https://shacknews.com/article/138052/destiny-2-warlords-ruin-guide"
+      ]
+     },
+     {
+      "weapon": "Sniper rifles / shotguns",
+      "why": "Easy crit, low health",
+      "sources": [
+       "https://shacknews.com/article/138052/destiny-2-warlords-ruin-guide"
+      ]
+     },
+     {
+      "weapon": "Dragon's Breath",
+      "why": "Ranged rocket damage",
+      "sources": [
+       "https://tracker.gg/destiny-2/articles/guide-warlords-ruin"
+      ]
+     }
+    ],
+    "sources": [
+     "https://destinypedia.com/Warlord's_Ruin",
+     "https://shacknews.com/article/138052/destiny-2-warlords-ruin-guide",
+     "https://tracker.gg/destiny-2/articles/guide-warlords-ruin",
+     "https://www.destructoid.com/destiny-2-warlords-ruin-full-dungeon-guide/"
+    ],
+    "confidence": "high",
+    "notes": "Shacknews says cleansed totems turn Stasis; others say wish-empowered. Cosmetic."
+   },
+   {
+    "name": "Locus of Wailing Grief",
+    "kind": "boss",
+    "tip": "Stationary Taken Ogre damaged only while standing by lit braziers: bring rockets/Leviathan's Breath or snipers and move brazier to brazier.",
+    "roles": [
+     "boss-burst",
+     "precision",
+     "add-clear"
+    ],
+    "meta": [
+     "Apex Predator",
+     "Dragon's Breath",
+     "Leviathan's Breath",
+     "The Supremacy"
+    ],
+    "types": [
+     "Rocket Launcher",
+     "Combat Bow",
+     "Sniper Rifle"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "sustained"
+    },
+    "enemies": [
+     "Taken",
+     "Scorn"
+    ],
+    "recommended": [
+     {
+      "weapon": "Rocket launchers (Apex Predator), Dragon's Breath",
+      "why": "Strong damage",
+      "sources": [
+       "https://shacknews.com/article/138052/destiny-2-warlords-ruin-guide",
+       "https://tracker.gg/destiny-2/articles/guide-warlords-ruin"
+      ]
+     },
+     {
+      "weapon": "Leviathan's Breath",
+      "why": "Damage option",
+      "sources": [
+       "https://tracker.gg/destiny-2/articles/guide-warlords-ruin"
+      ]
+     },
+     {
+      "weapon": "Sniper rifles (The Supremacy)",
+      "why": "Precision from brazier",
+      "sources": [
+       "https://shacknews.com/article/138052/destiny-2-warlords-ruin-guide"
+      ]
+     }
+    ],
+    "sources": [
+     "https://destinypedia.com/Warlord's_Ruin",
+     "https://shacknews.com/article/138052/destiny-2-warlords-ruin-guide",
+     "https://tracker.gg/destiny-2/articles/guide-warlords-ruin",
+     "https://www.destructoid.com/destiny-2-warlords-ruin-full-dungeon-guide/"
+    ],
+    "confidence": "high",
+    "notes": "None."
+   },
+   {
+    "name": "Hefnd's Vengeance, Blighted Chimaera",
+    "kind": "boss",
+    "tip": "Floating boss across island platforms: avoid shotguns/melee; bring rockets (Apex Predator) and snipers, plus add clear for Blights and eyes.",
+    "roles": [
+     "boss-burst",
+     "precision",
+     "add-clear"
+    ],
+    "meta": [
+     "Apex Predator",
+     "The Supremacy",
+     "Sunshot"
+    ],
+    "types": [
+     "Rocket Launcher",
+     "Sniper Rifle",
+     "Hand Cannon"
+    ],
+    "range": "long",
+    "dps": {
+     "style": "burst",
+     "bossMoves": true
+    },
+    "enemies": [
+     "Taken",
+     "Scorn"
+    ],
+    "recommended": [
+     {
+      "weapon": "Rocket launchers (Apex Predator)",
+      "why": "Boss floats at range",
+      "sources": [
+       "https://shacknews.com/article/138052/destiny-2-warlords-ruin-guide"
+      ]
+     },
+     {
+      "weapon": "Sniper rifles (The Supremacy)",
+      "why": "Range precision",
+      "sources": [
+       "https://shacknews.com/article/138052/destiny-2-warlords-ruin-guide"
+      ]
+     },
+     {
+      "weapon": "Sunshot",
+      "why": "Adds and eyes",
+      "sources": [
+       "https://shacknews.com/article/138052/destiny-2-warlords-ruin-guide"
+      ]
+     }
+    ],
+    "sources": [
+     "https://destinypedia.com/Warlord's_Ruin",
+     "https://shacknews.com/article/138052/destiny-2-warlords-ruin-guide",
+     "https://tracker.gg/destiny-2/articles/guide-warlords-ruin",
+     "https://www.destructoid.com/destiny-2-warlords-ruin-full-dungeon-guide/"
+    ],
+    "confidence": "medium",
+    "notes": "Only one source (Shacknews) gives weapon picks; Tracker recommends Orpheus Rig Tether Hunter."
+   }
+  ],
+  "ghosts-of-the-deep": [
+   {
+    "name": "Hive Ritual",
+    "kind": "mechanics",
+    "tip": "Pure add-clear and runs: kill Ogres, Lightbearer Wizards and the Veilweaver Wizard fast, then deliver Vestiges. Bring strong add clear plus something for an Ogre.",
+    "roles": [
+     "add-clear",
+     "close",
+     "boss-burst"
+    ],
+    "types": [
+     "Grenade Launcher",
+     "Sniper Rifle"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Hive"
+    ],
+    "recommended": [
+     {
+      "weapon": "Add-clear primary / grenade launcher",
+      "why": "Constant Hive squads and Thrall between Vestige runs",
+      "sources": [
+       "https://www.shacknews.com/article/135676/ghosts-of-the-deep-dungeon-guide-destiny-2",
+       "https://overgear.com/guides/destiny2/ghosts-of-the-deep-dungeon-guide/"
+      ]
+     },
+     {
+      "weapon": "Special for Ogres/Wizards (fusion, sniper)",
+      "why": "Soulfire Binder Ogres and Veilweaver Wizard gate progress",
+      "sources": [
+       "https://www.destinypedia.com/Ghosts_of_the_Deep"
+      ]
+     },
+     {
+      "weapon": "Anti-Unstoppable option (Master only)",
+      "why": "Master swaps Ogres for Unstoppable Ogres",
+      "sources": [
+       "https://www.shacknews.com/article/135676/ghosts-of-the-deep-dungeon-guide-destiny-2"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.destinypedia.com/Ghosts_of_the_Deep",
+     "https://www.shacknews.com/article/135676/ghosts-of-the-deep-dungeon-guide-destiny-2",
+     "https://overgear.com/guides/destiny2/ghosts-of-the-deep-dungeon-guide/",
+     "https://kyberscorner.com/destiny2/ghosts-of-the-deep-dungeon/"
+    ],
+    "confidence": "medium",
+    "notes": "Name: Wiki/guides call it 'Hive Ritual' (Destinypedia, Kyber) or 'Hive Ritual Disrupted' (Shacknews, Overgear). Suggest 'Hive Ritual'. No source lists normal-mode champions; assumed none (normal dungeons generally lack champions). Master Unstoppable Ogres from Shacknews only. Master champions: Unstoppable"
+   },
+   {
+    "name": "Ecthar, Shield of Savathûn",
+    "kind": "boss",
+    "tip": "Underwater symbol runs plus Lucent Hive above water; damage Ecthar while standing in the Wellkeeper's pool for Piercing Light. Bring damage resist, add clear and a solid burst/LFR heavy.",
+    "roles": [
+     "boss-burst",
+     "add-clear",
+     "close"
+    ],
+    "meta": [
+     "Witherhoard",
+     "Arbalest",
+     "Riskrunner"
+    ],
+    "types": [
+     "Linear Fusion Rifle",
+     "Sword",
+     "Grenade Launcher",
+     "Submachine Gun"
+    ],
+    "range": "close",
+    "dps": {
+     "style": "burst",
+     "bossMoves": true
+    },
+    "enemies": [
+     "Hive"
+    ],
+    "recommended": [
+     {
+      "weapon": "Linear Fusion Rifle",
+      "why": "Takes big chunks during the window",
+      "sources": [
+       "https://primagames.com/tips/how-to-defeat-ecthar-in-destiny-2-ghosts-of-the-deep"
+      ]
+     },
+     {
+      "weapon": "Sword",
+      "why": "Prima lists swords for big damage while he is close",
+      "sources": [
+       "https://primagames.com/tips/how-to-defeat-ecthar-in-destiny-2-ghosts-of-the-deep"
+      ]
+     },
+     {
+      "weapon": "Witherhoard",
+      "why": "Bonus DoT; also used in a cheese strat",
+      "sources": [
+       "https://primagames.com/tips/how-to-defeat-ecthar-in-destiny-2-ghosts-of-the-deep",
+       "https://overgear.com/guides/destiny2/ghosts-of-the-deep-dungeon-guide/"
+      ]
+     },
+     {
+      "weapon": "Arbalest",
+      "why": "Removes his shield in one shot",
+      "sources": [
+       "https://primagames.com/tips/how-to-defeat-ecthar-in-destiny-2-ghosts-of-the-deep",
+       "https://overgear.com/guides/destiny2/ghosts-of-the-deep-dungeon-guide/"
+      ]
+     },
+     {
+      "weapon": "Riskrunner / Voltshot or Incandescent add-clear",
+      "why": "Thrall swarms; Arc chaining",
+      "sources": [
+       "https://www.shacknews.com/article/135676/ghosts-of-the-deep-dungeon-guide-destiny-2",
+       "https://primagames.com/tips/how-to-defeat-ecthar-in-destiny-2-ghosts-of-the-deep"
+      ]
+     }
+    ],
+    "sources": [
+     "https://primagames.com/tips/how-to-defeat-ecthar-in-destiny-2-ghosts-of-the-deep",
+     "https://www.shacknews.com/article/135676/ghosts-of-the-deep-dungeon-guide-destiny-2",
+     "https://overgear.com/guides/destiny2/ghosts-of-the-deep-dungeon-guide/",
+     "https://www.destinypedia.com/Ghosts_of_the_Deep"
+    ],
+    "confidence": "medium",
+    "notes": "Shacknews advises against rockets in the pool; Prima's team used Gjallarhorn. Recommendations are from launch-era (2023) sandbox, not verified for the 2026 sandbox. Elements: Shacknews recommends Arc Resistance mods; Well of Radiance 'almost mandatory'. No elemental enemy shields reported. Master champions: Unstoppable"
+   },
+   {
+    "name": "Šimmumah ur-Nokru",
+    "kind": "boss",
+    "tip": "Final boss flies around constantly; bring precision/tracking heavy (LFR, tracking rockets, Leviathan's Breath) and survivability for a long arena fight with a respawning Vorlog.",
+    "roles": [
+     "boss-sustained",
+     "precision",
+     "add-clear"
+    ],
+    "meta": [
+     "Leviathan's Breath",
+     "Gjallarhorn",
+     "Arbalest"
+    ],
+    "types": [
+     "Linear Fusion Rifle",
+     "Combat Bow",
+     "Rocket Launcher"
+    ],
+    "range": "mixed",
+    "dps": {
+     "style": "sustained",
+     "bossMoves": true
+    },
+    "enemies": [
+     "Hive"
+    ],
+    "recommended": [
+     {
+      "weapon": "Linear Fusion Rifle",
+      "why": "Heavy damage with consistent crits",
+      "sources": [
+       "https://primagames.com/tips/how-to-defeat-simmumah-ur-nokru-in-destiny-2-ghosts-of-the-deep"
+      ]
+     },
+     {
+      "weapon": "Leviathan's Breath",
+      "why": "Massive damage, recommended by two guides",
+      "sources": [
+       "https://primagames.com/tips/how-to-defeat-simmumah-ur-nokru-in-destiny-2-ghosts-of-the-deep",
+       "https://overgear.com/guides/destiny2/ghosts-of-the-deep-dungeon-guide/"
+      ]
+     },
+     {
+      "weapon": "Rocket Launcher with Tracking Module / Gjallarhorn",
+      "why": "Hits a moving boss while you keep moving",
+      "sources": [
+       "https://primagames.com/tips/how-to-defeat-simmumah-ur-nokru-in-destiny-2-ghosts-of-the-deep",
+       "https://www.shacknews.com/article/135676/ghosts-of-the-deep-dungeon-guide-destiny-2"
+      ]
+     },
+     {
+      "weapon": "Arbalest",
+      "why": "One-shots her shield",
+      "sources": [
+       "https://primagames.com/tips/how-to-defeat-simmumah-ur-nokru-in-destiny-2-ghosts-of-the-deep",
+       "https://www.shacknews.com/article/135676/ghosts-of-the-deep-dungeon-guide-destiny-2"
+      ]
+     }
+    ],
+    "sources": [
+     "https://primagames.com/tips/how-to-defeat-simmumah-ur-nokru-in-destiny-2-ghosts-of-the-deep",
+     "https://www.shacknews.com/article/135676/ghosts-of-the-deep-dungeon-guide-destiny-2",
+     "https://overgear.com/guides/destiny2/ghosts-of-the-deep-dungeon-guide/",
+     "https://www.destinypedia.com/Ghosts_of_the_Deep"
+    ],
+    "confidence": "medium",
+    "notes": "Master Barrier Knights and Vorlog Arc shield only from Shacknews (single source). Weapon advice is 2023-era. Elements: Arc Resistance mods suggested; on Master bring Arc for Vorlog's Arc shield. Master champions: Barrier"
+   }
+  ],
+  "spire-of-the-watcher": [
+   {
+    "name": "Ascend the Spire",
+    "kind": "mechanics",
+    "tip": "Arc-node puzzle while Vex harass from ledges; bring a precise weapon for nodes and a ranged weapon for Harpies, Hobgoblins and Cyclops.",
+    "roles": [
+     "range",
+     "precision",
+     "add-clear"
+    ],
+    "types": [
+     "Pulse Rifle",
+     "Scout Rifle",
+     "Hand Cannon",
+     "Sniper Rifle"
+    ],
+    "range": "long",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Vex"
+    ],
+    "recommended": [
+     {
+      "weapon": "Precise primary (scout/pulse/hand cannon)",
+      "why": "Hit nodes and Harpies/Hobgoblins at range without splash",
+      "sources": [
+       "https://destiny2.vaexil.tv/guides/dungeons/spire-of-the-watcher",
+       "https://www.paracausality.com/sow_guide"
+      ]
+     },
+     {
+      "weapon": "Sniper Rifle",
+      "why": "Hobgoblins and Cyclops on ridges/ledges",
+      "sources": [
+       "https://www.paracausality.com/sow_guide",
+       "https://www.shacknews.com/article/133423/spire-of-the-watcher-guide"
+      ]
+     },
+     {
+      "weapon": "Anti-Overload (Master only)",
+      "why": "Master Minotaurs are Overload Champions",
+      "sources": [
+       "https://www.shacknews.com/article/133423/spire-of-the-watcher-guide",
+       "https://www.destinypedia.com/Conduit_Minotaur"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.destinypedia.com/Spire_of_the_Watcher",
+     "https://destiny2.vaexil.tv/guides/dungeons/spire-of-the-watcher",
+     "https://www.paracausality.com/sow_guide",
+     "https://www.shacknews.com/article/133423/spire-of-the-watcher-guide",
+     "https://www.destinypedia.com/Conduit_Minotaur"
+    ],
+    "confidence": "high",
+    "notes": "Name: Encounter is 'Ascend the Spire' (Destinypedia, Vaexil, Shacknews); preceded by the 'Reestablish Power' opening puzzle. Suggest rename to 'Ascend the Spire'. Vaexil says Master adds Barrier as well as Overload and Arc+Void shields; Shacknews/Paracausality/Destinypedia only confirm Overload Minotaurs and Arc Harpies. Elements: Master: Arc weapons for Arc-shielded Harpies (Vaexil also mentions Void shields on Master). Master champions: Overload"
+   },
+   {
+    "name": "Akelous, the Siren's Current",
+    "kind": "boss",
+    "tip": "Shred 12 glowing eyes fast (SMG), then dump burst damage on the exposed core as it drifts back to center; stay on the centerline to avoid the knockback blast.",
+    "roles": [
+     "boss-burst",
+     "close",
+     "add-clear"
+    ],
+    "types": [
+     "Machine Gun",
+     "Submachine Gun",
+     "Linear Fusion Rifle",
+     "Rocket Launcher"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "burst",
+     "bossMoves": true
+    },
+    "enemies": [
+     "Vex"
+    ],
+    "recommended": [
+     {
+      "weapon": "Submachine Gun",
+      "why": "Fast eye-breaking on the shell",
+      "sources": [
+       "https://www.paracausality.com/sow_guide",
+       "https://destiny2.vaexil.tv/guides/dungeons/spire-of-the-watcher"
+      ]
+     },
+     {
+      "weapon": "Linear Fusion Rifle",
+      "why": "Best on the core precision point",
+      "sources": [
+       "https://www.paracausality.com/sow_guide"
+      ]
+     },
+     {
+      "weapon": "Rocket Launcher",
+      "why": "Works on a retreating core; tracking helps",
+      "sources": [
+       "https://www.paracausality.com/sow_guide",
+       "https://destiny2.vaexil.tv/guides/dungeons/spire-of-the-watcher"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/133423/spire-of-the-watcher-guide",
+     "https://www.paracausality.com/sow_guide",
+     "https://destiny2.vaexil.tv/guides/dungeons/spire-of-the-watcher",
+     "https://www.destinypedia.com/Spire_of_the_Watcher"
+    ],
+    "confidence": "high",
+    "notes": "None material. Elements: Master: Arc for Harpy shields. Master champions: Overload"
+   },
+   {
+    "name": "Persys, Primordial Ruin",
+    "kind": "boss",
+    "tip": "Lure the Wyvern into the reactor, purge its shield, then hit its small core while it advances on you; bring reliable Hydra/Supplicant clear and boss damage usable while moving.",
+    "roles": [
+     "boss-burst",
+     "add-clear",
+     "precision"
+    ],
+    "types": [
+     "Linear Fusion Rifle",
+     "Grenade Launcher",
+     "Rocket Launcher"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "burst",
+     "bossMoves": true
+    },
+    "enemies": [
+     "Vex"
+    ],
+    "recommended": [
+     {
+      "weapon": "Linear Fusion Rifle",
+      "why": "Precision on the core",
+      "sources": [
+       "https://www.paracausality.com/sow_guide"
+      ]
+     },
+     {
+      "weapon": "Grenade Launcher",
+      "why": "Constant spawns; area damage",
+      "sources": [
+       "https://www.paracausality.com/sow_guide"
+      ]
+     },
+     {
+      "weapon": "Rocket Launcher / mobile heavy",
+      "why": "Boss damage usable while strafing",
+      "sources": [
+       "https://destiny2.vaexil.tv/guides/dungeons/spire-of-the-watcher"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/133423/spire-of-the-watcher-guide",
+     "https://www.paracausality.com/sow_guide",
+     "https://destiny2.vaexil.tv/guides/dungeons/spire-of-the-watcher",
+     "https://www.destinypedia.com/Spire_of_the_Watcher"
+    ],
+    "confidence": "medium",
+    "notes": "Weapon picks from 2022-23 guides; no current-sandbox source. Elements: Concussive Dampener and Void resistance suggested (Paracausality). Master champions: Overload"
+   }
+  ],
+  "duality": [
+   {
+    "name": "Nightmare of Gahlran",
+    "kind": "boss",
+    "tip": "Timed realm-swapping: kill Bellkeepers, Standard Bearers and Visions quickly, then burst Gahlran before the Nightmare timer ends; bring high burst damage and range for Psion snipers.",
+    "roles": [
+     "boss-burst",
+     "range",
+     "close"
+    ],
+    "meta": [
+     "Gjallarhorn"
+    ],
+    "types": [
+     "Rocket Launcher",
+     "Linear Fusion Rifle",
+     "Sniper Rifle"
+    ],
+    "range": "mixed",
+    "dps": {
+     "style": "burst",
+     "bossMoves": true
+    },
+    "enemies": [
+     "Cabal",
+     "Nightmares"
+    ],
+    "recommended": [
+     {
+      "weapon": "Gjallarhorn / rockets",
+      "why": "Burst in a short timed window",
+      "sources": [
+       "https://www.shacknews.com/article/130585/destiny-2-duality-dungeon-guide",
+       "https://gamesradar.com/destiny-2-duality-dungeon-guide"
+      ]
+     },
+     {
+      "weapon": "Linear Fusion Rifle",
+      "why": "Team DPS option",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/duality-dungeon-guide"
+      ]
+     },
+     {
+      "weapon": "Void weapon (Master)",
+      "why": "Break Bellkeeper Void shields",
+      "sources": [
+       "https://www.shacknews.com/article/130585/destiny-2-duality-dungeon-guide",
+       "https://sportskeeda.com/esports/destiny-2-duality-master-caiatl-guide-how-easily-farm-artifice-armor-lightfall"
+      ]
+     },
+     {
+      "weapon": "Ranged primary/sniper",
+      "why": "Psion snipers",
+      "sources": [
+       "https://gamesradar.com/destiny-2-duality-dungeon-guide"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/130585/destiny-2-duality-dungeon-guide",
+     "https://gamesradar.com/destiny-2-duality-dungeon-guide",
+     "https://boosting-ground.com/Destiny2/guides/dungeon-guides/duality-dungeon-guide",
+     "https://dotesports.com/destiny/news/duality-dungeon-guide-walkthrough-destiny-2",
+     "https://www.destinypedia.com/Duality_(dungeon)"
+    ],
+    "confidence": "medium",
+    "notes": "Master Unstoppable Incendiors from Shacknews; Boosting-ground says Master has Barrier+Unstoppable overall. Elements: Void for Bellkeepers on Master. Master champions: Unstoppable"
+   },
+   {
+    "name": "Unlock the Vault",
+    "kind": "boss",
+    "tip": "Three untimed mini-boss Nightmares under heavy Cabal pressure (Phalanxes, Colossi); prioritize add clear and survivability over burst.",
+    "roles": [
+     "add-clear",
+     "boss-sustained",
+     "close"
+    ],
+    "meta": [
+     "Arbalest"
+    ],
+    "types": [
+     "Grenade Launcher",
+     "Machine Gun",
+     "Linear Fusion Rifle",
+     "Fusion Rifle"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "sustained",
+     "bossMoves": true
+    },
+    "enemies": [
+     "Cabal",
+     "Nightmares"
+    ],
+    "recommended": [
+     {
+      "weapon": "Wave-Frame GL / Machine Gun",
+      "why": "Constant Cabal add waves",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/duality-dungeon-guide",
+       "https://progameguides.com/destiny/destiny-2-duality-dungeon-walkthrough-how-to-complete-each-encounter/"
+      ]
+     },
+     {
+      "weapon": "Arbalest",
+      "why": "Master Barrier Colossi",
+      "sources": [
+       "https://www.shacknews.com/article/130585/destiny-2-duality-dungeon-guide"
+      ]
+     },
+     {
+      "weapon": "Fusion Rifle",
+      "why": "Close damage on mini-bosses and majors",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/duality-dungeon-guide"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/130585/destiny-2-duality-dungeon-guide",
+     "https://boosting-ground.com/Destiny2/guides/dungeon-guides/duality-dungeon-guide",
+     "https://gamesradar.com/destiny-2-duality-dungeon-guide",
+     "https://dotesports.com/destiny/news/duality-dungeon-guide-walkthrough-destiny-2",
+     "https://www.destinypedia.com/Duality_(dungeon)",
+     "https://progameguides.com/destiny/destiny-2-duality-dungeon-walkthrough-how-to-complete-each-encounter/"
+    ],
+    "confidence": "medium",
+    "notes": "Name: In-game/wiki name is 'Unlock the Vault' (three Nightmares: Ka'hok, Emonut, Uroa). Suggest rename. Elemental shields on Nightmares only from boosting-ground (low). Master Barrier Colossus confirmed by Shacknews and Destinypedia. Elements: One guide says the three Nightmares have Arc, Void, Solar shields in order; not confirmed elsewhere (Dotesports only calls it a 'nightmarish shield'). Master champions: Barrier"
+   },
+   {
+    "name": "Nightmare of Caiatl",
+    "kind": "boss",
+    "tip": "Damage only in ~10s stun windows at each bell with Waking Resonance; bring burst heavy (LFR/rockets) and clear six Bellkeepers fast.",
+    "roles": [
+     "boss-burst",
+     "add-clear",
+     "support"
+    ],
+    "meta": [
+     "Cataclysmic",
+     "Gjallarhorn",
+     "Witherhoard",
+     "Tractor Cannon"
+    ],
+    "types": [
+     "Linear Fusion Rifle",
+     "Rocket Launcher",
+     "Grenade Launcher",
+     "Shotgun",
+     "Fusion Rifle"
+    ],
+    "range": "mixed",
+    "dps": {
+     "style": "burst",
+     "bossMoves": true
+    },
+    "enemies": [
+     "Cabal",
+     "Nightmares"
+    ],
+    "recommended": [
+     {
+      "weapon": "Linear Fusion Rifle (e.g. Cataclysmic)",
+      "why": "Burst in short stuns",
+      "sources": [
+       "https://sportskeeda.com/esports/destiny-2-duality-master-caiatl-guide-how-easily-farm-artifice-armor-lightfall",
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/duality-dungeon-guide"
+      ]
+     },
+     {
+      "weapon": "Gjallarhorn + rockets",
+      "why": "Burst during stuns",
+      "sources": [
+       "https://www.shacknews.com/article/130585/destiny-2-duality-dungeon-guide"
+      ]
+     },
+     {
+      "weapon": "Witherhoard / Tractor Cannon",
+      "why": "Debuff/DoT",
+      "sources": [
+       "https://sportskeeda.com/esports/destiny-2-duality-master-caiatl-guide-how-easily-farm-artifice-armor-lightfall",
+       "https://www.shacknews.com/article/130585/destiny-2-duality-dungeon-guide"
+      ]
+     },
+     {
+      "weapon": "Fusion Rifle",
+      "why": "Close burst during stun",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/duality-dungeon-guide"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/130585/destiny-2-duality-dungeon-guide",
+     "https://sportskeeda.com/esports/destiny-2-duality-master-caiatl-guide-how-easily-farm-artifice-armor-lightfall",
+     "https://boosting-ground.com/Destiny2/guides/dungeon-guides/duality-dungeon-guide",
+     "https://gamesradar.com/destiny-2-duality-dungeon-guide",
+     "https://dotesports.com/destiny/news/duality-dungeon-guide-walkthrough-destiny-2"
+    ],
+    "confidence": "high",
+    "notes": "Solar Centurion shields only from Sportskeeda. Elements: Master: Void for Bellkeepers, Solar for Centurions (Sportskeeda). Master champions: Barrier"
+   }
+  ],
+  "grasp-of-avarice": [
+   {
+    "name": "Phry'zhia the Insatiable",
+    "kind": "boss",
+    "tip": "Stationary Ogre boss: farm and deposit engrams, then burst its head. Ideal for LFRs, rockets or a sword.",
+    "roles": [
+     "boss-burst",
+     "sword",
+     "add-clear"
+    ],
+    "meta": [
+     "The Lament",
+     "Gjallarhorn",
+     "One Thousand Voices"
+    ],
+    "types": [
+     "Linear Fusion Rifle",
+     "Sword",
+     "Rocket Launcher",
+     "Fusion Rifle"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "burst"
+    },
+    "enemies": [
+     "Hive",
+     "Fallen"
+    ],
+    "recommended": [
+     {
+      "weapon": "Linear Fusion Rifle",
+      "why": "Stationary crit target",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/grasp-of-avarice-guide",
+       "https://www.shacknews.com/article/128012/grasp-of-avarice-dungeon-guide-destiny-2"
+      ]
+     },
+     {
+      "weapon": "The Lament / Sword",
+      "why": "Boss doesn't move",
+      "sources": [
+       "https://primagames.com/gaming/destiny-2-grasp-of-avarice-phryzhia-ogre-sparrow-guide",
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/grasp-of-avarice-guide"
+      ]
+     },
+     {
+      "weapon": "Gjallarhorn / rockets",
+      "why": "Burst DPS",
+      "sources": [
+       "https://primagames.com/gaming/destiny-2-grasp-of-avarice-phryzhia-ogre-sparrow-guide",
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/grasp-of-avarice-guide"
+      ]
+     },
+     {
+      "weapon": "One Thousand Voices",
+      "why": "Top pick in the Season of the Lost era",
+      "sources": [
+       "https://www.shacknews.com/article/128012/grasp-of-avarice-dungeon-guide-destiny-2",
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/grasp-of-avarice-guide"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/128012/grasp-of-avarice-dungeon-guide-destiny-2",
+     "https://boosting-ground.com/Destiny2/guides/dungeon-guides/grasp-of-avarice-guide",
+     "https://primagames.com/gaming/destiny-2-grasp-of-avarice-phryzhia-ogre-sparrow-guide",
+     "https://www.pcgamer.com/destiny-2-grasp-of-avarice-loot-table-solo-guide",
+     "https://www.destinypedia.com/Grasp_of_Avarice"
+    ],
+    "confidence": "high",
+    "notes": "Deposit count varies by source (20/25/40). Master Barrier Knights only from Shacknews. Elements: Solar resistance for the Ogre beam (boosting-ground). Master champions: Barrier"
+   },
+   {
+    "name": "Fallen Shield",
+    "kind": "mechanics",
+    "tip": "No boss damage: clear Fallen on islands, deposit engrams, kill Servitors and launch them into the shield. All about add clear.",
+    "roles": [
+     "add-clear",
+     "boss-sustained",
+     "close"
+    ],
+    "meta": [
+     "Witherhoard",
+     "Riskrunner",
+     "Trinity Ghoul"
+    ],
+    "types": [
+     "Grenade Launcher",
+     "Submachine Gun",
+     "Combat Bow",
+     "Machine Gun"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Fallen"
+    ],
+    "recommended": [
+     {
+      "weapon": "Witherhoard / grenade launchers",
+      "why": "Add clear",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/grasp-of-avarice-guide",
+       "https://www.shacknews.com/article/128012/grasp-of-avarice-dungeon-guide-destiny-2"
+      ]
+     },
+     {
+      "weapon": "Riskrunner / Trinity Ghoul",
+      "why": "Fallen Arc damage and chaining",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/grasp-of-avarice-guide"
+      ]
+     },
+     {
+      "weapon": "Machine Gun",
+      "why": "Heavy add clear; LFRs/rockets/swords not needed",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/grasp-of-avarice-guide"
+      ]
+     }
+    ],
+    "sources": [
+     "https://boosting-ground.com/Destiny2/guides/dungeon-guides/grasp-of-avarice-guide",
+     "https://primagames.com/gaming/destiny-2-grasp-of-avarice-fallen-shield-guide",
+     "https://www.shacknews.com/article/128012/grasp-of-avarice-dungeon-guide-destiny-2",
+     "https://www.pcgamer.com/destiny-2-grasp-of-avarice-loot-table-solo-guide",
+     "https://www.destinypedia.com/Grasp_of_Avarice"
+    ],
+    "confidence": "high",
+    "notes": "Shacknews mentions Master Overload Captains and Anti-Barrier Servitors; single source. Master champions: Overload, Barrier"
+   },
+   {
+    "name": "Captain Avarokk, the Covetous",
+    "kind": "boss",
+    "tip": "Kill the Shank sniper and invisible Marauder lieutenants first, deposit 50-60 engrams, then burst Avarokk in a short (~30s) window.",
+    "roles": [
+     "boss-burst",
+     "add-clear",
+     "precision"
+    ],
+    "meta": [
+     "Gjallarhorn",
+     "Riskrunner"
+    ],
+    "types": [
+     "Linear Fusion Rifle",
+     "Rocket Launcher",
+     "Grenade Launcher",
+     "Submachine Gun"
+    ],
+    "range": "mid",
+    "dps": {
+     "style": "burst",
+     "bossMoves": true
+    },
+    "enemies": [
+     "Fallen"
+    ],
+    "recommended": [
+     {
+      "weapon": "Linear Fusion Rifle",
+      "why": "Burst in ~30s window",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/grasp-of-avarice-guide",
+       "https://www.shacknews.com/article/128012/grasp-of-avarice-dungeon-guide-destiny-2"
+      ]
+     },
+     {
+      "weapon": "Gjallarhorn + rockets",
+      "why": "Burst",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/grasp-of-avarice-guide"
+      ]
+     },
+     {
+      "weapon": "Riskrunner / Wave-Frame GL",
+      "why": "Dreg waves",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/grasp-of-avarice-guide"
+      ]
+     }
+    ],
+    "sources": [
+     "https://boosting-ground.com/Destiny2/guides/dungeon-guides/grasp-of-avarice-guide",
+     "https://www.shacknews.com/article/128012/grasp-of-avarice-dungeon-guide-destiny-2",
+     "https://www.pcgamer.com/destiny-2-grasp-of-avarice-loot-table-solo-guide",
+     "https://www.destinypedia.com/Grasp_of_Avarice"
+    ],
+    "confidence": "high",
+    "notes": "Deposit count 50 (PC Gamer) vs 60 (Shacknews, Destinypedia). Master Anti-Barrier Servitors only from Shacknews. Elements: Arc and Sniper resistance mods (boosting-ground). Master champions: Barrier"
+   }
+  ],
+  "prophecy": [
+   {
+    "name": "Phalanx Echo",
+    "kind": "boss",
+    "tip": "Bring a Psion/add-clear primary, something to kill Knight Echoes without overkilling, and a burst heavy (sword or rockets) for short damage windows while avoiding his shield-bash knockback.",
+    "roles": [
+     "boss-burst",
+     "add-clear",
+     "close"
+    ],
+    "meta": [
+     "Falling Guillotine"
+    ],
+    "types": [
+     "Sword",
+     "Linear Fusion Rifle",
+     "Rocket Launcher"
+    ],
+    "range": "mixed",
+    "dps": {
+     "style": "burst"
+    },
+    "enemies": [
+     "Taken"
+    ],
+    "recommended": [
+     {
+      "weapon": "Falling Guillotine / heavy sword",
+      "why": "Cited for one-phase burst with Well of Radiance",
+      "sources": [
+       "https://www.shacknews.com/article/118838/prophecy-dungeon-guide-destiny-2",
+       "https://timesaver.gg/blog/destiny-2-prophecy-dungeon-guide"
+      ]
+     },
+     {
+      "weapon": "Linear Fusion Rifle or Rocket Launcher",
+      "why": "Burst when his shield drops",
+      "sources": [
+       "https://gamerguidehub.com/prophecy-dungeon/",
+       "https://overgear.com/guides/destiny2/prophecy-dungeon-guide/"
+      ]
+     },
+     {
+      "weapon": "Add-clear primary",
+      "why": "Psions multiply if not cleared fast",
+      "sources": [
+       "https://destiny2.vaexil.tv/guides/dungeons/prophecy"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/118838/prophecy-dungeon-guide-destiny-2",
+     "https://timesaver.gg/blog/destiny-2-prophecy-dungeon-guide",
+     "https://gamerguidehub.com/prophecy-dungeon/",
+     "https://overgear.com/guides/destiny2/prophecy-dungeon-guide/",
+     "https://destiny2.vaexil.tv/guides/dungeons/prophecy"
+    ],
+    "confidence": "medium",
+    "notes": "No source lists champions or elemental shields; set empty. Vaexil says Prophecy has no current Master version; champions may still come via custom-difficulty modifiers."
+   },
+   {
+    "name": "Hexahedron",
+    "kind": "mechanics",
+    "tip": "Long-range precision for Hobgoblin snipers plus steady Psion clear; save heavy/super for the two Centurion Echoes at the end.",
+    "roles": [
+     "range",
+     "add-clear",
+     "precision"
+    ],
+    "meta": [
+     "Xenophage",
+     "Mountaintop"
+    ],
+    "types": [
+     "Linear Fusion Rifle",
+     "Sniper Rifle",
+     "Grenade Launcher",
+     "Machine Gun",
+     "Scout Rifle"
+    ],
+    "range": "long",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Taken"
+    ],
+    "recommended": [
+     {
+      "weapon": "Sniper / Linear Fusion Rifle",
+      "why": "Accurate long-range Hobgoblin control",
+      "sources": [
+       "https://destiny2.vaexil.tv/guides/dungeons/prophecy",
+       "https://gamerguidehub.com/prophecy-dungeon/"
+      ]
+     },
+     {
+      "weapon": "Grenade Launcher",
+      "why": "Add clear and Centurions",
+      "sources": [
+       "https://gamerguidehub.com/prophecy-dungeon/"
+      ]
+     },
+     {
+      "weapon": "Xenophage / Mountaintop",
+      "why": "Named for cube adds and Centurions",
+      "sources": [
+       "https://www.shacknews.com/article/118838/prophecy-dungeon-guide-destiny-2"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.shacknews.com/article/118838/prophecy-dungeon-guide-destiny-2",
+     "https://overgear.com/guides/destiny2/prophecy-dungeon-guide/",
+     "https://gamerguidehub.com/prophecy-dungeon/",
+     "https://destiny2.vaexil.tv/guides/dungeons/prophecy",
+     "https://timesaver.gg/blog/destiny-2-prophecy-dungeon-guide"
+    ],
+    "confidence": "medium",
+    "notes": "Shacknews says kill Hobgoblins to spawn Knights; timesaver says 'Snipers' - same enemy. Recommendations are older-sandbox."
+   },
+   {
+    "name": "Kell Echo",
+    "kind": "boss",
+    "tip": "Clear Psions/Knights and kill an Ogre per plate, then chase the boss down a hallway staying inside his aura; bring heavy that works while moving and something for Hobgoblin snipers.",
+    "roles": [
+     "boss-sustained",
+     "precision",
+     "add-clear"
+    ],
+    "meta": [
+     "Falling Guillotine",
+     "Whisper of the Worm",
+     "Izanagi's Burden",
+     "Leviathan's Breath"
+    ],
+    "types": [
+     "Sword",
+     "Sniper Rifle",
+     "Combat Bow",
+     "Linear Fusion Rifle",
+     "Rocket Launcher",
+     "Grenade Launcher",
+     "Machine Gun"
+    ],
+    "range": "mixed",
+    "dps": {
+     "style": "sustained",
+     "bossMoves": true
+    },
+    "enemies": [
+     "Taken"
+    ],
+    "recommended": [
+     {
+      "weapon": "Falling Guillotine / sword",
+      "why": "Strong DPS while staying in the aura",
+      "sources": [
+       "https://www.shacknews.com/article/118838/prophecy-dungeon-guide-destiny-2"
+      ]
+     },
+     {
+      "weapon": "Whisper of the Worm / Izanagi's Burden / Leviathan's Breath",
+      "why": "Long-range power precision while boss moves",
+      "sources": [
+       "https://overgear.com/guides/destiny2/prophecy-dungeon-guide/"
+      ]
+     },
+     {
+      "weapon": "Linear Fusion Rifle / Rocket Launcher",
+      "why": "Crit/burst between teleports",
+      "sources": [
+       "https://gamerguidehub.com/prophecy-dungeon/",
+       "https://overgear.com/guides/destiny2/prophecy-dungeon-guide/"
+      ]
+     },
+     {
+      "weapon": "Grenade Launcher / Xenophage",
+      "why": "Alternative if swords get you stomped",
+      "sources": [
+       "https://www.shacknews.com/article/118838/prophecy-dungeon-guide-destiny-2"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.destinypedia.com/Kell_Echo",
+     "https://www.shacknews.com/article/118838/prophecy-dungeon-guide-destiny-2",
+     "https://overgear.com/guides/destiny2/prophecy-dungeon-guide/",
+     "https://gamerguidehub.com/prophecy-dungeon/",
+     "https://timesaver.gg/blog/destiny-2-prophecy-dungeon-guide",
+     "https://destiny2.vaexil.tv/guides/dungeons/prophecy"
+    ],
+    "confidence": "medium",
+    "notes": "Shacknews says stay OUT of the boss AoE; Destinypedia, Overgear and Timesaver say stay INSIDE the aura to avoid Dark Entropy - chose inside. Elements: GamerGuideHub suggests Void/Solar generally for Prophecy; no shield-driven element need."
+   }
+  ],
+  "pit-of-heresy": [
+   {
+    "name": "Necropolis",
+    "kind": "mechanics",
+    "tip": "The Hive sword relic does the disciple damage; your loadout needs heavy (rockets/GL) for the Revenant Ogres and good add clear for tower interiors.",
+    "roles": [
+     "add-clear",
+     "boss-burst",
+     "close"
+    ],
+    "shields": [
+     {
+      "element": "Solar",
+      "on": "Revenant Wizards (tower interiors)",
+      "frequency": "some"
+     }
+    ],
+    "types": [
+     "Rocket Launcher",
+     "Grenade Launcher"
+    ],
+    "range": "mixed",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Hive"
+    ],
+    "recommended": [
+     {
+      "weapon": "Rocket Launcher / Heavy Grenade Launcher",
+      "why": "Kill Revenant Ogres (Shrieker room) fast before taking the sword in",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/pit-of-heresy-guide",
+       "https://timesaver.gg/blog/destiny-2-pit-of-heresy-dungeon-guide",
+       "https://www.destinypedia.com/Pit_of_Heresy"
+      ]
+     },
+     {
+      "weapon": "Add-clear primary",
+      "why": "Thrall/Acolytes inside towers",
+      "sources": [
+       "https://destiny2.vaexil.tv/guides/dungeons/pit-of-heresy"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.destinypedia.com/Pit_of_Heresy",
+     "https://destinypedia.com/Revenant_Wizard",
+     "https://boosting-ground.com/Destiny2/guides/dungeon-guides/pit-of-heresy-guide",
+     "https://games.gg/destiny-2/guides/destiny-2-monument-of-triumph-pit-of-heresy-dungeon-guide/",
+     "https://timesaver.gg/blog/destiny-2-pit-of-heresy-dungeon-guide",
+     "https://destiny2.vaexil.tv/guides/dungeons/pit-of-heresy"
+    ],
+    "confidence": "medium",
+    "notes": "No guide mentions champions; Vaexil (verified Aug 2026) says champions/shields depend on the live activity card. Solar Wizard shield only from Destinypedia enemy infobox. Elements: Revenant Wizards carry Solar shields per Destinypedia enemy page (single source)."
+   },
+   {
+    "name": "Tunnels of Despair",
+    "kind": "traversal",
+    "tip": "Mostly navigation and avoidance; a reliable primary for Heretical Knights and Thrall in side caves is all you need.",
+    "roles": [
+     "add-clear",
+     "close",
+     "range"
+    ],
+    "range": "close",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Hive"
+    ],
+    "recommended": [
+     {
+      "weapon": "Primary/special for Heretical Knights",
+      "why": "Kill 3 Knights for Void orbs quickly while Ogres patrol",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/pit-of-heresy-guide",
+       "https://www.destinypedia.com/Pit_of_Heresy"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.destinypedia.com/Pit_of_Heresy",
+     "https://boosting-ground.com/Destiny2/guides/dungeon-guides/pit-of-heresy-guide",
+     "https://games.gg/destiny-2/guides/destiny-2-monument-of-triumph-pit-of-heresy-dungeon-guide/",
+     "https://timesaver.gg/blog/destiny-2-pit-of-heresy-dungeon-guide",
+     "https://destiny2.vaexil.tv/guides/dungeons/pit-of-heresy"
+    ],
+    "confidence": "high",
+    "notes": "Name: MISSING from tool list: real objective between Necropolis and Chamber of Suffering (avoid unkillable Harrowing Pariah Ogres, dunk 3 Knight orbs at doors) None on structure; 5 sources list it as an encounter. Optional for the tool (low loadout relevance)."
+   },
+   {
+    "name": "Chamber of Suffering",
+    "kind": "mechanics",
+    "tip": "Wave defense: bring strong add clear plus a long-range precision or heavy option to delete balcony Boomer Knights and orb Knights from the totem plate.",
+    "roles": [
+     "add-clear",
+     "precision",
+     "boss-burst"
+    ],
+    "meta": [
+     "Xenophage",
+     "Trinity Ghoul",
+     "Witherhoard"
+    ],
+    "types": [
+     "Linear Fusion Rifle",
+     "Rocket Launcher",
+     "Machine Gun",
+     "Sniper Rifle",
+     "Combat Bow",
+     "Grenade Launcher"
+    ],
+    "range": "mixed",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Hive"
+    ],
+    "recommended": [
+     {
+      "weapon": "Sniper / Linear Fusion Rifle / Rocket Launcher / Xenophage",
+      "why": "Kill Boomer Knights fast from the plate",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/pit-of-heresy-guide",
+       "https://www.destinypedia.com/Pit_of_Heresy",
+       "https://timesaver.gg/blog/destiny-2-pit-of-heresy-dungeon-guide"
+      ]
+     },
+     {
+      "weapon": "Trinity Ghoul / incandescent or voltshot primary",
+      "why": "Constant Thrall/Acolyte clear",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/pit-of-heresy-guide",
+       "https://destiny2.vaexil.tv/guides/dungeons/pit-of-heresy"
+      ]
+     },
+     {
+      "weapon": "Witherhoard",
+      "why": "Passive area denial",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/pit-of-heresy-guide"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.destinypedia.com/Pit_of_Heresy",
+     "https://boosting-ground.com/Destiny2/guides/dungeon-guides/pit-of-heresy-guide",
+     "https://destiny2.vaexil.tv/guides/dungeons/pit-of-heresy",
+     "https://timesaver.gg/blog/destiny-2-pit-of-heresy-dungeon-guide",
+     "https://games.gg/destiny-2/guides/destiny-2-monument-of-triumph-pit-of-heresy-dungeon-guide/"
+    ],
+    "confidence": "high",
+    "notes": "None significant."
+   },
+   {
+    "name": "The Harrow",
+    "kind": "traversal",
+    "tip": "Mostly platforming; a sniper/LFR to pick off the Solar-shielded Ritualist Wizards from safe ground helps most.",
+    "roles": [
+     "range",
+     "precision",
+     "add-clear"
+    ],
+    "meta": [
+     "Xenophage"
+    ],
+    "shields": [
+     {
+      "element": "Solar",
+      "on": "Malevolent Ritualist Wizards",
+      "frequency": "some"
+     }
+    ],
+    "types": [
+     "Linear Fusion Rifle",
+     "Machine Gun",
+     "Sniper Rifle"
+    ],
+    "range": "long",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Hive"
+    ],
+    "recommended": [
+     {
+      "weapon": "Sniper / Linear Fusion Rifle / Xenophage",
+      "why": "Hit Wizards at range",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/pit-of-heresy-guide",
+       "https://www.destinypedia.com/Malevolent_Ritualist"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.destinypedia.com/Pit_of_Heresy",
+     "https://www.destinypedia.com/Malevolent_Ritualist",
+     "https://boosting-ground.com/Destiny2/guides/dungeon-guides/pit-of-heresy-guide",
+     "https://destiny2.vaexil.tv/guides/dungeons/pit-of-heresy",
+     "https://games.gg/destiny-2/guides/destiny-2-monument-of-triumph-pit-of-heresy-dungeon-guide/"
+    ],
+    "confidence": "medium",
+    "notes": "Name: Official name is 'The Harrow' (jumping-puzzle/trap section with 3 Malevolent Ritualist Wizards) Shield element from one source only. Elements: Malevolent Ritualists have a Solar absorption shield (Destinypedia infobox; not mentioned by guides)."
+   },
+   {
+    "name": "Zulmak, Instrument of Torment",
+    "kind": "boss",
+    "tip": "Sword-centric fight: the relic does the disciple work, then you DPS inside the small ring around the crystal, so bring a heavy sword (or rockets/LFR) and add clear for Cursed Thrall.",
+    "roles": [
+     "sword",
+     "boss-burst",
+     "add-clear"
+    ],
+    "meta": [
+     "The Lament",
+     "Falling Guillotine",
+     "Anarchy",
+     "Witherhoard",
+     "Xenophage"
+    ],
+    "types": [
+     "Sword",
+     "Linear Fusion Rifle",
+     "Rocket Launcher",
+     "Grenade Launcher",
+     "Machine Gun"
+    ],
+    "range": "close",
+    "dps": {
+     "style": "sustained",
+     "bossMoves": true
+    },
+    "enemies": [
+     "Hive"
+    ],
+    "recommended": [
+     {
+      "weapon": "The Lament / Falling Guillotine (sword)",
+      "why": "Must stand in ring next to boss; swords maximize damage",
+      "sources": [
+       "https://www.destinypedia.com/Pit_of_Heresy",
+       "https://timesaver.gg/blog/destiny-2-pit-of-heresy-dungeon-guide",
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/pit-of-heresy-guide"
+      ]
+     },
+     {
+      "weapon": "Linear Fusion Rifle / Rocket Launcher",
+      "why": "Safer ranged DPS within the ring",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/pit-of-heresy-guide"
+      ]
+     },
+     {
+      "weapon": "Anarchy / Witherhoard / Xenophage",
+      "why": "Passive damage and solo-friendly options",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/pit-of-heresy-guide"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.destinypedia.com/Zulmak,_Instrument_of_Torment",
+     "https://www.destinypedia.com/Pit_of_Heresy",
+     "https://boosting-ground.com/Destiny2/guides/dungeon-guides/pit-of-heresy-guide",
+     "https://timesaver.gg/blog/destiny-2-pit-of-heresy-dungeon-guide",
+     "https://games.gg/destiny-2/guides/destiny-2-monument-of-triumph-pit-of-heresy-dungeon-guide/",
+     "https://destiny2.vaexil.tv/guides/dungeons/pit-of-heresy"
+    ],
+    "confidence": "high",
+    "notes": "Destinypedia's Zulmak page calls the Knight disciple 'Vanquisher' vs 'Might' elsewhere (naming only). No champions listed anywhere."
+   }
+  ],
+  "shattered-throne": [
+   {
+    "name": "Erebus",
+    "kind": "mechanics",
+    "tip": "Long-range primary/special for Hobgoblin snipers on ledges plus special/heavy for Taken Architect minibosses.",
+    "roles": [
+     "range",
+     "add-clear",
+     "boss-burst"
+    ],
+    "types": [
+     "Sniper Rifle",
+     "Scout Rifle",
+     "Combat Bow",
+     "Rocket Launcher",
+     "Grenade Launcher"
+    ],
+    "range": "long",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Taken"
+    ],
+    "recommended": [
+     {
+      "weapon": "Scout Rifle / Bow / Sniper",
+      "why": "Hobgoblins on ledges",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/shattered-throne-guide",
+       "https://www.destinypedia.com/The_Shattered_Throne/Walkthrough"
+      ]
+     },
+     {
+      "weapon": "Special/Heavy (rockets, GL)",
+      "why": "Architect minibosses",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/shattered-throne-guide"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.destinypedia.com/The_Shattered_Throne/Walkthrough",
+     "https://www.destinypedia.com/The_Shattered_Throne",
+     "https://boosting-ground.com/Destiny2/guides/dungeon-guides/shattered-throne-guide",
+     "https://www.thegamer.com/destiny-2-shattered-throne-dungeon-complete-guide/",
+     "https://d2raidguide.com/pages/dungeon-guides/ShatteredThrone.html"
+    ],
+    "confidence": "high",
+    "notes": "Name: MISSING from tool list: first real encounter (symbol-labyrinth with Labyrinth Architect minibosses, then Asterion, Set Apart) Grindout describes Erebus with a 'Petitioner's Mark' mechanic (wrong, that is Vorgeth) and gives inconsistent symbol counts; ignored."
+   },
+   {
+    "name": "The Descent",
+    "kind": "traversal",
+    "tip": "Bring a long-range weapon to kill Ogres the moment they spawn (their blasts knock you off) and add clear for the Thrallway.",
+    "roles": [
+     "range",
+     "add-clear",
+     "close"
+    ],
+    "meta": [
+     "Wish-Ender",
+     "Trinity Ghoul"
+    ],
+    "types": [
+     "Sniper Rifle",
+     "Scout Rifle",
+     "Combat Bow"
+    ],
+    "range": "mixed",
+    "dps": {
+     "style": "none"
+    },
+    "enemies": [
+     "Taken"
+    ],
+    "recommended": [
+     {
+      "weapon": "Sniper / Scout / Bow (e.g. Wish-Ender)",
+      "why": "Kill Ogres and Hobgoblins at range",
+      "sources": [
+       "https://www.thegamer.com/destiny-2-shattered-throne-dungeon-complete-guide/",
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/shattered-throne-guide",
+       "https://www.destinypedia.com/The_Shattered_Throne/Walkthrough"
+      ]
+     },
+     {
+      "weapon": "Trinity Ghoul / add-clear weapon",
+      "why": "Endless Shadow Thrall",
+      "sources": [
+       "https://www.thegamer.com/destiny-2-shattered-throne-dungeon-complete-guide/",
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/shattered-throne-guide"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.destinypedia.com/The_Shattered_Throne/Walkthrough",
+     "https://www.thegamer.com/destiny-2-shattered-throne-dungeon-complete-guide/",
+     "https://boosting-ground.com/Destiny2/guides/dungeon-guides/shattered-throne-guide",
+     "https://d2raidguide.com/pages/dungeon-guides/ShatteredThrone.html"
+    ],
+    "confidence": "high",
+    "notes": "Name: MISSING from tool list (optional): traversal fight - sniper hallway, Taken Ogre catwalk room, endless Shadow Thrall hall, then cross the chasm None."
+   },
+   {
+    "name": "Vorgeth, the Boundless Hunger",
+    "kind": "boss",
+    "tip": "Kill four Void-shielded Keeper Wizards at range, then burst the Taken Ogre in a ~30s window while someone shoots down his Axion Darts.",
+    "roles": [
+     "boss-burst",
+     "range",
+     "support"
+    ],
+    "meta": [
+     "The Lament",
+     "Whisper of the Worm",
+     "Anarchy",
+     "Witherhoard"
+    ],
+    "shields": [
+     {
+      "element": "Void",
+      "on": "Keepers of Petitions (Taken Wizards)",
+      "frequency": "common"
+     }
+    ],
+    "types": [
+     "Sword",
+     "Linear Fusion Rifle",
+     "Rocket Launcher",
+     "Sniper Rifle",
+     "Grenade Launcher"
+    ],
+    "range": "mixed",
+    "dps": {
+     "style": "burst"
+    },
+    "enemies": [
+     "Taken"
+    ],
+    "recommended": [
+     {
+      "weapon": "The Lament / sword",
+      "why": "One-phase with Ward of Dawn; self-heal",
+      "sources": [
+       "https://www.thegamer.com/destiny-2-shattered-throne-dungeon-complete-guide/",
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/shattered-throne-guide"
+      ]
+     },
+     {
+      "weapon": "Linear Fusion / Rocket Launcher / Whisper of the Worm",
+      "why": "Burst DPS; Whisper also handles darts",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/shattered-throne-guide"
+      ]
+     },
+     {
+      "weapon": "Grenade Launcher (Spike Grenades) / Telesto",
+      "why": "Boss damage and Keeper kills",
+      "sources": [
+       "https://www.destinypedia.com/The_Shattered_Throne/Walkthrough"
+      ]
+     },
+     {
+      "weapon": "Anarchy / Witherhoard",
+      "why": "Solo constant damage",
+      "sources": [
+       "https://www.thegamer.com/destiny-2-shattered-throne-dungeon-complete-guide/"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.destinypedia.com/The_Shattered_Throne/Walkthrough",
+     "https://www.destinypedia.com/Keeper_of_Petitions",
+     "https://www.thegamer.com/destiny-2-shattered-throne-dungeon-complete-guide/",
+     "https://boosting-ground.com/Destiny2/guides/dungeon-guides/shattered-throne-guide",
+     "https://d2raidguide.com/pages/dungeon-guides/ShatteredThrone.html",
+     "https://grindout.com/destiny-2/guides/shattered-throne"
+    ],
+    "confidence": "high",
+    "notes": "Name: Full name is 'Vorgeth, the Boundless Hunger' Grindout recommends Queensbreaker/Lord of Wolves and says orbs go on plates (dated/unreliable). Void shield from Destinypedia only. Elements: Keepers of Petitions carry Void shields (Destinypedia enemy page); a Void special/primary speeds Keeper kills."
+   },
+   {
+    "name": "Dûl Incaru, the Eternal Return",
+    "kind": "boss",
+    "tip": "Clear Psion swarms fast, kill the three Fatesmith Knights with high damage, then dump heavy on Dûl Incaru within the 45s Finite Thought timer and break any immunity crystal.",
+    "roles": [
+     "boss-burst",
+     "add-clear",
+     "precision"
+    ],
+    "meta": [
+     "Whisper of the Worm",
+     "The Lament",
+     "Sleeper Simulant"
+    ],
+    "types": [
+     "Sniper Rifle",
+     "Rocket Launcher",
+     "Sword",
+     "Linear Fusion Rifle",
+     "Grenade Launcher",
+     "Shotgun"
+    ],
+    "range": "mixed",
+    "dps": {
+     "style": "burst"
+    },
+    "enemies": [
+     "Taken",
+     "Hive"
+    ],
+    "recommended": [
+     {
+      "weapon": "Whisper of the Worm",
+      "why": "High precision boss DPS",
+      "sources": [
+       "https://www.destinypedia.com/The_Shattered_Throne/Walkthrough",
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/shattered-throne-guide"
+      ]
+     },
+     {
+      "weapon": "The Lament / Rocket Launcher",
+      "why": "Heavy DPS on Knights and boss",
+      "sources": [
+       "https://www.thegamer.com/destiny-2-shattered-throne-dungeon-complete-guide/",
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/shattered-throne-guide"
+      ]
+     },
+     {
+      "weapon": "Linear Fusion Rifle / Grenade Launcher",
+      "why": "Burst DPS",
+      "sources": [
+       "https://grindout.com/destiny-2/guides/shattered-throne",
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/shattered-throne-guide"
+      ]
+     },
+     {
+      "weapon": "Shotgun",
+      "why": "Destroy the immunity crystal",
+      "sources": [
+       "https://boosting-ground.com/Destiny2/guides/dungeon-guides/shattered-throne-guide"
+      ]
+     }
+    ],
+    "sources": [
+     "https://www.destinypedia.com/The_Shattered_Throne/Walkthrough",
+     "https://www.thegamer.com/destiny-2-shattered-throne-dungeon-complete-guide/",
+     "https://boosting-ground.com/Destiny2/guides/dungeon-guides/shattered-throne-guide",
+     "https://d2raidguide.com/pages/dungeon-guides/ShatteredThrone.html",
+     "https://grindout.com/destiny-2/guides/shattered-throne",
+     "https://www.ludo.guide/guide/destiny-2/boss-guides/dungeon-boss-dul-incaru"
+    ],
+    "confidence": "medium",
+    "notes": "Name: Spelled 'Dûl Incaru, the Eternal Return' in game (ASCII 'Dul' fine). Preceded by an 'Ascend' tower-climb traversal (Wizards, Captains, Hobgoblins) not tracked. Ludo.guide describes a damage-broken shield, healing Knights and teleport to center (contradicts Destinypedia/TheGamer/boosting-ground; discarded). Grindout says crystals wipe the team; chose Destinypedia's Knight-immunity crystal."
+   }
+  ]
+ }
+}

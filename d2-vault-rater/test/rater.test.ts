@@ -372,3 +372,33 @@ test("Aegis exotic tab: S to F grades become tiers, E/F clamp to D and score bel
   assert.equal(rows[0].notes, "Hyperblade for movement");
   assert.equal(parseAegisExotics("SMGs", csv), null);
 });
+
+test("encounter loadouts: shields and range steer add clear to the right weapon", async () => {
+  const { planEncounter } = await import("../src/rating/encounters.js");
+  const w = (name: string, type: string, slot: string, element: string, score: number) =>
+    ({ instanceId: name, name, type, slot, element, score, rarity: "Legendary" }) as unknown as import("../src/rating/weapons.js").WeaponRating;
+  const vault = [w("Void SMG", "Submachine Gun", "Energy", "Void", 90), w("Arc SMG", "Submachine Gun", "Energy", "Arc", 84), w("Arc Scout", "Scout Rifle", "Energy", "Arc", 84)];
+  const base = { name: "Test", kind: "mechanics" as const, tip: "", roles: ["add-clear" as const] };
+  assert.equal(planEncounter(base, vault).picks[0].name, "Void SMG", "with nothing to steer it, the best weapon wins");
+  const arc = planEncounter({ ...base, shields: [{ element: "Arc", on: "Knights", frequency: "common" }] }, vault).picks[0];
+  assert.equal(arc.name, "Arc SMG");
+  assert.equal(arc.why, "Arc shields");
+  assert.equal(planEncounter({ ...base, range: "long", shields: [{ element: "Arc", on: "Knights", frequency: "common" }] }, vault).picks[0].name, "Arc Scout");
+});
+
+test("encounter data: every raid and dungeon has encounters, each with valid facts and at least two sources", async () => {
+  const { ENCOUNTERS, ROLE_TYPES } = await import("../src/data/encounters.js");
+  const { ACTIVITIES } = await import("../src/sources/activities.js");
+  for (const a of ACTIVITIES) assert.ok(ENCOUNTERS[a.key]?.length, `${a.key} has encounters`);
+  for (const [key, list] of Object.entries(ENCOUNTERS)) {
+    for (const e of list) {
+      const at = `${key} / ${e.name}`;
+      assert.ok(e.roles.length >= 1 && e.roles.every((r) => r in ROLE_TYPES), `${at}: roles`);
+      assert.ok(new Set(e.sources).size >= 2, `${at}: two or more sources`);
+      for (const s of e.shields ?? []) assert.ok(["Arc", "Solar", "Void", "Stasis", "Strand"].includes(s.element) && ["common", "some", "rare"].includes(s.frequency), `${at}: shield`);
+      for (const c of e.champions ?? []) assert.ok(["Barrier", "Overload", "Unstoppable"].includes(c), `${at}: champion`);
+      if (e.range) assert.ok(["close", "mid", "long", "mixed"].includes(e.range), `${at}: range`);
+      if (e.dps) assert.ok(["burst", "sustained", "none"].includes(e.dps.style), `${at}: dps`);
+    }
+  }
+});

@@ -731,6 +731,9 @@ details.full div { white-space: pre-line; color: var(--muted); font-size: 12.5px
 .kitw .role { font-size: 11px; font-weight: 500; color: var(--faint); }
 .kitw .role .m { color: var(--green); margin-left: 4px; }
 .kitw.empty { color: var(--faint); font-size: 12.5px; display: block; border-style: dashed; }
+.efacts { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; color: var(--faint); }
+.efacts > span { display: inline-flex; gap: 6px; align-items: center; }
+.efacts b { color: var(--muted); font-weight: 600; }
 .wanted { font-size: 12.5px; color: var(--muted); }
 .wanted b { color: var(--gold); font-weight: 600; }
 .radset { display: grid; gap: 8px; padding: 12px 14px; border-radius: 14px; background: var(--glass); border: 1px solid var(--line); }
@@ -1746,15 +1749,38 @@ function vrMain() {
       const p = e.picks.find((x) => x.role === role);
       if (!p) return `<div class="kitw empty"><div class="role">${ROLE_LABEL[role]}</div>Nothing in your vault fits</div>`;
       const w = W.get(p.id);
-      return `<button class="kitw" data-w="${p.id}">${img(w?.ic)}<div style="min-width:0"><div class="role">${ROLE_LABEL[role]}${p.meta ? `<span class="m">${p.meta === "encounter" ? "Guide pick" : "Meta"}</span>` : ""}</div><div class="nm" style="font-size:13.5px">${esc(p.name)}</div></div></button>`;
+      const tag = p.why || (p.meta === "encounter" ? "Guide pick" : p.meta ? "Meta" : "");
+      return `<button class="kitw" data-w="${p.id}">${img(w?.ic)}<div style="min-width:0"><div class="role">${ROLE_LABEL[role]}${tag ? `<span class="m">${esc(tag)}</span>` : ""}</div><div class="nm" style="font-size:13.5px">${esc(p.name)}</div></div></button>`;
     }).join("");
+    // What the encounter throws at you: shields to break, champions, the distance fights happen at and how damage plays.
+    const facts = (e) => {
+      const out = [];
+      if (e.shields?.length) out.push(`<span>Shields ${e.shields.map((s) => `<span class="el" style="color:var(--${esc(s.element)})" title="${esc(s.on)}${s.frequency === "common" ? ", common" : s.frequency === "rare" ? ", rare" : ""}"><i></i><span>${esc(s.element)}</span></span>`).join(" ")}</span>`);
+      if (e.champions?.length) out.push(`<span>Champions <b>${e.champions.map(esc).join(", ")}</b></span>`);
+      if (e.range && e.range !== "mixed") out.push(`<span>Fights at <b>${e.range} range</b></span>`);
+      if (e.dps && e.dps.style !== "none") out.push(`<span>Damage <b>${e.dps.style === "burst" ? "short bursts" : "long phases"}${e.dps.bossMoves ? ", boss moves" : ""}</b></span>`);
+      return out.length ? `<div class="efacts">${out.join("")}</div>` : "";
+    };
     return `<details class="encs"${open ? " open" : ""}><summary>Encounter guide · ${list.length} encounters</summary>${list.map((e) => `<div class="enc">
       <div class="eh"><b>${esc(e.name)}</b><span class="kind ${e.kind}">${e.kind === "boss" ? "Boss" : e.kind === "traversal" ? "Traversal" : "Mechanics"}</span></div>
       <p>${esc(e.tip)}</p>
+      ${facts(e)}
       <div class="kit">${kit(e)}</div>
       ${e.missing.length ? `<div class="wanted">Worth getting for this: <b>${e.missing.map(esc).join(", ")}</b></div>` : ""}
       ${window.VR_LOCAL && e.picks.length && DATA.chars?.length ? `<div class="pullrow">Pull and equip this loadout on: ${DATA.chars.map((c) => `<button class="movebtn" data-pullenc="${esc(key)}|${list.indexOf(e)}" data-to="${c.id}">${esc(c.cls)}</button>`).join("")}<span class="encmsg" aria-live="polite"></span></div>` : ""}</div>`).join("")}</details>`;
   };
+  // Showing or hiding one card's guide does the same for every card on its row, so the row stays level.
+  document.addEventListener("toggle", (e) => {
+    const d = e.target;
+    if (!d.matches?.(".encs")) return;
+    const card = d.closest(".rad");
+    if (!card?.parentElement) return;
+    for (const c of card.parentElement.children) {
+      if (c === card || Math.abs(c.offsetTop - card.offsetTop) > 1) continue;
+      const o = c.querySelector(".encs");
+      if (o && o.open !== d.open) o.open = d.open;
+    }
+  }, true);
   document.addEventListener("click", async (e) => {
     const b = e.target.closest("[data-pullenc]"); if (!b) return;
     const [key, i] = b.dataset.pullenc.split("|");

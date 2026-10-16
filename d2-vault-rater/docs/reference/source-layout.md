@@ -26,12 +26,13 @@
 | [src/sources/wishlist.ts:24](../../src/sources/wishlist.ts#L24) | DIM wishlist parsing and import. |
 | [src/sources/activities.ts:96](../../src/sources/activities.ts#L96) | Raid and dungeon loot; where each weapon comes from. |
 | [src/sources/csv.ts:5](../../src/sources/csv.ts#L5) | RFC 4180 CSV parser and the Google Sheets CSV URL. |
-| [src/data/encounters.ts:55](../../src/data/encounters.ts#L55) | Every raid and dungeon encounter, roles and meta picks. |
+| [src/data/encounters.json](../../src/data/encounters.json) | Every raid and dungeon encounter: roles, shields, champions, range, damage phase, guide picks and the sources they were checked against. |
+| [src/data/encounters.ts:13](../../src/data/encounters.ts#L13) | Encounter types, role weapon fits and role meta picks. |
 | [src/rating/settings.ts:89](../../src/rating/settings.ts#L89) | Settings schema, presets, `strictnessFor`. |
 | [src/rating/weapons.ts:145](../../src/rating/weapons.ts#L145) | Weapon scores and verdicts. |
 | [src/rating/armor.ts:96](../../src/rating/armor.ts#L96) | Armor scores and verdicts. |
 | [src/rating/activities.ts:57](../../src/rating/activities.ts#L57) | Raid and dungeon ranking. |
-| [src/rating/encounters.ts:45](../../src/rating/encounters.ts#L45) | Encounter loadouts. |
+| [src/rating/encounters.ts:88](../../src/rating/encounters.ts#L88) | Encounter loadouts. |
 | [src/dim/actions.ts:46](../../src/dim/actions.ts#L46) | Lock plan, apply, undo, DIM CSV. |
 | [src/dim/common.ts:30](../../src/dim/common.ts#L30) | DIM Sync shapes, profile read and tag write. Browser-safe. |
 | [src/dim/sync.ts:44](../../src/dim/sync.ts#L44) | DIM Sync auth for Node. *Shimmed.* |
