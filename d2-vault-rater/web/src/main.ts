@@ -22,7 +22,7 @@ import { rateArmor } from "../../src/rating/armor.js";
 import { rateActivities } from "../../src/rating/activities.js";
 import { planEncounters } from "../../src/rating/encounters.js";
 import { planDimActions, applyDimActions, undoDimActions, type DimPlan } from "../../src/dim/actions.js";
-import { insertPerk, moveItems } from "../../src/bungie/transfer.js";
+import { insertMod, insertPerk, moveItems } from "../../src/bungie/transfer.js";
 import { buildSiteData } from "../../src/report/siteData.js";
 import { loadBuilds } from "./builds/store";
 import { esc } from "./html";
@@ -249,6 +249,10 @@ window.VR_API = async (path, body) => {
       case "/api/perk":
         if (typeof body.id !== "string" || typeof body.socket !== "number" || typeof body.perk !== "string") return { ok: false, error: "Send a weapon id, socket index and perk name." };
         await insertPerk(body.id, body.socket, body.perk);
+        return { ok: true };
+      case "/api/mod":
+        if (typeof body.id !== "string" || typeof body.socket !== "number" || typeof body.mod !== "string") return { ok: false, error: "Send a weapon id, socket index and mod name." };
+        await insertMod(body.id, body.socket, body.mod);
         return { ok: true };
       case "/api/locks/apply": {
         // Only the plan the page previewed, and only with the explicit confirmation.
