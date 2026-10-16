@@ -879,6 +879,10 @@ aside.drawer.scrolled .dp-mini { opacity: 1; transform: none; }
 .dp-hero .shot { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; opacity: .85; }
 .dp-hero::before { content: ""; position: absolute; inset: 0; z-index: -3; background: radial-gradient(70% 90% at 85% 0%, color-mix(in srgb, var(--elc, var(--cyan)) 22%, transparent), transparent 70%), radial-gradient(60% 80% at 0% 100%, rgba(51,227,160,.10), transparent 70%), var(--deep); }
 .dp-hero::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(10,15,36,.15) 0%, rgba(10,15,36,.35) 40%, rgba(10,15,36,.98) 100%), linear-gradient(90deg, rgba(10,15,36,.7), transparent 70%); }
+.dp-hero.art { aspect-ratio: 16 / 9; max-height: 400px; }
+.dp-hero.art .shot { opacity: 1; }
+.dp-hero.art .dp-id { text-shadow: 0 2px 14px rgba(0,0,0,.85); }
+.dp-hero.art::after { background: linear-gradient(180deg, rgba(10,15,36,.35) 0%, transparent 18%, transparent 52%, rgba(10,15,36,.82) 80%, rgba(10,15,36,1) 100%); }
 .dp-id { display: flex; align-items: flex-end; gap: 16px; min-width: 0; }
 .dp-ico { position: relative; flex: none; }
 .dp-ico img, .dp-ico .ph { display: block; width: 72px; height: 72px; border-radius: 12px; border: 1px solid rgba(238,241,255,.25); box-shadow: 0 14px 40px -12px rgba(0,0,0,.9); }
@@ -888,6 +892,14 @@ aside.drawer.scrolled .dp-mini { opacity: 1; transform: none; }
 .dp-id .eyebrow { font-size: 11px; }
 .dp-sub { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 8px; font-size: 13.5px; color: var(--muted); }
 .dp-sub .chip { padding: 3px 10px; font-size: 12px; }
+.dimpick { position: relative; gap: 6px; color: var(--muted); }
+.dimpick.favorite { color: #ff79b4; } .dimpick.keep { color: var(--green); } .dimpick.infuse { color: var(--cyan); } .dimpick.junk { color: var(--shard); } .dimpick.archive { color: var(--muted); }
+.dimpick:not(.none) { border-color: color-mix(in srgb, currentColor 45%, transparent); background: color-mix(in srgb, currentColor 12%, rgba(5,8,22,.6)); }
+label.dimpick { cursor: pointer; padding-right: 26px !important; }
+label.dimpick::after { content: ""; position: absolute; right: 11px; top: 50%; width: 5px; height: 5px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: translateY(-70%) rotate(45deg); pointer-events: none; }
+label.dimpick:hover, label.dimpick:focus-within { border-color: currentColor; }
+.dimpick select { appearance: none; border: 0; background: none; padding: 0; font: 600 12px var(--body); color: var(--ink); cursor: pointer; outline: none; }
+.dimpick select option { background: var(--panel); color: var(--ink); }
 
 /* Body: sections in one column (narrow), two (pop-up) or three (wide bottom strip) */
 .dp-body { display: grid; gap: 14px; padding: 4px 18px 28px; align-items: start; }
@@ -905,7 +917,7 @@ aside.drawer.scrolled .dp-mini { opacity: 1; transform: none; }
   .dp-col.r { display: contents; }
   .dp-col.m, .dp-col.s { display: grid; gap: 14px; align-content: start; }
 }
-aside.drawer[data-mode=bottom] .dp-hero { min-height: 0; padding: 20px 200px 16px 24px; }
+aside.drawer[data-mode=bottom] .dp-hero { aspect-ratio: auto; min-height: 0; padding: 20px 200px 16px 24px; }
 aside.drawer[data-mode=bottom] .dp-ico img, aside.drawer[data-mode=bottom] .dp-ico .ph { width: 56px; height: 56px; }
 aside.drawer[data-mode=bottom] .dp-id h2 { font-size: 23px; }
 .dp-sec { display: grid; gap: 12px; padding: 16px; border-radius: 3px 16px; border: 1px solid var(--line); background: var(--glass); }
@@ -2542,7 +2554,7 @@ function vrMain() {
     drawer.innerHTML = `<div class="dp-bar"><div class="dp-mini" aria-hidden="true">${img(ico)}<b>${esc(title)}</b></div>
         <div class="dmode" role="group" aria-label="Show details as">${Object.entries(DMODES).map(([k, [l, svg]]) => `<button type="button" data-dmode="${k}" title="${l}" aria-label="${l}"><svg viewBox="0 0 18 14" aria-hidden="true">${svg}</svg></button>`).join("")}</div>
         <button class="d-close" type="button" aria-label="Close">✕</button></div>
-      <header class="dp-hero"${el ? ` style="--elc:var(--${esc(el)})"` : ""}>${art ? `<img class="shot" src="${art}" alt="">` : ""}
+      <header class="dp-hero${art ? " art" : ""}"${el ? ` style="--elc:var(--${esc(el)})"` : ""}>${art ? `<img class="shot" src="${art}" alt="">` : ""}
         <div class="dp-id"><span class="dp-ico${gold ? " exotic" : ""}">${img(ico)}${tier || ""}</span>
           <div style="min-width:0"><div class="eyebrow"${gold ? ' style="color:var(--gold)"' : ""}>${eyebrow}</div><h2 id="dp-title">${esc(title)}</h2><div class="dp-sub">${sub}</div></div></div></header>
       ${body}`;
@@ -2666,22 +2678,44 @@ function vrMain() {
     const head = '<div class="cap">DIM</div>';
     if (!DIMS.loaded) return `<div class="dimpanel">${head}<p class="small muted">${DIMS.error ? "Couldn't reach DIM: " + esc(DIMS.error) : "DIM data wasn't loaded."}</p></div>`;
     const tagUI = !DIMS.tags ? "" : window.VR_LOCAL
-      ? `<div class="tagbtns" data-id="${x.id}">${Object.entries(TAG_LABEL).map(([k, l]) => `<button class="tagbtn ${k}" data-tag="${k}" aria-pressed="${x.tg === k}">${l}</button>`).join("")}<button class="tagbtn" data-tag="" aria-pressed="${!x.tg}">No tag</button></div>
+      ? `<textarea id="dimnotes" rows="2" placeholder="DIM notes" aria-label="DIM notes">${esc(x.nt || "")}</textarea>
         <textarea id="dimnotes" rows="2" placeholder="DIM notes" aria-label="DIM notes">${esc(x.nt || "")}</textarea>
         <div class="tb-row"><button class="btn primary" id="dimsave" data-id="${x.id}">Save to DIM</button><span class="small muted" id="dimmsg" aria-live="polite"></span></div>`
-      : `<div class="facts"><div><span>Tag</span><b>${x.tg ? TAG_LABEL[x.tg] : "None"}</b></div>${x.nt ? `<div><span>Notes</span><b>${esc(x.nt)}</b></div>` : ""}</div><p class="small muted">Open the report from the local app (Vault Rater.cmd) to change tags here.</p>`;
+      : `${x.nt ? `<div class="facts"><div><span>Notes</span><b>${esc(x.nt)}</b></div></div>` : ""}<p class="small muted">Open the report from the local app (Vault Rater.cmd) to change tags and notes here.</p>`;
     const los = (DATA.dimLoadouts || []).map((l, i) => [l, i]).filter(([l]) => l.ids.includes(x.id));
     const lo = !DIMS.loadouts ? "" : window.VR_LOCAL && los.length
       ? `<div class="small muted">In DIM loadouts. Pull everything in one to its character:</div><div class="lorow">${los.map(([l, i]) => `<button class="movebtn" data-pulllo="${i}" title="Pull ${l.ids.length} items to your ${CLASS_OF_TYPE[l.classType] || "character"}">${esc(l.name)} → ${esc(CLASS_OF_TYPE[l.classType] || "any class")}</button>`).join("")}</div><span class="small muted" id="lomsg" aria-live="polite"></span>`
       : `<div class="small"><span class="muted">In DIM loadouts:</span> ${x.lo?.length ? x.lo.map(esc).join(", ") : "none"}</div>`;
     return `<div class="dimpanel">${head}${tagUI}${lo}</div>`;
   }
+  const dimTagPick = (x) => {
+    if (!DIMS.tags || !DIMS.loaded) return "";
+    if (!window.VR_LOCAL) return x.tg ? `<span class="chip dimpick ${x.tg}"><span class="k">DIM</span>${TAG_LABEL[x.tg] || esc(x.tg)}</span>` : "";
+    return `<label class="chip dimpick ${x.tg || "none"}" title="DIM tag: changing it saves to DIM"><span class="k">DIM</span><select data-dimtag="${x.id}" aria-label="DIM tag">${[["", "No tag"], ...Object.entries(TAG_LABEL)].map(([k, l]) => `<option value="${k}"${(x.tg || "") === k ? " selected" : ""}>${l}</option>`).join("")}</select></label>`;
+  };
+  drawer.addEventListener("change", async (e) => {
+    const sel = e.target.closest("select[data-dimtag]"); if (!sel) return;
+    const x = W.get(sel.dataset.dimtag) || A.get(sel.dataset.dimtag); if (!x) return;
+    const tag = sel.value || null, before = x.tg || null, pick = sel.closest(".dimpick");
+    sel.disabled = true;
+    const t = cornerToast(`Saving the DIM tag for ${x.n}…`);
+    try {
+      const res = await api("/api/tag", { id: x.id, tag, notes: x.nt || null });
+      if (!res.ok) throw new Error(res.error);
+      x.tg = tag;
+      pick.className = `chip dimpick ${tag || "none"}`;
+      t.done(`${x.n}: ${tag ? TAG_LABEL[tag] : "no tag"} saved to DIM`, true);
+      rerender();
+    } catch (err) {
+      sel.value = before || "";
+      t.done(`Couldn't save the DIM tag: ${err.message}`, false);
+    }
+    sel.disabled = false;
+  });
   drawer.addEventListener("click", async (e) => {
-    const t = e.target.closest(".tagbtn");
-    if (t) { $$(".tagbtn", drawer).forEach((b) => b.setAttribute("aria-pressed", String(b === t))); return; }
     const save = e.target.closest("#dimsave"); if (!save) return;
     const x = W.get(save.dataset.id) || A.get(save.dataset.id);
-    const tag = $(".tagbtn[aria-pressed=true]", drawer)?.dataset.tag || null;
+    const tag = x.tg || null;
     const notes = $("#dimnotes", drawer).value.trim() || null;
     save.disabled = true; $("#dimmsg").textContent = "Saving…";
     try {
@@ -2821,7 +2855,7 @@ function vrMain() {
     openDrawer({
       id, ico: w.ic, art: src(w.ss), el: w.e, gold: isExotic(w), title: w.n,
       eyebrow: `${esc(w.s)} · ${esc(w.r)}`, tier: tierBadge(w),
-      sub: `<span>${esc(typeLine(w))}</span> ${elDot(w.e)}${w.pw ? `<span class="vtpw">✦ ${w.pw}</span>` : ""}${w.lk ? '<span class="chip">🔒 Locked</span>' : ""}${w.god ? '<span class="chip" style="color:var(--green)">Wishlist god roll</span>' : ""}${w.loc && w.loc !== "Vault" ? `<span class="chip">${esc(w.loc)}</span>` : ""}`,
+      sub: `<span>${esc(typeLine(w))}</span> ${elDot(w.e)}${w.pw ? `<span class="vtpw">✦ ${w.pw}</span>` : ""}${w.lk ? '<span class="chip">🔒 Locked</span>' : ""}${w.god ? '<span class="chip" style="color:var(--green)">Wishlist god roll</span>' : ""}${w.loc && w.loc !== "Vault" ? `<span class="chip">${esc(w.loc)}</span>` : ""}${dimTagPick(w)}`,
       body: dpLayout(
         [dpSec(1, "", scores, "bare"), dpSec(2, "Verdict", why, `dp-verdict ${w.v}`), dpSec(5, "", whereBox(w.src), "bare"), dpSec(6, "Actions", actions), dpSec(8, "Details", facts)],
         [dpSec(3, "Perks", perkGrid(w), "", w.god ? "Wishlist god roll" : "")],
@@ -2840,7 +2874,7 @@ function vrMain() {
     openDrawer({
       id, ico: a.ic, gold: isExotic(a), title: a.n,
       eyebrow: `${esc(a.cls)} · ${esc(a.s)} · ${esc(a.r)}`,
-      sub: `<span>${esc(a.arch || "Legacy armor")}${setLine(a)}</span>${a.pw ? `<span class="vtpw">✦ ${a.pw}</span>` : ""}${a.lk ? '<span class="chip">🔒 Locked</span>' : ""}${a.loc && a.loc !== "Vault" ? `<span class="chip">${esc(a.loc)}</span>` : ""}`,
+      sub: `<span>${esc(a.arch || "Legacy armor")}${setLine(a)}</span>${a.pw ? `<span class="vtpw">✦ ${a.pw}</span>` : ""}${a.lk ? '<span class="chip">🔒 Locked</span>' : ""}${a.loc && a.loc !== "Vault" ? `<span class="chip">${esc(a.loc)}</span>` : ""}${dimTagPick(a)}`,
       body: dpLayout(
         [dpSec(1, "", scores, "bare"), dpSec(2, "Verdict", why, `dp-verdict ${a.v}`), dpSec(5, "Actions", movePanel(a, true) + dimPanel(a)), dpSec(6, "Details", `<div class="facts">${fact("Where", a.loc)}${fact("Archetype", a.arch || "Legacy")}${fact("Power", a.pw)}</div>`)],
         [dpSec(3, "Stats", statBars(a, true) + parts, "", `${a.tot} total`)],
