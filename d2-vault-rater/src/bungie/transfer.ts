@@ -15,11 +15,14 @@ export interface MoveResult {
   /** Where the item is now: "vault" or a character id. */
   where: string;
   equipped: boolean;
+  /** It was in the postmaster and has been pulled into its character's inventory. */
+  pulled?: boolean;
   error?: string;
 }
 
 /** An item action (move, equip, insert plug...), retried while Bungie throttles it. */
 export const action = (path: string, body: Record<string, unknown>): Promise<unknown> => retryThrottled(() => bungie(path, { body }));
+const sendAction = action;
 
 const friendly = (e: unknown): string => {
   const m = (e as Error).message;
@@ -44,8 +47,9 @@ export function resolveTarget(vault: Vault, to: string): string {
  * Pull items to a character (or send them to the vault), optionally equipping them.
  * Equipped items are never moved: Bungie requires equipping something else first.
  */
-export async function moveItems(ids: string[], to: string, opts: { equip?: boolean; delayMs?: number } = {}): Promise<MoveResult[]> {
-  const vault = await currentVault();
+export async function moveItems(ids: string[], to: string, opts: { equip?: boolean; delayMs?: number; vault?: Vault; send?: typeof action } = {}): Promise<MoveResult[]> {
+  const vault = opts.vault ?? (await currentVault());
+  const action = opts.send ?? sendAction;
   const target = resolveTarget(vault, to);
   const targetClass = vault.characters.find((c) => c.id === target)?.className;
   const byId = new Map<string, WeaponRecord | ArmorRecord>([...vault.weapons, ...vault.armor].map((x) => [x.instanceId, x]));
@@ -63,6 +67,15 @@ export async function moveItems(ids: string[], to: string, opts: { equip?: boole
     try {
       if (item.kind === "armor" && target !== "vault" && item.classType !== "Any" && item.classType !== targetClass)
         throw new Error(`${item.classType} armor can't go to your ${targetClass}.`);
+      // Lost Items first come out of the postmaster into their own character's inventory, then move on as usual.
+      if (item.location.postmaster) {
+        await action("/Destiny2/Actions/Items/PullFromPostmaster/", {
+          itemReferenceHash: item.itemHash, stackSize: 1, itemId: id, characterId: item.location.where, membershipType: vault.membershipType,
+        });
+        item.location = { where: item.location.where, equipped: false };
+        res.pulled = true;
+        await sleep(opts.delayMs ?? 150);
+      }
       if (item.location.where !== target) {
         if (item.location.equipped) throw new Error(`Equipped on your ${vault.characters.find((c) => c.id === item.location.where)?.className ?? "character"}. Equip something else there first.`);
         if (item.location.where !== "vault") {

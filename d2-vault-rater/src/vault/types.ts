@@ -25,6 +25,8 @@ export interface Location {
   /** "vault" or a character id */
   where: string;
   equipped: boolean;
+  /** In that character's postmaster (Lost Items): not in its slots until it's pulled. */
+  postmaster?: boolean;
 }
 
 export interface WeaponRecord {

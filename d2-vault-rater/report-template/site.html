@@ -535,6 +535,11 @@ details.vsec > summary h3 { font: 600 19px var(--display); }
 details.vsec > summary .small { margin-left: auto; text-align: right; }
 details.vsec.cc > summary { border-left: 3px solid var(--cc); }
 details.vchar { margin-bottom: 14px; }
+/* Postmaster: one panel per character, its class name down the left in the class colour */
+.vpm { display: grid; grid-template-columns: repeat(var(--chars), minmax(0, 1fr)); gap: 14px; margin-bottom: 6px; }
+.vpmc { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: start; min-height: 84px; padding: 12px 14px 12px 10px; border-radius: 3px 14px; background: var(--glass); border: 1px solid var(--line); }
+.vpmn { writing-mode: vertical-rl; transform: rotate(180deg); align-self: stretch; text-align: center; color: var(--cc); font: 600 15px var(--display); letter-spacing: .12em; text-transform: uppercase; }
+@media (max-width: 700px) { .vpm { grid-template-columns: minmax(0, 1fr); } }
 details.vchar .vgrid { column-gap: 26px; }
 details.vchar > summary { list-style: none; cursor: pointer; user-select: none; margin-bottom: 10px; }
 details.vchar > summary::-webkit-details-marker { display: none; }
@@ -1928,7 +1933,7 @@ function vrMain() {
   document.addEventListener("visibilitychange", () => autoRefresh(20_000));
   const VSLOTS = ["Kinetic", "Energy", "Power"];
   /** A collapsible Vault-mode block under a full heading; cls colours it like that class. Open state is remembered like other sections. */
-  const vsec = (id, title, note, body, cls, tools = "") => `<details class="subsec vsec${cls ? ` cc c-${esc(cls)}` : ""}" data-sec="${id}"${isOpen(id) ? " open" : ""}><summary>${chev}<h3>${title}</h3>${tools}<span class="small">${note}</span></summary>${body}</details>`;
+  const vsec = (id, title, note, body, cls, tools = "", open = true) => `<details class="subsec vsec${cls ? ` cc c-${esc(cls)}` : ""}" data-sec="${id}"${isOpen(id, open) ? " open" : ""}><summary>${chev}<h3>${title}</h3>${tools}<span class="small">${note}</span></summary>${body}</details>`;
   const STAT_ICON = DATA.statIcons || {};
   const topStat = (a) => (a.all ? STAT_ORDER.reduce((best, n) => ((a.all[n] ?? -99) > (a.all[best] ?? -99) ? n : best), STAT_ORDER[0]) : a.st?.[0]?.[0] || null);
   const statMark = (a) => { const n = topStat(a), u = n && src(STAT_ICON[n]); return u ? `<span class="tier tstat" title="Highest: ${esc(n)}"><img src="${u}" alt=""></span>` : ""; };
@@ -1938,14 +1943,17 @@ function vrMain() {
   function drawVault() {
     const el = $("#vaultview"); if (!el) return;
     const chars = [...(DATA.chars || [])].sort((a, b) => played(b.cls).localeCompare(played(a.cls))), can = !!window.VR_LOCAL && chars.length > 0;
-    const where = (x) => x.wh || "vault";
+    const where = (x) => (x.pm ? "postmaster" : x.wh || "vault");
     // ex.shown is the full list's filtered, sorted weapons; equipped weapons always show, dimmed when filtered out.
     const shown = ex.shown && ex.set === "w" ? ex.shown : DATA.weapons, match = new Set(shown.map((w) => w.id));
     const at = (to, s) => (vdim ? DATA.weapons : shown).filter((w) => where(w) === to && w.s === s);
     const tile = (w, big) => `<button class="vitem welem${big ? " big" : ""}${match.has(w.id) ? "" : " nomatch"}${isExotic(w) ? " exotic" : ""} v-${w.v}" style="--el:var(--${esc(w.e)})" data-w="${w.id}"${can && !w.eq && match.has(w.id) ? ' draggable="true"' : ""} aria-label="${esc(w.n)} · ${esc(typeLine(w))} · ${w.sc} · ${VERDICT[w.v]}${w.eq ? " · equipped" : ""}">${img(w.ic)}${dia(w.gt)}${tierBadge(w)}${newBadge(w)}<b class="num">${w.sc}</b></button>`;
     const inVault = DATA.weapons.filter((w) => where(w) === "vault").length, armorInVault = DATA.armor.filter((a) => where(a) === "vault").length;
-    el.innerHTML = vsec("v-weapons", "Weapons", plural(DATA.weapons.length, "weapon"), `<div class="vgrid" style="--chars:${chars.length}">
-      ${chars.map((c) => `<div class="vhead cc c-${esc(c.cls)}"><b>${esc(c.cls)}</b><span class="small muted">${DATA.weapons.filter((w) => w.wh === c.id).length} weapons</span></div>`).join("")}
+    // Each character's postmaster (Lost Items), rated like other gear; drag an item out to pull it and move it.
+    const lost = [...DATA.weapons, ...DATA.armor].filter((x) => x.pm);
+    const pmPanel = (c) => { const xs = lost.filter((x) => x.wh === c.id); return `<div class="vpmc cc c-${esc(c.cls)}"><b class="vpmn">${esc(c.cls)}</b><div class="vtiles">${xs.length ? xs.map((x) => (W.has(x.id) ? tile(x) : vatile(x, false, can))).join("") : '<span class="small muted">Empty</span>'}</div></div>`; };
+    el.innerHTML = vsec("v-postmaster", "Postmaster", plural(lost.length, "item"), `<div class="vpm" style="--chars:${chars.length || 1}">${chars.map(pmPanel).join("")}</div>`, "", "", false) + vsec("v-weapons", "Weapons", plural(DATA.weapons.length, "weapon"), `<div class="vgrid" style="--chars:${chars.length}">
+      ${chars.map((c) => `<div class="vhead cc c-${esc(c.cls)}"><b>${esc(c.cls)}</b><span class="small muted">${DATA.weapons.filter((w) => where(w) === c.id).length} weapons</span></div>`).join("")}
       <div class="vhead"><b>Vault</b><span class="small muted">${plural(inVault, "weapon")} · ${plural(armorInVault, "armor piece")}</span></div>
       ${VSLOTS.map((s) => `<div class="vslot"><span class="cap">${s}</span></div>` +
         chars.map((c) => { const items = at(c.id, s), eq = DATA.weapons.find((w) => w.wh === c.id && w.s === s && w.eq); return `<div class="vcell"><div class="vdrop" data-to="${c.id}" data-equip="1" title="Drop here to equip">${eq ? tile(eq, true) : '<span class="vempty">Empty</span>'}</div><div class="vdrop vinv" data-to="${c.id}">${items.filter((w) => !w.eq).map((w) => tile(w)).join("")}</div></div>`; }).join("") +
@@ -1955,8 +1963,9 @@ function vrMain() {
   /** Armor laid out like the weapons: per slot, each character's worn piece and inventory, then the vault by set;
    *  inside a set by class (border colour), tier, then archetype. Split by character: one block per character, vault limited to its class. */
   const ASLOTS = ["Helmet", "Arms", "Chest", "Legs", "Class Item"], ACLS = ["Hunter", "Titan", "Warlock"];
+  const vatile = (a, big, can) => `<button class="vitem${big ? " big" : ""} varmor c-${esc(a.cls)}${isExotic(a) ? " exotic" : ""} v-${a.v}" data-a="${a.id}"${can && !a.eq ? ' draggable="true"' : ""} aria-label="${esc(a.n)} · ${esc(a.cls)} · ${esc(a.arch || "Legacy")}${a.gt ? ` · Tier ${a.gt}` : ""} · ${a.tot} total · ${a.sc} · ${VERDICT[a.v]}${a.loc ? " · " + esc(a.loc) : ""}">${img(a.ic)}${statMark(a)}${dia(a.gt)}${newBadge(a)}<b class="num">${a.sc}</b></button>`;
   function armorSection(chars = [], can = false) {
-    const atile = (a, big) => `<button class="vitem${big ? " big" : ""} varmor c-${esc(a.cls)}${isExotic(a) ? " exotic" : ""} v-${a.v}" data-a="${a.id}"${can && !a.eq ? ' draggable="true"' : ""} aria-label="${esc(a.n)} · ${esc(a.cls)} · ${esc(a.arch || "Legacy")}${a.gt ? ` · Tier ${a.gt}` : ""} · ${a.tot} total · ${a.sc} · ${VERDICT[a.v]}${a.loc ? " · " + esc(a.loc) : ""}">${img(a.ic)}${statMark(a)}${dia(a.gt)}${newBadge(a)}<b class="num">${a.sc}</b></button>`;
+    const atile = (a, big) => vatile(a, big, can);
     const order = (x, y) => ACLS.indexOf(x.cls) - ACLS.indexOf(y.cls) || (y.gt || 0) - (x.gt || 0) || (x.arch || "~").localeCompare(y.arch || "~") || y.sc - x.sc;
     const groupOf = (a) => (isExotic(a) ? "Exotic" : a.set || "No set");
     const rank = (g) => (g === "Exotic" ? 0 : g === "No set" ? 2 : 1);
@@ -1965,10 +1974,10 @@ function vrMain() {
       .sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0]))
       .map(([g, gs]) => `<div class="vtype"><div class="cap">${esc(g)}<span>${gs.length}</span></div><div class="vtiles">${gs.sort(order).map((a) => atile(a)).join("")}</div></div>`).join("")}</div>`;
     // The header row (a chevron in the character's header when it's a collapsible split block) and the slot rows.
-    const heads = (cs, keep, fold) => `${cs.map((c) => `<div class="vhead cc c-${esc(c.cls)}"><span class="vht">${fold ? chev : ""}<b>${esc(c.cls)}</b></span><span class="small muted">${plural(DATA.armor.filter((a) => a.wh === c.id).length, "piece")}</span></div>`).join("")}
+    const heads = (cs, keep, fold) => `${cs.map((c) => `<div class="vhead cc c-${esc(c.cls)}"><span class="vht">${fold ? chev : ""}<b>${esc(c.cls)}</b></span><span class="small muted">${plural(DATA.armor.filter((a) => a.wh === c.id && !a.pm).length, "piece")}</span></div>`).join("")}
       <div class="vhead"><b>Vault</b><span class="small muted">${plural(DATA.armor.filter((a) => inVault(a) && keep(a)).length, "armor piece")}</span></div>`;
     const rows = (cs, keep) => `${ASLOTS.map((slot) => { const xs = bySlot.get(slot) || []; return `<div class="vslot"><span class="cap">${slot}</span></div>` +
-        cs.map((c) => { const mine = xs.filter((a) => a.wh === c.id), eq = mine.find((a) => a.eq); return `<div class="vcell"><div class="vdrop" data-k="a" data-cls="${esc(c.cls)}" data-to="${c.id}" data-equip="1" title="Drop here to equip">${eq ? atile(eq, true) : '<span class="vempty">Empty</span>'}</div><div class="vdrop vinv" data-k="a" data-cls="${esc(c.cls)}" data-to="${c.id}">${mine.filter((a) => !a.eq).map((a) => atile(a)).join("")}</div></div>`; }).join("") +
+        cs.map((c) => { const mine = xs.filter((a) => a.wh === c.id && !a.pm), eq = mine.find((a) => a.eq); return `<div class="vcell"><div class="vdrop" data-k="a" data-cls="${esc(c.cls)}" data-to="${c.id}" data-equip="1" title="Drop here to equip">${eq ? atile(eq, true) : '<span class="vempty">Empty</span>'}</div><div class="vdrop vinv" data-k="a" data-cls="${esc(c.cls)}" data-to="${c.id}">${mine.filter((a) => !a.eq).map((a) => atile(a)).join("")}</div></div>`; }).join("") +
         vaultSets(xs.filter((a) => inVault(a) && keep(a))); }).join("")}`;
     if (!asplit || !chars.length) return `<div class="vgrid" style="--chars:${chars.length}">${heads(chars, () => true)}${rows(chars, () => true)}</div>`;
     // Split: one block per character; its header row is the collapse control, so it stays when the slots fold away.
@@ -2003,7 +2012,7 @@ function vrMain() {
     dropMove(id, d.dataset.to, !!d.dataset.equip);
   });
   async function dropMove(id, to, equip) {
-    const w = W.get(id) || A.get(id); if (!w || ((w.wh || "vault") === to && !equip)) return;
+    const w = W.get(id) || A.get(id); if (!w || ((w.wh || "vault") === to && !equip && !w.pm)) return;
     const name = to === "vault" ? "the vault" : `your ${clsOf(to) || "character"}`;
     const t = cornerToast(`${equip ? "Equipping" : "Moving"} ${w.n} ${equip ? "on" : "to"} ${name}…`);
     $(`.vitem[data-w="${id}"], .vitem[data-a="${id}"]`)?.classList.add("moving");
@@ -2606,7 +2615,7 @@ function vrMain() {
         const x = W.get(m.id) || A.get(m.id);
         if (x && m.where) {
           if (m.equipped) for (const o of [...DATA.weapons, ...DATA.armor]) if (o !== x && o.wh === m.where && o.eq && o.s === x.s && !!o.cls === !!x.cls) o.eq = false;
-          x.wh = m.where; x.eq = m.equipped; x.loc = locText(x);
+          x.wh = m.where; x.eq = m.equipped; if (m.pulled) delete x.pm; x.loc = locText(x);
         }
       }
       const bad = res.results.filter((m) => !m.ok || m.error);

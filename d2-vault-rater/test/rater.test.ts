@@ -6,6 +6,7 @@ import { parseCsv } from "../src/sources/csv.js";
 import { parseAegisTab, parseTabList, matchHashes, type AegisData } from "../src/sources/aegis.js";
 import { parseWishlist } from "../src/sources/wishlist.js";
 import { decodeProfile } from "../src/vault/decode.js";
+import { moveItems } from "../src/bungie/transfer.js";
 import { rateWeapons } from "../src/rating/weapons.js";
 import { rateArmor } from "../src/rating/armor.js";
 import { SettingsSchema, strictnessFor } from "../src/rating/settings.js";
@@ -342,12 +343,20 @@ test("encounter plans filter by activity name, apostrophes and all", async () =>
   assert.ok(!activityMatches("last-wish", "King's Fall"));
 });
 
-test("postmaster items aren't counted as carried by the character", () => {
+test("postmaster items are kept apart from what the character carries", async () => {
   const raw = profile([{ id: "a", hash: 1002, plugs: GOD_UNFORGIVEN }]);
   const item = (id: string, bucketHash: number) => ({ itemHash: 1002, itemInstanceId: id, bucketHash, state: 0 });
   raw.characterInventories = { data: { c1: { items: [item("carried", 1498876634), item("lost", 215593132)] } } };
   for (const id of ["carried", "lost"]) Object.assign(raw.itemComponents!.sockets!.data!, { [id]: raw.itemComponents!.sockets!.data!.a });
-  const where = Object.fromEntries(decodeProfile(raw, m).weapons.map((w) => [w.instanceId, w.location.where]));
-  assert.equal(where.carried, "c1");
-  assert.equal(where.lost, undefined, "the postmaster copy is left out");
+  const vault = decodeProfile(raw, m);
+  const loc = Object.fromEntries(vault.weapons.map((w) => [w.instanceId, w.location]));
+  assert.deepEqual(loc.carried, { where: "c1", equipped: false });
+  assert.deepEqual(loc.lost, { where: "c1", equipped: false, postmaster: true });
+  // Moving a postmaster item pulls it into its character's inventory first, then transfers it as usual.
+  const calls: string[] = [];
+  const send = async (path: string) => (calls.push(path.split("/").at(-2)!), {});
+  const [r] = await moveItems(["lost"], "vault", { vault, send, delayMs: 0 });
+  assert.deepEqual(calls, ["PullFromPostmaster", "TransferItem"]);
+  assert.equal(r.pulled, true);
+  assert.equal(r.where, "vault");
 });

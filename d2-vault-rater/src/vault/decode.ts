@@ -83,12 +83,12 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
   const socketsC = raw.itemComponents?.sockets?.data ?? {};
   const plugsC = raw.itemComponents?.reusablePlugs?.data ?? {};
 
-  const located: { item: RawItem; where: string; equipped: boolean }[] = [];
+  const located: { item: RawItem; where: string; equipped: boolean; postmaster?: boolean }[] = [];
   for (const it of raw.profileInventory?.data?.items ?? []) located.push({ item: it, where: "vault", equipped: false });
-  // A character's inventory also holds its postmaster (Lost Items), which isn't in its slots and can't be moved
-  // or equipped until it's pulled; counting it as carried filled the Vault page with items the game doesn't show there.
+  // A character's inventory also holds its postmaster (Lost Items). Those items aren't in its slots until they're
+  // pulled, so they're flagged: counting them as carried filled the Vault page with items the game doesn't show there.
   for (const [cid, inv] of Object.entries(raw.characterInventories?.data ?? {}))
-    for (const it of inv.items) if (it.bucketHash !== POSTMASTER_BUCKET) located.push({ item: it, where: cid, equipped: false });
+    for (const it of inv.items) located.push({ item: it, where: cid, equipped: false, postmaster: it.bucketHash === POSTMASTER_BUCKET || undefined });
   for (const [cid, inv] of Object.entries(raw.characterEquipment?.data ?? {}))
     for (const it of inv.items) located.push({ item: it, where: cid, equipped: true });
 
@@ -96,7 +96,7 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
   const armor: ArmorRecord[] = [];
   const statIcons: Record<string, string> = {};
 
-  for (const { item, where, equipped } of located) {
+  for (const { item, where, equipped, postmaster } of located) {
     const id = item.itemInstanceId;
     const def = m.items[item.itemHash];
     if (!id || !def) continue;
@@ -185,7 +185,7 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
         mods,
         icon: bungieUrl(def.displayProperties.icon),
         screenshot: def.screenshot ? bungieUrl(def.screenshot) : null,
-        location: { where, equipped },
+        location: { where, equipped, ...(postmaster ? { postmaster } : {}) },
       });
     } else if (def.itemType === 2 && ARMOR_BUCKETS[bucket]) {
       const stats: Record<string, number> = {};
@@ -217,7 +217,7 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
         legacy: archetype === null,
         locked: (item.state & STATE_LOCKED) !== 0,
         icon: bungieUrl(def.displayProperties.icon),
-        location: { where, equipped },
+        location: { where, equipped, ...(postmaster ? { postmaster } : {}) },
       });
     }
   }

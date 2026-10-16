@@ -19,7 +19,7 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
   const recW = new Map((o.vault?.weapons ?? []).map((x) => [x.instanceId, x]));
   const recA = new Map((o.vault?.armor ?? []).map((x) => [x.instanceId, x]));
   const classOf = new Map((o.vault?.characters ?? []).map((c) => [c.id, c.className]));
-  const where = (l?: { where: string; equipped: boolean }) => (!l ? null : l.where === "vault" ? "Vault" : `${classOf.get(l.where) ?? "Character"}${l.equipped ? " (equipped)" : ""}`);
+  const where = (l?: { where: string; equipped: boolean; postmaster?: boolean }) => (!l ? null : l.where === "vault" ? "Vault" : `${classOf.get(l.where) ?? "Character"}${l.postmaster ? " postmaster" : l.equipped ? " (equipped)" : ""}`);
   // DIM Sync: tag, notes and the loadouts each item is in.
   const inLoadouts = new Map<string, string[]>();
   for (const l of o.dim?.loadouts ?? []) for (const id of l.itemIds) inLoadouts.set(id, [...(inLoadouts.get(id) ?? []), l.name]);
@@ -31,7 +31,7 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
   }
   const dimOf = (id: string) => {
     const rec = recW.get(id) ?? recA.get(id);
-    return { tg: o.dim?.tags[id]?.tag ?? null, nt: o.dim?.tags[id]?.notes ?? null, lo: inLoadouts.get(id) ?? [], wh: rec?.location.where ?? null, eq: rec?.location.equipped ?? false };
+    return { tg: o.dim?.tags[id]?.tag ?? null, nt: o.dim?.tags[id]?.notes ?? null, lo: inLoadouts.get(id) ?? [], wh: rec?.location.where ?? null, eq: rec?.location.equipped ?? false, pm: rec?.location.postmaster || undefined };
   };
   // Enhanced perk names on a weapon, for the gold arrow on its perk sockets.
   const enhancedOf = (rec?: { columns: { enhanced: string[] }[] }) => { const e = rec?.columns.flatMap((c) => c.enhanced) ?? []; return e.length ? e : undefined; };
