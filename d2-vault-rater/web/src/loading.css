@@ -1,0 +1,9 @@
+/* Shared loading block (see loading.ts). */
+.vr-loading { display: flex; align-items: center; gap: 16px; padding: clamp(16px, 3vw, 24px); border-radius: 4px 20px; background: var(--glass); border: 1px solid var(--line); }
+.vr-loading b { font-size: 17px; font-weight: 600; }
+.vr-loading p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+.vr-spin { flex: none; width: 28px; height: 28px; border-radius: 50%; border: 3px solid var(--line-hi); border-top-color: var(--green); animation: vr-spin .8s linear infinite; }
+@keyframes vr-spin { to { transform: rotate(360deg); } }
+/* No spinning: a static ring with a gentle pulse instead. */
+@media (prefers-reduced-motion: reduce) { .vr-spin { animation: vr-pulse 2s ease-in-out infinite; border-top-color: var(--line-hi); border-color: var(--green); } }
+@keyframes vr-pulse { 50% { opacity: .35; } }

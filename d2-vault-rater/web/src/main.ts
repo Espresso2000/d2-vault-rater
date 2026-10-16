@@ -2,6 +2,7 @@
  * Vault Rater in the browser: sign in with Bungie, read the vault, rate it with the same code as the
  * local app (../../src), and render the same report page. Nothing runs on a server.
  */
+import "./loading.css";
 import { hydrate, paths, readText } from "./shims/config";
 import { loadTokens, clearTokens, canSignIn, LoginRequired, minutesLeft } from "./shims/client";
 import { startLogin, finishLogin } from "./shims/oauth";

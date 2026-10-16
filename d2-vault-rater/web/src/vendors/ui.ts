@@ -17,6 +17,7 @@ import { rateVendors, type Buy, type RatedSale, type RatedVendor } from "../../.
 import { BRIGHT_DUST, type Offer, type VendorCost } from "../../../src/vendors/vendors.js";
 import { LoginRequired } from "../shims/client";
 import { esc } from "../html";
+import { loadingBlock } from "../loading";
 
 export interface VendorsInput {
   vault: Vault;
@@ -242,9 +243,9 @@ function draw() {
   const buys = all.filter((s) => s.buy === "buy").length;
   const blocks = kind === "eververse" ? "" : picked.map(vendorBlock).join("");
   const body = error
-    ? `<p class="vr-err">${esc(error)}</p>`
+    ? `<p class="vr-err">${esc(error)}</p><button class="btn" type="button" id="vd-retry">Try again</button>`
     : !list
-      ? `<p class="lede muted">Reading what vendors sell right now…</p>`
+      ? loadingBlock("Reading vendor stock…", "Asking Bungie what every vendor sells right now, then rating it against your vault.")
       : kind === "eververse"
         ? offersBlock(list)
         : blocks ? `<div class="vgrid">${blocks}</div>` : `<p class="muted">${onlyBuy ? "Nothing here is worth buying right now." : `No vendor is selling ${kind} right now.`}</p>`;
@@ -273,7 +274,7 @@ function wire(el: HTMLElement) {
       kind = k.dataset.vk as Kind;
       store.set("vr-vendors-kind", kind);
       draw();
-    } else if (t.closest("#vd-refresh")) void load(true);
+    } else if (t.closest("#vd-refresh, #vd-retry")) void load(true);
   });
   // Toggle doesn't bubble: listen in the capture phase. Vendor cards' own weapon cards are ignored.
   el.addEventListener("toggle", (e) => {
