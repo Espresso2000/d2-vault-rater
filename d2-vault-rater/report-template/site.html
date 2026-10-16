@@ -2679,7 +2679,6 @@ function vrMain() {
     if (!DIMS.loaded) return `<div class="dimpanel">${head}<p class="small muted">${DIMS.error ? "Couldn't reach DIM: " + esc(DIMS.error) : "DIM data wasn't loaded."}</p></div>`;
     const tagUI = !DIMS.tags ? "" : window.VR_LOCAL
       ? `<textarea id="dimnotes" rows="2" placeholder="DIM notes" aria-label="DIM notes">${esc(x.nt || "")}</textarea>
-        <textarea id="dimnotes" rows="2" placeholder="DIM notes" aria-label="DIM notes">${esc(x.nt || "")}</textarea>
         <div class="tb-row"><button class="btn primary" id="dimsave" data-id="${x.id}">Save to DIM</button><span class="small muted" id="dimmsg" aria-live="polite"></span></div>`
       : `${x.nt ? `<div class="facts"><div><span>Notes</span><b>${esc(x.nt)}</b></div></div>` : ""}<p class="small muted">Open the report from the local app (Vault Rater.cmd) to change tags and notes here.</p>`;
     const los = (DATA.dimLoadouts || []).map((l, i) => [l, i]).filter(([l]) => l.ids.includes(x.id));
