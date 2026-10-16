@@ -327,3 +327,13 @@ test("encounter plans filter by activity name, apostrophes and all", async () =>
   assert.ok(activityMatches("vow-of-the-disciple", "vow"));
   assert.ok(!activityMatches("last-wish", "King's Fall"));
 });
+
+test("postmaster items aren't counted as carried by the character", () => {
+  const raw = profile([{ id: "a", hash: 1002, plugs: GOD_UNFORGIVEN }]);
+  const item = (id: string, bucketHash: number) => ({ itemHash: 1002, itemInstanceId: id, bucketHash, state: 0 });
+  raw.characterInventories = { data: { c1: { items: [item("carried", 1498876634), item("lost", 215593132)] } } };
+  for (const id of ["carried", "lost"]) Object.assign(raw.itemComponents!.sockets!.data!, { [id]: raw.itemComponents!.sockets!.data!.a });
+  const where = Object.fromEntries(decodeProfile(raw, m).weapons.map((w) => [w.instanceId, w.location.where]));
+  assert.equal(where.carried, "c1");
+  assert.equal(where.lost, undefined, "the postmaster copy is left out");
+});

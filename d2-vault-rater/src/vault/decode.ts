@@ -12,7 +12,8 @@ const ARMOR_BUCKETS: Record<number, ArmorSlot> = {
   20886954: "Legs",
   1585787867: "Class Item",
 };
-const CLASSES: Record<number, ClassName> = { 0: "Titan", 1: "Hunter", 2: "Warlock", 3: "Any" };
+const POSTMASTER_BUCKET = 215593132;
+const CLASSES: Record<number, ClassName> ={ 0: "Titan", 1: "Hunter", 2: "Warlock", 3: "Any" };
 const AMMO = { 1: "Primary", 2: "Special", 3: "Heavy" } as const;
 
 export const SOCKET_CATEGORY = { weaponPerks: 4241085061, intrinsic: 3956125808 };
@@ -78,8 +79,10 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
 
   const located: { item: RawItem; where: string; equipped: boolean }[] = [];
   for (const it of raw.profileInventory?.data?.items ?? []) located.push({ item: it, where: "vault", equipped: false });
+  // A character's inventory also holds its postmaster (Lost Items), which isn't in its slots and can't be moved
+  // or equipped until it's pulled; counting it as carried filled the Vault page with items the game doesn't show there.
   for (const [cid, inv] of Object.entries(raw.characterInventories?.data ?? {}))
-    for (const it of inv.items) located.push({ item: it, where: cid, equipped: false });
+    for (const it of inv.items) if (it.bucketHash !== POSTMASTER_BUCKET) located.push({ item: it, where: cid, equipped: false });
   for (const [cid, inv] of Object.entries(raw.characterEquipment?.data ?? {}))
     for (const it of inv.items) located.push({ item: it, where: cid, equipped: true });
 
