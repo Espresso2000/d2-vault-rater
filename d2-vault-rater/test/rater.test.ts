@@ -3,7 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { parseCsv } from "../src/sources/csv.js";
-import { parseAegisTab, parseTabList, matchHashes, type AegisData } from "../src/sources/aegis.js";
+import { parseAegisTab, parseAegisExotics, parseTabList, matchHashes, type AegisData } from "../src/sources/aegis.js";
 import { parseWishlist } from "../src/sources/wishlist.js";
 import { decodeProfile } from "../src/vault/decode.js";
 import { moveItems } from "../src/bungie/transfer.js";
@@ -359,4 +359,16 @@ test("postmaster items are kept apart from what the character carries", async ()
   assert.deepEqual(calls, ["PullFromPostmaster", "TransferItem"]);
   assert.equal(r.pulled, true);
   assert.equal(r.where, "vault");
+});
+
+test("Aegis exotic tab: S to F grades become tiers, E/F clamp to D and score below it", () => {
+  const exCsv = [
+    '"WEAPON #","Name","INFO Season","Type","Usage","Tier"',
+    '"","Praxic Blade","28","special","Hyperblade for movement","B"',
+    '"","Ace of Spades","1","primary","bad","F"',
+  ].join("\n");
+  const rows = parseAegisExotics("Exotic Weapons", exCsv)!;
+  assert.deepEqual(rows.map((r) => [r.name, r.tier, r.grade ?? null]), [["Praxic Blade", "B", null], ["Ace of Spades", "D", "F"]]);
+  assert.equal(rows[0].notes, "Hyperblade for movement");
+  assert.equal(parseAegisExotics("SMGs", csv), null);
 });

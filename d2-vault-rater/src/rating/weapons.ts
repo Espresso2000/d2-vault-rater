@@ -6,6 +6,8 @@ import { strictnessFor, type Settings, type ShardCategory, type Tier } from "./s
 import { groupBy } from "../util.js";
 
 export const TIER_POINTS: Record<Tier, number> = { S: 100, A: 85, B: 70, C: 50, D: 30 };
+/** Exotic-sheet grades below D. */
+const GRADE_POINTS = { E: 20, F: 10 } as const;
 export const TIER_ORDER: Tier[] = ["S", "A", "B", "C", "D"];
 export const COLUMN_WEIGHTS: Record<ColumnKey, number> = {
   perk1: 0.35,
@@ -31,7 +33,7 @@ export interface WeaponRating {
   icon: string;
   screenshot: string | null;
   locked: boolean;
-  aegis: { tier: Tier; rank: number | null; tab: string; notes: string } | null;
+  aegis: { tier: Tier; grade?: "E" | "F"; rank: number | null; tab: string; notes: string } | null;
   /** Tier the score was based on; for unrated weapons, the wishlist fallback. */
   effectiveTier: Tier;
   weaponScore: number;
@@ -160,7 +162,7 @@ export function rateWeapons(
     const trashRoll = rolls.some((r) => r.trash && fits(r));
     const effectiveTier: Tier = a ? a.tier : godRoll ? "B" : "C";
     const pos = a ? ai.tierPosition.get(a) ?? 1 : 1;
-    const weaponScore = Math.min(100, TIER_POINTS[effectiveTier] + (a ? Math.round(5 * (1 - pos)) : 0));
+    const weaponScore = Math.min(100, (a?.grade ? GRADE_POINTS[a.grade] : TIER_POINTS[effectiveTier]) + (a ? Math.round(5 * (1 - pos)) : 0));
     return {
       instanceId: w.instanceId,
       itemHash: w.itemHash,
@@ -174,7 +176,7 @@ export function rateWeapons(
       icon: w.icon,
       screenshot: w.screenshot,
       locked: w.locked,
-      aegis: a ? { tier: a.tier, rank: a.rank, tab: a.tab, notes: a.notes } : null,
+      aegis: a ? { tier: a.tier, grade: a.grade, rank: a.rank, tab: a.tab, notes: a.notes } : null,
       effectiveTier,
       weaponScore,
       rollScore,
@@ -248,7 +250,7 @@ export function rateWeapons(
       r.category = cat;
       why(reason);
     };
-    if (r.aegis) why(`Aegis ${r.aegis.tier} tier${r.aegis.rank ? ` (#${r.aegis.rank} ${r.aegis.tab})` : ""}`);
+    if (r.aegis) why(`Aegis ${r.aegis.grade ?? r.aegis.tier} tier${r.aegis.rank ? ` (#${r.aegis.rank} ${r.aegis.tab})` : ""}`);
     else why(r.godRoll ? "not in Aegis's sheet; matches a community god roll" : "not in Aegis's sheet");
     const hits = [...(r.matched.perk1 ?? []), ...(r.matched.perk2 ?? [])];
     if (hits.length) why(`recommended perks: ${hits.join(", ")}`);
