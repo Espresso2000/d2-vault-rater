@@ -18,6 +18,7 @@ import {
 } from "./model";
 import { captureCharacter, charFor, fetchBuildProfile, subclassInstance, type BuildProfile } from "./profile";
 import { applyPlan, planEquip, type Plan } from "./equip";
+import { loadingBlock } from "../loading";
 import { dimImportUrl, dimLoadouts, saveToDim, shareDimLoadout } from "./dim";
 import { loadBuilds, saveBuilds } from "./store";
 import { bungieUrl } from "../shims/client";
@@ -64,6 +65,8 @@ let input: BuildsInput | null = null;
 let panel: HTMLElement | null = null;
 let defs: BuildDefs | null = null;
 let profile: BuildProfile | null = null;
+/** True while the characters (and so the in-game loadouts) are being read. */
+let profileBusy = false;
 let builds: Build[] = [];
 let cur: Build | null = null;
 let loadError = "";
@@ -129,6 +132,7 @@ async function load() {
     defs = d;
     clarity = cachedClarity();
     cur = builds[0] ? structuredClone(builds[0]) : null;
+    profileBusy = true;
     draw();
     void refreshProfile();
     void loadClarity((h) => !!d.plugs[h]).then((t) => (clarity = t));
@@ -145,6 +149,7 @@ async function refreshProfile() {
   } catch (e) {
     console.warn("Builds: couldn't read characters", e);
   }
+  profileBusy = false;
   draw();
 }
 
@@ -287,7 +292,7 @@ const loadGlyph = (l: { icon?: string; color?: string }, sub?: string | null) =>
 
 /** A compact card first in the grid: a few slot chips, the count, and a button for the full list. */
 function loadoutCard(list: ReturnType<typeof gameLoadouts>) {
-  if (!list.length) return "";
+  if (!list.length) return profileBusy ? `<div class="bd-bcard bd-loadcard">${loadingBlock("Reading in-game loadouts…")}</div>` : "";
   const chips = list
     .map((l) => {
       const sc = l.b.subclass ? defs!.subclasses[l.b.subclass] : null;
