@@ -2497,7 +2497,7 @@ function vrMain() {
       <div class="d-body">
         <div><div class="eyebrow" style="${isExotic(w) ? "color:var(--gold)" : ""}">${esc(w.s)} · ${esc(w.r)}</div><h2>${esc(w.n)}</h2>
           <div class="sub">${esc(typeLine(w))} ${elDot(w.e)} ${verdict(w.v)} ${w.lk ? '<span class="chip">🔒 Locked</span>' : ""} ${w.god ? '<span class="chip" style="color:var(--green)">Wishlist god roll</span>' : ""}</div></div>
-        <div class="breakdown"><div><b class="num grad-text">${w.sc}</b><span>Vault score</span></div><div><b class="num">${w.ws}</b><span>${w.tier ? `Aegis ${w.tier}${w.rank ? " #" + w.rank : ""}` : "Wishlist tier"}</span></div><div><b class="num">${w.rs}</b><span>Roll score</span></div></div>
+        <div class="breakdown"><div><b class="num grad-text">${w.sc}</b><span>Overall score</span></div><div>${w.tier ? `<b class="num">${w.tier}</b><span>Aegis tier${w.rank ? " · #" + w.rank : ""}</span>` : `<b class="num">${w.ws}</b><span>Not in Aegis (wishlist)</span>`}</div><div><b class="num">${w.rs}</b><span>Roll score</span></div></div>
         <div><div class="cap" style="margin-bottom:8px">Why ${VERDICT[w.v].toLowerCase()}</div><ul class="reasons">${w.why.map((r) => `<li>${esc(r)}</li>`).join("")}</ul></div>
         ${w.notes ? `<div class="notes"><b style="color:var(--ink)">Aegis:</b> ${esc(w.notes)}</div>` : ""}
         <div class="perkcols">${perkCols(w).map((p, ci) => `<div class="perkcol" data-col="${ci}"><div class="cap">${COL[p.k] || esc(p.k)}</div><div class="perkopts">${p.o.map((o) => perk(o, good.has(o), (p.a || p.o[0]) === o ? "perk on" : "perk")).join("")}</div>${perkInfo(p.a || p.o[0])}</div>`).join("")}</div>
@@ -2506,6 +2506,7 @@ function vrMain() {
         ${dimPanel(w)}
         ${whereBox(w.src)}
         ${copies.length ? `<div><div class="cap" style="margin-bottom:8px">Other copies (${copies.length})</div><div class="list">${copies.map(weaponRow).join("")}</div></div>` : ""}
+        <div class="notes"><b style="color:var(--ink)">What Overall score means:</b> a 0-100 rating of this copy, 60% weapon plus 40% roll. The weapon part comes from its Aegis tier (S 100, A 85, B 70, C 50, D 30, up to 5 more for a high rank in its tier; unlisted weapons use their wishlist tier). The roll part is how well this copy's perks match Aegis's picks, mostly the two traits (35% each), then barrel, magazine, origin trait and masterwork. Keep or Shard also depends on your Strictness, duplicate copies and the wishlist, so the score alone doesn't decide it.</div>
       </div>`);
   }
   // Clicking another option in a weapon's perk column previews it in that column's card; the equipped one keeps its ring.
