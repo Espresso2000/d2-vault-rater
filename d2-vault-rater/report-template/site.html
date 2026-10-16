@@ -856,6 +856,8 @@ aside.drawer[data-place=bottom] .d-body > * { break-inside: avoid; margin-bottom
 .d-body .sub { color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; margin-top: 8px; }
 .breakdown { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .breakdown div { padding: 12px 14px; border-radius: 3px 12px; background: var(--ticks), var(--glass); border: 1px solid var(--line); border-top: 2px solid var(--line-hi); }
+.breakdown div.tl { border-color: color-mix(in srgb, var(--t) 40%, transparent); border-top-color: var(--t); background: linear-gradient(160deg, color-mix(in srgb, var(--t) 16%, transparent), var(--glass)); }
+.breakdown div.tl b { color: var(--t); }
 .breakdown div:first-child { border-top-color: var(--green); background: linear-gradient(160deg, rgba(51,227,160,.1), var(--glass)); }
 .breakdown b { display: block; font: 600 24px/1.1 var(--display); }
 .breakdown span { font-size: 12px; color: var(--muted); }
@@ -2497,7 +2499,7 @@ function vrMain() {
       <div class="d-body">
         <div><div class="eyebrow" style="${isExotic(w) ? "color:var(--gold)" : ""}">${esc(w.s)} · ${esc(w.r)}</div><h2>${esc(w.n)}</h2>
           <div class="sub">${esc(typeLine(w))} ${elDot(w.e)} ${verdict(w.v)} ${w.lk ? '<span class="chip">🔒 Locked</span>' : ""} ${w.god ? '<span class="chip" style="color:var(--green)">Wishlist god roll</span>' : ""}</div></div>
-        <div class="breakdown"><div><b class="num grad-text">${w.sc}</b><span>Overall score</span></div><div>${w.tier ? `<b class="num">${w.tier}</b><span>Aegis tier${w.rank ? " · #" + w.rank : ""}</span>` : `<b class="num">${w.ws}</b><span>Not in Aegis (wishlist)</span>`}</div><div><b class="num">${w.rs}</b><span>Roll score</span></div></div>
+        <div class="breakdown"><div tabindex="0" title="${w.tier ? `Aegis tier ${w.tier}${w.rank ? " #" + w.rank : ""}` : `Wishlist rating ${w.ws}`} · Roll score ${w.rs}"><b class="num grad-text">${w.sc}</b><span>Overall score</span></div><div${w.tier ? ` class="t${w.tier} tl"` : ""}>${w.tier ? `<b class="num">${w.tier}</b><span>Aegis tier${w.rank ? " · #" + w.rank : ""}</span>` : `<b class="num">${w.ws}</b><span>Not in Aegis (wishlist)</span>`}</div><div><b class="num">${w.rs}</b><span>Roll score</span></div></div>
         <div><div class="cap" style="margin-bottom:8px">Why ${VERDICT[w.v].toLowerCase()}</div><ul class="reasons">${w.why.map((r) => `<li>${esc(r)}</li>`).join("")}</ul></div>
         ${w.notes ? `<div class="notes"><b style="color:var(--ink)">Aegis:</b> ${esc(w.notes)}</div>` : ""}
         <div class="perkcols">${perkCols(w).map((p, ci) => `<div class="perkcol" data-col="${ci}"><div class="cap">${COL[p.k] || esc(p.k)}</div><div class="perkopts">${p.o.map((o) => perk(o, good.has(o), (p.a || p.o[0]) === o ? "perk on" : "perk")).join("")}</div>${perkInfo(p.a || p.o[0])}</div>`).join("")}</div>
