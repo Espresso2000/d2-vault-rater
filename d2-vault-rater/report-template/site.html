@@ -987,6 +987,17 @@ aside.drawer[data-mode=bottom] .dp-id h2 { font-size: 23px; }
 .msock img { width: 36px; height: 36px; border-radius: 3px; display: block; }
 .msock.masterwork { border-color: rgba(242,193,78,.6); box-shadow: inset 0 0 12px -4px rgba(242,193,78,.6); }
 .msock:hover { border-color: rgba(238,241,255,.6); }
+/* A mod socket you can change: a small gold "swap" corner; open, it gets the dashed preview ring like a perk */
+.msock.pick::after { content: ""; position: absolute; right: -4px; bottom: -4px; width: 14px; height: 14px; border-radius: 50%; background: var(--gold) no-repeat center / 10px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' fill='none' stroke='%2304102a' stroke-width='1.6' stroke-linecap='round'%3E%3Cpath d='M2 3.5h6M6 1.5l2 2-2 2M8 6.5H2M4 4.5l-2 2 2 2'/%3E%3C/svg%3E"); box-shadow: 0 0 0 2px rgba(10,15,36,1); }
+.msock.pv { border-color: var(--gold); border-style: dashed; box-shadow: 0 0 0 3px rgba(242,193,78,.25); }
+/* The mod picker: the chosen mod's card, then every mod you own that fits the socket */
+.pk-card.mpick > img, .pk-card.mpick > .ph { border-radius: 4px; }
+.mp-lab { margin: 14px 0 8px; font: 600 11px var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
+.mp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 6px; max-height: 236px; overflow-y: auto; padding: 3px; margin: -3px; }
+.mp-grid .msock { width: 100%; height: auto; aspect-ratio: 1; }
+.mp-grid .msock img { width: 82%; height: 82%; }
+.mp-grid .msock .ptxt { font-size: 9.5px; line-height: 1.1; padding: 2px; text-align: center; color: var(--muted); overflow: hidden; }
+.mp-grid .msock.on { border-color: rgba(238,241,255,.92); box-shadow: 0 0 0 2px rgba(77,125,255,.45); }
 .pk-legend { display: grid; gap: 5px; font-size: 11.5px; color: var(--faint); }
 .pk-legend > span:last-child { margin-top: 2px; line-height: 1.35; }
 .pk-legend i { display: inline-block; width: 10px; height: 10px; margin-right: 5px; border-radius: 50%; vertical-align: -1px; border: 1.5px solid; }
@@ -996,7 +1007,7 @@ aside.drawer[data-mode=bottom] .dp-id h2 { font-size: 23px; }
 /* The perk you clicked: what it does, and Apply to switch it in game */
 .pk-detail:empty { display: none; }
 .pk-card { display: flex; gap: 12px; align-items: flex-start; padding: 12px; border-radius: 3px 12px; background: var(--glass-hi); border: 1px solid var(--line); }
-.pk-card img { width: 40px; height: 40px; flex: none; border-radius: 50%; background: rgba(0,0,0,.3); }
+.pk-card > img, .pk-card > .ph { width: 40px; height: 40px; flex: none; border-radius: 50%; background: rgba(0,0,0,.3); }
 .pk-card b { font: 600 14.5px var(--display); }
 .pk-card p { margin-top: 3px; font-size: 13px; line-height: 1.45; color: var(--muted); white-space: pre-line; }
 .pk-card .papply { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-top: 10px; }
@@ -2795,8 +2806,9 @@ function vrMain() {
         return `<button type="button" class="psock${on ? " on" : ""}${good ? " good" : ""}${enh ? " enh" : ""}" data-ptip="${ci}.${oi}" aria-label="${esc(o)}${on ? ", equipped" : ""}${good ? ", Aegis pick" : ""}">${u ? `<img src="${u}" alt="" loading="lazy" decoding="async">` : `<span class="ptxt">${esc(o)}</span>`}</button>`;
       }).join("")}</div></div>`;
     }).join("");
-    const mods = (w.md || []).map((x, i) => `<button type="button" class="msock ${x.k === "masterwork" ? "masterwork" : ""}" data-ptip="md${i}" aria-label="${esc(x.n)}">${x.ic ? img(x.ic) : ""}</button>`).join("");
-    const legend = `<div class="pk-legend"><span><i class="lon"></i>Equipped</span><span><i class="lgood"></i>Aegis pick</span>${en.size ? '<span><i class="lenh"></i>Enhanced</span>' : ""}<span>Hover or tap a perk for details${window.VR_LOCAL ? ", then apply it" : ""}</span></div>`;
+    // A mod socket with mods to pick from opens the mod picker; the masterwork just shows what it is.
+    const mods = (w.md || []).map((x, i) => { const pick = x.o?.length > 1; return `<button type="button" class="msock${x.k === "masterwork" ? " masterwork" : ""}${pick ? " pick" : ""}" data-ptip="md${i}"${pick ? ` data-modsock="${i}" aria-expanded="false"` : ""} aria-label="${esc(x.n)}${pick ? ", change mod" : ""}">${x.ic ? img(x.ic) : ""}</button>`; }).join("");
+    const legend = `<div class="pk-legend"><span><i class="lon"></i>Equipped</span><span><i class="lgood"></i>Aegis pick</span>${en.size ? '<span><i class="lenh"></i>Enhanced</span>' : ""}<span>Hover or tap a perk for details${window.VR_LOCAL ? ", then apply it" : ""}${(w.md || []).some((x) => x.o?.length > 1) ? `. Tap the mod to ${window.VR_LOCAL ? "swap it" : "see the ones that fit"}` : ""}</span></div>`;
     // Mods and the key sit in the space to the right of the perk columns (under them when the panel is too narrow).
     return `${frHtml}<div class="pk-main"><div class="pk-cols">${colsHtml}</div><div class="pk-side">${mods ? `<div class="pk-mods">${mods}</div>` : ""}${legend}</div></div><div class="pk-detail" aria-live="polite"></div>`;
   }
@@ -2804,6 +2816,7 @@ function vrMain() {
   function ptipData(w, key) {
     if (key === "score") return { score: true };
     if (key === "fr") { const fr = w.fr || { n: w.f }; return { n: fr.n, ic: fr.ic, d: fr.d, sub: "Intrinsic" }; }
+    if (key.startsWith("mo")) { const [i, j] = key.slice(2).split(".").map(Number), x = w.md?.[i], n = x?.o?.[j]; return n && { n, ic: MOD_INFO[n]?.ic, d: MOD_INFO[n]?.d, sub: n === x.n ? "Weapon mod · equipped" : "Weapon mod", sq: true }; }
     if (key.startsWith("md")) { const x = w.md?.[Number(key.slice(2))]; return x && { n: x.n, ic: x.ic, d: x.d, sub: x.k === "masterwork" ? "Masterwork" : "Weapon mod", sq: true }; }
     const [ci, oi] = key.split(".").map(Number), p = perkCols(w)[ci], o = p?.o[oi];
     if (!o) return null;
@@ -2834,7 +2847,7 @@ function vrMain() {
   // A tap on the Overall score (no hover on phones) shows its breakdown for a few seconds.
   let ptipTimer = 0;
   drawer.addEventListener("click", (e) => {
-    const el = e.target.closest('[data-ptip="score"], [data-ptip="fr"], [data-ptip^="md"]'); if (!el) return;
+    const el = e.target.closest('[data-ptip="score"], [data-ptip="fr"], [data-ptip^="md"]:not([data-modsock])'); if (!el) return;
     showPtip(el); clearTimeout(ptipTimer); ptipTimer = setTimeout(hidePtip, 4000);
   });
   // Clicking a perk socket shows its card under the grid; another option gets an Apply button (local app, known socket).
@@ -2843,7 +2856,7 @@ function vrMain() {
     if (!s || !w) return;
     const t = ptipData(w, s.dataset.ptip); if (!t) return;
     const wasPv = s.classList.contains("pv");
-    $$(".psock.pv", drawer).forEach((x) => x.classList.remove("pv"));
+    clearPicks();
     const box = $(".pk-detail", drawer);
     if (wasPv) { box.innerHTML = ""; return; }
     s.classList.add("pv"); hidePtip();
@@ -2865,6 +2878,57 @@ function vrMain() {
       openWeapon(id);
       drawer.scrollTop = top;
       $(".pk-detail", drawer).innerHTML = `<p class="small" style="color:var(--green)">Switched to ${esc(o)} in game.</p>`;
+    } catch (err) {
+      b.disabled = false; msg.textContent = "Couldn't switch: " + err.message;
+    }
+  });
+
+  /* Mods: tapping a changeable mod socket lists every mod you own that fits it (and the empty socket). Picking one
+     shows what it does; through the local app, Apply puts it on the weapon in game. */
+  const MOD_INFO = DATA.modInfo || {};
+  const clearPicks = () => { $$(".psock.pv, .msock.pv", drawer).forEach((x) => x.classList.remove("pv")); $$(".msock[data-modsock]", drawer).forEach((x) => x.setAttribute("aria-expanded", "false")); };
+  function modPicker(w, i, sel) {
+    const x = w.md[i], cur = x.n, opts = x.o || [];
+    sel ??= cur;
+    const info = MOD_INFO[sel] || (sel === cur ? { ic: x.ic, d: x.d } : {}), on = sel === cur;
+    const apply = on ? "" : window.VR_LOCAL && x.si != null
+      ? `<div class="papply"><button class="movebtn" data-modapply="${i}" data-mod="${esc(sel)}" title="Puts it on the weapon in game. You need to be in orbit, a social space or offline.">Apply ${esc(sel)}</button><span class="small muted" aria-live="polite"></span></div>`
+      : '<p class="small muted">Open the report from the local app (Vault Rater.cmd) to change mods here.</p>';
+    const grid = opts.map((n, j) => `<button type="button" class="msock${n === cur ? " on" : ""}${n === sel && !on ? " pv" : ""}" data-modpick="${i}.${j}" data-ptip="mo${i}.${j}" aria-pressed="${n === sel}" aria-label="${esc(n)}${n === cur ? ", equipped" : ""}">${MOD_INFO[n]?.ic ? img(MOD_INFO[n].ic) : `<span class="ptxt">${esc(n)}</span>`}</button>`).join("");
+    return `<div class="pk-card mpick">${img(info.ic)}<div style="min-width:0;flex:1"><b>${esc(sel)}</b> <span class="small muted">Weapon mod</span>${on ? perkTagsHtml(true) : ""}${info.d ? `<p>${esc(info.d)}</p>` : ""}${on ? "" : `<p class="small">Equipped now: <b>${esc(cur)}</b></p>`}${apply}<div class="mp-lab">Mods that fit · ${opts.length}</div><div class="mp-grid" role="group" aria-label="Mods that fit this socket">${grid}</div></div></div>`;
+  }
+  drawer.addEventListener("click", (e) => {
+    const s = e.target.closest(".msock[data-modsock]"), w = W.get(drawer.dataset.item);
+    if (!s || !w) return;
+    const box = $(".pk-detail", drawer), open = s.classList.contains("pv");
+    clearPicks();
+    if (open) { box.innerHTML = ""; return; }
+    s.classList.add("pv"); s.setAttribute("aria-expanded", "true"); hidePtip();
+    box.innerHTML = modPicker(w, Number(s.dataset.modsock));
+  });
+  drawer.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-modpick]"), w = W.get(drawer.dataset.item);
+    if (!b || !w) return;
+    const [i, j] = b.dataset.modpick.split(".").map(Number), grid = b.closest(".mp-grid"), top = grid.scrollTop;
+    hidePtip();
+    $(".pk-detail", drawer).innerHTML = modPicker(w, i, w.md[i].o[j]);
+    const g = $(".mp-grid", drawer); g.scrollTop = top;
+    $(`[data-modpick="${i}.${j}"]`, g)?.focus({ preventScroll: true });
+  });
+  drawer.addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-modapply]"), id = drawer.dataset.item, w = W.get(id);
+    if (!b || !w) return;
+    const i = Number(b.dataset.modapply), x = w.md[i], mod = b.dataset.mod, msg = b.nextElementSibling;
+    b.disabled = true; msg.textContent = `Switching to ${mod}…`;
+    try {
+      const res = await api("/api/mod", { id, socket: x.si, mod });
+      if (!res.ok) throw new Error(res.error);
+      Object.assign(x, { n: mod, ic: MOD_INFO[mod]?.ic ?? null, d: MOD_INFO[mod]?.d });
+      rerender();
+      const top = drawer.scrollTop;
+      openWeapon(id);
+      drawer.scrollTop = top;
+      $(".pk-detail", drawer).innerHTML = `<p class="small" style="color:var(--green)">Switched to ${esc(mod)} in game. The stats here update when you next re-rate.</p>`;
     } catch (err) {
       b.disabled = false; msg.textContent = "Couldn't switch: " + err.message;
     }

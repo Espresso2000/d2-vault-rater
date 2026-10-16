@@ -174,6 +174,37 @@ test("weapon details: live stats, base stats for the ones left out, intrinsic fr
   assert.deepEqual(w.mods?.map((x) => [x.kind, x.name]), [["masterwork", "Masterworked: Reload Speed"]]);
 });
 
+test("weapon mod socket: the unlocked mods that fit, and the request that switches to one", async () => {
+  const mm = manifest();
+  const mod = (hash: number, name: string, pci: string) => (mm.items[hash] = { hash, displayProperties: { name, icon: `/icons/${hash}.png`, description: `${name} text` }, itemType: 19, plug: { plugCategoryIdentifier: pci } });
+  mod(90, "Empty Mod Socket", "v400.weapon.mod_empty");
+  mod(91, "Backup Mag", "v400.weapon.mod_magazine");
+  mod(92, "Counterbalance Stock", "v400.weapon.mod_guns");
+  mod(93, "Freehand Grip", "v400.weapon.mod_guns");
+  mod(94, "Some Shader", "shader");
+  const entries = Array.from({ length: 8 }, () => ({}) as { reusablePlugSetHash?: number });
+  entries[7] = { reusablePlugSetHash: 500 };
+  mm.items[1002] = { ...mm.items[1002], sockets: { ...mm.items[1002].sockets!, socketEntries: entries } };
+  const raw = profile([{ id: "x", hash: 1002, plugs: [11, 21, 31, 43, 52, 61] }]);
+  raw.itemComponents!.sockets!.data!.x.sockets.push({ plugHash: 91, isEnabled: true, isVisible: true });
+  const plug = (h: number, canInsert = true) => ({ plugItemHash: h, canInsert, enabled: true });
+  raw.profilePlugSets = { data: { plugs: { 500: [plug(90), plug(91), plug(92), plug(93, false), plug(94)] } } };
+  raw.characterPlugSets = { data: { c1: { plugs: { 500: [plug(92)] } } } };
+  const v = decodeProfile(raw, mm);
+  const slot = v.weapons[0].mods!.find((x) => x.kind === "mod")!;
+  assert.equal(slot.name, "Backup Mag");
+  assert.equal(slot.socket, 7);
+  assert.deepEqual(slot.options?.map((o) => o.name), ["Empty Mod Socket", "Backup Mag", "Counterbalance Stock"], "locked mods, other plugs and repeats are left out");
+
+  const { modInsertBody, insertMod } = await import("../src/bungie/transfer.js");
+  assert.deepEqual(modInsertBody(v, "x", 7, "Counterbalance Stock").body, { plug: { socketIndex: 7, socketArrayType: 0, plugItemHash: 92 }, itemId: "x", characterId: "c1", membershipType: 3 });
+  assert.throws(() => modInsertBody(v, "x", 7, "Freehand Grip"), /isn't a mod you can put on/);
+  const sent: unknown[] = [];
+  await insertMod("x", 7, "Counterbalance Stock", { vault: v, send: async (_p, b) => void sent.push(b) });
+  assert.equal(sent.length, 1);
+  assert.equal(slot.name, "Counterbalance Stock", "the vault copy now has the new mod");
+});
+
 test("armor rating keeps the Tier 5 piece and shards the weaker copy at strict", () => {
   const a = rateArmor(vault(), SettingsSchema.parse({ preset: "strict" }));
   const by = (id: string) => a.ratings.find((x) => x.instanceId === id)!;

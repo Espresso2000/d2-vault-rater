@@ -53,7 +53,7 @@ export interface WeaponRecord {
   baseStats?: string[];
   /** The intrinsic (frame) perk and the masterwork and weapon mod plugs, for the details panel. Missing in older vault snapshots. */
   intrinsic?: WeaponPlug | null;
-  mods?: (WeaponPlug & { kind: "masterwork" | "mod" })[];
+  mods?: WeaponMod[];
   icon: string;
   screenshot: string | null;
   location: Location;
@@ -63,6 +63,15 @@ export interface WeaponPlug {
   name: string;
   icon: string | null;
   description: string;
+}
+
+/** A masterwork or weapon mod socket: what's in it and, for mod sockets, the mods you could put in instead. */
+export interface WeaponMod extends WeaponPlug {
+  kind: "masterwork" | "mod";
+  /** The socket index, for switching the mod in game. */
+  socket?: number;
+  /** Mods you own that fit this socket (with the empty socket), by plug item hash. */
+  options?: (WeaponPlug & { hash: number })[];
 }
 
 export interface ArmorRecord {

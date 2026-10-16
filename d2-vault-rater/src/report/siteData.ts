@@ -76,7 +76,8 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
     st: recW.get(r.instanceId)?.stats,
     bst: recW.get(r.instanceId)?.baseStats?.length ? recW.get(r.instanceId)?.baseStats : undefined,
     fr: plugData(recW.get(r.instanceId)?.intrinsic),
-    md: recW.get(r.instanceId)?.mods?.map((x) => ({ ...plugData(x)!, k: x.kind })),
+    // A mod socket also carries its socket index and the names of the mods that fit (their icons and text are in `modInfo`).
+    md: recW.get(r.instanceId)?.mods?.map((x) => ({ ...plugData(x)!, k: x.kind, si: x.socket, o: x.options?.map((o) => o.name) })),
     rmw: r.recMasterwork?.length ? r.recMasterwork : undefined,
     loc: where(recW.get(r.instanceId)?.location),
     };
@@ -122,8 +123,12 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
   const bestRads = new Set([...groupBy(o.activities ?? [], (x) => x.kind).values()].map((l) => l.sort((x, y) => y.score - x.score || x.name.localeCompare(y.name))[0]));
   const perkDescs: Record<string, string> = {};
   for (const r of w.ratings) for (const p of r.perks) for (const [n, d] of Object.entries(p.descriptions ?? {})) perkDescs[n] ??= d;
+  // One icon and description per weapon mod name, for the mod picker.
+  const modInfo: Record<string, { ic: string | null; d?: string }> = {};
+  for (const rec of recW.values()) for (const x of rec.mods ?? []) for (const op of x.options ?? []) modInfo[op.name] ??= { ic: imageKey(op.icon), d: op.description || undefined };
   const data = {
     perkIcons,
+    modInfo,
     // One icon per armor stat, for the highest-stat symbol on armor tiles.
     statIcons: Object.fromEntries(Object.entries(o.vault?.statIcons ?? {}).map(([n, url]) => [n, imageKey(url) ?? ""])),
     perkDescs,

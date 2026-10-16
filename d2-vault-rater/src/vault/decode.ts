@@ -1,8 +1,8 @@
 import { DAMAGE_TYPES as DAMAGE, type Manifest, type ItemDef } from "../bungie/defs.js";
 import { bungieUrl } from "../bungie/client.js";
-import type { ArmorRecord, ArmorSlot, ClassName, PerkColumn, Vault, WeaponPlug, WeaponRecord, WeaponSlot } from "./types.js";
+import type { ArmorRecord, ArmorSlot, ClassName, PerkColumn, Vault, WeaponMod, WeaponPlug, WeaponRecord, WeaponSlot } from "./types.js";
 
-export const PROFILE_COMPONENTS = [100, 102, 200, 201, 205, 300, 304, 305, 310];
+export const PROFILE_COMPONENTS = [100, 102, 200, 201, 205, 300, 304, 305, 306, 307, 310];
 
 const WEAPON_BUCKETS: Record<number, WeaponSlot> = { 1498876634: "Kinetic", 2465295065: "Energy", 953998645: "Power" };
 const ARMOR_BUCKETS: Record<number, ArmorSlot> = {
@@ -44,6 +44,9 @@ export interface RawProfile {
   characters?: { data?: Record<string, { classType: number; dateLastPlayed?: string }> };
   characterInventories?: { data?: Record<string, { items: RawItem[] }> };
   characterEquipment?: { data?: Record<string, { items: RawItem[] }> };
+  /** Unlocked plugs in shared plug sets (weapon mods among them), by plug set hash (components 306 and 307). */
+  profilePlugSets?: { data?: { plugs: Record<string, RawPlug[]> } };
+  characterPlugSets?: { data?: Record<string, { plugs: Record<string, RawPlug[]> }> };
   itemComponents?: {
     instances?: { data?: Record<string, { damageType?: number; primaryStat?: { value: number }; gearTier?: number }> };
     stats?: { data?: Record<string, { stats: Record<string, { statHash: number; value: number }> }> };
@@ -82,6 +85,11 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
   const statsC = raw.itemComponents?.stats?.data ?? {};
   const socketsC = raw.itemComponents?.sockets?.data ?? {};
   const plugsC = raw.itemComponents?.reusablePlugs?.data ?? {};
+  // A plug set's unlocked plugs: the account's, plus any a character has on its own.
+  const plugSet = (hash?: number): RawPlug[] => !hash ? [] : [
+    ...(raw.profilePlugSets?.data?.plugs[hash] ?? []),
+    ...Object.values(raw.characterPlugSets?.data ?? {}).flatMap((c) => c.plugs[hash] ?? []),
+  ];
 
   const located: { item: RawItem; where: string; equipped: boolean; postmaster?: boolean }[] = [];
   for (const it of raw.profileInventory?.data?.items ?? []) located.push({ item: it, where: "vault", equipped: false });
@@ -111,7 +119,7 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
       let frame = "";
       let intrinsic: WeaponPlug | null = null;
       let masterwork: string | null = null;
-      const mods: NonNullable<WeaponRecord["mods"]> = [];
+      const mods: WeaponMod[] = [];
       const cats = def.sockets?.socketCategories ?? [];
       const intrinsicIdx = cats.find((c) => c.socketCategoryHash === SOCKET_CATEGORY.intrinsic)?.socketIndexes ?? [];
       for (const i of intrinsicIdx) if (!frame) { frame = plugName(m, sockets[i]?.plugHash); intrinsic = plugOf(m, sockets[i]?.plugHash); }
@@ -141,15 +149,25 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
           hashes: Object.fromEntries(optionHashes.map((h) => [plugName(m, h), h] as const).filter(([n]) => n)),
         });
       }
-      for (const s of sockets) {
+      sockets.forEach((s, i) => {
         const pci = s.plugHash ? m.items[s.plugHash]?.plug?.plugCategoryIdentifier ?? "" : "";
         if (/masterworks\.stat/.test(pci)) {
           const n = plugName(m, s.plugHash);
           masterwork = n.includes(":") ? n.split(":").pop()!.trim() : n || null;
         }
         const plug = /masterworks\.stat|weapon\.mod_/.test(pci) && s.isVisible !== false ? plugOf(m, s.plugHash) : null;
-        if (plug) mods.push({ ...plug, kind: /masterworks/.test(pci) ? "masterwork" : "mod" });
-      }
+        if (!plug) return;
+        if (/masterworks/.test(pci)) return void mods.push({ ...plug, kind: "masterwork" });
+        // The mods that fit: this copy's own list when Bungie sends one, else the socket's shared plug set (unlocked ones only).
+        const entry = def.sockets?.socketEntries?.[i];
+        const own = reusable[String(i)] ?? [];
+        const avail = own.length ? own : plugSet(entry?.reusablePlugSetHash ?? entry?.randomizedPlugSetHash);
+        const seen = new Set<number>();
+        const options = avail
+          .filter((p) => p.canInsert !== false && p.enabled !== false && /weapon\.mod_/.test(m.items[p.plugItemHash]?.plug?.plugCategoryIdentifier ?? ""))
+          .flatMap((p) => { const o = plugOf(m, p.plugItemHash); return o && !seen.has(p.plugItemHash) && seen.add(p.plugItemHash) ? [{ ...o, hash: p.plugItemHash }] : []; });
+        mods.push({ ...plug, kind: "mod", socket: i, options: options.length ? options : undefined });
+      });
       // Live stats first; the base stats fill in what the live data leaves out.
       const stats: Record<string, number> = {};
       for (const st of Object.values(statsC[id]?.stats ?? {})) {
