@@ -39,7 +39,7 @@
     radial-gradient(circle at 91% 52%, #fff 0 1px, rgba(170,255,225,.22) 1.8px, transparent 7px);
   animation: vr-neb-twinkle 11s ease-in-out infinite alternate; }
 /* Green highlights: soft glows that wander slowly and breathe in and out. */
-.vr-nebula .neb-g { width: 55vmax; height: 55vmax; border-radius: 50%; background: radial-gradient(closest-side, rgba(51,227,160,.12), rgba(51,227,160,.04) 45%, transparent); }
+.vr-nebula .neb-g { width: 55vmax; height: 55vmax; border-radius: 50%; background: radial-gradient(closest-side, rgba(var(--c3),.12), rgba(var(--c3),.04) 45%, transparent); }
 .vr-nebula .neb-g.g1 { left: -10vmax; top: -15vmax; animation: vr-neb-g1 120s ease-in-out infinite alternate, vr-neb-breathe 29s ease-in-out infinite alternate; }
 .vr-nebula .neb-g.g2 { right: -20vmax; top: 35vh; width: 65vmax; height: 38vmax; animation: vr-neb-g2 150s ease-in-out infinite alternate, vr-neb-breathe 37s ease-in-out -12s infinite alternate; }
 @keyframes vr-neb-a { from { transform: translate3d(3%, 2%, 0) rotate(2deg) scale(1.06); } to { transform: translate3d(-4%, -3%, 0) rotate(-3deg) scale(1); } }
