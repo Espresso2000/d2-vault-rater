@@ -574,11 +574,12 @@ details.vsec > summary .vsplit { margin-left: 8px; white-space: nowrap; }
 .pchip.mw { color: var(--gold); background: rgba(242,193,78,.08); border-color: var(--gold); padding-left: 10px; }
 /* Vault tiles: damage-type glow along the top edge (weapons), gear tier as diamonds down the left */
 .vitem.welem::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; box-shadow: inset 0 2px 0 var(--el), 0 -1px 3px var(--el); }
-/* Armor's highest-stat badge: the weapons' grade badge, a touch bigger, with the stat's icon in place of the letter */
-.vitem .tier.tstat { width: 20px; height: 18px; padding: 0; pointer-events: none; }
-.tstat img { width: 14px !important; height: 14px !important; border-radius: 0 !important; }
-.vinv .vitem .tier.tstat { width: 16px; height: 14px; } .vinv .tstat img { width: 11px !important; height: 11px !important; }
-.vitem.big .tier.tstat { width: 22px; height: 20px; } .vitem.big .tstat img { width: 16px !important; height: 16px !important; }
+/* Armor's highest-stat badge: the weapons' grade badge, with the stat's icon in place of the letter */
+.vitem .tier.tstat { padding: 0 2px; pointer-events: none; } .vinv .vitem .tier.tstat { padding: 0 1.5px; }
+/* Armor tiles have a 2px class border (weapons 1px): nudge the badge and diamonds so they sit where they do on weapons */
+.vitem.varmor > .tier, .vitem.varmor > .tdia { margin: -1px 0 0 -1px; }
+.tstat img { width: 12px !important; height: 12px !important; border-radius: 0 !important; }
+.vinv .tstat img { width: 10px !important; height: 10px !important; }
 .tdia { position: absolute; left: 1px; top: 14px; display: flex; flex-direction: column; gap: 3px; pointer-events: none; }
 .tdia i { width: 4.5px; height: 4.5px; transform: rotate(45deg); background: #f4f1e6; box-shadow: 0 0 2px #000, 0 0 1px #000; }
 .tdia.t5 i { background: #d6ecff; box-shadow: 0 0 3px #6fb8ff, 0 0 1px #000; }
@@ -610,6 +611,8 @@ details.vsec > summary .vsplit { margin-left: 8px; white-space: nowrap; }
 .vtype { display: grid; gap: 6px; align-content: start; max-width: 100%; padding: 8px 10px 10px; border: 1px solid rgba(150,170,255,.32); border-radius: 3px 12px; background: rgba(5,9,25,.45); box-shadow: inset 0 1px 0 rgba(255,255,255,.04); }
 .vtype .cap { margin: 0; color: var(--ink); font-size: 12px; letter-spacing: .14em; }
 .vtype .cap span { color: var(--green); margin-left: 6px; }
+.vtype .cap .vsetg { display: inline-flex; gap: 3px; margin-left: 8px; vertical-align: 1px; font-style: normal; letter-spacing: 0; }
+.vtype .cap .vsetg .tier { min-width: 16px; height: 15px; padding: 0 3px; margin: 0; font-size: 10px; border-radius: 4px; color: color-mix(in srgb, var(--t) 70%, #fff); }
 .vtiles { display: flex; flex-wrap: wrap; gap: 7px; }
 .vitem.nomatch { opacity: .3; }
 .vsplit { display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--muted); cursor: pointer; }
@@ -1405,7 +1408,7 @@ function vrMain() {
     vendors: "<svg viewBox='0 0 32 32' aria-hidden='true'><path d='M4 6h24l-2 7H6L4 6zm2.5 9h19v13h-19V15zm4 3v7h4v-7h-4zm7 0v3h4.5v-3H17.5zM9 2h14l2 3H7l2-3z'/></svg>",
   };
   // Decision tabs first (what to keep, what to shard), then browsing, then the extras.
-  const TABS = [["overview", "Overview", null], ["weapons", "Weapon Report", S.weapons], ["armor", "Armor Report", S.armor], ["shard", "Shard", S.weaponShard + S.armorShard], ["list", "Vault", null], ...(window.VR_VENDORS ? [["vendors", "Vendors", window.VR_VENDORS.count()]] : []), ["rads", "R&amp;Ds", (DATA.rads || []).length || null], ["wrapped", "Wrapped", null], ...(window.VR_BUILDS ? [["builds", "Builds", window.VR_BUILDS.count()]] : []), ...(window.VR_LOCAL ? [["settings", "Settings", null]] : [])];
+  const TABS = [["overview", "Overview", null], ["weapons", "Weapon Report", S.weapons], ["armor", "Armor Report", S.armor], ["list", "Vault", null], ["shard", "Shard", S.weaponShard + S.armorShard], ...(window.VR_VENDORS ? [["vendors", "Vendors", window.VR_VENDORS.count()]] : []), ["rads", "R&amp;Ds", (DATA.rads || []).length || null], ["wrapped", "Wrapped", null], ...(window.VR_BUILDS ? [["builds", "Builds", window.VR_BUILDS.count()]] : []), ...(window.VR_LOCAL ? [["settings", "Settings", null]] : [])];
   if (!$("#p-settings")) $("main").insertAdjacentHTML("beforeend", '<section class="panel" id="p-settings" role="tabpanel" hidden></section>');
   if (window.VR_BUILDS && !$("#p-builds")) $("main").insertAdjacentHTML("beforeend", '<section class="panel" id="p-builds" role="tabpanel" hidden></section>');
   if (window.VR_VENDORS && !$("#p-vendors")) $("main").insertAdjacentHTML("beforeend", '<section class="panel" id="p-vendors" role="tabpanel" hidden></section>');
@@ -2025,9 +2028,14 @@ function vrMain() {
     const groupOf = (a) => (isExotic(a) ? "Exotic" : a.set || "No set");
     const rank = (g) => (g === "Exotic" ? 0 : g === "No set" ? 2 : 1);
     const bySlot = groupBy(DATA.armor, (a) => a.s), inVault = (a) => (a.wh || "vault") === "vault";
+    const setGrades = (gs) => {
+      const bs = gs.find((a) => a.si)?.si?.bonuses;
+      if (!bs || isExotic(gs[0])) return "";
+      return `<i class="vsetg">${[2, 4].map((n) => { const b = bs.find((x) => x.pieces === n); return `<span class="tier t${b?.tier || "U"}" title="${n}-piece: ${esc(b?.name || "unknown")} · ${b?.tier ? `Aegis ${b.tier} tier${b.rank ? ` (#${b.rank})` : ""}` : "not rated by Aegis"}">${b?.tier || "—"}</span>`; }).join("")}</i>`;
+    };
     const vaultSets = (xs) => !xs.length ? '<div class="vdrop vbox" data-k="a" data-to="vault"><span class="small muted">No armor</span></div>' : `<div class="vdrop vbox split" data-k="a" data-to="vault">${[...groupBy(xs, groupOf)]
       .sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0]))
-      .map(([g, gs]) => `<div class="vtype"><div class="cap">${esc(g)}<span>${gs.length}</span></div><div class="vtiles">${gs.sort(order).map((a) => atile(a)).join("")}</div></div>`).join("")}</div>`;
+      .map(([g, gs]) => `<div class="vtype"><div class="cap">${esc(g)}${setGrades(gs)}<span>${gs.length}</span></div><div class="vtiles">${gs.sort(order).map((a) => atile(a)).join("")}</div></div>`).join("")}</div>`;
     // The header row (a chevron in the character's header when it's a collapsible split block) and the slot rows.
     const heads = (cs, keep, fold) => `${cs.map((c) => `<div class="vhead cc c-${esc(c.cls)}"><span class="vht">${fold ? chev : ""}<b>${esc(c.cls)}</b></span><span class="small muted">${plural(DATA.armor.filter((a) => a.wh === c.id && !a.pm).length, "piece")}</span></div>`).join("")}
       <div class="vhead"><b>Vault</b><span class="small muted">${plural(DATA.armor.filter((a) => inVault(a) && keep(a)).length, "armor piece")}</span></div>`;
