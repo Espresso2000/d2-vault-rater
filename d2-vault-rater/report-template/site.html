@@ -581,11 +581,11 @@ details.vsec > summary .vsplit { margin-left: 8px; white-space: nowrap; }
 /* Vault tiles: damage-type glow along the top edge (weapons), gear tier as diamonds down the left */
 .vitem.welem::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; box-shadow: inset 0 2px 0 var(--el), 0 -1px 3px var(--el); }
 /* Armor's highest-stat badge: the weapons' grade badge, with the stat's icon in place of the letter */
-.vitem .tier.tstat { padding: 0 2px; pointer-events: none; } .vinv .vitem .tier.tstat { padding: 0 1.5px; }
+.vitem .tier.tstat { padding: 0; pointer-events: none; }
 /* Armor tiles have a 2px class border (weapons 1px): nudge the badge and diamonds so they sit where they do on weapons */
 .vitem.varmor > .tier, .vitem.varmor > .tdia { margin: -1px 0 0 -1px; }
-.tstat img { width: 12px !important; height: 12px !important; border-radius: 0 !important; }
-.vinv .tstat img { width: 10px !important; height: 10px !important; }
+.tstat img { width: 16px !important; height: 16px !important; margin: -1px; border-radius: 0 !important; }
+.vinv .tstat img { width: 13px !important; height: 13px !important; }
 .tdia { position: absolute; left: 1px; top: 14px; display: flex; flex-direction: column; gap: 3px; pointer-events: none; }
 .tdia i { width: 4.5px; height: 4.5px; transform: rotate(45deg); background: #f4f1e6; box-shadow: 0 0 2px #000, 0 0 1px #000; }
 .tdia.t5 i { background: #d6ecff; box-shadow: 0 0 3px #6fb8ff, 0 0 1px #000; }
