@@ -19,3 +19,10 @@ test("DIM-style search queries", () => {
   ];
   for (const [q, want] of cases) assert.deepEqual(run(q), want, q);
 });
+
+test("tag: matches EVR tags by key or name, and tag:none needs neither tag", () => {
+  const x = { n: "Delta", t: "Bow", e: "Arc", et: "c1", etl: "Raid gear" };
+  for (const q of ["tag:raidgear", 'tag:"raid gear"', "tag:c1"]) assert.ok(compile(q, "w")(x), q);
+  assert.ok(!compile("tag:none", "w")(x));
+  assert.ok(compile("tag:favourite", "w")({ ...x, et: "favorite" }));
+});
