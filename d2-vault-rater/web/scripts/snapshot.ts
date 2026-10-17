@@ -1,6 +1,6 @@
 /**
  * Builds the data the site ships with (run before `vite build`; see package.json "snapshot"):
- *   public/data/manifest-<version>.json  the stripped manifest for the live game version
+ *   public/data/manifest-v<format>-<version>.json  the stripped manifest for the live game version
  *   public/data/sources.json             Aegis's tier list and armor set tiers, used if the sheets can't be read
  * The manifest key comes from BUNGIE_API_KEY (or ../.env). Sources come from the local app's cache
  * (~/.d2-vault-rater/sources), so run the local app's refresh first if they're old.
@@ -8,7 +8,7 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
-import { TABLES, type LiteManifest, type TableKey } from "../src/strip";
+import { MANIFEST_SNAPSHOT, TABLES, type LiteManifest, type TableKey } from "../src/strip";
 import { stripBuildDefs } from "../src/builds/defs.strip";
 import { versionSlug } from "../../src/bungie/defs.js";
 import { readEnv } from "../local-server.ts";
@@ -27,7 +27,7 @@ const meta = (await (await fetch("https://www.bungie.net/Platform/Destiny2/Manif
   version: string;
   jsonWorldComponentContentPaths: Record<string, Record<string, string>>;
 };
-const file = `manifest-${versionSlug(meta.version)}.json`;
+const file = `${MANIFEST_SNAPSHOT}-${versionSlug(meta.version)}.json`;
 if (existsSync(join(out, file))) console.log(`Manifest ${meta.version} snapshot is current.`);
 else {
   const lite = { version: meta.version } as LiteManifest;
@@ -47,7 +47,11 @@ const buildsFile = `builds-${versionSlug(meta.version)}.json`;
 if (!existsSync(join(out, buildsFile))) {
   const get = async (t: string) => (await fetch("https://www.bungie.net" + meta.jsonWorldComponentContentPaths.en[t])).json();
   console.log("Downloading the Builds tab's definitions…");
-  const defs = stripBuildDefs(meta.version, await get("DestinyInventoryItemDefinition"), await get("DestinyPlugSetDefinition"), await get("DestinySandboxPerkDefinition"), await get("DestinyLoadoutConstantsDefinition"));
+  const defs = stripBuildDefs(meta.version, await get("DestinyInventoryItemDefinition"), await get("DestinyPlugSetDefinition"), await get("DestinySandboxPerkDefinition"), await get("DestinyLoadoutConstantsDefinition"), {
+    names: await get("DestinyLoadoutNameDefinition"),
+    icons: await get("DestinyLoadoutIconDefinition"),
+    colors: await get("DestinyLoadoutColorDefinition"),
+  });
   for (const f of readdirSync(out)) if (/^builds-.*\.json$/.test(f)) rmSync(join(out, f));
   writeFileSync(join(out, buildsFile), JSON.stringify(defs));
   console.log(`Wrote ${buildsFile}`);

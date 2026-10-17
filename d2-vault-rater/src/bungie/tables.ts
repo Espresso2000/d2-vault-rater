@@ -8,8 +8,8 @@ import type { Raw } from "./strip.js";
  * runs parse a few MB instead of the full table (the item table is ~200 MB). A full table left by an
  * older version of the rater is stripped once instead of downloaded again.
  */
-export async function liteTable(dir: string, table: string, path: () => Promise<string>, strip: (t: Raw) => Raw, force = false): Promise<Raw> {
-  const lite = join(dir, `${table}.lite.json`);
+export async function liteTable(dir: string, table: string, path: () => Promise<string>, strip: (t: Raw) => Raw, force = false, format = ""): Promise<Raw> {
+  const lite = join(dir, `${table}.lite${format}.json`);
   if (force || !existsSync(lite)) {
     const full = join(dir, `${table}.json`);
     let data: Raw;

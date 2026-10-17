@@ -13,7 +13,7 @@ npm install && npm run build
 npm run vault:serve
 ```
 
-In the local app you can also **move items**: open any weapon or armor piece to pull it to a character (optionally equipping it) or send it to the vault, pull a whole encounter loadout from the RADS guides and equip it, or pull every item in a DIM loadout to its character. Moves go character → vault → character through Bungie's item actions; equipped items have to be swapped out in game first.
+In the local app you can also **move items**: open any weapon or armor piece to pull it to a character (optionally equipping it) or send it to the vault, pull a whole encounter loadout from the R&Ds guides and equip it, or pull every item in a DIM loadout to its character. Moves go character → vault → character through Bungie's item actions; equipped items have to be swapped out in game first.
 
 The first run opens the Bungie login; paste back the address your browser lands on. It then reads your vault, rates it, and opens the report at <http://localhost:7780>. The page has a **Re-rate** button in its top bar that re-reads your vault and refreshes the page; keep the terminal window open while you use it. Other commands:
 
@@ -27,7 +27,7 @@ The first run opens the Bungie login; paste back the address your browser lands 
 
 ## Web app (no install)
 
-`web/` is the same rater as a static site that runs entirely in your browser: Bungie sign-in, your vault, every report tab (Overview, Weapons, Armor, RADS with encounter loadouts, Full list, Shard, Wrapped, Settings) plus a Builds tab, DIM tags and loadouts, item moves, and a lock plan you preview before anything changes. It reuses the rating code in `src/`; `web/vite.config.ts` swaps the few Node-only modules (`config`, `bungie/client`, `bungie/oauth`, `bungie/manifest`, `dim/sync`) for browser versions in `web/src/shims`.
+`web/` is the same rater as a static site that runs entirely in your browser: Bungie sign-in, your vault, every report tab (Overview, Weapon Report and Armor Report, R&Ds with encounter loadouts, Full list, Shard, Wrapped, Settings) plus a Builds tab, DIM tags and loadouts, item moves, and a lock plan you preview before anything changes. It reuses the rating code in `src/`; `web/vite.config.ts` swaps the few Node-only modules (`config`, `bungie/client`, `bungie/oauth`, `bungie/manifest`, `dim/sync`) for browser versions in `web/src/shims`.
 
 **On your own PC:** double-click `Vault Rater Web.cmd` (next to `Vault Rater.cmd`), or run `npm run local` in `web/`. It serves the site at https://localhost:7777 (the redirect URL the local app already registers) with a self-signed certificate, so your browser warns once: choose Advanced, then continue. It uses the keys in `.env`; a tiny relay in `web/local-server.ts` adds the client secret to Bungie token requests, so the secret never reaches the page, and you stay signed in (Confidential apps get refresh tokens).
 

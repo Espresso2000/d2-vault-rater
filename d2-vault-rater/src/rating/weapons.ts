@@ -6,6 +6,8 @@ import { strictnessFor, type Settings, type ShardCategory, type Tier } from "./s
 import { groupBy } from "../util.js";
 
 export const TIER_POINTS: Record<Tier, number> = { S: 100, A: 85, B: 70, C: 50, D: 30 };
+/** Exotic-sheet grades below D. */
+const GRADE_POINTS = { E: 20, F: 10 } as const;
 export const TIER_ORDER: Tier[] = ["S", "A", "B", "C", "D"];
 export const COLUMN_WEIGHTS: Record<ColumnKey, number> = {
   perk1: 0.35,
@@ -31,7 +33,7 @@ export interface WeaponRating {
   icon: string;
   screenshot: string | null;
   locked: boolean;
-  aegis: { tier: Tier; rank: number | null; tab: string; notes: string } | null;
+  aegis: { tier: Tier; grade?: "E" | "F"; rank: number | null; tab: string; notes: string } | null;
   /** Tier the score was based on; for unrated weapons, the wishlist fallback. */
   effectiveTier: Tier;
   weaponScore: number;
@@ -39,7 +41,9 @@ export interface WeaponRating {
   score: number;
   /** Rolled options that match Aegis's picks, by column. */
   matched: Partial<Record<ColumnKey, string[]>>;
-  perks: { kind: string; options: string[] }[];
+  /** Aegis's recommended masterwork stats for this weapon. */
+  recMasterwork?: string[];
+  perks: { kind: string; active: string; options: string[]; icons?: Record<string, string>; descriptions?: Record<string, string>; socket?: number }[];
   godRoll: boolean;
   trashRoll: boolean;
   verdict: "keep" | "shard" | "review";
@@ -88,23 +92,19 @@ function aegisIndex(aegis: AegisData | null) {
   };
 }
 
+/** ~275k wishlist rolls grouped by item, once per loaded wishlist: each rating (and each vendor item) then reads only its own. */
+const rollsByItem = new WeakMap<WishlistData, Map<number, WishlistData["rolls"]>>();
+
 /** Wishlist rolls for the weapons you own, with perk hashes turned into names to compare with records. */
 function wishIndex(wl: WishlistData | null, m: Manifest | null, owned: Set<number>) {
   const byItem = new Map<number, { names: string[]; trash: boolean }[]>();
   if (!wl || !m) return byItem;
-  const perkName = new Map<number, string>();
-  const nameOf = (h: number) => {
-    let n = perkName.get(h);
-    if (n === undefined) perkName.set(h, (n = normalizeName(m.items[h]?.displayProperties?.name ?? "")));
-    return n;
-  };
-  for (const r of wl.rolls) {
-    // ~275k rolls; only those for items in the vault can match.
-    if (!owned.has(r.itemHash)) continue;
-    const names = r.perks.map(nameOf).filter(Boolean);
-    const list = byItem.get(r.itemHash) ?? [];
-    list.push({ names, trash: r.trash });
-    byItem.set(r.itemHash, list);
+  let rolls = rollsByItem.get(wl);
+  if (!rolls) rollsByItem.set(wl, (rolls = groupBy(wl.rolls, (r) => r.itemHash)));
+  const nameOf = (h: number) => normalizeName(m.items[h]?.displayProperties?.name ?? "");
+  for (const h of owned) {
+    const list = rolls.get(h);
+    if (list) byItem.set(h, list.map((r) => ({ names: r.perks.map(nameOf).filter(Boolean), trash: r.trash })));
   }
   return byItem;
 }
@@ -162,7 +162,7 @@ export function rateWeapons(
     const trashRoll = rolls.some((r) => r.trash && fits(r));
     const effectiveTier: Tier = a ? a.tier : godRoll ? "B" : "C";
     const pos = a ? ai.tierPosition.get(a) ?? 1 : 1;
-    const weaponScore = Math.min(100, TIER_POINTS[effectiveTier] + (a ? Math.round(5 * (1 - pos)) : 0));
+    const weaponScore = Math.min(100, (a?.grade ? GRADE_POINTS[a.grade] : TIER_POINTS[effectiveTier]) + (a ? Math.round(5 * (1 - pos)) : 0));
     return {
       instanceId: w.instanceId,
       itemHash: w.itemHash,
@@ -176,13 +176,14 @@ export function rateWeapons(
       icon: w.icon,
       screenshot: w.screenshot,
       locked: w.locked,
-      aegis: a ? { tier: a.tier, rank: a.rank, tab: a.tab, notes: a.notes } : null,
+      aegis: a ? { tier: a.tier, grade: a.grade, rank: a.rank, tab: a.tab, notes: a.notes } : null,
       effectiveTier,
       weaponScore,
       rollScore,
       score: Math.round(WEAPON_WEIGHT * weaponScore + ROLL_WEIGHT * rollScore),
       matched,
-      perks: w.columns.map((c) => ({ kind: c.kind, options: c.options })),
+      recMasterwork: a?.recommended.masterwork ?? [],
+      perks: w.columns.map((c) => ({ kind: c.kind, active: c.active, options: c.options, icons: c.icons, descriptions: c.descriptions, socket: c.socket })),
       godRoll,
       trashRoll,
       verdict: "keep",
@@ -249,7 +250,7 @@ export function rateWeapons(
       r.category = cat;
       why(reason);
     };
-    if (r.aegis) why(`Aegis ${r.aegis.tier} tier${r.aegis.rank ? ` (#${r.aegis.rank} ${r.aegis.tab})` : ""}`);
+    if (r.aegis) why(`Aegis ${r.aegis.grade ?? r.aegis.tier} tier${r.aegis.rank ? ` (#${r.aegis.rank} ${r.aegis.tab})` : ""}`);
     else why(r.godRoll ? "not in Aegis's sheet; matches a community god roll" : "not in Aegis's sheet");
     const hits = [...(r.matched.perk1 ?? []), ...(r.matched.perk2 ?? [])];
     if (hits.length) why(`recommended perks: ${hits.join(", ")}`);

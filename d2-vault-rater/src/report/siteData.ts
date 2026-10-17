@@ -2,14 +2,16 @@ import type { WeaponRating, WeaponReport } from "../rating/weapons.js";
 import type { ArmorRating, ArmorReport } from "../rating/armor.js";
 import type { ReportOptions } from "./report.js";
 import { setKey, type ArmorSetData } from "../sources/armorSets.js";
-import { stripReissue } from "../bungie/defs.js";
+import { baseName } from "../bungie/defs.js";
+import { groupBy } from "../util.js";
 
 /**
  * The data the report page renders: every weapon and armor piece, highlights, RADS, Wrapped and DIM.
  * Pure (no file or network access) so the local report and the browser app share it.
- * `imageKey` turns an image URL into the key the page looks up in its image map.
+ * `imageKey` turns an image URL into the key the page looks up in its image map; `embed` false marks
+ * big art the local report may leave as a URL instead of embedding.
  */
-export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions, imageKey: (url: string | null | undefined) => string | null, setData: ArmorSetData | null) {
+export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions, imageKey: (url: string | null | undefined, embed?: boolean) => string | null, setData: ArmorSetData | null) {
   const ids = (list: WeaponRating[]) => list.map((r) => r.instanceId);
   // Full-size screenshots are ~170 KB each, so an embedded report gives only the top picks per slot one.
   const withShot = new Set(Object.values(w.bestBySlot).flatMap((l) => l.slice(0, 1).map((r) => r.instanceId)));
@@ -17,20 +19,23 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
   const recW = new Map((o.vault?.weapons ?? []).map((x) => [x.instanceId, x]));
   const recA = new Map((o.vault?.armor ?? []).map((x) => [x.instanceId, x]));
   const classOf = new Map((o.vault?.characters ?? []).map((c) => [c.id, c.className]));
-  const where = (l?: { where: string; equipped: boolean }) => (!l ? null : l.where === "vault" ? "Vault" : `${classOf.get(l.where) ?? "Character"}${l.equipped ? " (equipped)" : ""}`);
+  const where = (l?: { where: string; equipped: boolean; postmaster?: boolean }) => (!l ? null : l.where === "vault" ? "Vault" : `${classOf.get(l.where) ?? "Character"}${l.postmaster ? " postmaster" : l.equipped ? " (equipped)" : ""}`);
   // DIM Sync: tag, notes and the loadouts each item is in.
   const inLoadouts = new Map<string, string[]>();
   for (const l of o.dim?.loadouts ?? []) for (const id of l.itemIds) inLoadouts.set(id, [...(inLoadouts.get(id) ?? []), l.name]);
   // Your best copy of each weapon by name (first one on a tie), for RADS loot.
   const bestCopy = new Map<string, WeaponRating>();
   for (const r of w.ratings) {
-    const k = stripReissue(r.name);
+    const k = baseName(r.name);
     if (r.score > (bestCopy.get(k)?.score ?? -Infinity)) bestCopy.set(k, r);
   }
   const dimOf = (id: string) => {
     const rec = recW.get(id) ?? recA.get(id);
-    return { tg: o.dim?.tags[id]?.tag ?? null, nt: o.dim?.tags[id]?.notes ?? null, lo: inLoadouts.get(id) ?? [], wh: rec?.location.where ?? null, eq: rec?.location.equipped ?? false };
+    return { tg: o.dim?.tags[id]?.tag ?? null, nt: o.dim?.tags[id]?.notes ?? null, lo: inLoadouts.get(id) ?? [], wh: rec?.location.where ?? null, eq: rec?.location.equipped ?? false, pm: rec?.location.postmaster || undefined };
   };
+  // Enhanced perk names on a weapon, for the gold arrow on its perk sockets.
+  const enhancedOf = (rec?: { columns: { enhanced: string[] }[] }) => { const e = rec?.columns.flatMap((c) => c.enhanced) ?? []; return e.length ? e : undefined; };
+  const plugData = (p: { name: string; icon: string | null; description: string } | null | undefined) => (p ? { n: p.name, ic: imageKey(p.icon), d: p.description || undefined } : undefined);
   const weapons = w.ratings.map((r) => {
     const matched = new Set(Object.values(r.matched).flat());
     return {
@@ -51,7 +56,8 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
     sc: r.score,
     ws: r.weaponScore,
     rs: r.rollScore,
-    pk: r.perks.map((p) => ({ k: p.kind, o: p.options, m: p.options.filter((x) => matched.has(x)) })),
+    pk: r.perks.map((p) => ({ k: p.kind, a: p.active, si: p.socket, o: p.options, m: p.options.filter((x) => matched.has(x)) })),
+    en: enhancedOf(recW.get(r.instanceId)),
     v: r.verdict,
     l: r.label,
     c: r.category,
@@ -66,6 +72,13 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
     cr: recW.get(r.instanceId)?.crafted ?? false,
     ad: recW.get(r.instanceId)?.adept ?? false,
     mw: recW.get(r.instanceId)?.masterwork ?? null,
+    // Details panel: stats (names in `bst` are base stats, not this copy's), the intrinsic frame perk and the masterwork and mods.
+    st: recW.get(r.instanceId)?.stats,
+    bst: recW.get(r.instanceId)?.baseStats?.length ? recW.get(r.instanceId)?.baseStats : undefined,
+    fr: plugData(recW.get(r.instanceId)?.intrinsic),
+    // A mod socket also carries its socket index and the names of the mods that fit (their icons and text are in `modInfo`).
+    md: recW.get(r.instanceId)?.mods?.map((x) => ({ ...plugData(x)!, k: x.kind, si: x.socket, o: x.options?.map((o) => o.name) })),
+    rmw: r.recMasterwork?.length ? r.recMasterwork : undefined,
     loc: where(recW.get(r.instanceId)?.location),
     };
   });
@@ -90,6 +103,7 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
     l: r.label,
     why: r.reasons,
     all: recA.get(r.instanceId)?.stats ?? null,
+    pw: recA.get(r.instanceId)?.power ?? null,
     si: r.setInfo,
     loc: where(recA.get(r.instanceId)?.location),
   }));
@@ -102,7 +116,22 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
     : null;
   const shardW = w.ratings.filter((r) => r.verdict === "shard").length;
   const shardA = a.ratings.filter((r) => r.verdict === "shard").length;
+  // One icon per perk name across the vault, so the page can show perks as symbols.
+  const perkIcons: Record<string, string> = {};
+  for (const r of w.ratings) for (const p of r.perks) for (const [n, url] of Object.entries(p.icons ?? {})) perkIcons[n] ??= imageKey(url) ?? "";
+  // The page's top card per kind (raid, dungeon): highest farm score, then name, as the R&Ds tab sorts them.
+  const bestRads = new Set([...groupBy(o.activities ?? [], (x) => x.kind).values()].map((l) => l.sort((x, y) => y.score - x.score || x.name.localeCompare(y.name))[0]));
+  const perkDescs: Record<string, string> = {};
+  for (const r of w.ratings) for (const p of r.perks) for (const [n, d] of Object.entries(p.descriptions ?? {})) perkDescs[n] ??= d;
+  // One icon and description per weapon mod name, for the mod picker.
+  const modInfo: Record<string, { ic: string | null; d?: string }> = {};
+  for (const rec of recW.values()) for (const x of rec.mods ?? []) for (const op of x.options ?? []) modInfo[op.name] ??= { ic: imageKey(op.icon), d: op.description || undefined };
   const data = {
+    perkIcons,
+    modInfo,
+    // One icon per armor stat, for the highest-stat symbol on armor tiles.
+    statIcons: Object.fromEntries(Object.entries(o.vault?.statIcons ?? {}).map(([n, url]) => [n, imageKey(url) ?? ""])),
+    perkDescs,
     generated: new Date().toISOString(),
     preset: o.settings.preset,
     focus: o.settings.focus,
@@ -139,16 +168,17 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
       }),
     ),
     wrapped,
-    // Raids and dungeons ranked for farming, with their loading-screen art.
+    // Raids and dungeons ranked for farming, with their loading-screen art (~130 KB each, so only the
+    // best raid's and best dungeon's is embedded; the rest load by URL).
     rads: (o.activities ?? []).map((act) => ({
       ...act,
-      image: imageKey(act.image),
+      image: imageKey(act.image, bestRads.has(act)),
       weapons: act.weapons.map((x) => ({
         ...x,
         icon: imageKey(x.icon),
         src: o.sourceOf?.(x.hash ?? 0, x.name) ?? null,
         // Your best copy, so the page can open its details.
-        best: bestCopy.get(x.name)?.instanceId ?? null,
+        best: bestCopy.get(baseName(x.name))?.instanceId ?? null,
       })),
     })),
     encounters: o.encounters ?? {},

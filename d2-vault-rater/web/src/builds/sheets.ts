@@ -164,3 +164,22 @@ export function parseInfoTab(csv: string, into: Record<string, string> = {}): Re
 
 /** Points for a tier letter, or null when unrated. */
 export const tierPoints = (t: string | null | undefined) => (t && TIER_POINTS[t] !== undefined ? TIER_POINTS[t] : null);
+
+/** Destiny Clarity's community-tested descriptions (database-clarity on GitHub), the file DIM reads. */
+export const CLARITY_URL = "https://database-clarity.github.io/Live-Clarity-Database/descriptions/dim.json";
+
+type ClarityLine = { text?: string };
+type ClarityBlock = { linesContent?: ClarityLine[]; classNames?: string[] };
+export type ClarityJson = Record<string, { name?: string; descriptions?: { en?: ClarityBlock[] } }>;
+
+/** Clarity's description blocks as plain paragraphs, for the plug hashes the Builds tab knows. */
+export function parseClarity(json: ClarityJson, keep: (hash: number) => boolean): Record<number, string[]> {
+  const out: Record<number, string[]> = {};
+  for (const [k, v] of Object.entries(json)) {
+    const hash = Number(k);
+    if (!keep(hash)) continue;
+    const paras = (v.descriptions?.en ?? []).map((b) => (b.linesContent ?? []).map((l) => l.text ?? "").join("").trim()).filter(Boolean);
+    if (paras.length) out[hash] = paras;
+  }
+  return out;
+}

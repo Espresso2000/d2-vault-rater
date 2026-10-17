@@ -5,6 +5,8 @@ import { gvizCsvUrl, parseCsv } from "./csv.js";
 
 export const AEGIS_SHEET_ID = "1JM-0SlxVDAi-C6rGVlLxa-J1WGewEeL8Qvq4htWZHhY";
 export const TIERS = ["S", "A", "B", "C", "D"] as const;
+/** Gid of the "Exotic Weapons" tab, imported even if the htmlview tab list misses it. */
+export const AEGIS_EXOTIC_TAB = { name: "Exotic Weapons", gid: "1789798057" };
 export type Tier = (typeof TIERS)[number];
 
 export type ColumnKey = "barrel" | "magazine" | "masterwork" | "perk1" | "perk2" | "origin";
@@ -20,6 +22,8 @@ export interface AegisWeapon {
   notes: string;
   rank: number | null;
   tier: Tier;
+  /** Exotic sheet grade below D ("E" or "F"); `tier` is clamped to D for those. */
+  grade?: "E" | "F";
   /** Manifest hashes that carry this name (empty when unmatched). */
   hashes: number[];
 }
@@ -105,6 +109,44 @@ export function parseAegisTab(tab: string, csv: string): AegisWeapon[] | null {
   return out;
 }
 
+/**
+ * Parse the "Exotic Weapons" tab. It has no perk columns and grades S to F, so it is not a tier tab:
+ * E and F rows are kept as tier D with `grade` set, and the Usage cell becomes the notes.
+ */
+export function parseAegisExotics(tab: string, csv: string): AegisWeapon[] | null {
+  const rows = parseCsv(csv);
+  const norm = (c: string) => c.toLowerCase().replace(/[^\w ]+/g, " ").trim().split(/\s+/).slice(-1)[0] ?? "";
+  const headerAt = rows.findIndex((r) => {
+    const c = r.map(norm);
+    return c.includes("name") && c.includes("tier") && c.includes("usage");
+  });
+  if (headerAt < 0) return null;
+  const cols = rows[headerAt].map(norm);
+  const out: AegisWeapon[] = [];
+  for (const r of rows.slice(headerAt + 1)) {
+    const get = (k: string) => (r[cols.indexOf(k)] ?? "").trim();
+    const name = get("name");
+    const raw = get("tier").toUpperCase();
+    if (!name || !/^[SABCDEF]$/.test(raw)) continue;
+    const below = raw === "E" || raw === "F";
+    out.push({
+      tab,
+      name,
+      season: get("season"),
+      element: "",
+      frame: get("type"),
+      source: "",
+      recommended: { barrel: [], magazine: [], masterwork: [], perk1: [], perk2: [], origin: [] },
+      notes: get("usage"),
+      rank: null,
+      tier: below ? "D" : (raw as Tier),
+      ...(below ? { grade: raw as "E" | "F" } : {}),
+      hashes: [],
+    });
+  }
+  return out;
+}
+
 /** Find tab names and gids in the sheet's public htmlview page. */
 export function parseTabList(html: string): { name: string; gid: string }[] {
   const seen = new Map<string, string>();
@@ -143,7 +185,7 @@ export async function importAegis(m: Manifest, extraTabs: { name: string; gid: s
   } catch (e) {
     warnings.push(`Could not list tabs: ${(e as Error).message}`);
   }
-  for (const t of extraTabs) if (!tabs.some((x) => x.gid === t.gid)) tabs.push(t);
+  for (const t of [AEGIS_EXOTIC_TAB, ...extraTabs]) if (!tabs.some((x) => x.gid === t.gid)) tabs.push(t);
   if (!tabs.length) throw new Error("No Aegis tabs found. Add them to settings.aegisTabs as {name, gid}.");
 
   const weapons: AegisWeapon[] = [];
@@ -151,7 +193,7 @@ export async function importAegis(m: Manifest, extraTabs: { name: string; gid: s
   for (const t of tabs) {
     try {
       const csv = await getText(gvizCsvUrl(AEGIS_SHEET_ID, t.gid));
-      const rows = parseAegisTab(t.name, csv);
+      const rows = parseAegisTab(t.name, csv) ?? parseAegisExotics(t.name, csv);
       if (rows?.length) {
         weapons.push(...rows);
         used.push({ ...t, rows: rows.length });

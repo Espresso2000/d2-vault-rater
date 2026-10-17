@@ -1,9 +1,10 @@
 import "./env.js";
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseRatedTab, parseSubclassTab, parseInfoTab, elementFromSupers, norm } from "../web/src/builds/sheets.js";
+import { parseClarity, parseRatedTab, parseSubclassTab, parseInfoTab, elementFromSupers, norm } from "../web/src/builds/sheets.js";
 import { stripBuildDefs, type BuildDefs } from "../web/src/builds/defs.strip.js";
-import { buildScore, fragmentSlots, fromDimLoadout, newBuild, placeMod, statLines, toDimLoadout, trimFragments, defaultPlugs, type Ctx } from "../web/src/builds/model.js";
+import { buildScore, fragmentSlots, fromDimLoadout, fromGameLoadout, lastUsed, sameLoadout, newBuild, placeMod, statLines, toDimLoadout, trimFragments, defaultPlugs, type Ctx } from "../web/src/builds/model.js";
+import { UNSET_PLUG } from "../web/src/builds/model.js";
 import { planEquip } from "../web/src/builds/equip.js";
 import type { BuildProfile } from "../web/src/builds/profile.js";
 import type { Vault } from "../src/vault/types.js";
@@ -60,6 +61,7 @@ const items: Record<number, object> = {
   42: { hash: 42, displayProperties: { name: "Health Mod" }, plug: { plugCategoryIdentifier: "enhancements.v2_general", energyCost: { energyCost: 1 } }, investmentStats: [{ statTypeHash: 392767087, value: 10 }] },
   50: { hash: 50, displayProperties: { name: "Empty Mod Socket" }, plug: { plugCategoryIdentifier: "enhancements.v2_head" } },
   51: { hash: 51, displayProperties: { name: "Heavy Ammo Finder" }, plug: { plugCategoryIdentifier: "enhancements.v2_head", energyCost: { energyCost: 3 } } },
+  53: { hash: 53, displayProperties: { name: "Grenade Font" }, plug: { plugCategoryIdentifier: "enhancements.v2_arms", energyCost: { energyCost: 3 } } },
 };
 const sets = {
   1: { reusablePlugItems: [{ plugItemHash: 10 }, { plugItemHash: 11 }] },
@@ -67,6 +69,7 @@ const sets = {
   3: { reusablePlugItems: [{ plugItemHash: 30 }, { plugItemHash: 31 }, { plugItemHash: 32 }] },
   4: { reusablePlugItems: [{ plugItemHash: 40 }, { plugItemHash: 41 }, { plugItemHash: 42 }] },
   5: { reusablePlugItems: [{ plugItemHash: 50 }, { plugItemHash: 51 }] },
+  6: { reusablePlugItems: [{ plugItemHash: 53 }] },
 };
 const defs: BuildDefs = stripBuildDefs("v1", items, sets, {});
 
@@ -196,4 +199,102 @@ test("equip dry run: a weapon equipped on another character gets a stand-in equi
   const stand = texts.findIndex((t) => t === "Hunter: equip Spare in its place, so Gun can move");
   assert.ok(stand >= 0, texts.join("\n"));
   assert.ok(stand < texts.findIndex((t) => t.startsWith("Moves and equips")));
+});
+
+test("Destiny Clarity: description blocks become paragraphs, only for known plugs", () => {
+  const json = {
+    "21": { name: "Controlled Demolition", descriptions: { en: [{ linesContent: [{ text: "Volatile " }, { text: "on hit." }] }, { classNames: ["spacer"] }, { linesContent: [{ text: "Lasts 6s." }] }] } },
+    "99": { name: "Unknown", descriptions: { en: [{ linesContent: [{ text: "x" }] }] } },
+  };
+  assert.deepEqual(parseClarity(json, (h) => h === 21), { 21: ["Volatile on hit.", "Lasts 6s."] });
+});
+
+test("builds: stats read Health, Melee, Grenade, Super, Class, Weapons and go below 0 like the game", () => {
+  const b = newBuild(0);
+  b.subclass = 500;
+  b.plugs = defaultPlugs(defs.subclasses[500]);
+  b.plugs[1] = 21;
+  b.plugs[3] = 31; // -10 Class
+  b.plugs[4] = 31;
+  const lines = statLines(b, ctx());
+  assert.deepEqual(lines.map((l) => l.name), ["Health", "Melee", "Grenade", "Super", "Class", "Weapons"]);
+  // No armor: two -10 Class fragments leave Class at -20, not 0 (Bungie's character stats and DIM show the negative).
+  assert.equal(lines.find((l) => l.name === "Class")!.total, -20);
+});
+
+test("builds: Font mods add 20 / 40 / 50 to their stat, as DIM counts them", () => {
+  const b = newBuild(0);
+  const grenade = (n: number) => {
+    b.mods.Arms = [0, ...Array(3).fill(0).map((_, i) => (i < n ? 53 : 0))];
+    return statLines(b, ctx()).find((l) => l.name === "Grenade")!;
+  };
+  assert.equal(grenade(1).fonts, 20);
+  assert.equal(grenade(2).fonts, 40);
+  assert.equal(grenade(3).total, 50);
+});
+
+test("builds: a draft is unsaved until committed; committing replaces by id or adds it first", async () => {
+  const { commitBuild, isUnsaved, sameBuild } = await import("../web/src/builds/model.js");
+  const a = newBuild(0, "A");
+  const list = [a];
+  const draft = structuredClone(a);
+  assert.equal(isUnsaved(list, draft), false);
+  draft.updated = "later";
+  assert.equal(isUnsaved(list, draft), false, "touching alone isn't a change");
+  draft.name = "A2";
+  assert.equal(isUnsaved(list, draft), true);
+  const saved = commitBuild(list, draft);
+  assert.equal(saved.length, 1);
+  assert.equal(saved[0].name, "A2");
+  assert.equal(list[0].name, "A", "the old list is left alone");
+  assert.equal(isUnsaved(saved, draft), false);
+  draft.name = "A3";
+  assert.equal(saved[0].name, "A2", "the saved copy doesn't follow later edits");
+  const fresh = newBuild(1, "New");
+  assert.equal(isUnsaved(saved, fresh), true, "a never-saved build counts as unsaved");
+  assert.deepEqual(commitBuild(saved, fresh).map((x) => x.name), ["New", "A2"]);
+  assert.ok(sameBuild(a, { ...a, updated: "x" }));
+});
+
+test("builds: an in-game loadout becomes a build, matches a saved build exactly, and the list sorts by last use" + "", () => {
+  const game = fromGameLoadout(0, "Loadout 1", [
+    { id: "sub", plugs: [11, 21, 22, 31, 32] },
+    { id: "h1", plugs: [41, 51] },
+    { id: "w1", plugs: [] },
+  ], (id) => (id === "sub" ? 500 : undefined), ctx());
+  assert.equal(game.subclass, 500);
+  assert.equal(game.plugs[0], 11);
+  assert.equal(game.plugs[1], 21);
+  assert.equal(game.plugs[2], 22, "the second aspect fills the second aspect socket");
+  assert.equal(game.plugs[3], 31);
+  assert.equal(game.plugs[4], 32, "the second fragment fills the second fragment socket");
+  assert.deepEqual(game.mods.Helmet, [41, 51, 0, 0]);
+  assert.equal(game.items.Kinetic?.id, "w1");
+
+  const saved = structuredClone(game);
+  saved.id = "evr";
+  saved.name = "My build";
+  saved.mods.Helmet = [41, 0, 51, 0]; // socket order doesn't matter
+  assert.equal(sameLoadout(saved, game, defs), true);
+  saved.plugs[3] = 32; // a different fragment
+  assert.equal(sameLoadout(saved, game, defs), false);
+  saved.plugs[3] = 31;
+  saved.items.Kinetic = undefined; // a different item set
+  assert.equal(sameLoadout(saved, game, defs), false);
+
+  const old = { ...game, created: "2026-01-01", updated: "2026-02-01" };
+  assert.equal(lastUsed(old), "2026-02-01");
+  assert.equal(lastUsed({ ...old, applied: "2026-03-01" }), "2026-03-01");
+  assert.equal(lastUsed({ ...old, applied: "2026-01-15" }), "2026-02-01", "an older apply doesn't hide a newer edit");
+});
+
+test("builds: loadout plugs are placed by socket index, sentinels are empty, two aspects and fragments all land", () => {
+  // Socket order: super, aspect, aspect, fragment x3. Index 3 is unset; fragments sit at 4 and 5.
+  const game = fromGameLoadout(0, "L", [{ id: "sub", plugs: [11, 22, 21, UNSET_PLUG, 32, 31] }, { id: "w1", plugs: [] }], (id) => (id === "sub" ? 500 : undefined), ctx());
+  assert.deepEqual([0, 1, 2, 3, 4, 5].map((i) => game.plugs[i]), [11, 22, 21, 30, 32, 31]);
+  assert.equal(fragmentSlots(game, defs), 3, "capacity from both aspects: 1 + 2");
+  // A DIM-imported build with no instance id on the weapon still matches by hash.
+  const dim = structuredClone(game);
+  dim.items.Kinetic = { id: "", hash: 900 };
+  assert.equal(sameLoadout(dim, game, defs), true);
 });

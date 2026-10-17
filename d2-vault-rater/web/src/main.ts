@@ -2,8 +2,9 @@
  * Vault Rater in the browser: sign in with Bungie, read the vault, rate it with the same code as the
  * local app (../../src), and render the same report page. Nothing runs on a server.
  */
+import "./loading.css";
 import { hydrate, paths, readText } from "./shims/config";
-import { loadTokens, clearTokens, LoginRequired, minutesLeft } from "./shims/client";
+import { loadTokens, clearTokens, canSignIn, LoginRequired, minutesLeft } from "./shims/client";
 import { startLogin, finishLogin } from "./shims/oauth";
 import { clearDimToken, fetchDimData, withDimKeep, setDimTag, DIM_TAGS, type DimTagValue, type DimData } from "./shims/sync";
 import { appConfig, configured, loadServedConfig, redirectUrl, saveLocalConfig } from "./appConfig";
@@ -21,11 +22,12 @@ import { rateArmor } from "../../src/rating/armor.js";
 import { rateActivities } from "../../src/rating/activities.js";
 import { planEncounters } from "../../src/rating/encounters.js";
 import { planDimActions, applyDimActions, undoDimActions, type DimPlan } from "../../src/dim/actions.js";
-import { moveItems } from "../../src/bungie/transfer.js";
+import { insertMod, insertPerk, moveItems } from "../../src/bungie/transfer.js";
 import { buildSiteData } from "../../src/report/siteData.js";
 import { loadBuilds } from "./builds/store";
 import { esc } from "./html";
 import type { BuildsInput } from "./builds/ui";
+import type { VendorsInput } from "./vendors/ui";
 
 declare global {
   interface Window {
@@ -33,6 +35,7 @@ declare global {
     VR_WEB?: boolean;
     VR_API?: (path: string, body: Record<string, unknown>) => Promise<Record<string, unknown>>;
     VR_START?: (data: unknown, images: Record<string, string>) => void;
+    VR_RELOAD?: () => Promise<{ data: unknown; images: Record<string, string> }>;
     VR_SESSION?: () => string;
   }
 }
@@ -127,43 +130,55 @@ async function run() {
 
   // Wrapped only needs the manifest: fetch it alongside the vault instead of after rating.
   const wrappedP = fetchWrapped(m).catch(() => null);
-  log("Reading your vault…");
-  const vault = await fetchVault();
-  let dim: DimData | null = null;
-  let dimError: string | null = null;
-  if (settings.dim.tags || settings.dim.loadouts) {
-    log(`Reading DIM ${[settings.dim.tags && "tags", settings.dim.loadouts && "loadouts"].filter(Boolean).join(" and ")}…`);
-    dim = await fetchDimData(settings.dim).catch((e) => ((dimError = (e as Error).message), null));
-  }
-  const rated = withDimKeep(settings, dim);
-
-  log("Rating weapons and armor…");
-  const w = rateWeapons(vault.weapons, { manifest: m, aegis, wishlists: loadWishlists() }, rated);
-  const a = rateArmor(vault, rated, loadArmorSets());
-  const plan = (currentPlan = planDimActions(vault, w, a, rated));
+  // Fixed for the visit, so the Vault tab's Refresh doesn't rebuild them.
   const loot = loadActivityLoot();
-  const activities = loot ? rateActivities(loot, aegis, w.ratings, a.ratings, loadArmorSets()) : [];
-  log("Reading your account stats for Wrapped…");
-  const wrapped = await wrappedP;
+  const sourceOfP = buildSourceLookup(m, aegis, loot);
+  /** Reads the vault (and DIM) and rates it. Runs again for the Vault tab's Refresh, reusing what's loaded above. */
+  const rate = async () => {
+    log("Reading your vault…");
+    const vault = await fetchVault();
+    let dim: DimData | null = null;
+    let dimError: string | null = null;
+    if (settings.dim.tags || settings.dim.loadouts) {
+      log(`Reading DIM ${[settings.dim.tags && "tags", settings.dim.loadouts && "loadouts"].filter(Boolean).join(" and ")}…`);
+      dim = await fetchDimData(settings.dim).catch((e) => ((dimError = (e as Error).message), null));
+    }
+    const rated = withDimKeep(settings, dim);
 
-  // Images load straight from bungie.net, so each key is just the URL.
-  const images: Record<string, string> = {};
-  const key = (url: string | null | undefined) => (url ? (images[url] = url) : null);
-  const data = buildSiteData(w, a, {
-    vaultSize: vault.weapons.length + vault.armor.length,
-    settings: rated,
-    searches: plan.searches,
-    vault,
-    wrapped,
-    activities,
-    sourceOf: await buildSourceLookup(m, aegis, loot),
-    encounters: planEncounters(w.ratings),
-    dim,
-    dimError,
-    plan,
-    // Images load lazily from bungie.net, so every weapon can have its screenshot (type card banners, the drawer).
-    allScreenshots: true,
-  }, key, loadArmorSets());
+    log("Rating weapons and armor…");
+    const w = rateWeapons(vault.weapons, { manifest: m, aegis, wishlists: loadWishlists() }, rated);
+    const a = rateArmor(vault, rated, loadArmorSets());
+    const plan = (currentPlan = planDimActions(vault, w, a, rated));
+    const activities = loot ? rateActivities(loot, aegis, w.ratings, a.ratings, loadArmorSets()) : [];
+    log("Reading your account stats for Wrapped…");
+    const wrapped = await wrappedP;
+
+    // Images load straight from bungie.net, so each key is just the URL.
+    const images: Record<string, string> = {};
+    const key = (url: string | null | undefined) => (url ? (images[url] = url) : null);
+    const data = buildSiteData(w, a, {
+      vaultSize: vault.weapons.length + vault.armor.length,
+      settings: rated,
+      searches: plan.searches,
+      vault,
+      wrapped,
+      activities,
+      sourceOf: await sourceOfP,
+      encounters: planEncounters(w.ratings),
+      dim,
+      dimError,
+      plan,
+      // Images load lazily from bungie.net, so every weapon can have its screenshot (type card banners, the drawer).
+      allScreenshots: true,
+    }, key, loadArmorSets());
+    return { vault, wrapped, data, images };
+  };
+  const { vault, wrapped, data, images } = await rate();
+  window.VR_RELOAD = () =>
+    rate().catch((e) => {
+      if (e instanceof LoginRequired) expiredBanner(e.message);
+      throw e;
+    });
 
   document.title = `${wrapped?.name ? wrapped.name + "’s" : "Your"} Vault Report`;
   $("#vr-shell").hidden = true;
@@ -171,6 +186,7 @@ async function run() {
   const back = sessionStorage.getItem("vr-return-hash");
   if (back) (sessionStorage.removeItem("vr-return-hash"), history.replaceState(null, "", back));
   lazyBuilds({ vault, data, manifest: m });
+  lazyVendors({ vault, manifest: m, aegis, settings });
   window.VR_START!(data, images);
   watchSession();
 }
@@ -180,6 +196,12 @@ function lazyBuilds(input: BuildsInput) {
   // initBuilds swaps in the real VR_BUILDS, so render below reaches the loaded tab.
   const ready = import("./builds/ui").then((b) => b.initBuilds(input));
   window.VR_BUILDS = { count: () => loadBuilds().length || null, render: (el) => void ready.then(() => window.VR_BUILDS!.render(el)) };
+}
+
+/** The Vendors tab is its own chunk too; it reads vendor stock from Bungie only when first opened. */
+function lazyVendors(input: VendorsInput) {
+  const ready = import("./vendors/ui").then((v) => v.initVendors(input));
+  window.VR_VENDORS = { count: () => null, render: (el) => void ready.then(() => window.VR_VENDORS!.render(el)) };
 }
 
 /** Sign-in status for the Settings panel, and a banner once Bungie access really runs out. */
@@ -224,6 +246,14 @@ window.VR_API = async (path, body) => {
         if (!ids.length || typeof body.to !== "string") return { ok: false, error: "Send item ids and a destination." };
         return { ok: true, results: await moveItems(ids, body.to, { equip: body.equip === true }) };
       }
+      case "/api/perk":
+        if (typeof body.id !== "string" || typeof body.socket !== "number" || typeof body.perk !== "string") return { ok: false, error: "Send a weapon id, socket index and perk name." };
+        await insertPerk(body.id, body.socket, body.perk);
+        return { ok: true };
+      case "/api/mod":
+        if (typeof body.id !== "string" || typeof body.socket !== "number" || typeof body.mod !== "string") return { ok: false, error: "Send a weapon id, socket index and mod name." };
+        await insertMod(body.id, body.socket, body.mod);
+        return { ok: true };
       case "/api/locks/apply": {
         // Only the plan the page previewed, and only with the explicit confirmation.
         if (body.confirm !== true || !currentPlan || body.planId !== currentPlan.id) return { ok: false, error: "Preview the current plan and confirm it first." };
@@ -258,7 +288,8 @@ async function boot() {
     }
   }
   const t = loadTokens();
-  if (!t || Date.now() > t.access_expires_at - 60_000) return showSignIn(t ? "Your Bungie sign-in has expired. Sign in again to continue." : "");
+  // An old access token is fine while a refresh token can renew it (local runs with the token relay).
+  if (!canSignIn(t)) return showSignIn(t ? "Your Bungie sign-in has expired. Sign in again to continue." : "");
   try {
     await run();
   } catch (e) {

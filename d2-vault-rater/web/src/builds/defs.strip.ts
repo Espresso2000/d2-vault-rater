@@ -7,8 +7,8 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Raw = Record<string, any>;
 
-/** The six Armor 3.0 stats, in the game's order: Weapons, Health, Class, Grenade, Super, Melee. */
-export const STAT_HASHES = [2996146975, 392767087, 1943323491, 1735777505, 144602215, 4244567218] as const;
+/** The six Armor 3.0 stats, in the order the game and DIM show them: Health, Melee, Grenade, Super, Class, Weapons. */
+export const STAT_HASHES = [392767087, 4244567218, 1735777505, 144602215, 1943323491, 2996146975] as const;
 
 export type SocketGroup = "class" | "movement" | "super" | "melee" | "grenade" | "aspects" | "fragments" | "other";
 
@@ -41,6 +41,8 @@ export interface SubclassDef {
   h: number;
   n: string;
   i?: string;
+  /** The game's text for the subclass (its flavor text: subclass descriptions are empty). */
+  d?: string;
   /** 0 Titan, 1 Hunter, 2 Warlock */
   cls: number;
   el: "Arc" | "Solar" | "Void" | "Stasis" | "Strand" | "Prismatic";
@@ -55,6 +57,8 @@ export interface BuildDefs {
   mods: Record<string, number[]>;
   /** In-game loadout identifiers (DestinyLoadoutConstantsDefinition), for saving to an empty slot. */
   loadout: { colors: number[]; icons: number[]; names: number[] };
+  /** In-game loadout name / icon image / colour swatch image by hash (absent in older cached copies). */
+  loadoutLook?: { names: Record<number, string>; icons: Record<number, string>; colors: Record<number, string> };
 }
 
 const ELEMENT: Record<number, SubclassDef["el"]> = { 2: "Arc", 3: "Solar", 4: "Void", 6: "Stasis", 7: "Strand" };
@@ -73,7 +77,7 @@ export function groupOf(pci: string): SocketGroup {
 
 export const MOD_CATEGORY = /^enhancements\.v2_(general|head|arms|chest|legs|class_item)$/;
 
-export function stripBuildDefs(version: string, items: Raw, plugSets: Raw, perks: Raw, loadoutConstants: Raw = {}): BuildDefs {
+export function stripBuildDefs(version: string, items: Raw, plugSets: Raw, perks: Raw, loadoutConstants: Raw = {}, look: { names?: Raw; icons?: Raw; colors?: Raw } = {}): BuildDefs {
   const lc = Object.values(loadoutConstants)[0] ?? {};
   const out: BuildDefs = {
     version,
@@ -81,7 +85,14 @@ export function stripBuildDefs(version: string, items: Raw, plugSets: Raw, perks
     subclasses: {},
     mods: {},
     loadout: { colors: lc.loadoutColorHashes ?? [], icons: lc.loadoutIconHashes ?? [], names: lc.loadoutNameHashes ?? [] },
+    loadoutLook: { names: {}, icons: {}, colors: {} },
   };
+  const pick = (t: Raw | undefined, field: string, into: Record<number, string>) => {
+    for (const [h, d] of Object.entries(t ?? {})) if ((d as Raw)[field]) into[Number(h)] = (d as Raw)[field];
+  };
+  pick(look.names, "name", out.loadoutLook!.names);
+  pick(look.icons, "iconImagePath", out.loadoutLook!.icons);
+  pick(look.colors, "colorImagePath", out.loadoutLook!.colors);
   const statSet = new Set<number>(STAT_HASHES);
   const addPlug = (h: number) => {
     if (out.plugs[h]) return;
@@ -126,6 +137,7 @@ export function stripBuildDefs(version: string, items: Raw, plugSets: Raw, perks
       h: d.hash,
       n: d.displayProperties.name,
       i: d.displayProperties.icon,
+      d: d.displayProperties.description || d.flavorText || undefined,
       cls: d.classType,
       el: /prismatic/i.test(d.displayProperties.name) ? "Prismatic" : ELEMENT[dmg] ?? "Arc",
       sockets,

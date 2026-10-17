@@ -1,7 +1,7 @@
 /** Fetches and caches the Builds tab's sheets, refreshing once a day like the rater's other sources. */
 import { paths, readJson, writeJson } from "../shims/config";
 import { gvizCsvUrl } from "../../../src/sources/csv.js";
-import { AEGIS_ID, AEGIS_TABS, COMPENDIUM_ID, COMPENDIUM_TABS, parseInfoTab, parseRatedTab, parseSubclassTab, type BuildRatings } from "./sheets";
+import { AEGIS_ID, AEGIS_TABS, CLARITY_URL, COMPENDIUM_ID, COMPENDIUM_TABS, parseClarity, parseInfoTab, parseRatedTab, parseSubclassTab, type BuildRatings, type ClarityJson } from "./sheets";
 
 const FILE = `${paths.sourcesDir}/build-ratings.json`;
 const text = async (url: string) => {
@@ -35,4 +35,29 @@ export async function loadRatings(force = false): Promise<BuildRatings | null> {
   if (!Object.keys(next.aspects).length && prev) return { ...prev, warnings };
   writeJson(FILE, next);
   return next;
+}
+
+/* ---------- Destiny Clarity ---------- */
+
+const CLARITY_FILE = `${paths.sourcesDir}/clarity.json`;
+interface ClarityCache {
+  importedAt: string;
+  /** plug hash -> paragraphs */
+  text: Record<number, string[]>;
+}
+
+export const cachedClarity = () => readJson<ClarityCache | null>(CLARITY_FILE, null)?.text ?? {};
+
+/** Clarity's notes on the tab's plugs (abilities, aspects, fragments, mods), refreshed daily; a failed refresh keeps the old copy. */
+export async function loadClarity(known: (hash: number) => boolean): Promise<Record<number, string[]>> {
+  const prev = readJson<ClarityCache | null>(CLARITY_FILE, null);
+  if (prev && Date.now() - Date.parse(prev.importedAt) < 24 * 3_600_000) return prev.text;
+  try {
+    const text = parseClarity((await (await fetch(CLARITY_URL)).json()) as ClarityJson, known);
+    writeJson(CLARITY_FILE, { importedAt: new Date().toISOString(), text });
+    return text;
+  } catch (e) {
+    console.warn("Builds: couldn't read Destiny Clarity", e);
+    return prev?.text ?? {};
+  }
 }

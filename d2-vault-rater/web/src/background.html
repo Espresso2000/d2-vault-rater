@@ -1,0 +1,60 @@
+<style>
+/* Subtle animated sky behind the app: the report's navy stays the base, with a few sparse green nebula clouds,
+   faint star dust and slow green glows. It sits under the report's star canvas (same z-index, earlier in the page).
+   Only transform and opacity animate, on pre-rendered layers, so the GPU just moves textures around. */
+.vr-nebula { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; contain: strict; }
+.vr-nebula > i { position: absolute; display: block; will-change: transform; backface-visibility: hidden; }
+/* Sparse green clouds: fractal noise with a high cut-off, so only scattered patches show. Larger than the screen so they can drift. */
+.vr-nebula .neb-gas { inset: -25% -25%; background-size: 100% 100%; background-repeat: no-repeat; }
+.vr-nebula .neb-gas.a {
+  opacity: .34;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='600' viewBox='0 0 900 600' preserveAspectRatio='none'%3E%3Cfilter id='f' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.0045 .0028' numOctaves='5' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 .2  0 0 0 0 .89  0 0 0 0 .63  0 3.4 0 0 -1.9'/%3E%3C/filter%3E%3Crect width='900' height='600' filter='url(%23f)'/%3E%3C/svg%3E");
+  animation: vr-neb-a 210s ease-in-out infinite alternate;
+}
+.vr-nebula .neb-gas.b {
+  opacity: .22;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='600' viewBox='0 0 900 600' preserveAspectRatio='none'%3E%3Cfilter id='f' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.0035 .005' numOctaves='5' seed='19'/%3E%3CfeColorMatrix values='0 0 0 0 .18  0 0 0 0 .78  0 0 0 0 .92  3.4 0 0 0 -1.95'/%3E%3C/filter%3E%3Crect width='900' height='600' filter='url(%23f)'/%3E%3C/svg%3E");
+  animation: vr-neb-b 260s ease-in-out infinite alternate;
+}
+/* Wisps of filament along the cloud edges, barely there. */
+.vr-nebula .neb-gas.c {
+  opacity: .14;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800' preserveAspectRatio='none'%3E%3Cfilter id='f' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='turbulence' baseFrequency='.0055 .0075' numOctaves='4' seed='23'/%3E%3CfeColorMatrix values='0 0 0 0 .5  0 0 0 0 1  0 0 0 0 .8  -3.4 0 0 0 .5'/%3E%3C/filter%3E%3Crect width='1200' height='800' filter='url(%23f)'/%3E%3C/svg%3E");
+  animation: vr-neb-c 300s ease-in-out infinite alternate;
+}
+/* Darker edges keep the sky navy and quiet around the content. */
+.vr-nebula .neb-vig { inset: 0; will-change: auto; background: radial-gradient(120% 90% at 50% 45%, transparent 45%, rgba(3,5,16,.6)); }
+/* Fine star dust, static, under the report's twinkling stars. */
+.vr-nebula .neb-dust { inset: 0; will-change: auto; opacity: .5;
+  background:
+    radial-gradient(1px 1px at 12% 18%, #cfe0ff, transparent), radial-gradient(1px 1px at 33% 72%, #bfffe6, transparent), radial-gradient(1.5px 1.5px at 58% 26%, #fff, transparent),
+    radial-gradient(1px 1px at 81% 61%, #cfe0ff, transparent), radial-gradient(1px 1px at 69% 88%, #bfffe6, transparent), radial-gradient(1px 1px at 22% 47%, #fff, transparent),
+    radial-gradient(1px 1px at 91% 12%, #bfffe6, transparent), radial-gradient(1.5px 1.5px at 47% 54%, #cfe0ff, transparent);
+  background-size: 340px 280px; }
+/* A few brighter stars with small halos that pulse gently. */
+.vr-nebula .neb-bright { inset: 0; will-change: opacity; opacity: .7;
+  background:
+    radial-gradient(circle at 14% 22%, #fff 0 1px, rgba(170,255,225,.25) 1.8px, transparent 7px), radial-gradient(circle at 78% 14%, #fff 0 1.2px, rgba(170,200,255,.25) 2px, transparent 8px),
+    radial-gradient(circle at 63% 71%, #fff 0 1px, rgba(170,255,225,.22) 1.8px, transparent 6px), radial-gradient(circle at 31% 83%, #fff 0 .9px, rgba(170,200,255,.22) 1.6px, transparent 6px),
+    radial-gradient(circle at 91% 52%, #fff 0 1px, rgba(170,255,225,.22) 1.8px, transparent 7px);
+  animation: vr-neb-twinkle 11s ease-in-out infinite alternate; }
+/* Green highlights: soft glows that wander slowly and breathe in and out. */
+.vr-nebula .neb-g { width: 55vmax; height: 55vmax; border-radius: 50%; background: radial-gradient(closest-side, rgba(var(--c3),.12), rgba(var(--c3),.04) 45%, transparent); }
+.vr-nebula .neb-g.g1 { left: -10vmax; top: -15vmax; animation: vr-neb-g1 120s ease-in-out infinite alternate, vr-neb-breathe 29s ease-in-out infinite alternate; }
+.vr-nebula .neb-g.g2 { right: -20vmax; top: 35vh; width: 65vmax; height: 38vmax; animation: vr-neb-g2 150s ease-in-out infinite alternate, vr-neb-breathe 37s ease-in-out -12s infinite alternate; }
+@keyframes vr-neb-a { from { transform: translate3d(3%, 2%, 0) rotate(2deg) scale(1.06); } to { transform: translate3d(-4%, -3%, 0) rotate(-3deg) scale(1); } }
+@keyframes vr-neb-b { from { transform: translate3d(-3%, -2%, 0) rotate(-2deg) scale(1); } to { transform: translate3d(4%, 3%, 0) rotate(3deg) scale(1.08); } }
+@keyframes vr-neb-c { from { transform: translate3d(2%, -2%, 0) rotate(1deg) scale(1.04); } to { transform: translate3d(-3%, 2%, 0) rotate(-2deg) scale(1); } }
+@keyframes vr-neb-g1 { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(55vw, 35vh, 0); } }
+@keyframes vr-neb-g2 { from { transform: translate3d(0, 0, 0) rotate(-8deg); } to { transform: translate3d(-50vw, -20vh, 0) rotate(10deg); } }
+@keyframes vr-neb-breathe { from { opacity: .4; } to { opacity: 1; } }
+@keyframes vr-neb-twinkle { from { opacity: .45; } to { opacity: .8; } }
+/* Clouds are baked green, cyan and mint; each theme turns their hue (per layer) to its own colours. */
+:root[data-theme=purple-orange] .vr-nebula .neb-gas.a { filter: hue-rotate(-132deg); } :root[data-theme=purple-orange] .vr-nebula .neb-gas.b { filter: hue-rotate(78deg); } :root[data-theme=purple-orange] .vr-nebula .neb-gas.c { filter: hue-rotate(-115deg); }
+:root[data-theme=blue-purple] .vr-nebula .neb-gas.a { filter: hue-rotate(110deg); } :root[data-theme=blue-purple] .vr-nebula .neb-gas.b { filter: hue-rotate(33deg); } :root[data-theme=blue-purple] .vr-nebula .neb-gas.c { filter: hue-rotate(110deg); }
+:root[data-theme=pink-purple] .vr-nebula .neb-gas.a { filter: hue-rotate(170deg); } :root[data-theme=pink-purple] .vr-nebula .neb-gas.b { filter: hue-rotate(83deg); } :root[data-theme=pink-purple] .vr-nebula .neb-gas.c { filter: hue-rotate(170deg); }
+:root[data-theme]:not([data-theme=blue-green]) .vr-nebula .neb-dust, :root[data-theme]:not([data-theme=blue-green]) .vr-nebula .neb-bright { filter: hue-rotate(var(--star-rot, 0deg)); }
+:root[data-theme=purple-orange] { --star-rot: -120deg; } :root[data-theme=blue-purple] { --star-rot: 100deg; } :root[data-theme=pink-purple] { --star-rot: 160deg; }
+@media (prefers-reduced-motion: reduce) { .vr-nebula > i { animation: none !important; } }
+</style>
+<div class="vr-nebula" aria-hidden="true"><i class="neb-gas a"></i><i class="neb-gas b"></i><i class="neb-gas c"></i><i class="neb-g g1"></i><i class="neb-g g2"></i><i class="neb-vig"></i><i class="neb-dust"></i><i class="neb-bright"></i></div>

@@ -1,0 +1,70 @@
+/* The Vendors tab (see ui.ts): a toolbar, then each vendor's stock as a grid of compact cards. */
+.vendors { display: grid; gap: 16px; min-width: 0; }
+.vendors .sec-head { margin-bottom: 0; }
+.vdbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; }
+.vdbar .vsum { flex: 1; min-width: 120px; text-align: right; }
+.vonly { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); cursor: pointer; }
+.vonly input { accent-color: var(--green); }
+
+/* Each vendor (and each Eververse list) is a card that collapses to its header. */
+/* Vendor cards flow side by side, each as wide as its weapons need (up to four across), so vendors
+   selling one or two items share a row instead of each taking the full width. A collapsed card shrinks to its header. */
+.vendors .vgrid { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; min-width: 0; }
+.vendors .vgrid > .vgroup { flex: 0 1 calc(var(--n, 1) * 302px + 26px); max-width: 100%; }
+.vendors .vgrid > .vgroup:not([open]) { flex-basis: 300px; }
+.vgroup { min-width: 0; border-radius: 4px 20px; background: var(--glass); border: 1px solid var(--line); }
+.vgroup > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-radius: inherit; }
+.vgroup > summary::-webkit-details-marker { display: none; }
+.vgroup > summary:hover { background: var(--glass-hi); }
+.vghead { flex: 1; display: flex; align-items: center; gap: 12px; min-width: 0; }
+.vghead > div { min-width: 0; }
+.vghead .sm { white-space: normal; }
+.vgroup h3 { margin: 0; font-size: 19px; font-weight: 600; }
+.vchev { flex: none; width: 10px; height: 10px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(-45deg); transition: transform .15s ease; }
+.vgroup[open] > summary .vchev { transform: rotate(45deg); }
+.vgbody { padding: 4px 18px 18px; }
+.vico { width: 40px; height: 40px; flex: none; border-radius: 10px; background: var(--glass-hi); object-fit: contain; }
+
+/* Cards sit in a grid, so a few weapons never stretch across a wide screen. */
+.vcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(290px, 100%), 1fr)); gap: 12px; align-items: start; }
+.vcard { position: relative; border-radius: 3px 16px; background: var(--glass); border: 1px solid var(--line); transition: border-color .15s ease, background .15s ease; min-width: 0; }
+.vcard:hover { border-color: var(--line-hi); background: var(--spot), var(--glass-hi); }
+.vcard[open] { border-color: var(--line-hi); background: var(--glass-hi); }
+.vcard > summary { list-style: none; cursor: pointer; display: grid; gap: 10px; padding: 12px 14px; }
+.vcard > summary::-webkit-details-marker { display: none; }
+.vcard::before { content: ""; position: absolute; left: 0; top: 12px; bottom: 12px; width: 3px; border-radius: 0 3px 3px 0; background: var(--faint); opacity: .5; }
+.vcard.v-buy::before { background: var(--keep); opacity: 1; box-shadow: 0 0 10px rgba(51,227,160,.5); }
+.vcard.v-maybe::before { background: var(--review); opacity: .9; }
+.vdhead { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 12px; align-items: start; }
+.vname { min-width: 0; display: grid; gap: 1px; }
+.vsc { font: 600 24px/1 var(--display); padding-top: 2px; }
+.vsc.hi { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.vcard .perkline { margin-top: 0; flex-wrap: wrap; }
+.vfoot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; font-size: 13px; }
+.vcost { margin-left: auto; display: inline-flex; gap: 10px; color: var(--muted); }
+.vprice { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.vprice img { width: 16px; height: 16px; border-radius: 3px; }
+.vbody { display: grid; gap: 12px; padding: 0 14px 16px; border-top: 1px solid var(--line); padding-top: 12px; }
+.vbody .reasons { font-size: 13px; }
+.vbody .perkcol { grid-template-columns: 70px minmax(0, 1fr); }
+.vfacts { display: flex; flex-wrap: wrap; gap: 6px 20px; }
+.vfacts > div { display: grid; gap: 2px; }
+.vfacts span { font: 500 10px/1.2 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }
+.vfacts b { font-weight: 600; }
+.vnotes { font-size: 13px; color: var(--muted); }
+.vnotes b { color: var(--ink); }
+.vgod { font-size: 12px; font-weight: 500; color: var(--green); white-space: nowrap; }
+.vbuy { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+.vbuy::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.vbuy.buy { color: var(--keep); }
+.vbuy.maybe { color: var(--review); }
+.vbuy.skip { color: var(--faint); }
+.vcard.v-skip .vsc { color: var(--muted); }
+
+/* Eververse: small tiles with price and time left */
+.voffers { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 290px)); gap: 10px; }
+.voffer { position: relative; display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 12px; align-items: center; padding: 10px 12px; border-radius: 3px 14px; background: var(--glass); border: 1px solid var(--line); }
+.voffer > img, .voffer > .ph { width: 52px; height: 52px; border-radius: 8px; }
+.voffer .vcost { margin: 2px 0 0; font-size: 13px; }
+.vleft { position: absolute; top: 8px; right: 10px; font: 500 10.5px/1 var(--mono); padding: 4px 7px; border-radius: 999px; background: rgba(242,193,78,.14); color: var(--gold); }
+.voffer:has(.vleft) .nm { padding-right: 52px; }

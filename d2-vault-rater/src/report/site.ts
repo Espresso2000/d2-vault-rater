@@ -14,23 +14,27 @@ const MIME: Record<string, string> = { ".jpg": "image/jpeg", ".jpeg": "image/jpe
 
 /**
  * Images are embedded as data URIs so the page works offline and inside viewers that block
- * remote images. Downloads are cached under ~/.d2-vault-rater/images.
+ * remote images. Downloads are cached under ~/.d2-vault-rater/images. Big decorative art can stay
+ * a URL (`embed` false): it loads from bungie.net when online and leaves a placeholder offline.
  */
 class ImageBank {
   readonly map: Record<string, string> = {};
   private keys = new Map<string, string>();
+  private embedded = new Set<string>();
   private dir = join(paths.home, "images");
 
-  key(url: string | null | undefined): string | null {
+  key(url: string | null | undefined, embed = true): string | null {
     if (!url) return null;
     let k = this.keys.get(url);
     if (!k) this.keys.set(url, (k = `i${this.keys.size.toString(36)}`));
+    if (embed) this.embedded.add(url);
+    else this.map[k] ??= url;
     return k;
   }
 
   async fill(concurrency = 8): Promise<{ failed: number }> {
     mkdirSync(this.dir, { recursive: true });
-    const jobs = [...this.keys];
+    const jobs = [...this.keys].filter(([url]) => this.embedded.has(url));
     let failed = 0;
     const worker = async () => {
       for (let job = jobs.shift(); job; job = jobs.shift()) {
@@ -57,7 +61,7 @@ class ImageBank {
 /** Builds the interactive report page with every weapon and armor piece and embedded images. */
 export async function writeSite(w: WeaponReport, a: ArmorReport, o: ReportOptions): Promise<{ file: string; imagesFailed: number }> {
   const bank = new ImageBank();
-  const data = buildSiteData(w, a, o, (url) => bank.key(url), loadArmorSets());
+  const data = buildSiteData(w, a, o, (url, embed) => bank.key(url, embed), loadArmorSets());
   const { failed } = await bank.fill();
   // Escape "<" so no string in the data can close the script tag.
   const json = (v: unknown) => JSON.stringify(v).replace(/</g, "\\u003c");

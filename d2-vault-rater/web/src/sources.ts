@@ -29,7 +29,8 @@ export async function ensureSources(m: Manifest, settings: Settings, log: (s: st
 
   let aegis = loadAegis();
   // Re-match names to hashes when the game version changed since the import.
-  if (stale(aegis?.importedAt)) {
+  // Imports from before the Exotic Weapons tab was read lack exotic tiers, so redo them whatever their age.
+  if (stale(aegis?.importedAt) || !aegis?.tabs.some((t) => t.name === "Exotic Weapons")) {
     log("Importing Aegis's tier list…");
     try {
       aegis = await importAegis(m, settings.aegisTabs);

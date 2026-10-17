@@ -15,7 +15,7 @@ import { importWishlists, loadWishlists, DEFAULT_WISHLISTS } from "./sources/wis
 import { importArmorSets, loadArmorSets } from "./sources/armorSets.js";
 import { buildSourceLookup, importActivityLoot, loadActivityLoot } from "./sources/activities.js";
 import { rateActivities } from "./rating/activities.js";
-import { planEncounters } from "./rating/encounters.js";
+import { activityMatches, planEncounters } from "./rating/encounters.js";
 import { ROLE_LABEL } from "./data/encounters.js";
 import { moveItems } from "./bungie/transfer.js";
 import { fetchDimData, setDimTag, withDimKeep, DIM_TAGS, type DimData } from "./dim/sync.js";
@@ -221,7 +221,11 @@ server.registerTool(
     const s = loadSettings();
     if (a.weapon_type) {
       if (a.clear_weapon_type) delete s.byWeaponType[a.weapon_type];
-      else s.byWeaponType[a.weapon_type] = { preset: a.preset, overrides: { ...(s.byWeaponType[a.weapon_type]?.overrides ?? {}), ...(a.overrides ?? {}) } };
+      else {
+        // Changing only the overrides keeps the type's preset.
+        const prev = s.byWeaponType[a.weapon_type];
+        s.byWeaponType[a.weapon_type] = { preset: a.preset ?? prev?.preset, overrides: { ...(prev?.overrides ?? {}), ...(a.overrides ?? {}) } };
+      }
     } else {
       if (a.preset) {
         s.preset = a.preset;
@@ -320,11 +324,10 @@ server.registerTool(
   wrap(async ({ activity }: { activity?: string }) => {
     const { weaponReport: w } = await rateAll();
     const all = planEncounters(w.ratings);
-    const q = activity?.toLowerCase();
     return Object.fromEntries(
       Object.entries(all)
-        .filter(([k]) => !q || k.includes(q.replace(/[^a-z]+/g, "-").replace(/^the-/, "")))
-        .map(([k, list]) => [k, list.map((e) => ({ encounter: e.name, kind: e.kind, tip: e.tip, loadout: e.picks.map((p) => `${ROLE_LABEL[p.role]}: ${p.name}${p.meta ? " (meta)" : ""}`), worthGetting: e.missing }))]),
+        .filter(([k]) => !activity || activityMatches(k, activity))
+        .map(([k, list]) => [k, list.map((e) => ({ encounter: e.name, kind: e.kind, tip: e.tip, shields: e.shields?.map((sh) => `${sh.element} (${sh.on})`), champions: e.champions, range: e.range, dps: e.dps, loadout: e.picks.map((p) => `${ROLE_LABEL[p.role]}: ${p.name}${p.why ? ` (${p.why})` : p.meta ? " (meta)" : ""}`), worthGetting: e.missing }))]),
     );
   }),
 );
@@ -337,7 +340,12 @@ server.registerTool(
   },
   wrap(async ({ ids, to, equip }: { ids: string[]; to: string; equip?: boolean }) => {
     await currentVault();
-    return moveItems(ids, to, { equip });
+    try {
+      return await moveItems(ids, to, { equip });
+    } finally {
+      // Moves change the cached vault in place (what is equipped where), so the ratings are re-made.
+      rated = null;
+    }
   }),
 );
 

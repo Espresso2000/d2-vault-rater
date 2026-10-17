@@ -3,7 +3,7 @@
  * shared strip functions in src/bungie/strip.ts, minus cosmetic plugs.
  * Used by the manifest worker (in the browser) and the snapshot script (in Node).
  */
-import { stripActivities, stripCollectibles, stripItems, stripNamed, type Raw } from "../../src/bungie/strip.js";
+import { STRIP_FORMAT, stripActivities, stripCollectibles, stripItems, stripNamed, type Raw } from "../../src/bungie/strip.js";
 
 export const TABLES = {
   items: ["DestinyInventoryItemDefinition", (t: Raw) => stripItems(t)],
@@ -14,6 +14,12 @@ export const TABLES = {
 } as const;
 
 export type TableKey = keyof typeof TABLES;
+
+/**
+ * Name prefix of the shipped manifest snapshot (data/<prefix>-<version>.json). It carries the strip
+ * format, so a snapshot made before a format bump is never taken for the new format.
+ */
+export const MANIFEST_SNAPSHOT = `manifest-v${STRIP_FORMAT}`;
 
 /** The stripped manifest the web app keeps: the rater's Manifest plus the two "extra" tables. */
 export interface LiteManifest {
