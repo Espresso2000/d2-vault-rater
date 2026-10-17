@@ -232,6 +232,7 @@ function draw() {
   const y = scrollY;
   panel.innerHTML = `<div class="bd">
     <div class="sec-head"><h2>Builds</h2><span class="badge">${builds.length} saved</span>
+      <button class="btn bd-sm" data-act="importall" title="Add every DIM loadout you haven't imported yet as a build">Import all DIM loadouts</button><span class="small muted" id="bd-impall" aria-live="polite">${esc(importMsg)}</span>
       <p>Hover or tap a subclass slot to change it, pick gear and mods for every slot from one list, then equip the build or send it to DIM. Builds are saved in this browser.</p></div>
     <div class="bd-layout">${listPane()}${cur && cur.cls === listCls ? editor(cur, c) : emptyEditor()}</div></div>`;
   scrollTo({ top: y });
@@ -1539,7 +1540,32 @@ const ACTIONS: Record<string, (t: HTMLElement) => void> = {
   equip: () => void equipFlow(),
   dim: () => dimFlow(),
   import: () => importFlow(),
+  importall: (t) => void importAllDim(t as HTMLButtonElement),
 };
+
+let importMsg = "";
+
+/** Adds every DIM loadout not already in the list (matched by its DIM id) as a saved build. */
+async function importAllDim(btn: HTMLButtonElement) {
+  const say = (s: string) => {
+    importMsg = s;
+    const el = document.getElementById("bd-impall");
+    if (el) el.textContent = s;
+  };
+  btn.disabled = true;
+  say("Reading DIM…");
+  try {
+    const have = new Set(builds.map((b) => b.dimId).filter(Boolean));
+    const fresh = (await dimLoadouts()).filter((l) => !have.has(l.id));
+    for (const l of fresh) builds = commitBuild(builds, fromDimLoadout(l, ctx()));
+    if (fresh.length) saveBuilds(builds);
+    importMsg = fresh.length ? `Imported ${fresh.length} DIM loadout${fresh.length === 1 ? "" : "s"}.` : "Nothing new: every DIM loadout is already imported.";
+    draw();
+  } catch (e) {
+    btn.disabled = false;
+    say(`Couldn't read DIM: ${(e as Error).message}`);
+  }
+}
 
 function createBuild(cls: number, name: string) {
   cur = newBuild(cls, name);
