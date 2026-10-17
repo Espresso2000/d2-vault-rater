@@ -1914,6 +1914,75 @@ function vrMain() {
       grouper: (k) => (k === "arch" ? (a) => a.arch || "Legacy" : k === "gt" ? (a) => (a.gt ? "Tier " + a.gt : "No tier") : k === "p" ? (a) => a.st[0]?.[0] || "—" : k === "set" ? (a) => a.si?.name || a.set || "No set" : k === "stier" ? (a) => (bestSetTier(a) ? bestSetTier(a) + " tier set" : "Unrated or no set") : k === "v" ? (a) => VERDICT[a.v] : (a) => a[k] ?? "Unknown"),
     },
   };
+  /* ---------- DIM-style search queries ---------- */
+  // Plain words, key:value filters, quotes, "-" negation, "and"/"or" (and binds tighter, juxtaposition is and) and parentheses.
+  // compileQuery(text, set) returns a predicate over that set's items. A query with no operators behaves like the old substring search.
+  // QUERY-BEGIN
+  const squash = (s) => String(s ?? "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const QUERY_ALIAS = { smg: "submachinegun", hc: "handcannon", gauntlets: "arms", leg: "legs", duplicate: "dupe", godroll: "god", favourite: "favorite", masterworked: "masterwork" };
+  function tokenizeQuery(text) {
+    const out = [], re = /\s*(?:(\()|(\))|(-?)(?:([a-z]+):)?(?:"([^"]*)"?|([^\s()"]+)))/gy;
+    for (let m; (m = re.exec(text)) && m[0].trim();) {
+      if (m[1]) out.push({ k: "(" }); else if (m[2]) out.push({ k: ")" });
+      else if (!m[3] && !m[4] && m[5] === undefined && /^(and|or)$/i.test(m[6])) out.push({ k: m[6].toLowerCase() });
+      else out.push({ k: "t", neg: !!m[3], key: m[4] || "", val: m[5] ?? m[6], quoted: m[5] !== undefined });
+    }
+    return out;
+  }
+  function compileQuery(text, set) {
+    const toks = tokenizeQuery(text), cfg = SETS[set];
+    let i = 0;
+    const or = () => { let a = and(); while (toks[i]?.k === "or") { i++; const b = and(), p = a; a = (x) => p(x) || b(x); } return a; };
+    const and = () => {
+      let a = null;
+      while (i < toks.length && toks[i].k !== ")" && toks[i].k !== "or") {
+        if (toks[i].k === "and") { i++; continue; }
+        const b = atom(), p = a; a = p ? (x) => p(x) && b(x) : b;
+      }
+      return a || (() => true);
+    };
+    const atom = () => {
+      const t = toks[i++];
+      if (t.k === "(") { const f = or(); if (toks[i]?.k === ")") i++; return f; }
+      if (t.k === ")") return () => true;
+      const f = term(t);
+      return t.neg ? (x) => !f(x) : f;
+    };
+    const term = (t) => {
+      const v = t.val.toLowerCase(), sv = squash(v), has = (list) => list.some((s) => squash(s).includes(sv));
+      switch (t.key) {
+        case "": return (x) => cfg.search(x).toLowerCase().includes(v);
+        case "name": return (x) => x.n.toLowerCase().includes(v);
+        case "exactname": return (x) => x.n.toLowerCase() === v;
+        case "perk": return (x) => has((x.pk || []).flatMap((p) => p.o));
+        case "exactperk": return (x) => (x.pk || []).some((p) => p.o.some((o) => o.toLowerCase() === v));
+        case "tag": return (x) => (sv === "none" || sv === "untagged" ? !x.tg : squash(x.tg) === (QUERY_ALIAS[sv] || sv));
+        case "is": { const s = QUERY_ALIAS[sv] || sv; return (x) => isTokens(set, x).has(s); }
+        default: return () => false;
+      }
+    };
+    const f = or();
+    return f;
+  }
+  // The words is:<word> matches for an item: its type, element, slot, ammo, rarity, class and yes/no flags.
+  // Dupe and max power depend on the whole set, so they are worked out once per set and cached on the data array.
+  const queryIndex = {};
+  function isTokens(set, x) {
+    const items = SETS[set].items, ix = queryIndex[set] && queryIndex[set].items === items ? queryIndex[set] : (queryIndex[set] = (() => {
+      const names = new Map(), best = new Map(), bucket = (y) => [y.cls, y.s].join("|");
+      for (const y of items) { names.set(y.n, (names.get(y.n) || 0) + 1); if ((y.pw ?? -1) > (best.get(bucket(y)) ?? -1)) best.set(bucket(y), y.pw ?? -1); }
+      return { items, names, best, bucket, cache: new Map() };
+    })());
+    let t = ix.cache.get(x);
+    if (!t) {
+      t = new Set([set === "w" ? "weapon" : "armor", x.t, x.e, x.s, x.am, x.r, x.cls, x.lk ? "locked" : "unlocked", x.cr && "crafted", x.ad && "adept", x.god && "god", x.trash && "trash",
+        ix.names.get(x.n) > 1 && "dupe", x.pw != null && x.pw === ix.best.get(ix.bucket(x)) && "maxpower", (x.loc || "").includes("equipped") && "equipped", x.lo?.length && "inloadout", x.mw && "masterwork", x.legacy && "legacy"]
+        .filter(Boolean).map(squash));
+      ix.cache.set(x, t);
+    }
+    return t;
+  }
+  // QUERY-END
   const dirHtml = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${d === "desc" ? "M12 5v14M6 13l6 6 6-6" : "M12 19V5M6 11l6-6 6 6"}"/></svg>${d === "desc" ? "Best first" : "Worst first"}`;
   const blank = () => ({ q: "", f: {}, sort: "score", dir: "desc", group: "", group2: "", top: "", view: "", limit: 150 });
   const ex = { set: "w", w: blank(), a: blank(), pass: () => true };
@@ -2147,7 +2216,7 @@ function vrMain() {
   // App bar search: opens the Vault tab's full list with that text, on armor when only armor matches. "/" focuses it.
   $("#gq").oninput = () => typing(() => {
     const q = $("#gq").value, low = q.trim().toLowerCase();
-    const hits = (set) => SETS[set].items.some((x) => SETS[set].search(x).toLowerCase().includes(low));
+    const hits = (set) => SETS[set].items.some(compileQuery(q, set));
     ex.set = !low || hits("w") || !hits("a") ? "w" : "a";
     Object.assign(ex[ex.set], blank(), { q });
     if (rendered.list) drawExplorer(true);
@@ -2230,7 +2299,8 @@ function vrMain() {
     // Filter
     const facetFn = Object.fromEntries(cfg.facets.map(([k, , f]) => [k, f]));
     const q = st.q.trim().toLowerCase();
-    ex.pass = (x, skip) => (!q || cfg.search(x).toLowerCase().includes(q)) &&
+    const qf = q ? compileQuery(st.q, ex.set) : null;
+    ex.pass = (x, skip) => (!qf || qf(x)) &&
       Object.entries(st.f).every(([k, vals]) => k === skip || !vals.length || [].concat(facetFn[k](x) ?? []).some((v) => vals.includes(String(v))));
     const list = cfg.items.filter((x) => ex.pass(x));
     const [, key] = cfg.sorts[st.sort] || cfg.sorts.score;
