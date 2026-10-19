@@ -569,6 +569,9 @@ details.vsec > summary .vsplit { margin-left: 8px; white-space: nowrap; }
 .vtip .nm { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font: 600 15px var(--display); }
 .vtpw { flex: none; color: var(--gold); font-size: 14px; }
 .vtip .sm { color: var(--muted); font-size: 12px; }
+.vtip { grid-template-columns: minmax(0, 1fr); }
+.vtip .sd { flex-basis: 100%; white-space: pre-line; overflow-wrap: anywhere; line-height: 1.4; }
+.vtip:has(.sd) { width: 360px; max-width: calc(100vw - 16px); }
 .vtip:has(.vtrows) { width: 320px; }
 .vtel { display: inline-block; padding: 0 7px; margin-right: 4px; border-radius: 999px; font-size: 11px; font-weight: 600; color: var(--el); border: 1px solid var(--el); background: color-mix(in srgb, var(--el) 14%, transparent); }
 .vtaegis { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; font-size: 12px; color: var(--muted); }
@@ -1619,7 +1622,9 @@ function vrMain() {
   const bestSetTier = (a) => (a.si ? a.si.bonuses.map((b) => b.tier).filter(Boolean).sort((x, y) => SET_TIERS.indexOf(x) - SET_TIERS.indexOf(y))[0] || null : null);
   const stier = (t) => (t ? `<span class="stier t${t}" title="Aegis set tier ${t}">${t}</span>` : "");
   const setLine = (a) => (a.si ? " · " + esc(a.si.name) + stier(bestSetTier(a)) : a.set ? " · " + esc(a.set) : "");
-  const bonusRow = (b, owned) => `<div class="bonus${owned >= b.pieces ? " active" : ""}"><span class="pc">${b.pieces}PC</span><div><div class="bn">${esc(b.name)}</div>${b.description ? `<p>${esc(b.description)}</p>` : ""}${b.effect || b.notes ? `<details class="full"><summary>Aegis notes</summary><div>${esc([b.effect, b.notes].filter(Boolean).join(". "))}</div></details>` : ""}</div>${b.tier ? `<span class="tier t${b.tier}" title="Aegis rank #${b.rank ?? "?"}">${b.tier}</span>` : `<span class="tier tU">—</span>`}</div>`;
+  // The community sheet marks unconfirmed numbers with "?" (9?, [?%], a lone ?): keep the number, drop empty brackets, else X.
+  const bonusText = (t) => esc(t).replace(/ ?\[\?%?\]/g, "").replace(/(\d)\?/g, "$1").replace(/\?/g, "X");
+  const bonusRow = (b, owned) => `<div class="bonus${owned >= b.pieces ? " active" : ""}"><span class="pc">${b.pieces}PC</span><div><div class="bn">${esc(b.name)}</div>${b.description ? `<p>${bonusText(b.description)}</p>` : ""}${b.effect || b.notes ? `<details class="full"><summary>Aegis notes</summary><div>${esc([b.effect, b.notes].filter(Boolean).join(". "))}</div></details>` : ""}</div>${b.tier ? `<span class="tier t${b.tier}" title="Aegis rank #${b.rank ?? "?"}">${b.tier}</span>` : `<span class="tier tU">—</span>`}</div>`;
   const armorRow = (a) => `<button class="row v-${a.v}" data-a="${a.id}"><span class="ico${isExotic(a) ? " exotic" : ""}">${img(a.ic)}<span class="tier tU" title="Gear tier">${gearTier(a)}</span></span>
       <div style="min-width:0"><div class="nm">${esc(a.n)}${newBadge(a)}${dtag(a)}${lochip(a)}${lockIcon(a)}</div><div class="sm">${isExotic(a) ? '<span class="exo">Exotic</span> · ' : ""}${esc(a.cls)} ${esc(a.s)} · ${esc(a.arch || "Legacy")}${setLine(a)}</div><div class="perkline">${ordered(a.st).map(([n, v]) => `<span>${esc(n)} ${v}</span>`).join("")}${a.tot ? `<span>Total ${a.tot}</span>` : ""}</div></div>
       ${scoreCell(a.sc)}<div class="c-verdict">${verdict(a.v)}</div></button>`;
@@ -2130,10 +2135,10 @@ function vrMain() {
     + (w.rmw?.length ? `<div class="vtrow mw"><span>Rec masterwork</span><div>${w.rmw.map((o) => chip(o, "mw", "☆ ")).join("")}</div></div>` : "");
   const tipTop = (x, sub) => `<div class="nm"><span>${esc(x.n)}</span>${x.pw ? `<span class="vtpw">✦ ${x.pw}</span>` : ""}</div><div class="sm">${sub}</div><div class="vtmeta"><span class="vtv ${x.v}">${VERDICT[x.v]}</span><span>Overall ${x.sc}${x.rs != null ? ` (${x.rs} · ${x.tier || "—"})` : ""}</span>${x.gt ? `<span>Tier ${x.gt}</span>` : ""}${x.eq ? "<span>Equipped</span>" : ""}</div>`;
   /** A set's 2- and 4-piece perks with their Aegis tier, one row each. */
-  const setRows = (si) => [2, 4].map((n) => { const b = si?.bonuses.find((x) => x.pieces === n), d = DATA.sets?.[si?.name]?.bonuses?.find((x) => x.pieces === n)?.description; return `<div class="vtaegis"><span class="tier t${b?.tier || "U"}">${b?.tier || "—"}</span><span><b>${n} piece bonus</b>${b ? " · " + esc(b.name) : ""}</span>${d ? `<div class="sm" style="flex-basis:100%">${esc(d)}</div>` : ""}</div>`; }).join("");
+  const setRows = (si, full) => [2, 4].map((n) => { const b = si?.bonuses.find((x) => x.pieces === n), d = DATA.sets?.[si?.name]?.bonuses?.find((x) => x.pieces === n)?.description; return `<div class="vtaegis"><span class="tier t${b?.tier || "U"}">${b?.tier || "—"}</span><span><b>${n} piece bonus</b>${b ? " · " + esc(b.name) : ""}</span>${full && d ? `<div class="sm sd">${bonusText(d)}</div>` : ""}</div>`; }).join("");
   /** An exotic's trait: its symbol, name and the full description. */
   const traitBlock = (t) => (t ? `<div class="pk-intr tr">${t.ic ? img(t.ic) : ""}<div><b>${esc(t.n)}</b>${t.d ? `<span>${esc(t.d)}</span>` : ""}</div></div>` : "");
-  const tipHtml = (w, a, s) => s ? `<div class="nm"><span>${esc(s.name)}</span></div>${setRows(s)}` : w
+  const tipHtml = (w, a, s) => s ? `<div class="nm"><span>${esc(s.name)}</span></div>${setRows(s, true)}` : w
     ? `${tipTop(w, `<span class="vtel" style="--el:var(--${esc(w.e)})">${esc(w.e)}</span> ${esc(typeLine(w))}`)}<div class="vtaegis">${tierBadge(w)}<span>${w.tier ? "tier gun according to Aegis" : "Unrated: not on Aegis's sheet"}</span></div><div class="vtaegis"><b>${w.rs ?? "—"}/100</b><span>Aegis god roll match</span></div><div class="vtrows">${perkRows(w)}</div>${w.r === "Exotic" ? traitBlock(w.fr) : ""}`
     : `${tipTop(a, `${esc(a.cls)} · ${esc(a.arch || "Legacy")}${setLine(a)}`)}${statBars(a, true)}<div class="sm">${a.tot} total${topStat(a) ? ` · highest ${esc(topStat(a))}` : ""}${a.loc ? " · " + esc(a.loc) : ""}</div>${a.si && !isExotic(a) ? setRows(a.si) : ""}${traitBlock(a.trait)}`;
   // Anything showing one item gets the card: data-w / data-a for your own gear, data-vt for items another module rates
