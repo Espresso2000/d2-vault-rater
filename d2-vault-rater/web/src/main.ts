@@ -195,7 +195,14 @@ async function run() {
 function lazyBuilds(input: BuildsInput) {
   // initBuilds swaps in the real VR_BUILDS, so render below reaches the loaded tab.
   const ready = import("./builds/ui").then((b) => b.initBuilds(input));
-  window.VR_BUILDS = { count: () => loadBuilds().length || null, render: (el) => void ready.then(() => window.VR_BUILDS!.render(el)) };
+  window.VR_BUILDS = {
+    count: () => loadBuilds().length || null,
+    render: (el) => {
+      // The tab switches at once: show a loading block now, while the tab's code loads.
+      el.innerHTML = loadingBlock("Loading builds…");
+      void ready.then(() => window.VR_BUILDS!.render(el));
+    },
+  };
 }
 
 /** The Vendors tab is its own chunk too; it reads vendor stock from Bungie only when first opened. */
