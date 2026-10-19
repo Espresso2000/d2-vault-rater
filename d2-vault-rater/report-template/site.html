@@ -2042,7 +2042,7 @@ function vrMain() {
     };
     const vaultSets = (xs) => !xs.length ? '<div class="vdrop vbox" data-k="a" data-to="vault"><span class="small muted">No armor</span></div>' : `<div class="vdrop vbox split" data-k="a" data-to="vault">${[...groupBy(xs, groupOf)]
       .sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0]))
-      .map(([g, gs]) => `<div class="vtype"><div class="cap"><span class="lead">${gs.length}</span>${esc(g)}${setGrades(gs)}</div><div class="vtiles">${gs.sort(order).map((a) => atile(a)).join("")}</div></div>`).join("")}</div>`;
+      .map(([g, gs]) => `<div class="vtype"${gs[0].si && !isExotic(gs[0]) ? ` data-set="${esc(g)}"` : ""}><div class="cap"><span class="lead">${gs.length}</span>${esc(g)}${setGrades(gs)}</div><div class="vtiles">${gs.sort(order).map((a) => atile(a)).join("")}</div></div>`).join("")}</div>`;
     // The header row (a chevron in the character's header when it's a collapsible split block) and the slot rows.
     const heads = (cs, keep, fold) => `${cs.map((c) => `<div class="vhead cc c-${esc(c.cls)}"><span class="vht">${fold ? chev : ""}<b>${esc(c.cls)}</b></span><span class="small muted">${plural(DATA.armor.filter((a) => a.wh === c.id && !a.pm).length, "piece")}</span></div>`).join("")}
       <div class="vhead"><b>Vault</b><span class="small muted">${plural(DATA.armor.filter((a) => inVault(a) && keep(a)).length, "armor piece")}</span></div>`;
@@ -2097,27 +2097,29 @@ function vrMain() {
   const perkRows = (w) => perkCols(w).filter((p) => PERK_ORDER.includes(p.k)).map((p) => `<div class="vtrow"><span>${PERK_LABEL[p.k]}</span><div>${p.o.map((o) => chip(o, (p.m.includes(o) ? "good" : "alt") + (o === p.a ? " sel" : ""), o === p.a ? "✓ " : "", w.pi)).join("")}</div></div>`).join("")
     + (w.rmw?.length ? `<div class="vtrow mw"><span>Rec masterwork</span><div>${w.rmw.map((o) => chip(o, "mw", "☆ ")).join("")}</div></div>` : "");
   const tipTop = (x, sub) => `<div class="nm"><span>${esc(x.n)}</span>${x.pw ? `<span class="vtpw">✦ ${x.pw}</span>` : ""}</div><div class="sm">${sub}</div><div class="vtmeta"><span class="vtv ${x.v}">${VERDICT[x.v]}</span><span>Overall ${x.sc}${x.rs != null ? ` (${x.rs} · ${x.tier || "—"})` : ""}</span>${x.gt ? `<span>Tier ${x.gt}</span>` : ""}${x.eq ? "<span>Equipped</span>" : ""}</div>`;
-  const tipHtml = (w, a) => w
+  /** A set's 2- and 4-piece perks with their Aegis tier, one row each. */
+  const setRows = (si) => [2, 4].map((n) => { const b = si?.bonuses.find((x) => x.pieces === n); return `<div class="vtaegis"><span class="tier t${b?.tier || "U"}">${b?.tier || "—"}</span><span><b>${n} piece bonus</b>${b ? " · " + esc(b.name) : ""}</span></div>`; }).join("");
+  const tipHtml = (w, a, s) => s ? `<div class="nm"><span>${esc(s.name)}</span></div>${setRows(s)}` : w
     ? `${tipTop(w, `<span class="vtel" style="--el:var(--${esc(w.e)})">${esc(w.e)}</span> ${esc(typeLine(w))}`)}<div class="vtaegis">${tierBadge(w)}<span>${w.tier ? "tier gun according to Aegis" : "Unrated: not on Aegis's sheet"}</span></div><div class="vtaegis"><b>${w.rs ?? "—"}/100</b><span>Aegis god roll match</span></div><div class="vtrows">${perkRows(w)}</div>`
-    : `${tipTop(a, `${esc(a.cls)} · ${esc(a.arch || "Legacy")}${setLine(a)}`)}${statBars(a, true)}<div class="sm">${a.tot} total${topStat(a) ? ` · highest ${esc(topStat(a))}` : ""}${a.loc ? " · " + esc(a.loc) : ""}</div>`;
+    : `${tipTop(a, `${esc(a.cls)} · ${esc(a.arch || "Legacy")}${setLine(a)}`)}${statBars(a, true)}<div class="sm">${a.tot} total${topStat(a) ? ` · highest ${esc(topStat(a))}` : ""}${a.loc ? " · " + esc(a.loc) : ""}</div>${a.si && !isExotic(a) ? setRows(a.si) : ""}`;
   // Anything showing one item gets the card: data-w / data-a for your own gear, data-vt for items another module rates
   // (the web app's Vendors tab answers window.VR_TIP(id) with { w } or { a }). Not on Overview or Wrapped.
-  const HOVER = "[data-w], [data-a], [data-vt]";
-  const tipItem = (t) => { if (t.dataset.vt) return window.VR_TIP?.(t.dataset.vt) || null; const w = W.get(t.dataset.w), a = A.get(t.dataset.a); return w ? { w } : a ? { a } : null; };
+  const HOVER = "[data-w], [data-a], [data-vt], [data-set]";
+  const tipItem = (t) => { if (t.dataset.vt) return window.VR_TIP?.(t.dataset.vt) || null; const w = W.get(t.dataset.w), a = A.get(t.dataset.a); if (t.dataset.set) { const s = DATA.armor.find((x) => x.si?.name === t.dataset.set)?.si; return s ? { s } : null; } return w ? { w } : a ? { a } : null; };
   let tipTimer = 0, tipGone = 0;
   const hideTip = () => { clearTimeout(tipTimer); if ($("#vtip")) { $("#vtip").remove(); tipGone = Date.now(); } };
   document.addEventListener("pointerover", (e) => {
     const t = e.pointerType === "mouse" && !dragId && e.target.closest?.(HOVER);
     if (!t || t.closest("#p-overview, #p-wrapped")) return;
-    const key = t.dataset.w || t.dataset.a || t.dataset.vt;
+    const key = t.dataset.w || t.dataset.a || t.dataset.vt || "set:" + t.dataset.set;
     if ($("#vtip")?.dataset.for === key) return;
     clearTimeout(tipTimer);
     // A short rest before the first card so it doesn't flash as the mouse passes; quick from one item to the next.
     const quick = $("#vtip") || Date.now() - tipGone < 300;
     tipTimer = setTimeout(() => { const it = t.isConnected && t.matches(":hover") && tipItem(t); if (it) showTip(t, it, key); }, quick ? 100 : 400);
   });
-  function showTip(t, { w, a }, key) {
-    $("#vtip")?.remove(); document.body.insertAdjacentHTML("beforeend", `<div class="vtip" id="vtip" role="tooltip" data-for="${esc(key)}">${tipHtml(w, a)}</div>`);
+  function showTip(t, { w, a, s }, key) {
+    $("#vtip")?.remove(); document.body.insertAdjacentHTML("beforeend", `<div class="vtip" id="vtip" role="tooltip" data-for="${esc(key)}">${tipHtml(w, a, s)}</div>`);
     const tip = $("#vtip"), r = t.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
     // Underneath the tile, lined up with its left edge; above it when there's no room below; beside it when neither fits.
     const below = r.bottom + 8 + th <= innerHeight, above = r.top - 8 - th >= 8;
