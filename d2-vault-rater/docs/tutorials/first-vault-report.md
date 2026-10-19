@@ -60,11 +60,12 @@ To apply it: npm run vault -- apply 2026-10-08T16-40-12-118Z-a3f9c1
 
 - **Overview**: how many weapons and armor pieces to keep and shard, and your best picks per slot.
 - **Reports** (a menu that opens on hover, click or keyboard) holds the two reports:
-  - **Weapon Report**: open any weapon to see its score, its Aegis tier, which perks matched, and the reasons behind its verdict. The reasons are the same sentences the rater writes while deciding ([src/rating/weapons.ts:248-311](../../src/rating/weapons.ts#L248-L311)).
+  - **Weapon Report**: open any weapon to see its score, its Aegis tier, which perks matched, and the reasons behind its verdict. The reasons are the same sentences the rater writes while deciding ([src/rating/weapons.ts:244-317](../../src/rating/weapons.ts#L244-L317)).
   - **Armor Report**: best piece per class and slot, with stats and set bonuses. The class buttons list your most recently played class first.
+- **Vault**: two modes, switched at the top. *Vault* lays out each character's gear beside your vault, like DIM: the postmaster, then weapons by slot (the vault split by weapon type), then armor by slot and set. Drag a weapon or armor piece to move or equip it. *Full list* is every item, with filters, sorting and grouping. The search box in the top bar (or `/`) takes DIM-style queries such as `is:dupe -is:locked`. Details: [The report page](../reference/report-page.md#vault-tab).
 - **Shard**: everything marked for sharding, grouped by reason.
-- **Vault**: two modes, switched at the top. *Vault* lays out each character's weapons beside your vault, by slot, like DIM, with the vault split into one box per weapon type; drag a weapon to move or equip it. *Full list* is every item, with filters, sorting and grouping. Both share the pinned toolbar. Typing in the search box in the top bar (or pressing `/`) opens the full list filtered. Details: [The report page](../reference/report-page.md#vault-tab).
-- **Perks** show as round symbols in the game's order, with a green ring on the ones Aegis recommends; open a weapon to see every option per column, click one to preview it, and press **Apply** to switch to it in game ([how-to](../how-to/switch-weapon-perks.md)).
+- **Hover and click**: rest the mouse on any item for a card with its perks or stats; click it for the details panel, with the verdict and its reasons, the perks laid out like the game, stats, where to get it, moving and tags. Click a perk to compare it with the equipped one and press **Apply** to switch to it in game ([how-to](../how-to/switch-weapon-perks.md)).
+- **Tags**: Alt+1 to Alt+9 tag the item under the mouse with an EVR tag kept in your browser; DIM tags show too ([The report page](../reference/report-page.md#tags)).
 - **R&Ds**: raids and dungeons ranked by what they would add to your vault, with a loadout from your vault for every encounter.
 - **Wrapped**: your account at a glance: characters, PvE and PvP totals, kills by weapon type, top weapons and titles.
 

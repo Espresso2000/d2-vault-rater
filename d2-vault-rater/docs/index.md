@@ -1,6 +1,6 @@
 # Vault Rater documentation
 
-Vault Rater rates every weapon and armor piece in a Destiny 2 vault against Aegis's tier list and community wishlists, says what to keep and what to shard, and can lock keepers, unlock junk, move items, switch weapon perks and tag items in DIM after you approve. The web app also rates what vendors sell against your vault. It runs as an MCP tool server for an AI client ([src/server.ts:32](../src/server.ts#L32)), as a command-line app with a local report page ([src/cli.ts:202](../src/cli.ts#L202)), or as a static web app in the browser ([web/src/main.ts:290](../web/src/main.ts#L290)).
+Vault Rater rates every weapon and armor piece in a Destiny 2 vault against Aegis's tier list and community wishlists, says what to keep and what to shard, and can lock keepers, unlock junk, move items, switch weapon perks and mods, and tag items (in DIM, or with EVR tags kept in your browser) after you approve. The web app also rates what vendors sell against your vault. It runs as an MCP tool server for an AI client ([src/server.ts:32](../src/server.ts#L32)), as a command-line app with a local report page ([src/cli.ts:202](../src/cli.ts#L202)), or as a static web app in the browser ([web/src/main.ts:290](../web/src/main.ts#L290)).
 
 ## How these docs are organised
 
@@ -26,7 +26,7 @@ Every statement about the code links to the lines it describes, and `npm run doc
 - [Make the rating stricter or more lenient](how-to/tune-strictness.md)
 - [Keep an item from ever being marked for sharding](how-to/protect-items.md)
 - [Move and equip items](how-to/move-and-equip-items.md)
-- [Preview and switch a weapon's perks](how-to/switch-weapon-perks.md)
+- [Switch a weapon's perks and mods](how-to/switch-weapon-perks.md)
 - [Lock keepers, unlock junk, and undo it](how-to/apply-and-undo-locks.md)
 - [Fix tier list and source import problems](how-to/fix-source-imports.md)
 - [Host the web app on a static site](how-to/host-the-web-app.md)
@@ -37,7 +37,7 @@ Every statement about the code links to the lines it describes, and `npm run doc
 - [MCP tools](reference/mcp-tools.md): every tool, its inputs and whether it changes anything in game.
 - [CLI, local server and environment](reference/cli-and-local-server.md): commands, routes, environment variables.
 - [Settings](reference/settings.md): every field, the strictness presets, how overrides combine.
-- [The report page](reference/report-page.md): every tab, the Vault tab's modes and toolbar, perk display, and what the page remembers.
+- [The report page](reference/report-page.md): every tab, hover cards, the item details panel, tags, search syntax, the Vault tab, settings and what the page remembers.
 - [Data files and browser storage](reference/data-files.md): what is saved where.
 - [Source layout](reference/source-layout.md): what each file does.
 - [References](reference/references.md): the APIs, data and community projects the rater relies on, with links.

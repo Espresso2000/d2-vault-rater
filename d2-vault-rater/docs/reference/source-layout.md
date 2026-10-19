@@ -16,7 +16,7 @@
 | [src/bungie/tables.ts:11](../../src/bungie/tables.ts#L11) | `liteTable`: downloads one table, strips it and caches it as `<table>.lite.json`. |
 | [src/bungie/strip.ts:35](../../src/bungie/strip.ts#L35) | Cuts manifest tables down to the fields the rater reads. Browser-safe; the web app uses it too. |
 | [src/bungie/defs.ts:8](../../src/bungie/defs.ts#L8) | Manifest types and name helpers. Browser-safe. |
-| [src/bungie/transfer.ts:47](../../src/bungie/transfer.ts#L47) | Moving and equipping items; switching a weapon's perk ([src/bungie/transfer.ts:148](../../src/bungie/transfer.ts#L148)). |
+| [src/bungie/transfer.ts:50](../../src/bungie/transfer.ts#L50) | Moving and equipping items, pulling from the postmaster; switching a weapon's perk ([src/bungie/transfer.ts:148](../../src/bungie/transfer.ts#L148)) or mod ([src/bungie/transfer.ts:172](../../src/bungie/transfer.ts#L172)). |
 | [src/vault/fetch.ts:9](../../src/vault/fetch.ts#L9) | Reads the profile and keeps the last vault. |
 | [src/vault/decode.ts:81](../../src/vault/decode.ts#L81) | Profile response → `Vault`. |
 | [src/vault/types.ts:101](../../src/vault/types.ts#L101) | `Vault`, `WeaponRecord`, `ArmorRecord`, `PerkColumn`. |
@@ -27,14 +27,14 @@
 | [src/sources/activities.ts:96](../../src/sources/activities.ts#L96) | Raid and dungeon loot; where each weapon comes from. |
 | [src/sources/csv.ts:5](../../src/sources/csv.ts#L5) | RFC 4180 CSV parser and the Google Sheets CSV URL. |
 | [src/vendors/vendors.ts:201](../../src/vendors/vendors.ts#L201) | Vendor stock for one character: GetVendors plus one call per gear vendor, decoded like vault items. |
-| [src/vendors/rate.ts:41](../../src/vendors/rate.ts#L41) | Rates each sale item against the vault: Worth buying, Maybe or Skip. |
+| [src/vendors/rate.ts:48](../../src/vendors/rate.ts#L48) | Rates each sale item against the vault: Worth buying, Maybe or Skip. |
 | [src/data/encounters.json](../../src/data/encounters.json) | Every raid and dungeon encounter: roles, shields, champions, range, damage phase, guide picks and the sources they were checked against. |
-| [src/data/encounters.ts:17](../../src/data/encounters.ts#L17) | Encounter types, role weapon fits and role meta picks. |
+| [src/data/encounters.ts:13](../../src/data/encounters.ts#L13) | Encounter types, role weapon fits and role meta picks. |
 | [src/rating/settings.ts:89](../../src/rating/settings.ts#L89) | Settings schema, presets, `strictnessFor`. |
 | [src/rating/weapons.ts:145](../../src/rating/weapons.ts#L145) | Weapon scores and verdicts. |
 | [src/rating/armor.ts:97](../../src/rating/armor.ts#L97) | Armor scores and verdicts. |
 | [src/rating/activities.ts:57](../../src/rating/activities.ts#L57) | Raid and dungeon ranking. |
-| [src/rating/encounters.ts:148](../../src/rating/encounters.ts#L148) | Encounter loadouts. |
+| [src/rating/encounters.ts:89](../../src/rating/encounters.ts#L89) | Encounter loadouts. |
 | [src/dim/actions.ts:46](../../src/dim/actions.ts#L46) | Lock plan, apply, undo, DIM CSV. |
 | [src/dim/common.ts:30](../../src/dim/common.ts#L30) | DIM Sync shapes, profile read and tag write. Browser-safe. |
 | [src/dim/sync.ts:44](../../src/dim/sync.ts#L44) | DIM Sync auth for Node. *Shimmed.* |
@@ -49,6 +49,7 @@
 | [web/vite.config.ts:22](../../web/vite.config.ts#L22) | The shim plugin, the page plugin, local mode. |
 | [web/local-server.ts:35](../../web/local-server.ts#L35) | Local mode only: serves `app-config.json` from `.env` and relays token requests with the client secret. |
 | [web/src/main.ts:290](../../web/src/main.ts#L290) | Boot, sign-in screens, the rating run, the page's `/api` handlers. |
+| [web/src/loading.ts:5](../../web/src/loading.ts#L5) | The shared loading block (spinner, title, detail) for the boot screen, Builds and Vendors. |
 | [web/src/background.html:1](../../web/src/background.html#L1) | The animated nebula background injected into the web build. |
 | [web/src/shell.html:1](../../web/src/shell.html#L1) | Sign-in and progress markup injected into the report template. |
 | [web/src/appConfig.ts:28](../../web/src/appConfig.ts#L28) | Which Bungie app the site uses. |

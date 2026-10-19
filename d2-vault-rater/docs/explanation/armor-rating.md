@@ -4,7 +4,7 @@ Armor 3.0 pieces have an archetype (which fixes the primary and secondary stat),
 
 ## The score
 
-Four parts, weighted 40 / 25 / 25 / 10 ([src/rating/armor.ts:45-46](../../src/rating/armor.ts#L45-L46)), computed at [src/rating/armor.ts:126-161](../../src/rating/armor.ts#L126-L161):
+Four parts, weighted 40 / 25 / 25 / 10 ([src/rating/armor.ts:45-46](../../src/rating/armor.ts#L45-L46)), computed at [src/rating/armor.ts:127-163](../../src/rating/armor.ts#L127-L163):
 
 - **Stats (40).** The piece's three highest stats against the best possible Tier 5 roll, 30 + 25 + 20 = 75 ([src/rating/armor.ts:7-8](../../src/rating/armor.ts#L7-L8), [src/rating/armor.ts:131](../../src/rating/armor.ts#L131)).
 - **Build fit (25).** How well those top three stats match the stats your builds want, weighting the primary most (0.5 / 0.3 / 0.2) ([src/rating/armor.ts:132-136](../../src/rating/armor.ts#L132-L136)). With no wanted stats known, every piece gets half.

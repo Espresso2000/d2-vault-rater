@@ -1,6 +1,6 @@
 # D2 Vault Rater
 
-Vault Rater rates every weapon and armor piece in a Destiny 2 vault and says what to keep and what to shard. Weapons are scored against [Aegis's Endgame Analysis tier list](https://docs.google.com/spreadsheets/d/1JM-0SlxVDAi-C6rGVlLxa-J1WGewEeL8Qvq4htWZHhY/htmlview) and community wishlists, armor by Armor 3.0 stats, tier, archetype and set bonus. After you approve, it can lock keepers and unlock junk in game, move and equip items, switch weapon perks, and tag items in [DIM](https://destinyitemmanager.com/). It reads and changes your gear through the [Bungie.net API](https://github.com/Bungie-net/api).
+Vault Rater rates every weapon and armor piece in a Destiny 2 vault and says what to keep and what to shard. Weapons are scored against [Aegis's Endgame Analysis tier list](https://docs.google.com/spreadsheets/d/1JM-0SlxVDAi-C6rGVlLxa-J1WGewEeL8Qvq4htWZHhY/htmlview) and community wishlists, armor by Armor 3.0 stats, tier, archetype and set bonus. After you approve, it can lock keepers and unlock junk in game, move and equip items, switch weapon perks and mods, and tag items in [DIM](https://destinyitemmanager.com/) or with tags kept in your browser. It reads and changes your gear through the [Bungie.net API](https://github.com/Bungie-net/api).
 
 It runs three ways, all on the same rating code:
 
@@ -21,7 +21,7 @@ The full walk-through is [Your first vault report](docs/tutorials/first-vault-re
 Everything else is in [docs/](docs/index.md), in four kinds of page:
 
 - [Tutorials](docs/index.md#tutorials): your first vault report; the web app on your PC.
-- [How-to guides](docs/index.md#how-to-guides): connect an AI client, tune strictness, protect items, move and equip items, switch weapon perks, apply and undo locks, fix imports, host the web app.
+- [How-to guides](docs/index.md#how-to-guides): connect an AI client, tune strictness, protect items, move and equip items, switch weapon perks and mods, apply and undo locks, fix imports, host the web app.
 - [Reference](docs/index.md#reference): MCP tools, CLI and local server, settings, the report page, data files, source layout, and the [external sources](docs/reference/references.md) the rater relies on.
 - [Explanation](docs/index.md#explanation): how weapons and armor are rated, vendors, raids and dungeons, caching, safety, architecture.
 

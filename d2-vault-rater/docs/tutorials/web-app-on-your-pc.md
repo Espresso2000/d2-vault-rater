@@ -37,19 +37,19 @@ The page then shows its progress while it:
 2. imports the tier list, wishlist, armor sets and raid loot when they are over a day old ([web/src/sources.ts:26-88](../../web/src/sources.ts#L26-L88));
 3. reads and rates your vault and draws the report ([web/src/main.ts:122-192](../../web/src/main.ts#L122-L192)).
 
-The report has the local app's tabs plus **Vendors** and **Builds**, and its buttons work the same way ([web/src/main.ts:223-268](../../web/src/main.ts#L223-L268)).
+The report has the local app's tabs plus **Vendors** and **Builds**, and its buttons work the same way ([web/src/main.ts:238-287](../../web/src/main.ts#L238-L287)).
 
 ## 4. Make a build
 
-Open **Builds**. The first time, it downloads subclass, aspect and fragment definitions, the community build ratings and Destiny Clarity's notes ([web/src/builds/ui.ts:121-141](../../web/src/builds/ui.ts#L121-L141)).
+Open **Builds**. The first time, it downloads subclass, aspect and fragment definitions, the community build ratings and Destiny Clarity's notes ([web/src/builds/ui.ts:128-152](../../web/src/builds/ui.ts#L128-L152)).
 
-1. Under **Saved builds**, pick your class and press **New … build** on the first card ([web/src/builds/ui.ts:370-376](../../web/src/builds/ui.ts#L370-L376)). Name it in the title card.
+1. Under **Saved builds**, pick your class. The first card shows your in-game loadouts; the next one, **New … build**, asks for a name and starts an empty build ([web/src/builds/ui.ts:371-377](../../web/src/builds/ui.ts#L371-L377), [web/src/builds/ui.ts:353-370](../../web/src/builds/ui.ts#L353-L370)).
 2. In the **Subclass** card, pick an element ([web/src/builds/ui.ts:545-568](../../web/src/builds/ui.ts#L545-L568)).
 3. In the **Abilities** card, rest the pointer on a slot (or tap it) to open its options, then click one. Aspects and fragments toggle, so you can fill every fragment slot from one popover. If popovers open when you don't want them to, switch the card's header from **Hover** to **Click** ([web/src/builds/ui.ts:580-582](../../web/src/builds/ui.ts#L580-L582)). The rating ring in the summary updates as you go ([web/src/builds/model.ts:197-223](../../web/src/builds/model.ts#L197-L223)).
 4. Press **Choose gear and mods**, pick weapons, armor and mods for any slots, check the stat tray, then press **Apply** ([web/src/builds/ui.ts:1023-1066](../../web/src/builds/ui.ts#L1023-L1066)).
 5. Drag the gold markers on the stat bars to set the stats you aim for ([web/src/builds/ui.ts:512](../../web/src/builds/ui.ts#L512)).
 6. Press **Save** in the title card. Nothing is kept until you do; leaving with unsaved changes asks first ([web/src/builds/ui.ts:205-206](../../web/src/builds/ui.ts#L205-L206)).
-7. Press **Equip on …**. You get a dry run listing every step; nothing changes until you press **Equip now**, and afterwards **Undo** puts your previous gear back ([web/src/builds/ui.ts:1453-1498](../../web/src/builds/ui.ts#L1453-L1498), [web/src/builds/equip.ts:41](../../web/src/builds/equip.ts#L41)).
+7. Press **Equip on …**. You get a dry run listing every step; nothing changes until you press **Equip now**, and afterwards **Undo** puts your previous gear back ([web/src/builds/ui.ts:1616-1667](../../web/src/builds/ui.ts#L1616-L1667), [web/src/builds/equip.ts:41](../../web/src/builds/equip.ts#L41)).
 
 What each part does: [The Builds tab](../explanation/builds-tab.md#the-editor).
 
@@ -57,7 +57,7 @@ Your builds are saved in this browser ([web/src/builds/store.ts:5-8](../../web/s
 
 ## 5. Check the vendors
 
-Open **Vendors**. It reads what vendors sell right now for your most recently played character and rates each weapon and armor piece against your vault ([web/src/vendors/ui.ts:77-103](../../web/src/vendors/ui.ts#L77-L103)).
+Open **Vendors**. It reads what vendors sell right now for your most recently played character and rates each weapon and armor piece against your vault ([web/src/vendors/ui.ts:109-143](../../web/src/vendors/ui.ts#L109-L143)).
 
 1. Tick **Only worth buying** to see just the items the rater would keep.
 2. Open a card for the reasons, every perk option and the price.

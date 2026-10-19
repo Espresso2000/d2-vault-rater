@@ -2,22 +2,26 @@
 
 Moving works in the local app's report page (`npm run vault:serve`), the web app, and through the MCP server. A plain report file opened from disk can't move anything: the move controls only appear when the page is served by the app ([report-template/site.html:2869-2870](../../report-template/site.html#L2869-L2870), [src/cli.ts:189](../../src/cli.ts#L189), [web/src/main.ts:236](../../web/src/main.ts#L236)).
 
-## Move one item from its drawer
+## Move one item from its details panel
 
-1. Open any weapon or armor piece (from a card, a list row or a Vault tab tile).
+1. Open any weapon or armor piece (from a card, a list row or a Vault tab tile): its details panel has a **Move** box under **Actions**.
 2. Under **Move**, press **Pull to Hunter / Titan / Warlock**, or **Send to vault**. Armor only offers characters of its class ([report-template/site.html:2869-2875](../../report-template/site.html#L2869-L2875)).
 3. Tick **Equip it after pulling** to equip it on arrival.
 
 The page shows "N of M done" and any error under the buttons ([report-template/site.html:2847-2867](../../report-template/site.html#L2847-L2867)).
 
-## Drag weapons in the Vault tab
+## Drag items in the Vault tab
 
-In the Vault tab's **Vault** mode, drag a weapon onto another character's column or onto the vault to move it, or onto a character's big equipped slot to equip it there. A message in the bottom corner turns green when the move is done or red with the reason ([report-template/site.html:1748-1775](../../report-template/site.html#L1748-L1775)). Equipped weapons can't be dragged. Layout and filters: [The report page](../reference/report-page.md#vault-tab).
+In the Vault tab's **Vault** mode, drag a weapon or armor piece onto another character's column or onto the vault to move it, or onto a character's big equipped slot to equip it there. Armor only drops on characters of its class. Equipped items, and weapons hidden by your filters, can't be dragged. A message in the bottom corner turns green when the move is done or red with the reason ([report-template/site.html:2212-2240](../../report-template/site.html#L2212-L2240)). Layout and filters: [The report page](../reference/report-page.md#vault-tab).
+
+## Get items out of the postmaster
+
+Open the Vault tab's **Postmaster** section and drag an item from a character's Lost Items to where you want it. It is first pulled into that character's inventory with Bungie's [PullFromPostmaster](https://bungie-net.github.io/multi/operation_post_Destiny2-PullFromPostmaster.html) action, then moved like any other item ([src/bungie/transfer.ts:70-78](../../src/bungie/transfer.ts#L70-L78), [report-template/site.html:2164-2168](../../report-template/site.html#L2164-L2168)). Postmaster items don't count as carried by the character ([src/vault/decode.ts:96-99](../../src/vault/decode.ts#L96-L99)).
 
 ## Pull a whole loadout
 
-- **Encounter loadouts**: on the R&Ds tab, each encounter's loadout has **Pull and equip this loadout on** buttons, one per character ([report-template/site.html:1515-1518](../../report-template/site.html#L1515-L1518)). How the loadout is picked: [Raids, dungeons and encounter loadouts](../explanation/raids-dungeons-encounters.md#encounter-loadouts).
-- **DIM loadouts**: with **Read DIM loadouts** on in Settings, an item's drawer lists the DIM loadouts it is in; pressing one pulls every item in that loadout to its character ([report-template/site.html:2887-2889](../../report-template/site.html#L2887-L2889)).
+- **Encounter loadouts**: on the R&Ds tab, each encounter's loadout has **Pull and equip this loadout on** buttons, one per character ([report-template/site.html:1868-1883](../../report-template/site.html#L1868-L1883)). How the loadout is picked: [Raids, dungeons and encounter loadouts](../explanation/raids-dungeons-encounters.md#encounter-loadouts).
+- **DIM loadouts**: with **Read DIM loadouts** on in Settings, an item's details panel lists the DIM loadouts it is in; pressing one pulls every item in that loadout to its character ([report-template/site.html:2887-2889](../../report-template/site.html#L2887-L2889)).
 - **Builds** (web app): the Builds tab's **Equip** shows a dry run of every step first; see [The Builds tab](../explanation/builds-tab.md#equipping).
 
 ## From an AI client

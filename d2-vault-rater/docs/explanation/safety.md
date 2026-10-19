@@ -19,13 +19,17 @@ Lock changes are spaced out (250 ms by default) and retried while Bungie throttl
 
 ## Moves and equips
 
-`moveItems` ([src/bungie/transfer.ts:47](../../src/bungie/transfer.ts#L47)) refuses moves that can't work instead of half-doing them: armor for another class ([src/bungie/transfer.ts:68-69](../../src/bungie/transfer.ts#L68-L69)), and anything currently equipped, which Bungie won't move until something else is equipped ([src/bungie/transfer.ts:80](../../src/bungie/transfer.ts#L80)). The MCP tool tells the AI to use it only when the player asks ([src/server.ts:338](../../src/server.ts#L338)), and Bungie's error codes are turned into plain advice ([src/bungie/transfer.ts:27-34](../../src/bungie/transfer.ts#L27-L34)).
+`moveItems` ([src/bungie/transfer.ts:50](../../src/bungie/transfer.ts#L50)) refuses moves that can't work instead of half-doing them: armor for another class ([src/bungie/transfer.ts:68-69](../../src/bungie/transfer.ts#L68-L69)), and anything currently equipped, which Bungie won't move until something else is equipped ([src/bungie/transfer.ts:80](../../src/bungie/transfer.ts#L80)). The MCP tool tells the AI to use it only when the player asks ([src/server.ts:338](../../src/server.ts#L338)), and Bungie's error codes are turned into plain advice ([src/bungie/transfer.ts:27-34](../../src/bungie/transfer.ts#L27-L34)).
 
 In the Builds tab, equipping a build first shows every step it would take ("Dry run · nothing has changed yet") and runs them only when you confirm ([web/src/builds/ui.ts:1630](../../web/src/builds/ui.ts#L1630), [web/src/builds/equip.ts:41](../../web/src/builds/equip.ts#L41)).
 
 ## Perk switches
 
-Switching a weapon's perk is a single change you start by pressing **Apply** on a perk you previewed, so it has no separate dry run. It is limited to the weapon's own selectable options: the perk must be in that column, and its plug hash comes from the vault read, never from the page ([src/bungie/transfer.ts:136-146](../../src/bungie/transfer.ts#L136-L146)). Bungie only allows these "free" plug changes, and only in orbit, a social space or offline ([src/bungie/transfer.ts:131-135](../../src/bungie/transfer.ts#L131-L135)). See [Preview and switch a weapon's perks](../how-to/switch-weapon-perks.md).
+Switching a weapon's perk is a single change you start by pressing **Apply** on a perk you previewed, so it has no separate dry run. It is limited to the weapon's own selectable options: the perk must be in that column, and its plug hash comes from the vault read, never from the page ([src/bungie/transfer.ts:136-146](../../src/bungie/transfer.ts#L136-L146)). Bungie only allows these "free" plug changes, and only in orbit, a social space or offline ([src/bungie/transfer.ts:131-135](../../src/bungie/transfer.ts#L131-L135)). Weapon mods work the same way: the mod must be one listed for that socket, as read from the vault ([src/bungie/transfer.ts:159-170](../../src/bungie/transfer.ts#L159-L170)). See [Switch a weapon's perks and mods](../how-to/switch-weapon-perks.md).
+
+## Tags
+
+DIM tags change only when you pick one in the details panel or ask the AI to set one; they are written through DIM Sync ([report-template/site.html:2940-2958](../../report-template/site.html#L2940-L2958)). EVR tags, including the Alt+number shortcuts, are saved in your browser only and never reach DIM or the game ([report-template/site.html:2916-2939](../../report-template/site.html#L2916-L2939)).
 
 ## Vendors are read-only
 

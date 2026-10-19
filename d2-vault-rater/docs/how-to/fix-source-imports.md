@@ -21,13 +21,13 @@ Then refresh. Aliases are applied on every import ([src/sources/aegis.ts:166-170
 
 ## No tabs found / Google changed the sheet page
 
-The importer finds the sheet's tabs on its public page ([src/sources/aegis.ts:150-156](../../src/sources/aegis.ts#L150-L156)). If that stops working, list the tabs yourself in `settings.json`; they are added to whatever was found ([src/sources/aegis.ts:146-147](../../src/sources/aegis.ts#L146-L147)):
+The importer finds the sheet's tabs on its public page ([src/sources/aegis.ts:150-156](../../src/sources/aegis.ts#L150-L156)). If that stops working, list the tabs yourself in `settings.json`; they are added to whatever was found ([src/sources/aegis.ts:188](../../src/sources/aegis.ts#L188)):
 
 ```json
 { "aegisTabs": [{ "name": "SMGs", "gid": "1405969509" }] }
 ```
 
-The `gid` is the number after `#gid=` in the tab's URL. A tab is used only if it has a header row with Name, Tier and Perk 1 columns ([src/sources/aegis.ts:72-79](../../src/sources/aegis.ts#L72-L79)).
+The `gid` is the number after `#gid=` in the tab's URL. A weapon tab is used only if it has a header row with Name, Tier and Perk 1 columns; the Exotic Weapons tab, which has none of the perk columns, is read when it has Name, Tier and Usage ([src/sources/aegis.ts:116-125](../../src/sources/aegis.ts#L116-L125)) ([src/sources/aegis.ts:72-79](../../src/sources/aegis.ts#L72-L79)).
 
 If an import finds no weapons at all, the previous import is kept ([src/sources/aegis.ts:205-209](../../src/sources/aegis.ts#L205-L209)). In the web app, the snapshot shipped with the site is used when nothing has been imported yet ([web/src/sources.ts:41-47](../../web/src/sources.ts#L41-L47)).
 

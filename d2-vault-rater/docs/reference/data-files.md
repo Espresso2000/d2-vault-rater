@@ -11,7 +11,7 @@ Everything lives in one folder, `~/.d2-vault-rater` unless `VAULT_RATER_HOME` sa
 | `settings.json` | [Settings](settings.md) | [src/rating/settings.ts:121-125](../../src/rating/settings.ts#L121-L125) |
 | `dim-app.json` | The DIM API key registered for the rater | [src/dim/sync.ts:14](../../src/dim/sync.ts#L14) |
 | `dim-token.json` | DIM Sync access token and expiry | [src/dim/sync.ts:15](../../src/dim/sync.ts#L15) |
-| `manifest/<version>/<table>.lite.json` | Manifest tables cut down to the fields the rater reads, one folder per game version. The item table is `.lite.v3.json`, named for its strip format (3 added perk descriptions, [src/bungie/strip.ts:7-8](../../src/bungie/strip.ts#L7-L8)), so an older cache without perk icons or descriptions is rebuilt (a full `<table>.json` from older versions is stripped once and can be deleted) | [src/bungie/tables.ts:11-25](../../src/bungie/tables.ts#L11-L25), [src/bungie/manifest.ts:27-31](../../src/bungie/manifest.ts#L27-L31), [src/sources/activities.ts:85-91](../../src/sources/activities.ts#L85-L91) |
+| `manifest/<version>/<table>.lite.json` | Manifest tables cut down to the fields the rater reads, one folder per game version. The item table is `.lite.v6.json`, named for its strip format (now 6, [src/bungie/strip.ts:7-8](../../src/bungie/strip.ts#L7-L8)), so a cache made in an older format is rebuilt (a full `<table>.json` from older versions is stripped once and can be deleted) | [src/bungie/tables.ts:11-25](../../src/bungie/tables.ts#L11-L25), [src/bungie/manifest.ts:27-31](../../src/bungie/manifest.ts#L27-L31), [src/sources/activities.ts:85-91](../../src/sources/activities.ts#L85-L91) |
 | `manifest/entities-<version>.json` | Vendor, currency and Eververse cosmetic names and icons for the Vendors tab, per game version. Only the web app has a Vendors tab, so this file exists only there, in IndexedDB as `file:/vr/manifest/entities-<version>.json` | [src/vendors/vendors.ts:186-198](../../src/vendors/vendors.ts#L186-L198) |
 | `sources/aegis.json` | Imported tier list with matched item hashes | [src/sources/aegis.ts:39](../../src/sources/aegis.ts#L39) |
 | `sources/aliases.json` | Your own `{"Aegis name": "Manifest name"}` fixes, read on import | [src/sources/aegis.ts:40](../../src/sources/aegis.ts#L40), [src/sources/aegis.ts:166-170](../../src/sources/aegis.ts#L166-L170) |
@@ -33,13 +33,13 @@ The web app keeps the rater's "files" in memory and saves them to IndexedDB unde
 | Where | Key | Contents | Source |
 | --- | --- | --- | --- |
 | IndexedDB `vault-rater`, store `kv` | `file:/vr/...` | Settings, sources, applied plans, undo snapshots, saved builds | [web/src/idb.ts:2-3](../../web/src/idb.ts#L2-L3) |
-| same | `manifest-v3` | Stripped item database for one game version; the number is the strip format | [web/src/manifest.ts:11-12](../../web/src/manifest.ts#L11-L12) |
-| same | `build-defs-v2` | Builds tab definitions for one game version | [web/src/builds/defs.ts:14](../../web/src/builds/defs.ts#L14) |
+| same | `manifest-v6` | Stripped item database for one game version; the number is the strip format | [web/src/manifest.ts:11-12](../../web/src/manifest.ts#L11-L12) |
+| same | `build-defs-v3` | Builds tab definitions for one game version | [web/src/builds/defs.ts:14](../../web/src/builds/defs.ts#L14) |
 | `localStorage` | `vr-tokens` | Bungie tokens | [web/src/shims/client.ts:12](../../web/src/shims/client.ts#L12) |
 | `localStorage` | `vr-app-config` | API key and client id typed into the setup screen | [web/src/appConfig.ts:17](../../web/src/appConfig.ts#L17) |
 | `sessionStorage` | `vr-oauth-state`, `vr-return-hash` | Login in progress; the tab to return to | [web/src/shims/oauth.ts:5](../../web/src/shims/oauth.ts#L5), [web/src/shims/oauth.ts:14](../../web/src/shims/oauth.ts#L14) |
 | `sessionStorage` | `vr-dim-token` | DIM Sync token | [web/src/shims/sync.ts:15](../../web/src/shims/sync.ts#L15) |
-| `localStorage` | `vr-tab`, `vr-listmode`, `vr-perks`, `vr-new`, `vr-vendors-*`, `vr-bd-popmode` and others | The report page's display choices, New badges, the Vendors tab's choices and the Builds tab's popover mode (local app's page too, per origin) | [The report page](report-page.md#what-the-page-remembers) |
+| `localStorage` | `vr-tab`, `vr-listmode`, `vr-perks`, `vr-new`, `vr-evrtags`, `vr-customtags`, `vr-theme`, `vr-dmode`, `vr-vendors-*`, `vr-bd-popmode` and others | The report page's display choices, New badges, EVR tags and custom tag names, the colour theme, where details open, the Vendors tab's choices and the Builds tab's popover mode (local app's page too, per origin) | [The report page](report-page.md#what-the-page-remembers) |
 
 Saved builds are the file `/vr/builds.json` ([web/src/builds/store.ts:5](../../web/src/builds/store.ts#L5)), the Builds tab's sheet ratings are `/vr/sources/build-ratings.json` ([web/src/builds/ratings.ts:6](../../web/src/builds/ratings.ts#L6)), and its Destiny Clarity notes (only for the plugs the tab knows) are `/vr/sources/clarity.json` ([web/src/builds/ratings.ts:42](../../web/src/builds/ratings.ts#L42)).
 

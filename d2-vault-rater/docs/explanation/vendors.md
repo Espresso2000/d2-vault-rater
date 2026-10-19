@@ -2,7 +2,7 @@
 
 The web app's Vendors tab answers one question: of what vendors sell right now, what would the rater keep if it joined your vault? It reads each vendor's current stock for one character, scores every weapon and armor piece exactly as the vault is scored, and marks it **Worth buying**, **Maybe** or **Skip** ([web/src/vendors/ui.ts:1-5](../../web/src/vendors/ui.ts#L1-L5)). It only reads; buying happens in the game.
 
-The tab is web-only, built as its own JavaScript chunk that loads after the report draws ([web/src/main.ts:200-204](../../web/src/main.ts#L200-L204)), and it reads vendor stock from Bungie only when you first open it ([web/src/vendors/ui.ts:102-107](../../web/src/vendors/ui.ts#L102-L107)).
+The tab is web-only, built as its own JavaScript chunk that loads after the report draws ([web/src/main.ts:208-219](../../web/src/main.ts#L208-L219)), and it reads vendor stock from Bungie only when you first open it ([web/src/vendors/ui.ts:102-107](../../web/src/vendors/ui.ts#L102-L107)).
 
 ## Reading vendor stock
 
@@ -18,7 +18,7 @@ Each vendor's sale items are then decoded by the same code that decodes the vaul
 
 ## Rating a sale item
 
-`rateVendors` ([src/vendors/rate.ts:41](../../src/vendors/rate.ts#L41)) rates each sale item **together with your vault, one at a time**: the weapon is added to your weapons and the whole list is rated ([src/vendors/rate.ts:59-61](../../src/vendors/rate.ts#L59-L61)), and the same for armor ([src/vendors/rate.ts:71-73](../../src/vendors/rate.ts#L71-L73)). Its verdict therefore means "kept if it joined your vault": it competes with your own copies and archetype, never with other sale items ([src/vendors/rate.ts:1-5](../../src/vendors/rate.ts#L1-L5)). Your current settings and strictness apply, as do the rules in [How weapons are rated](weapon-rating.md) and [How armor is rated](armor-rating.md).
+`rateVendors` ([src/vendors/rate.ts:48](../../src/vendors/rate.ts#L48)) rates each sale item **together with your vault, one at a time**: the weapon is added to your weapons and the whole list is rated ([src/vendors/rate.ts:70-72](../../src/vendors/rate.ts#L70-L72)), and the same for armor ([src/vendors/rate.ts:82-85](../../src/vendors/rate.ts#L82-L85)). Its verdict therefore means "kept if it joined your vault": it competes with your own copies and archetype, never with other sale items ([src/vendors/rate.ts:1-5](../../src/vendors/rate.ts#L1-L5)). Your current settings and strictness apply, as do the rules in [How weapons are rated](weapon-rating.md) and [How armor is rated](armor-rating.md).
 
 The verdict becomes a buying call ([src/vendors/rate.ts:37-39](../../src/vendors/rate.ts#L37-L39)):
 
@@ -30,8 +30,8 @@ The verdict becomes a buying call ([src/vendors/rate.ts:37-39](../../src/vendors
 
 Two adjustments:
 
-- **Previews.** When Bungie returns no rolled perks for a sale item (a preview whose roll is decided when you buy it), the weapon is scored on the weapon alone, a reason says so, and a legendary that would be Worth buying is lowered to Maybe ([src/vendors/rate.ts:65-68](../../src/vendors/rate.ts#L65-L68)). Exotics keep their call, since their perks are fixed.
-- **Your best copy.** For each weapon the tab shows your best owned copy's score and how many you own, and adds "beats your best copy" to the reasons when the sale copy scores higher ([src/vendors/rate.ts:61-66](../../src/vendors/rate.ts#L61-L66), [src/vendors/rate.ts:62-64](../../src/vendors/rate.ts#L62-L64)).
+- **Previews.** When Bungie returns no rolled perks for a sale item (a preview whose roll is decided when you buy it), the weapon is scored on the weapon alone, a reason says so, and a legendary that would be Worth buying is lowered to Maybe ([src/vendors/rate.ts:76-79](../../src/vendors/rate.ts#L76-L79)). Exotics keep their call, since their perks are fixed.
+- **Your best copy.** For each weapon the tab shows your best owned copy's score and how many you own, and adds "beats your best copy" to the reasons when the sale copy scores higher ([src/vendors/rate.ts:61-66](../../src/vendors/rate.ts#L61-L66), [src/vendors/rate.ts:73-75](../../src/vendors/rate.ts#L73-L75)).
 
 ## What the tab shows
 
@@ -41,5 +41,7 @@ Two adjustments:
 - **Eververse** lists *Today only* (the daily featured offers, with time left) and *This week for Bright Dust*, each offer once ([web/src/vendors/ui.ts:215-231](../../web/src/vendors/ui.ts#L215-L231)).
 - The tab's count is the number of weapons worth buying, shown once stock is read ([web/src/vendors/ui.ts:127-131](../../web/src/vendors/ui.ts#L127-L131)).
 
-Stock is read once per character per visit and kept in memory; **Refresh** reads it again ([web/src/vendors/ui.ts:40-41](../../web/src/vendors/ui.ts#L40-L41), [web/src/vendors/ui.ts:77-103](../../web/src/vendors/ui.ts#L77-L103)). The chosen view, character, filter and collapsed cards are remembered in the browser ([web/src/vendors/ui.ts:59-67](../../web/src/vendors/ui.ts#L59-L67); keys in [The report page](../reference/report-page.md#what-the-page-remembers)). If your Bungie sign-in has expired, the tab says so instead of showing stock ([web/src/vendors/ui.ts:133-134](../../web/src/vendors/ui.ts#L133-L134)).
+While stock loads, the tab shows a loading block: first "Reading what vendors sell", then "Rating vendor stock…" with how many items are done. Rating takes tens of milliseconds per item, so it hands the page back between items and nothing freezes; if reading fails, **Try again** reads it again ([web/src/vendors/ui.ts:115-131](../../web/src/vendors/ui.ts#L115-L131), [web/src/vendors/ui.ts:244-250](../../web/src/vendors/ui.ts#L244-L250), [web/src/vendors/ui.ts:266-270](../../web/src/vendors/ui.ts#L266-L270), [src/vendors/rate.ts:41-60](../../src/vendors/rate.ts#L41-L60)). Resting the mouse on a vendor item shows the same hover card as your own gear ([web/src/vendors/ui.ts:32-33](../../web/src/vendors/ui.ts#L32-L33), [web/src/vendors/ui.ts:68](../../web/src/vendors/ui.ts#L68)).
+
+Stock is read once per character per visit and kept in memory; **Refresh** reads it again ([web/src/vendors/ui.ts:40-41](../../web/src/vendors/ui.ts#L40-L41), [web/src/vendors/ui.ts:109-143](../../web/src/vendors/ui.ts#L109-L143)). The chosen view, character, filter and collapsed cards are remembered in the browser ([web/src/vendors/ui.ts:59-67](../../web/src/vendors/ui.ts#L59-L67); keys in [The report page](../reference/report-page.md#what-the-page-remembers)). If your Bungie sign-in has expired, the tab says so instead of showing stock ([web/src/vendors/ui.ts:133-134](../../web/src/vendors/ui.ts#L133-L134)).
 

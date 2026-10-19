@@ -33,7 +33,7 @@ The web app has its own scripts in [web/package.json](../../web/package.json): `
 
 ## Local server routes
 
-`serve` listens on `127.0.0.1` ([src/cli.ts:195](../../src/cli.ts#L195)). POST requests must come from the page itself ([src/cli.ts:94-95](../../src/cli.ts#L94-L95)). The web app answers the same routes in the browser ([web/src/main.ts:223-268](../../web/src/main.ts#L223-L268)).
+`serve` listens on `127.0.0.1` ([src/cli.ts:195](../../src/cli.ts#L195)). POST requests must come from the page itself ([src/cli.ts:94-95](../../src/cli.ts#L94-L95)). The web app answers the same routes in the browser ([web/src/main.ts:238-287](../../web/src/main.ts#L238-L287)).
 
 | Route | Body | Does | Source |
 | --- | --- | --- | --- |
@@ -41,8 +41,9 @@ The web app has its own scripts in [web/package.json](../../web/package.json): `
 | `POST /api/refresh` | | Re-reads the vault and rebuilds the report; concurrent calls share one run. | [src/cli.ts:173-187](../../src/cli.ts#L173-L187) |
 | `POST /api/settings` | Settings panel fields | Saves preset, focus, protect list, per-type settings and DIM switches. | [src/cli.ts:142-151](../../src/cli.ts#L142-L151) |
 | `POST /api/tag` | `id`, `tag` or null, `notes?` | Sets or clears a DIM tag. | [src/cli.ts:96-107](../../src/cli.ts#L96-L107) |
-| `POST /api/move` | `ids`, `to`, `equip?` | Moves items, optionally equipping them. | [src/cli.ts:108-119](../../src/cli.ts#L108-L119) |
+| `POST /api/move` | `ids`, `to`, `equip?` | Moves items, optionally equipping them; postmaster items are pulled first. | [src/cli.ts:108-119](../../src/cli.ts#L108-L119) |
 | `POST /api/perk` | `id`, `socket`, `perk` | Switches a weapon's perk column to one of its own options in game ([how-to](../how-to/switch-weapon-perks.md)). | [src/cli.ts:120-130](../../src/cli.ts#L120-L130) |
+| `POST /api/mod` | `id`, `socket`, `mod` | Puts one of your unlocked weapon mods (or the empty socket) in a weapon's mod socket in game ([how-to](../how-to/switch-weapon-perks.md#switch-a-weapon-mod)). | [src/cli.ts:131-141](../../src/cli.ts#L131-L141) |
 | `POST /api/locks/apply` | `planId`, `confirm: true` | Applies the current plan only. | [src/cli.ts:153-163](../../src/cli.ts#L153-L163) |
 | `POST /api/locks/undo` | `planId` | Undoes an applied plan. | [src/cli.ts:164-172](../../src/cli.ts#L164-L172) |
 

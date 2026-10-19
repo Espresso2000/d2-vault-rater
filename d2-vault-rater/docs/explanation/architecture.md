@@ -17,7 +17,7 @@ The rating steps are the same everywhere: load the manifest, make sure the ratin
 - **Vault decoding**: [src/vault/decode.ts:81](../../src/vault/decode.ts#L81) turns a Bungie [`GetProfile`](https://bungie-net.github.io/multi/operation_get_Destiny2-GetProfile.html) response into plain `WeaponRecord` and `ArmorRecord` objects ([src/vault/types.ts:32](../../src/vault/types.ts#L32), [src/vault/types.ts:77](../../src/vault/types.ts#L77)). Nothing after this step reads Bungie's raw shapes.
 - **Sources**: Aegis's tier list ([src/sources/aegis.ts:180](../../src/sources/aegis.ts#L180)), community wishlists ([src/sources/wishlist.ts:44](../../src/sources/wishlist.ts#L44)), armor set tiers ([src/sources/armorSets.ts:99](../../src/sources/armorSets.ts#L99)) and raid and dungeon loot ([src/sources/activities.ts:96](../../src/sources/activities.ts#L96)).
 - **Rating**: weapons ([src/rating/weapons.ts:145](../../src/rating/weapons.ts#L145)), armor ([src/rating/armor.ts:97](../../src/rating/armor.ts#L97)), activities ([src/rating/activities.ts:57](../../src/rating/activities.ts#L57)) and encounter loadouts ([src/rating/encounters.ts:143](../../src/rating/encounters.ts#L143)). These are pure functions of their inputs.
-- **Actions**: the dry-run lock plan, apply and undo ([src/dim/actions.ts:46](../../src/dim/actions.ts#L46)), item moves ([src/bungie/transfer.ts:47](../../src/bungie/transfer.ts#L47)) and DIM tags ([src/dim/common.ts:55](../../src/dim/common.ts#L55)).
+- **Actions**: the dry-run lock plan, apply and undo ([src/dim/actions.ts:46](../../src/dim/actions.ts#L46)), item moves ([src/bungie/transfer.ts:50](../../src/bungie/transfer.ts#L50)) and DIM tags ([src/dim/common.ts:55](../../src/dim/common.ts#L55)).
 - **Report data**: [src/report/siteData.ts:14](../../src/report/siteData.ts#L14) shapes everything the report page draws. It does no file or network access, so the local report and the web app share it.
 
 ## How the web app reuses Node code
@@ -49,7 +49,7 @@ The report is a single HTML file, [report-template/site.html](../../report-templ
 
 ## Web-only tabs
 
-The web app adds two tabs the local report doesn't have, each a separate JavaScript chunk loaded after the report draws, so they don't slow the first paint ([web/src/main.ts:193-204](../../web/src/main.ts#L193-L204)). The report page shows a tab only when its chunk registered itself ([report-template/site.html:1148-1151](../../report-template/site.html#L1148-L1151)).
+The web app adds two tabs the local report doesn't have, each a separate JavaScript chunk loaded after the report draws, so they don't slow the first paint ([web/src/main.ts:194-219](../../web/src/main.ts#L194-L219)). The report page shows a tab only when its chunk registered itself ([report-template/site.html:1451-1454](../../report-template/site.html#L1451-L1454)).
 
 - **Vendors** ([web/src/vendors/](../../web/src/vendors/)): reads vendor stock with [src/vendors/vendors.ts](../../src/vendors/vendors.ts), decodes it with the vault decoder, and rates it with the shared rating code ([src/vendors/rate.ts](../../src/vendors/rate.ts)). See [The Vendors tab](vendors.md).
 - **Builds**, below.
@@ -58,4 +58,4 @@ The web build also injects an animated background ([web/src/background.html](../
 
 ## The Builds tab
 
-The web app also has a Builds tab (subclass, gear, mods and stat targets, rated and equippable). It lives in [web/src/builds/](../../web/src/builds/) and is loaded as its own chunk after the report draws ([web/src/main.ts:194-198](../../web/src/main.ts#L194-L198)). See [The Builds tab](builds-tab.md).
+The web app also has a Builds tab (subclass, gear, mods and stat targets, rated and equippable). It lives in [web/src/builds/](../../web/src/builds/) and is loaded as its own chunk after the report draws ([web/src/main.ts:194-206](../../web/src/main.ts#L194-L206)). See [The Builds tab](builds-tab.md).
