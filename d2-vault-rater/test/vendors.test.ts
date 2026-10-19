@@ -60,11 +60,11 @@ test("vendor stock decodes like vault items, with sale ids, prices and only gear
   assert.equal(z.sales[z.weapons.find((w) => w.name === "Mystery SMG")!.instanceId].rolled, false);
 });
 
-test("vendor weapons are rated against the vault: a god roll beats a meh copy you own", () => {
+test("vendor weapons are rated against the vault: a god roll beats a meh copy you own", async () => {
   const vault = decodeProfile(profile([{ id: "u2", hash: 1001, plugs: MEH }]), m);
   const stock = decodeVendors(vendors(), m, {});
   const settings = SettingsSchema.parse({});
-  const [z] = rateVendors(stock, vault, { aegis, wishlists: null, manifest: m, armorSets: null }, settings);
+  const [z] = await rateVendors(stock, vault, { aegis, wishlists: null, manifest: m, armorSets: null }, settings);
   const u = z.weapons.find((s) => s.rating.name === "Unforgiven")!;
   assert.equal(u.owned?.count, 1);
   assert.ok(u.rating.score > u.owned!.score);

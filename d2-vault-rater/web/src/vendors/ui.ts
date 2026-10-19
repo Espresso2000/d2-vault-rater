@@ -40,6 +40,8 @@ let charId = "";
 /** Rated stock by character id; a character's stock is read once per visit unless refreshed. */
 const stock = new Map<string, RatedVendor[]>();
 let loading: Promise<void> | null = null;
+/** Where a load is up to: reading from Bungie, then rating each item (done of total). */
+let progress: { phase: "reading" | "rating"; done: number; total: number } = { phase: "reading", done: 0, total: 0 };
 let error = "";
 type Kind = "weapons" | "armor" | "eververse";
 let kind: Kind = "weapons";
@@ -110,10 +112,18 @@ async function load(force = false) {
   if (force) stock.delete(id);
   error = "";
   draw();
+  progress = { phase: "reading", done: 0, total: 0 };
   loading = (async () => {
     try {
       const raw = await fetchVendors(id);
-      stock.set(id, rateVendors(raw, input.vault, { aegis: input.aegis, wishlists: loadWishlists(), manifest: input.manifest, armorSets: loadArmorSets() }, input.settings));
+      progress = { phase: "rating", done: 0, total: raw.reduce((n, v) => n + v.weapons.length + v.armor.length, 0) };
+      draw();
+      // Rating costs tens of milliseconds per item: it hands the page back between items so nothing freezes.
+      const rated = await rateVendors(raw, input.vault, { aegis: input.aegis, wishlists: loadWishlists(), manifest: input.manifest, armorSets: loadArmorSets() }, input.settings, (done, total) => {
+        progress = { phase: "rating", done, total };
+        updateProgress();
+      });
+      stock.set(id, rated);
       // The tab's count (weapons worth buying) is only known once stock is read.
       const tab = document.querySelector("#t-vendors");
       tab?.querySelector(".count")?.remove();
@@ -231,6 +241,18 @@ function vendorBlock(v: RatedVendor) {
   return section(String(v.vendorHash), `${v.icon ? `<img class="vico" src="${esc(v.icon)}" alt="">` : ""}<div><h3>${esc(v.name)}</h3><div class="sm">${sub}</div></div>`, `<div class="vcards">${shown.map(card).join("")}</div>`, shown.length);
 }
 
+const loadingText = (): [string, string] =>
+  progress.phase === "rating" && progress.total
+    ? ["Rating vendor stock…", `${Math.min(progress.done, progress.total)} of ${progress.total} items rated against your vault.`]
+    : ["Reading vendor stock…", "Asking Bungie what every vendor sells right now, then rating it against your vault."];
+/** Updates the loading message in place, so progress doesn't redraw the panel. */
+const updateProgress = () => {
+  const [title, detail] = loadingText();
+  const box = panel?.querySelector(".vr-loading");
+  if (box?.querySelector("b")) box.querySelector("b")!.textContent = title;
+  if (box?.querySelector("p")) box.querySelector("p")!.textContent = detail;
+};
+
 function draw() {
   if (!panel) return;
   tips.clear();
@@ -245,7 +267,7 @@ function draw() {
   const body = error
     ? `<p class="vr-err">${esc(error)}</p><button class="btn" type="button" id="vd-retry">Try again</button>`
     : !list
-      ? loadingBlock("Reading vendor stock…", "Asking Bungie what every vendor sells right now, then rating it against your vault.")
+      ? loadingBlock(...loadingText())
       : kind === "eververse"
         ? offersBlock(list)
         : blocks ? `<div class="vgrid">${blocks}</div>` : `<p class="muted">${onlyBuy ? "Nothing here is worth buying right now." : `No vendor is selling ${kind} right now.`}</p>`;
