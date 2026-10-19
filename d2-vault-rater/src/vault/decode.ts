@@ -217,6 +217,8 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
         const pci = s.plugHash ? m.items[s.plugHash]?.plug?.plugCategoryIdentifier ?? "" : "";
         if (/archetype/i.test(pci)) archetype = plugName(m, s.plugHash) || null;
       }
+      // An exotic's trait is its intrinsic plug.
+      const trait = rarity(def) === "Exotic" ? plugOf(m, sockets.find((s) => m.items[s.plugHash ?? 0]?.plug?.plugCategoryIdentifier === "intrinsics")?.plugHash) : null;
       const setHash = def.equippingBlock?.equipableItemSetHash;
       armor.push({
         kind: "armor",
@@ -231,6 +233,7 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
         stats,
         statTotal: Object.values(stats).reduce((a, b) => a + b, 0),
         archetype,
+        trait,
         setName: setHash ? m.itemSets[setHash]?.displayProperties?.name ?? null : null,
         legacy: archetype === null,
         locked: (item.state & STATE_LOCKED) !== 0,

@@ -2131,7 +2131,7 @@ function vrMain() {
   const setRows = (si) => [2, 4].map((n) => { const b = si?.bonuses.find((x) => x.pieces === n); return `<div class="vtaegis"><span class="tier t${b?.tier || "U"}">${b?.tier || "—"}</span><span><b>${n} piece bonus</b>${b ? " · " + esc(b.name) : ""}</span></div>`; }).join("");
   const tipHtml = (w, a, s) => s ? `<div class="nm"><span>${esc(s.name)}</span></div>${setRows(s)}` : w
     ? `${tipTop(w, `<span class="vtel" style="--el:var(--${esc(w.e)})">${esc(w.e)}</span> ${esc(typeLine(w))}`)}<div class="vtaegis">${tierBadge(w)}<span>${w.tier ? "tier gun according to Aegis" : "Unrated: not on Aegis's sheet"}</span></div><div class="vtaegis"><b>${w.rs ?? "—"}/100</b><span>Aegis god roll match</span></div><div class="vtrows">${perkRows(w)}</div>`
-    : `${tipTop(a, `${esc(a.cls)} · ${esc(a.arch || "Legacy")}${setLine(a)}`)}${statBars(a, true)}<div class="sm">${a.tot} total${topStat(a) ? ` · highest ${esc(topStat(a))}` : ""}${a.loc ? " · " + esc(a.loc) : ""}</div>${a.si && !isExotic(a) ? setRows(a.si) : ""}`;
+    : `${tipTop(a, `${esc(a.cls)} · ${esc(a.arch || "Legacy")}${setLine(a)}`)}${statBars(a, true)}<div class="sm">${a.tot} total${topStat(a) ? ` · highest ${esc(topStat(a))}` : ""}${a.loc ? " · " + esc(a.loc) : ""}</div>${a.si && !isExotic(a) ? setRows(a.si) : ""}${a.trait ? `<div class="vtaegis"><b>${esc(a.trait.n)}</b></div><div class="sm">${esc(a.trait.d)}</div>` : ""}`;
   // Anything showing one item gets the card: data-w / data-a for your own gear, data-vt for items another module rates
   // (the web app's Vendors tab answers window.VR_TIP(id) with { w } or { a }). Not on Overview or Wrapped.
   const HOVER = "[data-w], [data-a], [data-vt], [data-set]";
