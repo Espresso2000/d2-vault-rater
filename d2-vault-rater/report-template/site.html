@@ -109,6 +109,14 @@ button { cursor: pointer; }
 .tabrow { display: flex; }
 nav.tabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; min-width: 0; }
 nav.tabs::-webkit-scrollbar { display: none; }
+.tabsx { position: relative; flex: 1; min-width: 0; }
+nav.tabs { -webkit-mask: linear-gradient(90deg, transparent, #000 var(--fl, 0px), #000 calc(100% - var(--fr, 0px)), transparent); mask: linear-gradient(90deg, transparent, #000 var(--fl, 0px), #000 calc(100% - var(--fr, 0px)), transparent); }
+.tscroll { position: absolute; top: 50%; z-index: 2; display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border-radius: 50%; border: 1px solid var(--line-hi); background: rgba(14,20,48,.92); color: var(--ink); transform: translateY(-50%); opacity: 0; pointer-events: none; transition: opacity .2s ease, border-color .2s ease; }
+.tscroll::before { content: ""; width: 7px; height: 7px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; }
+.tscroll.l { left: 0; } .tscroll.l::before { transform: translateX(1px) rotate(135deg); }
+.tscroll.r { right: 0; } .tscroll.r::before { transform: translateX(-1px) rotate(-45deg); }
+.tscroll:hover { border-color: var(--green); }
+.tabsx.can-l .tscroll.l, .tabsx.can-r .tscroll.r { opacity: 1; pointer-events: auto; }
 nav.tabs button { position: relative; display: inline-flex; align-items: center; gap: 9px; height: 56px; padding: 0 16px; border: 0; background: none; font: 500 15.5px/1 var(--display); letter-spacing: .01em; color: var(--muted); white-space: nowrap; transition: color .2s ease, background .2s ease; isolation: isolate; }
 nav.tabs button svg { width: 19px; height: 19px; fill: currentColor; opacity: .7; transition: opacity .2s ease, filter .2s ease, transform .2s ease; }
 nav.tabs button::after { content: ""; position: absolute; left: 14px; right: 14px; top: 0; height: 3px; border-radius: 0 0 3px 3px; background: var(--grad); box-shadow: 0 0 14px rgba(var(--c3),.7); transform: scaleX(0); transition: transform .3s cubic-bezier(.2,.8,.2,1); }
@@ -1104,7 +1112,10 @@ body.vr-booting > .topbar, body.vr-booting > main, body.vr-booting > footer { di
   .topbar { display: flex; align-items: center; gap: 24px; padding-inline: max(var(--pad), (100% - var(--page)) / 2 + var(--pad)); }
   .topbar > .wrap { display: contents; }
   .brand { margin-right: 0; }
-  .tabrow nav.tabs { order: 1; flex: 1; justify-content: center; gap: clamp(4px, .4vw, 16px); }
+  .tabrow .tabsx { order: 1; }
+  .tabrow nav.tabs { gap: clamp(4px, .4vw, 16px); }
+  .tabrow nav.tabs > :first-child { margin-left: auto; }
+  .tabrow nav.tabs > :last-child { margin-right: auto; }
   .bar-actions { order: 2; flex: none; }
   .gsearch input { width: clamp(220px, 12vw, 320px); }
   nav.tabs button { height: 76px; }
@@ -1193,7 +1204,7 @@ body.vr-booting > .topbar, body.vr-booting > main, body.vr-booting > footer { di
       <label class="gsearch"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="gq" placeholder="Search your vault" aria-label="Search weapons and armor" autocomplete="off"><kbd aria-hidden="true">/</kbd></label>
     </div>
   </div>
-  <div class="wrap tabrow"><nav class="tabs" role="tablist" aria-label="Report sections" id="tabs"></nav></div>
+  <div class="wrap tabrow"><div class="tabsx" id="tabsx"><nav class="tabs" role="tablist" aria-label="Report sections" id="tabs"></nav><button type="button" tabindex="-1" aria-hidden="true" title="More tabs" class="tscroll l"></button><button type="button" tabindex="-1" aria-hidden="true" title="More tabs" class="tscroll r"></button></div></div>
 </header>
 
 <main class="wrap">
@@ -1452,6 +1463,23 @@ function vrMain() {
   for (const el of [tgroup, tmenu]) el.addEventListener("focusout", (e) => { if (!tgroup.contains(e.relatedTarget) && !tmenu.contains(e.relatedTarget)) closeMenu(); });
   document.addEventListener("pointerdown", (e) => { if (!tmenu.hidden && !tmenu.contains(e.target) && !tgroup.contains(e.target)) closeMenu(); });
   addEventListener("scroll", () => closeMenu(), { passive: true });
+  const tabsNav = $("#tabs"), tabsX = $("#tabsx");
+  function tabsEdges() {
+    const max = tabsNav.scrollWidth - tabsNav.clientWidth, l = tabsNav.scrollLeft > 2, r = tabsNav.scrollLeft < max - 2;
+    tabsNav.style.setProperty("--fl", l ? "56px" : "0px"); tabsNav.style.setProperty("--fr", r ? "56px" : "0px");
+    tabsX.classList.toggle("can-l", l); tabsX.classList.toggle("can-r", r);
+  }
+  if (!tabsX.dataset.ready) {
+    tabsX.dataset.ready = "1";
+    tabsNav.addEventListener("scroll", () => { tabsEdges(); closeMenu(); }, { passive: true });
+    tabsNav.addEventListener("wheel", (e) => {
+      if (Math.abs(e.deltaY) <= Math.abs(e.deltaX) || tabsNav.scrollWidth <= tabsNav.clientWidth) return;
+      e.preventDefault(); tabsNav.scrollLeft += e.deltaY;
+    }, { passive: false });
+    tabsX.addEventListener("click", (e) => { const b = e.target.closest(".tscroll"); if (b) tabsNav.scrollBy({ left: (b.classList.contains("l") ? -1 : 1) * tabsNav.clientWidth * 0.7, behavior: "smooth" }); });
+    new ResizeObserver(tabsEdges).observe(tabsNav);
+  }
+  tabsEdges();
   if (window.VR_LOCAL && !$("#gear")) {
     $("#bar-actions").insertAdjacentHTML("beforeend", `<button class="btn rerate" id="rerate" type="button" title="Read your vault from Bungie again and re-rate it">Re-rate</button>`);
     $("#rerate").onclick = rerate;
