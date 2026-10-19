@@ -58,9 +58,11 @@
   --pad: clamp(16px, 2.5vw, 56px);
   --shadow: 0 24px 60px -30px rgba(0,0,0,.9);
 }
-:root[data-theme=purple-orange] { --c1: 150,100,255; --c2: 214,110,170; --c3: 255,150,60; --c4: 255,190,110; }
-:root[data-theme=blue-purple] { --c1: 77,125,255; --c2: 120,130,255; --c3: 168,110,255; --c4: 200,150,255; }
-:root[data-theme=pink-purple] { --c1: 168,110,255; --c2: 205,110,235; --c3: 255,110,190; --c4: 255,160,215; }
+[data-theme=blue-green] { --c1: 77,125,255; --c2: 54,196,242; --c3: 51,227,160; --c4: 106,245,184; }
+[data-theme=purple-orange] { --c1: 150,100,255; --c2: 214,110,170; --c3: 255,150,60; --c4: 255,190,110; }
+[data-theme=blue-purple] { --c1: 77,125,255; --c2: 120,130,255; --c3: 168,110,255; --c4: 200,150,255; }
+[data-theme=pink-purple] { --c1: 168,110,255; --c2: 205,110,235; --c3: 255,110,190; --c4: 255,160,215; }
+#theme .tsw { display: inline-block; flex: none; width: 54px; height: 16px; border-radius: 999px; vertical-align: -3px; margin-right: 6px; background: linear-gradient(110deg, rgb(var(--c1)), rgb(var(--c2)) 35%, rgb(var(--c3)) 65%, rgb(var(--c4))); box-shadow: 0 0 0 1px var(--line-hi), 0 0 12px -2px rgba(var(--c3), .6); }
 * { box-sizing: border-box; }
 html { background: var(--void); scroll-padding-top: calc(var(--bar-h) + 16px); }
 body { margin: 0; color: var(--ink); font: 15px/1.55 var(--body); font-feature-settings: "cv11", "ss01"; background: var(--void); min-height: 100vh; overflow-x: clip; -webkit-font-smoothing: antialiased; }
@@ -2519,7 +2521,7 @@ function vrMain() {
         <div class="toggles" id="perkmode"><label><input type="radio" name="perkmode" value="symbols" ${perkSymbols ? "checked" : ""}> <span>Show perks as symbols, with the name on hover</span></label>
         <label><input type="radio" name="perkmode" value="names" ${perkSymbols ? "" : "checked"}> <span>Show perk names</span></label></div>
         <div class="toggles" id="theme"><span class="small muted">Colour theme</span>
-        ${THEMES.map(([v, l]) => `<label><input type="radio" name="theme" value="${v}" ${theme === v ? "checked" : ""}> <span>${l}</span></label>`).join("")}</div>
+        ${THEMES.map(([v, l]) => `<label><input type="radio" name="theme" value="${v}" ${theme === v ? "checked" : ""}> <span><i class="tsw" data-theme="${v}"></i>${l}</span></label>`).join("")}</div>
         <div class="toggles" id="dmode"><span class="small muted">Item details open as</span>
         <label><input type="radio" name="dmode" value="dock" ${dMode === "dock" ? "checked" : ""}> <span>A sidebar: the page makes room, so you can keep browsing beside it</span></label>
         <label><input type="radio" name="dmode" value="modal" ${dMode === "modal" ? "checked" : ""}> <span>A pop-up in the middle, with the page blurred behind it</span></label>
