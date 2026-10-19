@@ -21,7 +21,7 @@ Then run `rate_weapons` or `rate_armor` again; the new settings make the server 
 
 ## In the report page
 
-Open **Settings** (the gear button). Preset, focus, per-type presets and the protect list are saved by the page's `/api/settings` call ([src/rating/settings.ts:127-142](../../src/rating/settings.ts#L127-L142)). **Save and re-rate** saves them and rates your vault again; the web app re-rates when the page reloads ([web/src/main.ts:226-228](../../web/src/main.ts#L226-L228)).
+Open **Settings** (the gear button). Preset, focus, per-type presets and the protect list are saved by the page's `/api/settings` call ([src/rating/settings.ts:127-142](../../src/rating/settings.ts#L127-L142)). **Save and re-rate** saves them and rates your vault again; the web app re-rates when the page reloads ([web/src/main.ts:241-243](../../web/src/main.ts#L241-L243)).
 
 ## By editing settings.json
 
@@ -39,4 +39,4 @@ Values are checked when settings load ([src/rating/settings.ts:117-119](../../sr
 
 ## Armor
 
-Armor reads the global preset and overrides only (`armorCopies`, `legacyArmor`, and whether `armor` is in `unlock`) ([src/rating/armor.ts:97](../../src/rating/armor.ts#L97), [src/dim/actions.ts:60-65](../../src/dim/actions.ts#L60-L65)). To change which stats armor is judged against, set `buildStats`, e.g. `{ "Hunter": ["Grenade", "Weapons"] }` ([src/rating/armor.ts:76-78](../../src/rating/armor.ts#L76-L78)).
+Armor reads the global preset and overrides only (`armorCopies`, `legacyArmor`, and whether `armor` is in `unlock`) ([src/rating/armor.ts:98](../../src/rating/armor.ts#L98), [src/dim/actions.ts:60-65](../../src/dim/actions.ts#L60-L65)). To change which stats armor is judged against, set `buildStats`, e.g. `{ "Hunter": ["Grenade", "Weapons"] }` ([src/rating/armor.ts:77-79](../../src/rating/armor.ts#L77-L79)).

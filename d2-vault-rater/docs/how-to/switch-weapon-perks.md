@@ -17,16 +17,16 @@ In a served page (local app or web app), a previewed perk gets an **Apply** butt
 2. Press **Apply**. The page sends `POST /api/perk` with the weapon id, the column's socket index and the perk name ([report-template/site.html:2366-2380](../../report-template/site.html#L2366-L2380)).
 3. On success the drawer and every list show the new perk and "Switched to … in game" ([report-template/site.html:2373-2377](../../report-template/site.html#L2373-L2377)).
 
-Behind it, `insertPerk` checks the perk is one of that column's own options, looks up its plug hash, and calls Bungie's [InsertSocketPlugFree](https://bungie-net.github.io/multi/operation_post_Destiny2-InsertSocketPlugFree.html) action ([src/bungie/transfer.ts:118-145](../../src/bungie/transfer.ts#L118-L145)). It needs the **Move or equip your gear** scope the app already asks for. A weapon in the vault still needs a character id for the call, so the first character is used ([src/bungie/transfer.ts:129](../../src/bungie/transfer.ts#L129)). If the perk is already equipped, nothing is sent ([src/bungie/transfer.ts:137](../../src/bungie/transfer.ts#L137)). The local server and the web app answer the route the same way ([src/cli.ts:120-130](../../src/cli.ts#L120-L130), [web/src/main.ts:248-251](../../web/src/main.ts#L248-L251)).
+Behind it, `insertPerk` checks the perk is one of that column's own options, looks up its plug hash, and calls Bungie's [InsertSocketPlugFree](https://bungie-net.github.io/multi/operation_post_Destiny2-InsertSocketPlugFree.html) action ([src/bungie/transfer.ts:131-158](../../src/bungie/transfer.ts#L131-L158)). It needs the **Move or equip your gear** scope the app already asks for. A weapon in the vault still needs a character id for the call, so the first character is used ([src/bungie/transfer.ts:142](../../src/bungie/transfer.ts#L142)). If the perk is already equipped, nothing is sent ([src/bungie/transfer.ts:150](../../src/bungie/transfer.ts#L150)). The local server and the web app answer the route the same way ([src/cli.ts:120-130](../../src/cli.ts#L120-L130), [web/src/main.ts:263-266](../../web/src/main.ts#L263-L266)).
 
-The column's socket index and the plug hash per option are recorded when the vault is read ([src/vault/decode.ts:128-129](../../src/vault/decode.ts#L128-L129), [src/vault/types.ts:19-21](../../src/vault/types.ts#L19-L21)). Reports made before that have no socket index, so they show the preview without **Apply** ([report-template/site.html:2363](../../report-template/site.html#L2363)).
+The column's socket index and the plug hash per option are recorded when the vault is read ([src/vault/decode.ts:148-149](../../src/vault/decode.ts#L148-L149), [src/vault/types.ts:19-21](../../src/vault/types.ts#L19-L21)). Reports made before that have no socket index, so they show the preview without **Apply** ([report-template/site.html:2363](../../report-template/site.html#L2363)).
 
 ## If it fails
 
 | Message | Cause |
 | --- | --- |
-| … isn't a perk you can select on this … | The option isn't in the weapon's column any more; re-rate ([src/bungie/transfer.ts:128](../../src/bungie/transfer.ts#L128)). |
-| Bungie won't allow that right now | You're in an activity; go to orbit or the Tower ([src/bungie/transfer.ts:28](../../src/bungie/transfer.ts#L28)). |
+| … isn't a perk you can select on this … | The option isn't in the weapon's column any more; re-rate ([src/bungie/transfer.ts:141](../../src/bungie/transfer.ts#L141)). |
+| Bungie won't allow that right now | You're in an activity; go to orbit or the Tower ([src/bungie/transfer.ts:31](../../src/bungie/transfer.ts#L31)). |
 | Bungie won't switch to that perk from outside the game | The perk isn't unlocked or isn't free to change from the API ([src/bungie/transfer.ts:29](../../src/bungie/transfer.ts#L29)). |
 
 There is no MCP tool for switching perks; it is only in the report page. Why there is no dry run here: [Safety](../explanation/safety.md#perk-switches).

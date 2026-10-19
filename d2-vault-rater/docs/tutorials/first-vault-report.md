@@ -45,7 +45,7 @@ On Windows you can double-click `Vault Rater.cmd` instead, in the folder above `
 1. A browser window opens on bungie.net. Approve the app.
 2. The browser then goes to `https://localhost:7777/callback?code=...` and shows an error. That is expected. Copy the whole address from the address bar and paste it into the terminal ([src/cli.ts:56-65](../../src/cli.ts#L56-L65)).
 3. The terminal lists what it is doing: downloading the manifest, importing Aegis's tier list, the wishlist, armor set tiers and raid loot ([src/pipeline.ts:33-46](../../src/pipeline.ts#L33-L46)), then reading and rating your vault ([src/pipeline.ts:65-82](../../src/pipeline.ts#L65-L82)). The first run takes a few minutes; later runs reuse the downloads ([caching](../explanation/caching.md)).
-4. Your report opens at <http://localhost:7780>. Keep the terminal open while you use it ([src/cli.ts:184-189](../../src/cli.ts#L184-L189)).
+4. Your report opens at <http://localhost:7780>. Keep the terminal open while you use it ([src/cli.ts:195-200](../../src/cli.ts#L195-L200)).
 
 The terminal ends with a summary like:
 
@@ -68,7 +68,7 @@ To apply it: npm run vault -- apply 2026-10-08T16-40-12-118Z-a3f9c1
 - **R&Ds**: raids and dungeons ranked by what they would add to your vault, with a loadout from your vault for every encounter.
 - **Wrapped**: your account at a glance: characters, PvE and PvP totals, kills by weapon type, top weapons and titles.
 
-If something you want to keep is on the shard list, [protect it](../how-to/protect-items.md); if the list is too long or too short, [change the strictness](../how-to/tune-strictness.md). Press **Re-rate** in the top bar to see the change ([src/cli.ts:162-176](../../src/cli.ts#L162-L176)).
+If something you want to keep is on the shard list, [protect it](../how-to/protect-items.md); if the list is too long or too short, [change the strictness](../how-to/tune-strictness.md). Press **Re-rate** in the top bar to see the change ([src/cli.ts:173-187](../../src/cli.ts#L173-L187)).
 
 ## Next
 

@@ -7,16 +7,16 @@ Vault Rater has one rating core and three ways to run it: an MCP tool server for
 | Front end | Entry point | What it adds |
 | --- | --- | --- |
 | MCP server | [src/server.ts:32](../../src/server.ts#L32) | Registers the tools an AI calls ([reference](../reference/mcp-tools.md)) and serves `skill/SKILL.md` as the `vault_review` prompt ([src/server.ts:118](../../src/server.ts#L118)). |
-| CLI and local server | [src/cli.ts:191](../../src/cli.ts#L191) | Runs the whole pipeline without an AI ([src/pipeline.ts:56](../../src/pipeline.ts#L56)) and serves the report on `127.0.0.1` ([src/cli.ts:184](../../src/cli.ts#L184)). |
-| Web app | [web/src/main.ts:121](../../web/src/main.ts#L121) | Signs in with Bungie in the browser, then runs the same steps and renders the same report template. |
+| CLI and local server | [src/cli.ts:202](../../src/cli.ts#L202) | Runs the whole pipeline without an AI ([src/pipeline.ts:56](../../src/pipeline.ts#L56)) and serves the report on `127.0.0.1` ([src/cli.ts:195](../../src/cli.ts#L195)). |
+| Web app | [web/src/main.ts:122](../../web/src/main.ts#L122) | Signs in with Bungie in the browser, then runs the same steps and renders the same report template. |
 
-The rating steps are the same everywhere: load the manifest, make sure the rating sources are fresh, read the vault, optionally read DIM Sync data, rate weapons and armor, draft a lock plan, rate raids and dungeons, and build the report data. Compare [src/pipeline.ts:56-90](../../src/pipeline.ts#L56-L90) with [web/src/main.ts:121-191](../../web/src/main.ts#L121-L191).
+The rating steps are the same everywhere: load the manifest, make sure the rating sources are fresh, read the vault, optionally read DIM Sync data, rate weapons and armor, draft a lock plan, rate raids and dungeons, and build the report data. Compare [src/pipeline.ts:56-90](../../src/pipeline.ts#L56-L90) with [web/src/main.ts:122-192](../../web/src/main.ts#L122-L192).
 
 ## The shared modules
 
-- **Vault decoding**: [src/vault/decode.ts:71](../../src/vault/decode.ts#L71) turns a Bungie [`GetProfile`](https://bungie-net.github.io/multi/operation_get_Destiny2-GetProfile.html) response into plain `WeaponRecord` and `ArmorRecord` objects ([src/vault/types.ts:30](../../src/vault/types.ts#L30), [src/vault/types.ts:53](../../src/vault/types.ts#L53)). Nothing after this step reads Bungie's raw shapes.
-- **Sources**: Aegis's tier list ([src/sources/aegis.ts:138](../../src/sources/aegis.ts#L138)), community wishlists ([src/sources/wishlist.ts:44](../../src/sources/wishlist.ts#L44)), armor set tiers ([src/sources/armorSets.ts:99](../../src/sources/armorSets.ts#L99)) and raid and dungeon loot ([src/sources/activities.ts:96](../../src/sources/activities.ts#L96)).
-- **Rating**: weapons ([src/rating/weapons.ts:141](../../src/rating/weapons.ts#L141)), armor ([src/rating/armor.ts:96](../../src/rating/armor.ts#L96)), activities ([src/rating/activities.ts:57](../../src/rating/activities.ts#L57)) and encounter loadouts ([src/rating/encounters.ts:83](../../src/rating/encounters.ts#L83)). These are pure functions of their inputs.
+- **Vault decoding**: [src/vault/decode.ts:81](../../src/vault/decode.ts#L81) turns a Bungie [`GetProfile`](https://bungie-net.github.io/multi/operation_get_Destiny2-GetProfile.html) response into plain `WeaponRecord` and `ArmorRecord` objects ([src/vault/types.ts:32](../../src/vault/types.ts#L32), [src/vault/types.ts:77](../../src/vault/types.ts#L77)). Nothing after this step reads Bungie's raw shapes.
+- **Sources**: Aegis's tier list ([src/sources/aegis.ts:180](../../src/sources/aegis.ts#L180)), community wishlists ([src/sources/wishlist.ts:44](../../src/sources/wishlist.ts#L44)), armor set tiers ([src/sources/armorSets.ts:99](../../src/sources/armorSets.ts#L99)) and raid and dungeon loot ([src/sources/activities.ts:96](../../src/sources/activities.ts#L96)).
+- **Rating**: weapons ([src/rating/weapons.ts:145](../../src/rating/weapons.ts#L145)), armor ([src/rating/armor.ts:97](../../src/rating/armor.ts#L97)), activities ([src/rating/activities.ts:57](../../src/rating/activities.ts#L57)) and encounter loadouts ([src/rating/encounters.ts:143](../../src/rating/encounters.ts#L143)). These are pure functions of their inputs.
 - **Actions**: the dry-run lock plan, apply and undo ([src/dim/actions.ts:46](../../src/dim/actions.ts#L46)), item moves ([src/bungie/transfer.ts:47](../../src/bungie/transfer.ts#L47)) and DIM tags ([src/dim/common.ts:55](../../src/dim/common.ts#L55)).
 - **Report data**: [src/report/siteData.ts:14](../../src/report/siteData.ts#L14) shapes everything the report page draws. It does no file or network access, so the local report and the web app share it.
 
@@ -44,8 +44,8 @@ The parts of those modules that are the same in both places live in browser-safe
 The report is a single HTML file, [report-template/site.html](../../report-template/site.html), with its CSS and JavaScript inline.
 
 - The local app fills in the data, the image map and the title, then writes the page to the reports folder ([src/report/site.ts:62-75](../../src/report/site.ts#L62-L75)). Images are embedded as data URIs so the file works offline ([src/report/site.ts:20](../../src/report/site.ts#L20)).
-- The web build injects the sign-in shell and the app script into the same template ([web/vite.config.ts:37-54](../../web/vite.config.ts#L37-L54)). After rating, the app passes the data to `window.VR_START` ([web/src/main.ts:189](../../web/src/main.ts#L189)). There, images load straight from bungie.net ([web/src/main.ts:155-157](../../web/src/main.ts#L155-L157)).
-- The page's buttons call `/api/...` routes. The local server answers them over HTTP ([src/cli.ts:92](../../src/cli.ts#L92)); in the web app, `window.VR_API` answers the same routes in the browser ([web/src/main.ts:223](../../web/src/main.ts#L223)). Both read the Settings panel's changes with the same function ([src/rating/settings.ts:131](../../src/rating/settings.ts#L131)).
+- The web build injects the sign-in shell and the app script into the same template ([web/vite.config.ts:37-54](../../web/vite.config.ts#L37-L54)). After rating, the app passes the data to `window.VR_START` ([web/src/main.ts:190](../../web/src/main.ts#L190)). There, images load straight from bungie.net ([web/src/main.ts:156-158](../../web/src/main.ts#L156-L158)).
+- The page's buttons call `/api/...` routes. The local server answers them over HTTP ([src/cli.ts:92](../../src/cli.ts#L92)); in the web app, `window.VR_API` answers the same routes in the browser ([web/src/main.ts:238](../../web/src/main.ts#L238)). Both read the Settings panel's changes with the same function ([src/rating/settings.ts:131](../../src/rating/settings.ts#L131)).
 
 ## Web-only tabs
 

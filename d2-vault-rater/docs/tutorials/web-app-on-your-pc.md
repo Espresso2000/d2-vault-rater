@@ -29,13 +29,13 @@ A small local server runs next to the page in this mode only ([web/local-server.
 
 ## 3. Sign in
 
-Open <https://localhost:7777> and press **Sign in with Bungie**. Bungie sends you back to the page, which finishes the sign-in itself ([web/src/main.ts:271-294](../../web/src/main.ts#L271-L294)). Next time you open the page you go straight in: an expired access token is renewed with the refresh token your Confidential app gets ([web/src/main.ts:286-287](../../web/src/main.ts#L286-L287), [web/src/shims/client.ts:69-71](../../web/src/shims/client.ts#L69-L71)).
+Open <https://localhost:7777> and press **Sign in with Bungie**. Bungie sends you back to the page, which finishes the sign-in itself ([web/src/main.ts:290-313](../../web/src/main.ts#L290-L313)). Next time you open the page you go straight in: an expired access token is renewed with the refresh token your Confidential app gets ([web/src/main.ts:305-306](../../web/src/main.ts#L305-L306), [web/src/shims/client.ts:69-71](../../web/src/shims/client.ts#L69-L71)).
 
 The page then shows its progress while it:
 
 1. loads the item database: from the browser's cache, a snapshot, or by building it from bungie.net the first time ([web/src/manifest.ts:9-26](../../web/src/manifest.ts#L9-L26));
 2. imports the tier list, wishlist, armor sets and raid loot when they are over a day old ([web/src/sources.ts:26-88](../../web/src/sources.ts#L26-L88));
-3. reads and rates your vault and draws the report ([web/src/main.ts:121-191](../../web/src/main.ts#L121-L191)).
+3. reads and rates your vault and draws the report ([web/src/main.ts:122-192](../../web/src/main.ts#L122-L192)).
 
 The report has the local app's tabs plus **Vendors** and **Builds**, and its buttons work the same way ([web/src/main.ts:223-268](../../web/src/main.ts#L223-L268)).
 
@@ -43,12 +43,12 @@ The report has the local app's tabs plus **Vendors** and **Builds**, and its but
 
 Open **Builds**. The first time, it downloads subclass, aspect and fragment definitions, the community build ratings and Destiny Clarity's notes ([web/src/builds/ui.ts:121-141](../../web/src/builds/ui.ts#L121-L141)).
 
-1. Under **Saved builds**, pick your class and press **New … build** on the first card ([web/src/builds/ui.ts:262-268](../../web/src/builds/ui.ts#L262-L268)). Name it in the title card.
-2. In the **Subclass** card, pick an element ([web/src/builds/ui.ts:434-457](../../web/src/builds/ui.ts#L434-L457)).
-3. In the **Abilities** card, rest the pointer on a slot (or tap it) to open its options, then click one. Aspects and fragments toggle, so you can fill every fragment slot from one popover. If popovers open when you don't want them to, switch the card's header from **Hover** to **Click** ([web/src/builds/ui.ts:469-471](../../web/src/builds/ui.ts#L469-L471)). The rating ring in the summary updates as you go ([web/src/builds/model.ts:195-221](../../web/src/builds/model.ts#L195-L221)).
-4. Press **Choose gear and mods**, pick weapons, armor and mods for any slots, check the stat tray, then press **Apply** ([web/src/builds/ui.ts:912-955](../../web/src/builds/ui.ts#L912-L955)).
-5. Drag the gold markers on the stat bars to set the stats you aim for ([web/src/builds/ui.ts:401](../../web/src/builds/ui.ts#L401)).
-6. Press **Save** in the title card. Nothing is kept until you do; leaving with unsaved changes asks first ([web/src/builds/ui.ts:192-193](../../web/src/builds/ui.ts#L192-L193)).
+1. Under **Saved builds**, pick your class and press **New … build** on the first card ([web/src/builds/ui.ts:370-376](../../web/src/builds/ui.ts#L370-L376)). Name it in the title card.
+2. In the **Subclass** card, pick an element ([web/src/builds/ui.ts:545-568](../../web/src/builds/ui.ts#L545-L568)).
+3. In the **Abilities** card, rest the pointer on a slot (or tap it) to open its options, then click one. Aspects and fragments toggle, so you can fill every fragment slot from one popover. If popovers open when you don't want them to, switch the card's header from **Hover** to **Click** ([web/src/builds/ui.ts:580-582](../../web/src/builds/ui.ts#L580-L582)). The rating ring in the summary updates as you go ([web/src/builds/model.ts:197-223](../../web/src/builds/model.ts#L197-L223)).
+4. Press **Choose gear and mods**, pick weapons, armor and mods for any slots, check the stat tray, then press **Apply** ([web/src/builds/ui.ts:1023-1066](../../web/src/builds/ui.ts#L1023-L1066)).
+5. Drag the gold markers on the stat bars to set the stats you aim for ([web/src/builds/ui.ts:512](../../web/src/builds/ui.ts#L512)).
+6. Press **Save** in the title card. Nothing is kept until you do; leaving with unsaved changes asks first ([web/src/builds/ui.ts:205-206](../../web/src/builds/ui.ts#L205-L206)).
 7. Press **Equip on …**. You get a dry run listing every step; nothing changes until you press **Equip now**, and afterwards **Undo** puts your previous gear back ([web/src/builds/ui.ts:1453-1498](../../web/src/builds/ui.ts#L1453-L1498), [web/src/builds/equip.ts:41](../../web/src/builds/equip.ts#L41)).
 
 What each part does: [The Builds tab](../explanation/builds-tab.md#the-editor).

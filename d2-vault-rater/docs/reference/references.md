@@ -12,8 +12,8 @@ The outside sources Vault Rater relies on: the APIs it calls, the data it import
 | [Application portal](https://www.bungie.net/en/Application) | Where you create the app, set its redirect URL, origin header and scopes. |
 | [GetProfile](https://bungie-net.github.io/multi/operation_get_Destiny2-GetProfile.html) and [component types](https://bungie-net.github.io/multi/schema_Destiny-DestinyComponentType.html) | Reading the vault, characters, sockets and perks ([src/vault/fetch.ts:12](../../src/vault/fetch.ts#L12)). |
 | [SetItemLockState](https://bungie-net.github.io/multi/operation_post_Destiny2-SetItemLockState.html) | Applying and undoing lock plans ([src/dim/actions.ts:125](../../src/dim/actions.ts#L125)). |
-| [TransferItem](https://bungie-net.github.io/multi/operation_post_Destiny2-TransferItem.html), [EquipItems](https://bungie-net.github.io/multi/operation_post_Destiny2-EquipItems.html) | Moving and equipping items ([src/bungie/transfer.ts:66-97](../../src/bungie/transfer.ts#L66-L97)). |
-| [InsertSocketPlugFree](https://bungie-net.github.io/multi/operation_post_Destiny2-InsertSocketPlugFree.html) | Switching a weapon's perk from the drawer ([src/bungie/transfer.ts:139](../../src/bungie/transfer.ts#L139)), and the Builds tab changing subclass and mod sockets ([web/src/builds/equip.ts:29](../../web/src/builds/equip.ts#L29)). |
+| [TransferItem](https://bungie-net.github.io/multi/operation_post_Destiny2-TransferItem.html), [EquipItems](https://bungie-net.github.io/multi/operation_post_Destiny2-EquipItems.html) | Moving and equipping items ([src/bungie/transfer.ts:79-110](../../src/bungie/transfer.ts#L79-L110)). |
+| [InsertSocketPlugFree](https://bungie-net.github.io/multi/operation_post_Destiny2-InsertSocketPlugFree.html) | Switching a weapon's perk from the drawer ([src/bungie/transfer.ts:152](../../src/bungie/transfer.ts#L152)), and the Builds tab changing subclass and mod sockets ([web/src/builds/equip.ts:29](../../web/src/builds/equip.ts#L29)). |
 
 | [GetVendors](https://bungie-net.github.io/multi/operation_get_Destiny2-GetVendors.html), [GetVendor](https://bungie-net.github.io/multi/operation_get_Destiny2-GetVendor.html) | The Vendors tab: every vendor's stock for one character, then each gear vendor alone for its items' rolled perks and stats ([src/vendors/vendors.ts:203-205](../../src/vendors/vendors.ts#L203-L205), [src/vendors/vendors.ts:239-245](../../src/vendors/vendors.ts#L239-L245)). |
 | [GetDestinyEntityDefinition](https://bungie-net.github.io/multi/operation_get_Destiny2-GetDestinyEntityDefinition.html) | One definition at a time for what the stripped manifest leaves out: vendor names, currencies, Eververse cosmetics; saved per game version ([src/vendors/vendors.ts:186-198](../../src/vendors/vendors.ts#L186-L198)). |
@@ -49,8 +49,8 @@ Item, plug, stat, socket, collectible and activity definitions all come from the
 
 | Source | Used for |
 | --- | --- |
-| [light.gg](https://www.light.gg/) | Per-weapon links for rolls and community ratings ([web/src/builds/ui.ts:98](../../web/src/builds/ui.ts#L98)). |
-| [D2 Foundry](https://d2foundry.gg/) | Per-weapon links for perk numbers ([web/src/builds/ui.ts:98](../../web/src/builds/ui.ts#L98)). |
+| [light.gg](https://www.light.gg/) | Per-weapon links for rolls and community ratings ([web/src/builds/ui.ts:101](../../web/src/builds/ui.ts#L101)). |
+| [D2 Foundry](https://d2foundry.gg/) | Per-weapon links for perk numbers ([web/src/builds/ui.ts:101](../../web/src/builds/ui.ts#L101)). |
 | [D2ArmorPicker](https://d2armorpicker.com/) | The idea behind the Builds gear list's stat columns and sorting. |
 
 ## Standards and tooling

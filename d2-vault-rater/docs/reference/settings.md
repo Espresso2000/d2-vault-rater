@@ -9,7 +9,7 @@ Settings live in `settings.json` in the data folder ([src/config.ts:10](../../sr
 | `preset` | `lenient`, `balanced`, `strict`, `ruthless` | `balanced` | Strictness preset (table below). | [src/rating/settings.ts:90](../../src/rating/settings.ts#L90) |
 | `overrides` | partial strictness | `{}` | Single values that replace the preset's. | [src/rating/settings.ts:91](../../src/rating/settings.ts#L91) |
 | `byWeaponType` | type name → `{ preset?, overrides? }` | `{}` | Strictness for one weapon type, e.g. `"Submachine Gun"`. | [src/rating/settings.ts:92-93](../../src/rating/settings.ts#L92-L93) |
-| `focus` | `pve`, `pvp`, `both` | `pve` | Shown in the report header; it does not change any score ([src/report/siteData.ts:119](../../src/report/siteData.ts#L119)). | [src/rating/settings.ts:94](../../src/rating/settings.ts#L94) |
+| `focus` | `pve`, `pvp`, `both` | `pve` | Shown in the report header; it does not change any score ([src/report/siteData.ts:138](../../src/report/siteData.ts#L138)). | [src/rating/settings.ts:94](../../src/rating/settings.ts#L94) |
 | `protect` | string[] | `[]` | Weapon or armor names, or instance ids, never marked for sharding. | [src/rating/settings.ts:95-96](../../src/rating/settings.ts#L95-L96) |
 | `buildStats` | class → stat names | `{}` | Stats each class's builds want; inferred from equipped armor when empty. | [src/rating/settings.ts:97-98](../../src/rating/settings.ts#L97-L98) |
 | `tone` | `short`, `detailed` | `detailed` | How long the AI's write-up should be ([skill/SKILL.md:55](../../skill/SKILL.md#L55)); not used by the code. | [src/rating/settings.ts:99](../../src/rating/settings.ts#L99) |
@@ -45,11 +45,11 @@ Override ranges: `minRollKept` and `outscoredGap` 0-100; `copiesPerArchetype` an
 - A per-type entry with its own `preset`: that preset, then that type's `overrides`. The global overrides are **not** applied.
 - A per-type entry with only `overrides`: the global preset, the global overrides, then that type's overrides.
 
-Armor always uses the global strictness ([src/rating/armor.ts:97](../../src/rating/armor.ts#L97)).
+Armor always uses the global strictness ([src/rating/armor.ts:98](../../src/rating/armor.ts#L98)).
 
 ## Changing settings
 
 - **AI**: `update_settings` ([src/server.ts:187-247](../../src/server.ts#L187-L247)). Choosing a global `preset` clears the global overrides ([src/server.ts:230-233](../../src/server.ts#L230-L233)); with `weapon_type`, `preset` and `overrides` apply to that type only (sending only `overrides` keeps the type's preset) and `clear_weapon_type` removes its entry ([src/server.ts:222-228](../../src/server.ts#L222-L228)). `protect_add` and `protect_remove` edit the protect list ([src/server.ts:238-239](../../src/server.ts#L238-L239)).
 - **Report page Settings panel** (local app and web app): preset, focus, protect list, per-type settings and the three DIM switches ([src/rating/settings.ts:127-142](../../src/rating/settings.ts#L127-L142)).
-- **CLI**: `npm run vault -- dim <tags|loadouts|protect|on|off> [on|off]` for the DIM switches ([src/cli.ts:204-215](../../src/cli.ts#L204-L215)).
+- **CLI**: `npm run vault -- dim <tags|loadouts|protect|on|off> [on|off]` for the DIM switches ([src/cli.ts:215-226](../../src/cli.ts#L215-L226)).
 - **By hand**: edit `settings.json`; invalid values make the next load fail with zod's message.

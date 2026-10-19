@@ -13,8 +13,8 @@ Everything lives in one folder, `~/.d2-vault-rater` unless `VAULT_RATER_HOME` sa
 | `dim-token.json` | DIM Sync access token and expiry | [src/dim/sync.ts:15](../../src/dim/sync.ts#L15) |
 | `manifest/<version>/<table>.lite.json` | Manifest tables cut down to the fields the rater reads, one folder per game version. The item table is `.lite.v3.json`, named for its strip format (3 added perk descriptions, [src/bungie/strip.ts:7-8](../../src/bungie/strip.ts#L7-L8)), so an older cache without perk icons or descriptions is rebuilt (a full `<table>.json` from older versions is stripped once and can be deleted) | [src/bungie/tables.ts:11-25](../../src/bungie/tables.ts#L11-L25), [src/bungie/manifest.ts:27-31](../../src/bungie/manifest.ts#L27-L31), [src/sources/activities.ts:85-91](../../src/sources/activities.ts#L85-L91) |
 | `manifest/entities-<version>.json` | Vendor, currency and Eververse cosmetic names and icons for the Vendors tab, per game version. Only the web app has a Vendors tab, so this file exists only there, in IndexedDB as `file:/vr/manifest/entities-<version>.json` | [src/vendors/vendors.ts:186-198](../../src/vendors/vendors.ts#L186-L198) |
-| `sources/aegis.json` | Imported tier list with matched item hashes | [src/sources/aegis.ts:35](../../src/sources/aegis.ts#L35) |
-| `sources/aliases.json` | Your own `{"Aegis name": "Manifest name"}` fixes, read on import | [src/sources/aegis.ts:36](../../src/sources/aegis.ts#L36), [src/sources/aegis.ts:124-128](../../src/sources/aegis.ts#L124-L128) |
+| `sources/aegis.json` | Imported tier list with matched item hashes | [src/sources/aegis.ts:39](../../src/sources/aegis.ts#L39) |
+| `sources/aliases.json` | Your own `{"Aegis name": "Manifest name"}` fixes, read on import | [src/sources/aegis.ts:40](../../src/sources/aegis.ts#L40), [src/sources/aegis.ts:166-170](../../src/sources/aegis.ts#L166-L170) |
 | `sources/wishlists.json` | Parsed wishlist rolls, without notes | [src/sources/wishlist.ts:21](../../src/sources/wishlist.ts#L21) |
 | `sources/armor-sets.json` | Armor set bonuses with Aegis's tiers | [src/sources/armorSets.ts:41](../../src/sources/armorSets.ts#L41) |
 | `sources/activities.json` | Raid and dungeon loot | [src/sources/activities.ts:77](../../src/sources/activities.ts#L77) |
@@ -49,9 +49,9 @@ Saved builds are the file `/vr/builds.json` ([web/src/builds/store.ts:5](../../w
 | --- | --- | --- |
 | `public/data/manifest-v<strip format>-<version>.json` | Stripped item database | [web/scripts/snapshot.ts:30-43](../../web/scripts/snapshot.ts#L30-L43) |
 | `public/data/builds-<version>.json` | Builds tab definitions | [web/scripts/snapshot.ts:45-54](../../web/scripts/snapshot.ts#L45-L54) |
-| `public/data/sources.json` | Aegis's tier list and armor set tiers, used when the sheets can't be read | [web/scripts/snapshot.ts:56-61](../../web/scripts/snapshot.ts#L56-L61) |
+| `public/data/sources.json` | Aegis's tier list and armor set tiers, used when the sheets can't be read | [web/scripts/snapshot.ts:60-65](../../web/scripts/snapshot.ts#L60-L65) |
 | `app.config.json` | Bungie API key, client id and optional DIM key baked into the build | [web/src/appConfig.ts:1](../../web/src/appConfig.ts#L1) |
 
 The manifest snapshots are git-ignored ([.gitignore](../../.gitignore)); `sources.json` is checked in.
 
-Vendor stock itself is never saved: it is read from Bungie when the Vendors tab opens and kept in memory for the visit ([web/src/vendors/ui.ts:37-38](../../web/src/vendors/ui.ts#L37-L38)).
+Vendor stock itself is never saved: it is read from Bungie when the Vendors tab opens and kept in memory for the visit ([web/src/vendors/ui.ts:40-41](../../web/src/vendors/ui.ts#L40-L41)).
