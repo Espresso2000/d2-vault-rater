@@ -3,9 +3,10 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { parseCsv } from "../src/sources/csv.js";
-import { parseAegisTab, parseTabList, matchHashes, type AegisData } from "../src/sources/aegis.js";
+import { parseAegisTab, parseAegisExotics, parseTabList, matchHashes, type AegisData } from "../src/sources/aegis.js";
 import { parseWishlist } from "../src/sources/wishlist.js";
 import { decodeProfile } from "../src/vault/decode.js";
+import { moveItems } from "../src/bungie/transfer.js";
 import { rateWeapons } from "../src/rating/weapons.js";
 import { rateArmor } from "../src/rating/armor.js";
 import { SettingsSchema, strictnessFor } from "../src/rating/settings.js";
@@ -157,6 +158,51 @@ test("enhanced perks earn a small bonus", () => {
   const r = rateWeapons(v.weapons, { aegis: aegis(), wishlists: null, manifest: m }, SettingsSchema.parse({}));
   // perk1 matched and enhanced (35 * 1.1), perk2 miss, barrel/mag miss, origin hit, MW hit
   assert.equal(r.ratings[0].rollScore, Math.round(35 * 1.1 + 5 + 5));
+});
+
+test("weapon details: live stats, base stats for the ones left out, intrinsic frame and masterwork", () => {
+  const mm = manifest();
+  mm.stats[5] = { hash: 5, displayProperties: { name: "Range" } };
+  mm.stats[6] = { hash: 6, displayProperties: { name: "Aim Assistance" } };
+  mm.items[1002] = { ...mm.items[1002], stats: { stats: { 5: { statHash: 5, value: 30 }, 6: { statHash: 6, value: 61 } } } };
+  const raw = profile([{ id: "x", hash: 1002, plugs: [11, 21, 31, 43, 52, 61] }]);
+  raw.itemComponents!.stats!.data!.x = { stats: { 5: { statHash: 5, value: 48 } } };
+  const w = decodeProfile(raw, mm).weapons[0];
+  assert.deepEqual(w.stats, { Range: 48, "Aim Assistance": 61 }, "the live Range wins over the base one");
+  assert.deepEqual(w.baseStats, ["Aim Assistance"]);
+  assert.equal(w.intrinsic?.name, "Lightweight Frame");
+  assert.deepEqual(w.mods?.map((x) => [x.kind, x.name]), [["masterwork", "Masterworked: Reload Speed"]]);
+});
+
+test("weapon mod socket: the unlocked mods that fit, and the request that switches to one", async () => {
+  const mm = manifest();
+  const mod = (hash: number, name: string, pci: string) => (mm.items[hash] = { hash, displayProperties: { name, icon: `/icons/${hash}.png`, description: `${name} text` }, itemType: 19, plug: { plugCategoryIdentifier: pci } });
+  mod(90, "Empty Mod Socket", "v400.weapon.mod_empty");
+  mod(91, "Backup Mag", "v400.weapon.mod_magazine");
+  mod(92, "Counterbalance Stock", "v400.weapon.mod_guns");
+  mod(93, "Freehand Grip", "v400.weapon.mod_guns");
+  mod(94, "Some Shader", "shader");
+  const entries = Array.from({ length: 8 }, () => ({}) as { reusablePlugSetHash?: number });
+  entries[7] = { reusablePlugSetHash: 500 };
+  mm.items[1002] = { ...mm.items[1002], sockets: { ...mm.items[1002].sockets!, socketEntries: entries } };
+  const raw = profile([{ id: "x", hash: 1002, plugs: [11, 21, 31, 43, 52, 61] }]);
+  raw.itemComponents!.sockets!.data!.x.sockets.push({ plugHash: 91, isEnabled: true, isVisible: true });
+  const plug = (h: number, canInsert = true) => ({ plugItemHash: h, canInsert, enabled: true });
+  raw.profilePlugSets = { data: { plugs: { 500: [plug(90), plug(91), plug(92), plug(93, false), plug(94)] } } };
+  raw.characterPlugSets = { data: { c1: { plugs: { 500: [plug(92)] } } } };
+  const v = decodeProfile(raw, mm);
+  const slot = v.weapons[0].mods!.find((x) => x.kind === "mod")!;
+  assert.equal(slot.name, "Backup Mag");
+  assert.equal(slot.socket, 7);
+  assert.deepEqual(slot.options?.map((o) => o.name), ["Empty Mod Socket", "Backup Mag", "Counterbalance Stock"], "locked mods, other plugs and repeats are left out");
+
+  const { modInsertBody, insertMod } = await import("../src/bungie/transfer.js");
+  assert.deepEqual(modInsertBody(v, "x", 7, "Counterbalance Stock").body, { plug: { socketIndex: 7, socketArrayType: 0, plugItemHash: 92 }, itemId: "x", characterId: "c1", membershipType: 3 });
+  assert.throws(() => modInsertBody(v, "x", 7, "Freehand Grip"), /isn't a mod you can put on/);
+  const sent: unknown[] = [];
+  await insertMod("x", 7, "Counterbalance Stock", { vault: v, send: async (_p, b) => void sent.push(b) });
+  assert.equal(sent.length, 1);
+  assert.equal(slot.name, "Counterbalance Stock", "the vault copy now has the new mod");
 });
 
 test("armor rating keeps the Tier 5 piece and shards the weaker copy at strict", () => {
@@ -326,4 +372,64 @@ test("encounter plans filter by activity name, apostrophes and all", async () =>
   assert.ok(activityMatches("shattered-throne", "The Shattered Throne"));
   assert.ok(activityMatches("vow-of-the-disciple", "vow"));
   assert.ok(!activityMatches("last-wish", "King's Fall"));
+});
+
+test("postmaster items are kept apart from what the character carries", async () => {
+  const raw = profile([{ id: "a", hash: 1002, plugs: GOD_UNFORGIVEN }]);
+  const item = (id: string, bucketHash: number) => ({ itemHash: 1002, itemInstanceId: id, bucketHash, state: 0 });
+  raw.characterInventories = { data: { c1: { items: [item("carried", 1498876634), item("lost", 215593132)] } } };
+  for (const id of ["carried", "lost"]) Object.assign(raw.itemComponents!.sockets!.data!, { [id]: raw.itemComponents!.sockets!.data!.a });
+  const vault = decodeProfile(raw, m);
+  const loc = Object.fromEntries(vault.weapons.map((w) => [w.instanceId, w.location]));
+  assert.deepEqual(loc.carried, { where: "c1", equipped: false });
+  assert.deepEqual(loc.lost, { where: "c1", equipped: false, postmaster: true });
+  // Moving a postmaster item pulls it into its character's inventory first, then transfers it as usual.
+  const calls: string[] = [];
+  const send = async (path: string) => (calls.push(path.split("/").at(-2)!), {});
+  const [r] = await moveItems(["lost"], "vault", { vault, send, delayMs: 0 });
+  assert.deepEqual(calls, ["PullFromPostmaster", "TransferItem"]);
+  assert.equal(r.pulled, true);
+  assert.equal(r.where, "vault");
+});
+
+test("Aegis exotic tab: S to F grades become tiers, E/F clamp to D and score below it", () => {
+  const exCsv = [
+    '"WEAPON #","Name","INFO Season","Type","Usage","Tier"',
+    '"","Praxic Blade","28","special","Hyperblade for movement","B"',
+    '"","Ace of Spades","1","primary","bad","F"',
+  ].join("\n");
+  const rows = parseAegisExotics("Exotic Weapons", exCsv)!;
+  assert.deepEqual(rows.map((r) => [r.name, r.tier, r.grade ?? null]), [["Praxic Blade", "B", null], ["Ace of Spades", "D", "F"]]);
+  assert.equal(rows[0].notes, "Hyperblade for movement");
+  assert.equal(parseAegisExotics("SMGs", csv), null);
+});
+
+test("encounter loadouts: shields and range steer add clear to the right weapon", async () => {
+  const { planEncounter } = await import("../src/rating/encounters.js");
+  const w = (name: string, type: string, slot: string, element: string, score: number) =>
+    ({ instanceId: name, name, type, slot, element, score, rarity: "Legendary" }) as unknown as import("../src/rating/weapons.js").WeaponRating;
+  const vault = [w("Void SMG", "Submachine Gun", "Energy", "Void", 90), w("Arc SMG", "Submachine Gun", "Energy", "Arc", 84), w("Arc Scout", "Scout Rifle", "Energy", "Arc", 84)];
+  const base = { name: "Test", kind: "mechanics" as const, tip: "", roles: ["add-clear" as const] };
+  assert.equal(planEncounter(base, vault).picks[0].name, "Void SMG", "with nothing to steer it, the best weapon wins");
+  const arc = planEncounter({ ...base, shields: [{ element: "Arc", on: "Knights", frequency: "common" }] }, vault).picks[0];
+  assert.equal(arc.name, "Arc SMG");
+  assert.equal(arc.why, "Arc shields");
+  assert.equal(planEncounter({ ...base, range: "long", shields: [{ element: "Arc", on: "Knights", frequency: "common" }] }, vault).picks[0].name, "Arc Scout");
+});
+
+test("encounter data: every raid and dungeon has encounters, each with valid facts and at least two sources", async () => {
+  const { ENCOUNTERS, ROLE_TYPES } = await import("../src/data/encounters.js");
+  const { ACTIVITIES } = await import("../src/sources/activities.js");
+  for (const a of ACTIVITIES) assert.ok(ENCOUNTERS[a.key]?.length, `${a.key} has encounters`);
+  for (const [key, list] of Object.entries(ENCOUNTERS)) {
+    for (const e of list) {
+      const at = `${key} / ${e.name}`;
+      assert.ok(e.roles.length >= 1 && e.roles.every((r) => r in ROLE_TYPES), `${at}: roles`);
+      assert.ok(new Set(e.sources).size >= 2, `${at}: two or more sources`);
+      for (const s of e.shields ?? []) assert.ok(["Arc", "Solar", "Void", "Stasis", "Strand"].includes(s.element) && ["common", "some", "rare"].includes(s.frequency), `${at}: shield`);
+      for (const c of e.champions ?? []) assert.ok(["Barrier", "Overload", "Unstoppable"].includes(c), `${at}: champion`);
+      if (e.range) assert.ok(["close", "mid", "long", "mixed"].includes(e.range), `${at}: range`);
+      if (e.dps) assert.ok(["burst", "sustained", "none"].includes(e.dps.style), `${at}: dps`);
+    }
+  }
 });

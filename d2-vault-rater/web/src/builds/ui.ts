@@ -12,12 +12,13 @@ import { cachedClarity, cachedRatings, loadClarity, loadRatings } from "./rating
 import { TIER_POINTS } from "./sheets";
 import {
   ARMOR_ENERGY, ARMOR_SLOTS, CLASSES, CLASS_NAME, GENERAL_PCI, MOD_PCI, MOD_SOCKETS, STAT_MAX, WEAPON_SLOTS,
-  armorOf, aspectRating, buildScore, defaultPlugs, exoticClash, fragmentRating, fragmentSlots, fromDimLoadout, infoFor, isEmptyPlug,
-  commitBuild, isUnsaved, itemOf, modEnergy, newBuild, newId, socketsOf, statLines, subclassRating, toDimLoadout, trimFragments, weaponOf,
+  armorOf, aspectRating, buildScore, defaultPlugs, exoticClash, fragmentRating, fragmentSlots, fromDimLoadout, fromGameLoadout, infoFor, isEmptyPlug,
+  commitBuild, isUnsaved, itemOf, lastUsed, modEnergy, newBuild, sameLoadout, newId, socketsOf, statLines, subclassRating, toDimLoadout, trimFragments, weaponOf,
   type Build, type BuildSlot, type Ctx, type GearSlot,
 } from "./model";
 import { captureCharacter, charFor, fetchBuildProfile, subclassInstance, type BuildProfile } from "./profile";
 import { applyPlan, planEquip, type Plan } from "./equip";
+import { loadingBlock } from "../loading";
 import { dimImportUrl, dimLoadouts, saveToDim, shareDimLoadout } from "./dim";
 import { loadBuilds, saveBuilds } from "./store";
 import { bungieUrl } from "../shims/client";
@@ -64,6 +65,8 @@ let input: BuildsInput | null = null;
 let panel: HTMLElement | null = null;
 let defs: BuildDefs | null = null;
 let profile: BuildProfile | null = null;
+/** True while the characters (and so the in-game loadouts) are being read. */
+let profileBusy = false;
 let builds: Build[] = [];
 let cur: Build | null = null;
 let loadError = "";
@@ -112,11 +115,15 @@ function render(el: HTMLElement) {
   if (!el.dataset.wired) wire(el);
   if (!defs) {
     el.innerHTML = loadingCard();
-    loading ??= load();
+    // Let the tab switch and the loading card paint before the definitions start loading.
+    if (!loading) loading = afterPaint().then(load);
     return;
   }
   draw();
 }
+
+/** Resolves once the browser has painted, so what was just drawn is on screen before heavy work starts. */
+const afterPaint = () => new Promise<void>((done) => requestAnimationFrame(() => setTimeout(done, 0)));
 
 async function load() {
   const note = (s: string) => {
@@ -129,6 +136,11 @@ async function load() {
     defs = d;
     clarity = cachedClarity();
     cur = builds[0] ? structuredClone(builds[0]) : null;
+    profileBusy = true;
+    // Drawing the editor takes a moment: show that first so the page doesn't look stuck.
+    log.push("Drawing the editor…");
+    if (panel) panel.innerHTML = loadingCard();
+    await afterPaint();
     draw();
     void refreshProfile();
     void loadClarity((h) => !!d.plugs[h]).then((t) => (clarity = t));
@@ -145,11 +157,12 @@ async function refreshProfile() {
   } catch (e) {
     console.warn("Builds: couldn't read characters", e);
   }
+  profileBusy = false;
   draw();
 }
 
 function loadingCard() {
-  return `<div class="bd-loading glass"><div class="eyebrow">Builds</div><h2>${loadError ? "Couldn't load the build data" : "Loading build data…"}</h2>
+  return `<div class="bd-loading glass"><div class="eyebrow">Builds</div><div style="display:flex;align-items:center;gap:14px">${loadError ? "" : '<span class="vr-spin" aria-hidden="true"></span>'}<h2 style="margin:0">${loadError ? "Couldn't load the build data" : "Loading build data…"}</h2></div>
     ${loadError ? `<p class="vr-err">${esc(loadError)}</p><button class="btn primary" data-act="retry">Try again</button>` : ""}
     <ol class="vr-log">${log.map((l) => `<li>${esc(l)}</li>`).join("")}</ol></div>`;
 }
@@ -227,6 +240,7 @@ function draw() {
   const y = scrollY;
   panel.innerHTML = `<div class="bd">
     <div class="sec-head"><h2>Builds</h2><span class="badge">${builds.length} saved</span>
+      <button class="btn bd-sm" data-act="importall" title="Add every DIM loadout you haven't imported yet as a build">Import all DIM loadouts</button><span class="small muted" id="bd-impall" aria-live="polite">${esc(importMsg)}</span>
       <p>Hover or tap a subclass slot to change it, pick gear and mods for every slot from one list, then equip the build or send it to DIM. Builds are saved in this browser.</p></div>
     <div class="bd-layout">${listPane()}${cur && cur.cls === listCls ? editor(cur, c) : emptyEditor()}</div></div>`;
   scrollTo({ top: y });
@@ -245,8 +259,9 @@ const TRASH = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6l1 2h4
 function listPane() {
   const c = ctx();
   const cls = listCls!;
-  const mine = builds.filter((b) => b.cls === cls);
+  const mine = builds.filter((b) => b.cls === cls).sort((a, b) => lastUsed(b).localeCompare(lastUsed(a)));
   const q = listQuery.toLowerCase();
+  const game = gameLoadouts(cls, c);
   return `<section class="bd-saved glass" aria-label="Saved builds">
     <div class="bd-saved-head">
       <span class="cap">Saved builds</span>
@@ -255,8 +270,101 @@ function listPane() {
         .join("")}</div>
       ${mine.length > 4 ? `<input class="bd-input bd-q" id="bd-q" type="search" placeholder="Search ${esc(CLASS_NAME(cls))} builds" value="${esc(listQuery)}" aria-label="Search builds">` : ""}
     </div>
-    <div class="bd-cards">${newCard(cls)}${mine.map((b) => buildCard(b, c, !!q && !listText(b).includes(q))).join("")}</div>
+    <div class="bd-cards">${loadoutCard(game)}${newCard(cls)}${mine.map((b) => buildCard(b, c, !!q && !listText(b).includes(q), game.find((l) => l.match?.id === b.id))).join("")}</div>
   </section>`;
+}
+
+/** This class's in-game loadouts as builds, in slot order, each with the saved build that matches it exactly. */
+function gameLoadouts(cls: number, c: Ctx) {
+  const ch = charFor(profile, cls);
+  if (!ch || !defs) return [];
+  const sub = (id: string) => ch.subclasses.find((x) => x.id === id)?.hash;
+  return ch.loadouts.flatMap((l, i) => {
+    if (l.empty) return [];
+    const look = defs!.loadoutLook;
+    const name = look?.names[l.nameHash] || `Loadout ${i + 1}`;
+    const b = fromGameLoadout(cls, name, l.items, sub, c);
+    return [{ i, b, name, icon: look?.icons[l.iconHash], color: look?.colors[l.colorHash], match: builds.find((x) => x.cls === cls && sameLoadout(x, b, defs!)) }];
+  });
+}
+
+const rowIco = (c: Ctx, b: Build, slot: BuildSlot) => {
+  const x = itemOf(c, b.items[slot]?.id);
+  return x ? `<span class="bd-gico${x.rarity === "Exotic" ? " exotic" : ""}" title="${esc(x.name)}">${img(x.icon)}</span>` : `<span class="bd-gico none"></span>`;
+};
+
+/** The in-game loadout icon over its colour swatch; falls back to the subclass icon. */
+const loadGlyph = (l: { icon?: string; color?: string }, sub?: string | null) =>
+  l.icon
+    ? `<span class="bd-lglyph"${l.color ? ` style="background-image:url('${esc(bungieUrl(l.color))}')"` : ""}>${img(l.icon)}</span>`
+    : `<span class="bd-bico">${img(sub)}</span>`;
+
+/** A compact card first in the grid: a few slot chips, the count, and a button for the full list. */
+function loadoutCard(list: ReturnType<typeof gameLoadouts>) {
+  if (!list.length) return profileBusy ? `<div class="bd-bcard bd-loadcard">${loadingBlock("Reading in-game loadouts…")}</div>` : "";
+  const chips = list
+    .map((l) => {
+      const sc = l.b.subclass ? defs!.subclasses[l.b.subclass] : null;
+      return `<span class="bd-lchip" title="${esc(l.name)}" style="--el:var(--${sc?.el ?? "Unknown"})">${loadGlyph(l, sc?.i)}<b>${l.i + 1}</b>${l.match ? `<i class="bd-lmatch" title="Matches your EVR build “${esc(l.match.name)}”">✓</i>` : ""}</span>`;
+    })
+    .join("");
+  return `<button class="bd-bcard bd-loadcard" data-act="loadlist" aria-label="Show all ${list.length} in-game loadouts">
+    <span class="cap">In-game loadouts</span>
+    <span class="bd-lchips">${chips}</span>
+    <span class="bd-lfoot"><b>${list.length} loadouts</b><span class="btn bd-sm">View all</span></span></button>`;
+}
+
+/** The modal with every loadout in game order: click one to load it, Save keeps it as an EVR build. */
+function openLoadoutList() {
+  const c = ctx();
+  const list = gameLoadouts(listCls!, c);
+  let dlg = document.getElementById("bd-loadouts") as HTMLDialogElement | null;
+  if (!dlg) {
+    document.body.insertAdjacentHTML("beforeend", `<dialog class="bd-dialog bd-wide" id="bd-loadouts" aria-labelledby="bd-loadouts-h"></dialog>`);
+    dlg = document.getElementById("bd-loadouts") as HTMLDialogElement;
+    dlg.addEventListener("click", (e) => {
+      const t = (e.target as HTMLElement).closest<HTMLElement>("[data-act]");
+      if (t?.dataset.act === "closedlg") return dlg!.close();
+      if (!t || !ACTIONS[t.dataset.act!]) return;
+      dlg!.close();
+      ACTIONS[t.dataset.act!](t);
+    });
+  }
+  dlg.innerHTML = `<h3 id="bd-loadouts-h">In-game loadouts · ${esc(CLASS_NAME(listCls!))}</h3>
+    <div class="bd-lrows">${list
+      .map((l) => {
+        const { i, b, match } = l;
+        const sc = b.subclass ? defs!.subclasses[b.subclass] : null;
+        return `<div class="bd-lrow" style="--el:var(--${sc?.el ?? "Unknown"})">
+          <button class="bd-lopen" data-act="loadgame" data-i="${i}" title="Load this loadout into the builder">
+            ${loadGlyph(l, sc?.i)}<span class="bd-lname"><b>${esc(l.name)}</b><small>${i + 1}</small></span>
+            ${l.icon ? `<span class="bd-bico bd-lsub">${img(sc?.i)}</span>` : ""}
+            <span class="bd-bgear">${WEAPON_SLOTS.map((s) => rowIco(c, b, s)).join("")}<i></i>${ARMOR_SLOTS.map((s) => rowIco(c, b, s)).join("")}</span>
+            ${match ? `<span class="bd-lmatch" title="Matches your EVR build “${esc(match.name)}”">✓</span>` : ""}</button>
+          ${match ? `<span class="bd-lsaved" title="Matches your EVR build">Saved as <b>${esc(match.name)}</b></span>` : `<button class="btn bd-sm" data-act="savegame" data-i="${i}" title="Save as an EVR build">Save</button>`}
+        </div>`;
+      })
+      .join("")}</div>
+    <div class="bd-dialog-btns"><button class="btn ghost" data-act="closedlg">Close</button></div>`;
+  if (!dlg.open) dlg.showModal();
+}
+
+/** A small modal asking for a name (Enter confirms, Esc or Cancel aborts). */
+function askName(title: string, initial: string, done: (name: string) => void) {
+  document.getElementById("bd-name-dlg")?.remove();
+  document.body.insertAdjacentHTML("beforeend", `<dialog class="bd-dialog" id="bd-name-dlg" aria-labelledby="bd-name-h"><form method="dialog">
+    <h3 id="bd-name-h">${esc(title)}</h3>
+    <input class="bd-input" name="n" maxlength="80" aria-label="Build name" value="${esc(initial)}" autocomplete="off" style="width:100%;margin-bottom:16px">
+    <div class="bd-dialog-btns"><button class="btn primary" value="ok">Create</button><button class="btn ghost" value="cancel" formnovalidate>Cancel</button></div></form></dialog>`);
+  const dlg = document.getElementById("bd-name-dlg") as HTMLDialogElement;
+  const input = dlg.querySelector("input")!;
+  dlg.addEventListener("close", () => {
+    const name = input.value.trim();
+    dlg.remove();
+    if (dlg.returnValue === "ok" && name) done(name);
+  });
+  dlg.showModal();
+  input.select();
 }
 
 /** The first card in the row: start a build for this class, or import one (with a preview to confirm). */
@@ -267,7 +375,7 @@ function newCard(cls: number) {
   </div>`;
 }
 
-function buildCard(b: Build, c: Ctx, hidden: boolean) {
+function buildCard(b: Build, c: Ctx, hidden: boolean, game?: ReturnType<typeof gameLoadouts>[number]) {
   const sc = b.subclass ? defs!.subclasses[b.subclass] : null;
   const s = buildScore(b, c).total;
   const weapons = WEAPON_SLOTS.map((slot) => weaponOf(c, b.items[slot]?.id));
@@ -284,7 +392,7 @@ function buildCard(b: Build, c: Ctx, hidden: boolean) {
     <button class="bd-bopen" data-act="open" data-id="${id}" aria-current="${b.id === cur?.id}" aria-label="${esc(`Open ${b.name}`)}">
       <span class="bd-btop"><span class="bd-bico">${img(sc?.i)}</span>
         <span class="bd-bmeta"><b>${esc(b.name)}</b><span>${sc ? esc(sc.n) : "No subclass"}${b.tags.length ? " · " + b.tags.map(esc).join(", ") : ""}</span></span>
-        ${s !== null ? `<span class="bd-bscore t${scoreTier(s)}" title="Build rating">${s}</span>` : ""}</span>
+        ${game ? `<span class="bd-bgame" title="Matches in-game loadout ${game.i + 1} (${esc(game.name)})">${loadGlyph(game)}</span>` : ""}${s !== null ? `<span class="bd-bscore t${scoreTier(s)}" title="Build rating">${s}</span>` : ""}</span>
       <span class="bd-bgear">${weapons.map(gearIco).join("")}<i></i>${armor.map(gearIco).join("")}</span>
       <span class="bd-bline"><span class="cap">Exotics</span><span>${exotics.length ? exotics.map((x) => esc(x.name)).join(" · ") : "None"}</span></span>
       <span class="bd-bline"><span class="cap">Aspects</span><span>${aspects.length ? aspects.map((p) => esc(p.n)).join(" · ") : "None"}${frags ? ` · ${frags} fragment${frags === 1 ? "" : "s"}` : ""}</span></span>
@@ -323,7 +431,10 @@ function editor(b: Build, c: Ctx) {
     <header class="bd-hero" style="--el:var(--${sc?.el ?? "Unknown"})">
       <div class="bd-hero-ico">${img(sc?.i)}</div>
       <div class="bd-hero-text">
-        <div class="eyebrow">${esc(CLASS_NAME(b.cls))}${sc ? ` · ${esc(sc.n)}` : ""}</div>
+        <div class="eyebrow">${esc(CLASS_NAME(b.cls))}${sc ? ` · ${esc(sc.n)}` : ""}${(() => {
+          const g = gameLoadouts(b.cls, c).find((l) => l.match?.id === b.id);
+          return g ? ` <span class="bd-bgame" title="Matches in-game loadout ${g.i + 1} “${esc(g.name)}”">${loadGlyph(g)}<span class="bd-gname">In-game loadout ${g.i + 1}: ${esc(g.name)}</span></span>` : "";
+        })()}</div>
         <input class="bd-name" id="bd-name" value="${esc(b.name)}" aria-label="Build name" maxlength="80">
         <div class="bd-hero-row">
           <div class="bd-tags">${b.tags.map((t, i) => `<span class="chip">${esc(t)}<button class="bd-x" data-act="untag" data-i="${i}" aria-label="Remove tag ${esc(t)}">✕</button></span>`).join("")}
@@ -1329,8 +1440,8 @@ const ACTIONS: Record<string, (t: HTMLElement) => void> = {
   retry: () => {
     loadError = "";
     log.length = 0;
-    loading = load();
     if (panel) panel.innerHTML = loadingCard();
+    loading = afterPaint().then(load);
   },
   popmode: (t) => {
     popMode = t.dataset.m === "click" ? "click" : "hover";
@@ -1342,13 +1453,10 @@ const ACTIONS: Record<string, (t: HTMLElement) => void> = {
   },
   save: () => saveCur(),
   revert: () => revertCur(),
+  loadlist: () => openLoadoutList(),
   new: (t) => guard(() => {
-    cur = newBuild(t.dataset.cls ? Number(t.dataset.cls) : (listCls ?? classChoices()[0] ?? 0));
-    listCls = cur.cls;
-    const sc = Object.values(defs!.subclasses).find((s) => s.cls === cur!.cls && s.el === "Prismatic");
-    cur.name = `${CLASS_NAME(cur.cls)} build ${builds.filter((b) => b.cls === cur!.cls).length + 1}`;
-    if (sc && (!charFor(profile, cur.cls) || subclassInstance(profile, cur.cls, sc.h))) setSubclass(sc);
-    touch();
+    const cls = t.dataset.cls ? Number(t.dataset.cls) : (listCls ?? classChoices()[0] ?? 0);
+    askName(`Name your new ${CLASS_NAME(cls)} build`, `${CLASS_NAME(cls)} build ${builds.filter((b) => b.cls === cls).length + 1}`, (name) => createBuild(cls, name));
   }),
   open: (t) => {
     if (t.dataset.id === cur?.id) return;
@@ -1359,6 +1467,28 @@ const ACTIONS: Record<string, (t: HTMLElement) => void> = {
       draw();
       panel?.querySelector(".bd-editor")?.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
     });
+  },
+  loadgame: (t) => {
+    const l = gameLoadouts(listCls!, ctx()).find((x) => x.i === Number(t.dataset.i));
+    if (!l) return;
+    guard(() => {
+      closePop();
+      // Matching EVR build: open that one; otherwise a new, unsaved draft ("Save" in the title card keeps it).
+      cur = structuredClone(l.match ?? l.b);
+      draw();
+    });
+  },
+  savegame: (t) => {
+    const l = gameLoadouts(listCls!, ctx()).find((x) => x.i === Number(t.dataset.i));
+    if (!l) return;
+    guard(() =>
+      askName("Name this EVR build", l.name, (name) => {
+        builds = commitBuild(builds, { ...l.b, name });
+        saveBuilds(builds);
+        cur = structuredClone(builds.find((x) => x.id === l.b.id)!);
+        draw();
+      }),
+    );
   },
   untag: (t) => {
     if (!cur) return;
@@ -1418,7 +1548,40 @@ const ACTIONS: Record<string, (t: HTMLElement) => void> = {
   equip: () => void equipFlow(),
   dim: () => dimFlow(),
   import: () => importFlow(),
+  importall: (t) => void importAllDim(t as HTMLButtonElement),
 };
+
+let importMsg = "";
+
+/** Adds every DIM loadout not already in the list (matched by its DIM id) as a saved build. */
+async function importAllDim(btn: HTMLButtonElement) {
+  const say = (s: string) => {
+    importMsg = s;
+    const el = document.getElementById("bd-impall");
+    if (el) el.textContent = s;
+  };
+  btn.disabled = true;
+  say("Reading DIM…");
+  try {
+    const have = new Set(builds.map((b) => b.dimId).filter(Boolean));
+    const fresh = (await dimLoadouts()).filter((l) => !have.has(l.id));
+    for (const l of fresh) builds = commitBuild(builds, fromDimLoadout(l, ctx()));
+    if (fresh.length) saveBuilds(builds);
+    importMsg = fresh.length ? `Imported ${fresh.length} DIM loadout${fresh.length === 1 ? "" : "s"}.` : "Nothing new: every DIM loadout is already imported.";
+    draw();
+  } catch (e) {
+    btn.disabled = false;
+    say(`Couldn't read DIM: ${(e as Error).message}`);
+  }
+}
+
+function createBuild(cls: number, name: string) {
+  cur = newBuild(cls, name);
+  listCls = cls;
+  const sc = Object.values(defs!.subclasses).find((s) => s.cls === cls && s.el === "Prismatic");
+  if (sc && (!charFor(profile, cls) || subclassInstance(profile, cls, sc.h))) setSubclass(sc);
+  touch();
+}
 
 function askDelete(id: string) {
   const b = builds.find((x) => x.id === id);
@@ -1489,6 +1652,12 @@ async function equipFlow(target: Build | null = cur, undoing = false) {
       li.querySelector("em")!.textContent = st === "ok" ? "✓" : st === "fail" ? `✕ ${m ?? ""}` : "…";
     });
     if (before) undo = before;
+    const saved = !undoing && builds.find((x) => x.id === target.id);
+    if (saved) {
+      saved.applied = new Date().toISOString();
+      saveBuilds(builds);
+      if (cur?.id === saved.id) cur.applied = saved.applied;
+    }
     msg.innerHTML = r.ok
       ? `Done. ${undo && !undoing ? `<button class="linkbtn" data-dact="undo">Undo: put the previous gear back</button>` : ""}`
       : `Not everything worked: ${esc(r.error)} ${undo && !undoing ? `<button class="linkbtn" data-dact="undo">Put the previous gear back</button>` : ""}`;

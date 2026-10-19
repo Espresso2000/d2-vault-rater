@@ -39,7 +39,7 @@
     radial-gradient(circle at 91% 52%, #fff 0 1px, rgba(170,255,225,.22) 1.8px, transparent 7px);
   animation: vr-neb-twinkle 11s ease-in-out infinite alternate; }
 /* Green highlights: soft glows that wander slowly and breathe in and out. */
-.vr-nebula .neb-g { width: 55vmax; height: 55vmax; border-radius: 50%; background: radial-gradient(closest-side, rgba(51,227,160,.12), rgba(51,227,160,.04) 45%, transparent); }
+.vr-nebula .neb-g { width: 55vmax; height: 55vmax; border-radius: 50%; background: radial-gradient(closest-side, rgba(var(--c3),.12), rgba(var(--c3),.04) 45%, transparent); }
 .vr-nebula .neb-g.g1 { left: -10vmax; top: -15vmax; animation: vr-neb-g1 120s ease-in-out infinite alternate, vr-neb-breathe 29s ease-in-out infinite alternate; }
 .vr-nebula .neb-g.g2 { right: -20vmax; top: 35vh; width: 65vmax; height: 38vmax; animation: vr-neb-g2 150s ease-in-out infinite alternate, vr-neb-breathe 37s ease-in-out -12s infinite alternate; }
 @keyframes vr-neb-a { from { transform: translate3d(3%, 2%, 0) rotate(2deg) scale(1.06); } to { transform: translate3d(-4%, -3%, 0) rotate(-3deg) scale(1); } }
@@ -49,6 +49,12 @@
 @keyframes vr-neb-g2 { from { transform: translate3d(0, 0, 0) rotate(-8deg); } to { transform: translate3d(-50vw, -20vh, 0) rotate(10deg); } }
 @keyframes vr-neb-breathe { from { opacity: .4; } to { opacity: 1; } }
 @keyframes vr-neb-twinkle { from { opacity: .45; } to { opacity: .8; } }
+/* Clouds are baked green, cyan and mint; each theme turns their hue (per layer) to its own colours. */
+:root[data-theme=purple-orange] .vr-nebula .neb-gas.a { filter: hue-rotate(-132deg); } :root[data-theme=purple-orange] .vr-nebula .neb-gas.b { filter: hue-rotate(78deg); } :root[data-theme=purple-orange] .vr-nebula .neb-gas.c { filter: hue-rotate(-115deg); }
+:root[data-theme=blue-purple] .vr-nebula .neb-gas.a { filter: hue-rotate(110deg); } :root[data-theme=blue-purple] .vr-nebula .neb-gas.b { filter: hue-rotate(33deg); } :root[data-theme=blue-purple] .vr-nebula .neb-gas.c { filter: hue-rotate(110deg); }
+:root[data-theme=pink-purple] .vr-nebula .neb-gas.a { filter: hue-rotate(170deg); } :root[data-theme=pink-purple] .vr-nebula .neb-gas.b { filter: hue-rotate(83deg); } :root[data-theme=pink-purple] .vr-nebula .neb-gas.c { filter: hue-rotate(170deg); }
+:root[data-theme]:not([data-theme=blue-green]) .vr-nebula .neb-dust, :root[data-theme]:not([data-theme=blue-green]) .vr-nebula .neb-bright { filter: hue-rotate(var(--star-rot, 0deg)); }
+:root[data-theme=purple-orange] { --star-rot: -120deg; } :root[data-theme=blue-purple] { --star-rot: 100deg; } :root[data-theme=pink-purple] { --star-rot: 160deg; }
 @media (prefers-reduced-motion: reduce) { .vr-nebula > i { animation: none !important; } }
 </style>
 <div class="vr-nebula" aria-hidden="true"><i class="neb-gas a"></i><i class="neb-gas b"></i><i class="neb-gas c"></i><i class="neb-g g1"></i><i class="neb-g g2"></i><i class="neb-vig"></i><i class="neb-dust"></i><i class="neb-bright"></i></div>

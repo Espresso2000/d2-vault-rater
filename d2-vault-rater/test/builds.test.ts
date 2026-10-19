@@ -3,7 +3,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { parseClarity, parseRatedTab, parseSubclassTab, parseInfoTab, elementFromSupers, norm } from "../web/src/builds/sheets.js";
 import { stripBuildDefs, type BuildDefs } from "../web/src/builds/defs.strip.js";
-import { buildScore, fragmentSlots, fromDimLoadout, newBuild, placeMod, statLines, toDimLoadout, trimFragments, defaultPlugs, type Ctx } from "../web/src/builds/model.js";
+import { buildScore, fragmentSlots, fromDimLoadout, fromGameLoadout, lastUsed, sameLoadout, newBuild, placeMod, statLines, toDimLoadout, trimFragments, defaultPlugs, type Ctx } from "../web/src/builds/model.js";
+import { UNSET_PLUG } from "../web/src/builds/model.js";
 import { planEquip } from "../web/src/builds/equip.js";
 import type { BuildProfile } from "../web/src/builds/profile.js";
 import type { Vault } from "../src/vault/types.js";
@@ -253,4 +254,47 @@ test("builds: a draft is unsaved until committed; committing replaces by id or a
   assert.equal(isUnsaved(saved, fresh), true, "a never-saved build counts as unsaved");
   assert.deepEqual(commitBuild(saved, fresh).map((x) => x.name), ["New", "A2"]);
   assert.ok(sameBuild(a, { ...a, updated: "x" }));
+});
+
+test("builds: an in-game loadout becomes a build, matches a saved build exactly, and the list sorts by last use" + "", () => {
+  const game = fromGameLoadout(0, "Loadout 1", [
+    { id: "sub", plugs: [11, 21, 22, 31, 32] },
+    { id: "h1", plugs: [41, 51] },
+    { id: "w1", plugs: [] },
+  ], (id) => (id === "sub" ? 500 : undefined), ctx());
+  assert.equal(game.subclass, 500);
+  assert.equal(game.plugs[0], 11);
+  assert.equal(game.plugs[1], 21);
+  assert.equal(game.plugs[2], 22, "the second aspect fills the second aspect socket");
+  assert.equal(game.plugs[3], 31);
+  assert.equal(game.plugs[4], 32, "the second fragment fills the second fragment socket");
+  assert.deepEqual(game.mods.Helmet, [41, 51, 0, 0]);
+  assert.equal(game.items.Kinetic?.id, "w1");
+
+  const saved = structuredClone(game);
+  saved.id = "evr";
+  saved.name = "My build";
+  saved.mods.Helmet = [41, 0, 51, 0]; // socket order doesn't matter
+  assert.equal(sameLoadout(saved, game, defs), true);
+  saved.plugs[3] = 32; // a different fragment
+  assert.equal(sameLoadout(saved, game, defs), false);
+  saved.plugs[3] = 31;
+  saved.items.Kinetic = undefined; // a different item set
+  assert.equal(sameLoadout(saved, game, defs), false);
+
+  const old = { ...game, created: "2026-01-01", updated: "2026-02-01" };
+  assert.equal(lastUsed(old), "2026-02-01");
+  assert.equal(lastUsed({ ...old, applied: "2026-03-01" }), "2026-03-01");
+  assert.equal(lastUsed({ ...old, applied: "2026-01-15" }), "2026-02-01", "an older apply doesn't hide a newer edit");
+});
+
+test("builds: loadout plugs are placed by socket index, sentinels are empty, two aspects and fragments all land", () => {
+  // Socket order: super, aspect, aspect, fragment x3. Index 3 is unset; fragments sit at 4 and 5.
+  const game = fromGameLoadout(0, "L", [{ id: "sub", plugs: [11, 22, 21, UNSET_PLUG, 32, 31] }, { id: "w1", plugs: [] }], (id) => (id === "sub" ? 500 : undefined), ctx());
+  assert.deepEqual([0, 1, 2, 3, 4, 5].map((i) => game.plugs[i]), [11, 22, 21, 30, 32, 31]);
+  assert.equal(fragmentSlots(game, defs), 3, "capacity from both aspects: 1 + 2");
+  // A DIM-imported build with no instance id on the weapon still matches by hash.
+  const dim = structuredClone(game);
+  dim.items.Kinetic = { id: "", hash: 900 };
+  assert.equal(sameLoadout(dim, game, defs), true);
 });

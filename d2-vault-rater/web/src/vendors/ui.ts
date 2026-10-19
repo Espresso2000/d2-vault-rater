@@ -17,6 +17,7 @@ import { rateVendors, type Buy, type RatedSale, type RatedVendor } from "../../.
 import { BRIGHT_DUST, type Offer, type VendorCost } from "../../../src/vendors/vendors.js";
 import { LoginRequired } from "../shims/client";
 import { esc } from "../html";
+import { loadingBlock } from "../loading";
 
 export interface VendorsInput {
   vault: Vault;
@@ -28,6 +29,8 @@ export interface VendorsInput {
 declare global {
   interface Window {
     VR_VENDORS?: { render: (el: HTMLElement) => void; count: () => number | null };
+    /** The page's hover card asks for a vendor item by its data-vt id. */
+    VR_TIP?: (id: string) => { w?: object; a?: object } | null;
   }
 }
 
@@ -37,6 +40,8 @@ let charId = "";
 /** Rated stock by character id; a character's stock is read once per visit unless refreshed. */
 const stock = new Map<string, RatedVendor[]>();
 let loading: Promise<void> | null = null;
+/** Where a load is up to: reading from Bungie, then rating each item (done of total). */
+let progress: { phase: "reading" | "rating"; done: number; total: number } = { phase: "reading", done: 0, total: 0 };
 let error = "";
 type Kind = "weapons" | "armor" | "eververse";
 let kind: Kind = "weapons";
@@ -60,7 +65,34 @@ export function initVendors(i: VendorsInput) {
   onlyBuy = store.get("vr-vendors-buy") === "1";
   try { closed = new Set(JSON.parse(store.get("vr-vendors-closed") || "[]") as string[]); } catch { /* keep all open */ }
   window.VR_VENDORS = { render, count: () => buyCount() };
+  window.VR_TIP = (id) => tips.get(id) ?? null;
 }
+
+/** Each drawn card's item in the report's own shape, so the page's hover card can show it like vault gear. */
+const tips = new Map<string, { w?: object; a?: object }>();
+const tipFor = (item: { w?: object; a?: object }) => {
+  const id = `v${tips.size}`;
+  tips.set(id, item);
+  return id;
+};
+const weaponTip = (r: WeaponRating, rolled: boolean) => {
+  const good = goodSet(r);
+  return {
+    w: {
+      id: r.instanceId, n: r.name, e: r.element, t: r.type, f: r.frame, r: r.rarity, gt: r.gearTier,
+      sc: r.score, rs: r.rollScore, v: r.verdict, tier: r.aegis?.tier ?? null, rank: r.aegis?.rank ?? null, tab: r.aegis?.tab ?? "", rmw: r.recMasterwork,
+      // Before purchase the roll isn't decided, so there are no perks to show.
+      pk: rolled ? r.perks.map((p) => ({ k: p.kind, a: p.active, o: p.options, m: p.options.filter((o) => good.has(o)) })) : [],
+      pi: Object.assign({}, ...r.perks.map((p) => p.icons ?? {})),
+    },
+  };
+};
+const armorTip = (a: ArmorRating) => ({
+  a: {
+    id: a.instanceId, n: a.name, cls: a.classType, s: a.slot, r: a.rarity, gt: a.gearTier, arch: a.archetype,
+    st: a.topStats.map((t) => [t.name, t.value]), tot: a.statTotal, set: a.setName, si: a.setInfo, sc: a.score, v: a.verdict,
+  },
+});
 
 const buyCount = () => {
   const list = stock.get(charId);
@@ -80,10 +112,18 @@ async function load(force = false) {
   if (force) stock.delete(id);
   error = "";
   draw();
+  progress = { phase: "reading", done: 0, total: 0 };
   loading = (async () => {
     try {
       const raw = await fetchVendors(id);
-      stock.set(id, rateVendors(raw, input.vault, { aegis: input.aegis, wishlists: loadWishlists(), manifest: input.manifest, armorSets: loadArmorSets() }, input.settings));
+      progress = { phase: "rating", done: 0, total: raw.reduce((n, v) => n + v.weapons.length + v.armor.length, 0) };
+      draw();
+      // Rating costs tens of milliseconds per item: it hands the page back between items so nothing freezes.
+      const rated = await rateVendors(raw, input.vault, { aegis: input.aegis, wishlists: loadWishlists(), manifest: input.manifest, armorSets: loadArmorSets() }, input.settings, (done, total) => {
+        progress = { phase: "rating", done, total };
+        updateProgress();
+      });
+      stock.set(id, rated);
       // The tab's count (weapons worth buying) is only known once stock is read.
       const tab = document.querySelector("#t-vendors");
       tab?.querySelector(".count")?.remove();
@@ -135,7 +175,7 @@ function weaponCard({ rating: r, sale, buy, owned }: RatedSale<WeaponRating>) {
   const cols = r.perks.filter((p) => p.options.length).sort((a, b) => rank(a.kind) - rank(b.kind));
   const line = cols.filter((p) => PERK_ORDER.includes(p.kind)).map((p) => perkIcon(p.active, p.icons?.[p.active], good.has(p.active) ? "good" : "")).join("");
   const exo = r.rarity === "Exotic";
-  return `<details class="vcard v-${buy}"><summary>
+  return `<details class="vcard v-${buy}"><summary data-vt="${tipFor(weaponTip(r, sale.rolled))}">
       <div class="vdhead"><span class="ico${exo ? " exotic" : ""}">${img(r.icon)}${tierBadge(r)}</span>
         <div class="vname"><div class="nm">${esc(r.name)}</div><div class="sm">${esc([r.frame.replace(/ Frame$/, ""), r.type].filter(Boolean).join(" "))}</div><div class="sm">${elDot(r.element)}${exo ? ' · <span class="exo">Exotic</span>' : ""}</div></div>
         ${score(r.score)}</div>
@@ -152,7 +192,7 @@ function weaponCard({ rating: r, sale, buy, owned }: RatedSale<WeaponRating>) {
 
 function armorCard({ rating: a, sale, buy }: RatedSale<ArmorRating>) {
   const exo = a.rarity === "Exotic";
-  return `<details class="vcard v-${buy}"><summary>
+  return `<details class="vcard v-${buy}"><summary data-vt="${tipFor(armorTip(a))}">
       <div class="vdhead"><span class="ico${exo ? " exotic" : ""}">${img(a.icon)}<span class="tier tU" title="Gear tier">${a.gearTier ? "T" + a.gearTier : exo ? "EX" : "—"}</span></span>
         <div class="vname"><div class="nm">${esc(a.name)}</div><div class="sm">${esc(a.classType)} ${esc(a.slot)}</div><div class="sm">${esc(a.archetype || "Legacy")}${a.setName ? " · " + esc(a.setName) : ""}</div></div>
         ${score(a.score)}</div>
@@ -201,8 +241,21 @@ function vendorBlock(v: RatedVendor) {
   return section(String(v.vendorHash), `${v.icon ? `<img class="vico" src="${esc(v.icon)}" alt="">` : ""}<div><h3>${esc(v.name)}</h3><div class="sm">${sub}</div></div>`, `<div class="vcards">${shown.map(card).join("")}</div>`, shown.length);
 }
 
+const loadingText = (): [string, string] =>
+  progress.phase === "rating" && progress.total
+    ? ["Rating vendor stock…", `${Math.min(progress.done, progress.total)} of ${progress.total} items rated against your vault.`]
+    : ["Reading vendor stock…", "Asking Bungie what every vendor sells right now, then rating it against your vault."];
+/** Updates the loading message in place, so progress doesn't redraw the panel. */
+const updateProgress = () => {
+  const [title, detail] = loadingText();
+  const box = panel?.querySelector(".vr-loading");
+  if (box?.querySelector("b")) box.querySelector("b")!.textContent = title;
+  if (box?.querySelector("p")) box.querySelector("p")!.textContent = detail;
+};
+
 function draw() {
   if (!panel) return;
+  tips.clear();
   const list = stock.get(charId);
   const chars = input.vault.characters;
   const gear = (list ?? []).filter((v) => v.weapons.length || v.armor.length);
@@ -212,9 +265,9 @@ function draw() {
   const buys = all.filter((s) => s.buy === "buy").length;
   const blocks = kind === "eververse" ? "" : picked.map(vendorBlock).join("");
   const body = error
-    ? `<p class="vr-err">${esc(error)}</p>`
+    ? `<p class="vr-err">${esc(error)}</p><button class="btn" type="button" id="vd-retry">Try again</button>`
     : !list
-      ? `<p class="lede muted">Reading what vendors sell right now…</p>`
+      ? loadingBlock(...loadingText())
       : kind === "eververse"
         ? offersBlock(list)
         : blocks ? `<div class="vgrid">${blocks}</div>` : `<p class="muted">${onlyBuy ? "Nothing here is worth buying right now." : `No vendor is selling ${kind} right now.`}</p>`;
@@ -243,7 +296,7 @@ function wire(el: HTMLElement) {
       kind = k.dataset.vk as Kind;
       store.set("vr-vendors-kind", kind);
       draw();
-    } else if (t.closest("#vd-refresh")) void load(true);
+    } else if (t.closest("#vd-refresh, #vd-retry")) void load(true);
   });
   // Toggle doesn't bubble: listen in the capture phase. Vendor cards' own weapon cards are ignored.
   el.addEventListener("toggle", (e) => {

@@ -2,6 +2,7 @@
  * Vault Rater in the browser: sign in with Bungie, read the vault, rate it with the same code as the
  * local app (../../src), and render the same report page. Nothing runs on a server.
  */
+import { loadingBlock } from "./loading";
 import { hydrate, paths, readText } from "./shims/config";
 import { loadTokens, clearTokens, canSignIn, LoginRequired, minutesLeft } from "./shims/client";
 import { startLogin, finishLogin } from "./shims/oauth";
@@ -21,7 +22,7 @@ import { rateArmor } from "../../src/rating/armor.js";
 import { rateActivities } from "../../src/rating/activities.js";
 import { planEncounters } from "../../src/rating/encounters.js";
 import { planDimActions, applyDimActions, undoDimActions, type DimPlan } from "../../src/dim/actions.js";
-import { insertPerk, moveItems } from "../../src/bungie/transfer.js";
+import { insertMod, insertPerk, moveItems } from "../../src/bungie/transfer.js";
 import { buildSiteData } from "../../src/report/siteData.js";
 import { loadBuilds } from "./builds/store";
 import { esc } from "./html";
@@ -194,13 +195,27 @@ async function run() {
 function lazyBuilds(input: BuildsInput) {
   // initBuilds swaps in the real VR_BUILDS, so render below reaches the loaded tab.
   const ready = import("./builds/ui").then((b) => b.initBuilds(input));
-  window.VR_BUILDS = { count: () => loadBuilds().length || null, render: (el) => void ready.then(() => window.VR_BUILDS!.render(el)) };
+  window.VR_BUILDS = {
+    count: () => loadBuilds().length || null,
+    render: (el) => {
+      // The tab switches at once: show a loading block now, while the tab's code loads.
+      el.innerHTML = loadingBlock("Loading builds…");
+      void ready.then(() => window.VR_BUILDS!.render(el));
+    },
+  };
 }
 
 /** The Vendors tab is its own chunk too; it reads vendor stock from Bungie only when first opened. */
 function lazyVendors(input: VendorsInput) {
   const ready = import("./vendors/ui").then((v) => v.initVendors(input));
-  window.VR_VENDORS = { count: () => null, render: (el) => void ready.then(() => window.VR_VENDORS!.render(el)) };
+  window.VR_VENDORS = {
+    count: () => null,
+    render: (el) => {
+      // The tab switches at once: show a loading block now, while the tab's code loads.
+      el.innerHTML = `<div class="vendors"><div class="sec-head"><h2>Vendors</h2></div>${loadingBlock("Loading vendors…")}</div>`;
+      void ready.then(() => window.VR_VENDORS!.render(el));
+    },
+  };
 }
 
 /** Sign-in status for the Settings panel, and a banner once Bungie access really runs out. */
@@ -248,6 +263,10 @@ window.VR_API = async (path, body) => {
       case "/api/perk":
         if (typeof body.id !== "string" || typeof body.socket !== "number" || typeof body.perk !== "string") return { ok: false, error: "Send a weapon id, socket index and perk name." };
         await insertPerk(body.id, body.socket, body.perk);
+        return { ok: true };
+      case "/api/mod":
+        if (typeof body.id !== "string" || typeof body.socket !== "number" || typeof body.mod !== "string") return { ok: false, error: "Send a weapon id, socket index and mod name." };
+        await insertMod(body.id, body.socket, body.mod);
         return { ok: true };
       case "/api/locks/apply": {
         // Only the plan the page previewed, and only with the explicit confirmation.

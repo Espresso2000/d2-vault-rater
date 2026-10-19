@@ -1,8 +1,8 @@
 import { DAMAGE_TYPES as DAMAGE, type Manifest, type ItemDef } from "../bungie/defs.js";
 import { bungieUrl } from "../bungie/client.js";
-import type { ArmorRecord, ArmorSlot, ClassName, PerkColumn, Vault, WeaponRecord, WeaponSlot } from "./types.js";
+import type { ArmorRecord, ArmorSlot, ClassName, PerkColumn, Vault, WeaponMod, WeaponPlug, WeaponRecord, WeaponSlot } from "./types.js";
 
-export const PROFILE_COMPONENTS = [100, 102, 200, 201, 205, 300, 304, 305, 310];
+export const PROFILE_COMPONENTS = [100, 102, 200, 201, 205, 300, 304, 305, 306, 307, 310];
 
 const WEAPON_BUCKETS: Record<number, WeaponSlot> = { 1498876634: "Kinetic", 2465295065: "Energy", 953998645: "Power" };
 const ARMOR_BUCKETS: Record<number, ArmorSlot> = {
@@ -12,7 +12,8 @@ const ARMOR_BUCKETS: Record<number, ArmorSlot> = {
   20886954: "Legs",
   1585787867: "Class Item",
 };
-const CLASSES: Record<number, ClassName> = { 0: "Titan", 1: "Hunter", 2: "Warlock", 3: "Any" };
+const POSTMASTER_BUCKET = 215593132;
+const CLASSES: Record<number, ClassName> ={ 0: "Titan", 1: "Hunter", 2: "Warlock", 3: "Any" };
 const AMMO = { 1: "Primary", 2: "Special", 3: "Heavy" } as const;
 
 export const SOCKET_CATEGORY = { weaponPerks: 4241085061, intrinsic: 3956125808 };
@@ -43,6 +44,9 @@ export interface RawProfile {
   characters?: { data?: Record<string, { classType: number; dateLastPlayed?: string }> };
   characterInventories?: { data?: Record<string, { items: RawItem[] }> };
   characterEquipment?: { data?: Record<string, { items: RawItem[] }> };
+  /** Unlocked plugs in shared plug sets (weapon mods among them), by plug set hash (components 306 and 307). */
+  profilePlugSets?: { data?: { plugs: Record<string, RawPlug[]> } };
+  characterPlugSets?: { data?: Record<string, { plugs: Record<string, RawPlug[]> }> };
   itemComponents?: {
     instances?: { data?: Record<string, { damageType?: number; primaryStat?: { value: number }; gearTier?: number }> };
     stats?: { data?: Record<string, { stats: Record<string, { statHash: number; value: number }> }> };
@@ -55,6 +59,12 @@ const rarity = (d: ItemDef) => (d.inventory?.tierType === 6 ? "Exotic" : d.inven
 
 function plugName(m: Manifest, hash?: number): string {
   return (hash && m.items[hash]?.displayProperties?.name) || "";
+}
+
+/** A plug's name, icon and description, or null for an empty socket. */
+function plugOf(m: Manifest, hash?: number): WeaponPlug | null {
+  const d = hash ? m.items[hash]?.displayProperties : undefined;
+  return d?.name ? { name: d.name, icon: d.icon ? bungieUrl(d.icon) : null, description: d.description ?? "" } : null;
 }
 
 function isEnhanced(m: Manifest, hash: number): boolean {
@@ -75,18 +85,26 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
   const statsC = raw.itemComponents?.stats?.data ?? {};
   const socketsC = raw.itemComponents?.sockets?.data ?? {};
   const plugsC = raw.itemComponents?.reusablePlugs?.data ?? {};
+  // A plug set's unlocked plugs: the account's, plus any a character has on its own.
+  const plugSet = (hash?: number): RawPlug[] => !hash ? [] : [
+    ...(raw.profilePlugSets?.data?.plugs[hash] ?? []),
+    ...Object.values(raw.characterPlugSets?.data ?? {}).flatMap((c) => c.plugs[hash] ?? []),
+  ];
 
-  const located: { item: RawItem; where: string; equipped: boolean }[] = [];
+  const located: { item: RawItem; where: string; equipped: boolean; postmaster?: boolean }[] = [];
   for (const it of raw.profileInventory?.data?.items ?? []) located.push({ item: it, where: "vault", equipped: false });
+  // A character's inventory also holds its postmaster (Lost Items). Those items aren't in its slots until they're
+  // pulled, so they're flagged: counting them as carried filled the Vault page with items the game doesn't show there.
   for (const [cid, inv] of Object.entries(raw.characterInventories?.data ?? {}))
-    for (const it of inv.items) located.push({ item: it, where: cid, equipped: false });
+    for (const it of inv.items) located.push({ item: it, where: cid, equipped: false, postmaster: it.bucketHash === POSTMASTER_BUCKET || undefined });
   for (const [cid, inv] of Object.entries(raw.characterEquipment?.data ?? {}))
     for (const it of inv.items) located.push({ item: it, where: cid, equipped: true });
 
   const weapons: WeaponRecord[] = [];
   const armor: ArmorRecord[] = [];
+  const statIcons: Record<string, string> = {};
 
-  for (const { item, where, equipped } of located) {
+  for (const { item, where, equipped, postmaster } of located) {
     const id = item.itemInstanceId;
     const def = m.items[item.itemHash];
     if (!id || !def) continue;
@@ -99,10 +117,12 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
     if (def.itemType === 3) {
       const columns: PerkColumn[] = [];
       let frame = "";
+      let intrinsic: WeaponPlug | null = null;
       let masterwork: string | null = null;
+      const mods: WeaponMod[] = [];
       const cats = def.sockets?.socketCategories ?? [];
       const intrinsicIdx = cats.find((c) => c.socketCategoryHash === SOCKET_CATEGORY.intrinsic)?.socketIndexes ?? [];
-      for (const i of intrinsicIdx) frame ||= plugName(m, sockets[i]?.plugHash);
+      for (const i of intrinsicIdx) if (!frame) { frame = plugName(m, sockets[i]?.plugHash); intrinsic = plugOf(m, sockets[i]?.plugHash); }
       const perkIdx = cats.find((c) => c.socketCategoryHash === SOCKET_CATEGORY.weaponPerks)?.socketIndexes ?? [];
       let traits = 0;
       let parts = 0;
@@ -129,12 +149,35 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
           hashes: Object.fromEntries(optionHashes.map((h) => [plugName(m, h), h] as const).filter(([n]) => n)),
         });
       }
-      for (const s of sockets) {
+      sockets.forEach((s, i) => {
         const pci = s.plugHash ? m.items[s.plugHash]?.plug?.plugCategoryIdentifier ?? "" : "";
         if (/masterworks\.stat/.test(pci)) {
           const n = plugName(m, s.plugHash);
           masterwork = n.includes(":") ? n.split(":").pop()!.trim() : n || null;
         }
+        const plug = /masterworks\.stat|weapon\.mod_/.test(pci) && s.isVisible !== false ? plugOf(m, s.plugHash) : null;
+        if (!plug) return;
+        if (/masterworks/.test(pci)) return void mods.push({ ...plug, kind: "masterwork" });
+        // The mods that fit: this copy's own list when Bungie sends one, else the socket's shared plug set (unlocked ones only).
+        const entry = def.sockets?.socketEntries?.[i];
+        const own = reusable[String(i)] ?? [];
+        const avail = own.length ? own : plugSet(entry?.reusablePlugSetHash ?? entry?.randomizedPlugSetHash);
+        const seen = new Set<number>();
+        const options = avail
+          .filter((p) => p.canInsert !== false && p.enabled !== false && /weapon\.mod_/.test(m.items[p.plugItemHash]?.plug?.plugCategoryIdentifier ?? ""))
+          .flatMap((p) => { const o = plugOf(m, p.plugItemHash); return o && !seen.has(p.plugItemHash) && seen.add(p.plugItemHash) ? [{ ...o, hash: p.plugItemHash }] : []; });
+        mods.push({ ...plug, kind: "mod", socket: i, options: options.length ? options : undefined });
+      });
+      // Live stats first; the base stats fill in what the live data leaves out.
+      const stats: Record<string, number> = {};
+      for (const st of Object.values(statsC[id]?.stats ?? {})) {
+        const n = m.stats[st.statHash]?.displayProperties?.name;
+        if (n) stats[n] = st.value;
+      }
+      const baseStats: string[] = [];
+      for (const st of Object.values(def.stats?.stats ?? {})) {
+        const n = m.stats[st.statHash]?.displayProperties?.name;
+        if (n && !(n in stats)) { stats[n] = st.value; baseStats.push(n); }
       }
       weapons.push({
         kind: "weapon",
@@ -154,21 +197,29 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
         adept: /\((adept|timelost|harrowed)\)/i.test(name),
         columns,
         masterwork,
+        stats,
+        baseStats,
+        intrinsic,
+        mods,
         icon: bungieUrl(def.displayProperties.icon),
         screenshot: def.screenshot ? bungieUrl(def.screenshot) : null,
-        location: { where, equipped },
+        location: { where, equipped, ...(postmaster ? { postmaster } : {}) },
       });
     } else if (def.itemType === 2 && ARMOR_BUCKETS[bucket]) {
       const stats: Record<string, number> = {};
       for (const s of Object.values(statsC[id]?.stats ?? {})) {
-        const n = m.stats[s.statHash]?.displayProperties?.name;
+        const d = m.stats[s.statHash]?.displayProperties, n = d?.name;
         if (n) stats[n] = s.value;
+        if (n && d?.icon) statIcons[n] ??= bungieUrl(d.icon);
       }
       let archetype: string | null = null;
       for (const s of sockets) {
         const pci = s.plugHash ? m.items[s.plugHash]?.plug?.plugCategoryIdentifier ?? "" : "";
         if (/archetype/i.test(pci)) archetype = plugName(m, s.plugHash) || null;
       }
+      // An exotic's trait is its intrinsic plug.
+      // (Exotics carry several empty "intrinsics" sockets, so take the first one with a name.)
+      const trait = rarity(def) === "Exotic" ? sockets.map((s) => (m.items[s.plugHash ?? 0]?.plug?.plugCategoryIdentifier === "intrinsics" ? plugOf(m, s.plugHash) : null)).find(Boolean) ?? null : null;
       const setHash = def.equippingBlock?.equipableItemSetHash;
       armor.push({
         kind: "armor",
@@ -179,14 +230,16 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
         slot: ARMOR_BUCKETS[bucket],
         rarity: rarity(def),
         gearTier: inst.gearTier ?? null,
+        power: inst.primaryStat?.value ?? null,
         stats,
         statTotal: Object.values(stats).reduce((a, b) => a + b, 0),
         archetype,
+        trait,
         setName: setHash ? m.itemSets[setHash]?.displayProperties?.name ?? null : null,
         legacy: archetype === null,
         locked: (item.state & STATE_LOCKED) !== 0,
         icon: bungieUrl(def.displayProperties.icon),
-        location: { where, equipped },
+        location: { where, equipped, ...(postmaster ? { postmaster } : {}) },
       });
     }
   }
@@ -201,5 +254,6 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
       .map(([id, c]) => ({ id, className: CLASSES[c.classType] ?? "Any" })),
     weapons,
     armor,
+    statIcons,
   };
 }
