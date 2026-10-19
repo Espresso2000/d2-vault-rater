@@ -3022,7 +3022,7 @@ function vrMain() {
       sub: `<span>${esc(a.arch || "Legacy armor")}${setLine(a)}</span>${a.pw ? `<span class="vtpw">✦ ${a.pw}</span>` : ""}${a.lk ? '<span class="chip">🔒 Locked</span>' : ""}${a.loc && a.loc !== "Vault" ? `<span class="chip">${esc(a.loc)}</span>` : ""}${dimTagPick(a)}`,
       body: dpLayout(
         [dpSec(1, "", scores, "bare"), dpSec(2, "Verdict", why, `dp-verdict ${a.v}`), dpSec(5, "Actions", movePanel(a, true) + dimPanel(a)), dpSec(6, "Details", `<div class="facts">${fact("Where", a.loc)}${fact("Archetype", a.arch || "Legacy")}${fact("Power", a.pw)}</div>`)],
-        [a.trait ? dpSec(1, "Exotic trait", traitBlock(a.trait)) : "", dpSec(3, "Stats", statBars(a, true) + parts, "", `${a.tot} total`)],
+        [dpSec(3, "Stats", statBars(a, true) + parts, "", `${a.tot} total`), a.trait ? dpSec(4, "Exotic trait", traitBlock(a.trait)) : ""],
         [set ? dpSec(4, `${esc(a.si.name)} set`, set, "", `${a.si.ownedSlots} of 5 owned · rating ${a.si.value}`) : "", others.length ? dpSec(7, "Same slot and archetype", `<div class="list">${others.map(armorRow).join("")}</div>`) : ""],
         dpExplain(`<p><b>Armor score</b> is 40% stats compared with a Tier 5 roll, 25% fit to your build stats, 25% the set bonus (Aegis S-F) and 10% for Tier 5 or exotic.</p><p>The four smaller numbers under Stats are those parts, each out of 100.</p>`),
       ),
