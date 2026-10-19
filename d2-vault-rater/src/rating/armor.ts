@@ -16,7 +16,7 @@ export interface ArmorRating {
   rarity: string;
   gearTier: number | null;
   archetype: string | null;
-  trait: { name: string; description: string } | null;
+  trait: { name: string; icon: string | null; description: string } | null;
   /** Top three stats, highest first: primary, secondary, tertiary. */
   topStats: { name: string; value: number }[];
   statTotal: number;

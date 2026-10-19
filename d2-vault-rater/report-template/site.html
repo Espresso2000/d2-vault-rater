@@ -975,6 +975,8 @@ aside.drawer[data-mode=bottom] .dp-id h2 { font-size: 23px; }
 /* Perks, laid out like the game's weapon screen: the frame on top, one column of round sockets per perk slot, then mods */
 .pk-intr { display: flex; align-items: center; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
 .pk-intr img, .pk-intr .ph { width: 42px; height: 42px; flex: none; border-radius: 8px; background: rgba(0,0,0,.3); }
+.pk-intr.tr { align-items: flex-start; padding: 0; border: 0; }
+.pk-intr.tr span { display: block; margin-top: 3px; line-height: 1.4; }
 .pk-intr b { display: block; font: 600 16px/1.2 var(--display); }
 .pk-intr span { font-size: 13px; color: var(--muted); }
 .pk-intr[data-ptip] { cursor: help; border-radius: 8px; }
@@ -2129,9 +2131,11 @@ function vrMain() {
   const tipTop = (x, sub) => `<div class="nm"><span>${esc(x.n)}</span>${x.pw ? `<span class="vtpw">✦ ${x.pw}</span>` : ""}</div><div class="sm">${sub}</div><div class="vtmeta"><span class="vtv ${x.v}">${VERDICT[x.v]}</span><span>Overall ${x.sc}${x.rs != null ? ` (${x.rs} · ${x.tier || "—"})` : ""}</span>${x.gt ? `<span>Tier ${x.gt}</span>` : ""}${x.eq ? "<span>Equipped</span>" : ""}</div>`;
   /** A set's 2- and 4-piece perks with their Aegis tier, one row each. */
   const setRows = (si) => [2, 4].map((n) => { const b = si?.bonuses.find((x) => x.pieces === n); return `<div class="vtaegis"><span class="tier t${b?.tier || "U"}">${b?.tier || "—"}</span><span><b>${n} piece bonus</b>${b ? " · " + esc(b.name) : ""}</span></div>`; }).join("");
+  /** An exotic's trait: its symbol, name and the full description. */
+  const traitBlock = (t) => (t ? `<div class="pk-intr tr">${t.ic ? img(t.ic) : ""}<div><b>${esc(t.n)}</b>${t.d ? `<span>${esc(t.d)}</span>` : ""}</div></div>` : "");
   const tipHtml = (w, a, s) => s ? `<div class="nm"><span>${esc(s.name)}</span></div>${setRows(s)}` : w
-    ? `${tipTop(w, `<span class="vtel" style="--el:var(--${esc(w.e)})">${esc(w.e)}</span> ${esc(typeLine(w))}`)}<div class="vtaegis">${tierBadge(w)}<span>${w.tier ? "tier gun according to Aegis" : "Unrated: not on Aegis's sheet"}</span></div><div class="vtaegis"><b>${w.rs ?? "—"}/100</b><span>Aegis god roll match</span></div><div class="vtrows">${perkRows(w)}</div>`
-    : `${tipTop(a, `${esc(a.cls)} · ${esc(a.arch || "Legacy")}${setLine(a)}`)}${statBars(a, true)}<div class="sm">${a.tot} total${topStat(a) ? ` · highest ${esc(topStat(a))}` : ""}${a.loc ? " · " + esc(a.loc) : ""}</div>${a.si && !isExotic(a) ? setRows(a.si) : ""}${a.trait ? `<div class="vtaegis"><b>${esc(a.trait.n)}</b></div><div class="sm">${esc(a.trait.d)}</div>` : ""}`;
+    ? `${tipTop(w, `<span class="vtel" style="--el:var(--${esc(w.e)})">${esc(w.e)}</span> ${esc(typeLine(w))}`)}<div class="vtaegis">${tierBadge(w)}<span>${w.tier ? "tier gun according to Aegis" : "Unrated: not on Aegis's sheet"}</span></div><div class="vtaegis"><b>${w.rs ?? "—"}/100</b><span>Aegis god roll match</span></div><div class="vtrows">${perkRows(w)}</div>${w.r === "Exotic" ? traitBlock(w.fr) : ""}`
+    : `${tipTop(a, `${esc(a.cls)} · ${esc(a.arch || "Legacy")}${setLine(a)}`)}${statBars(a, true)}<div class="sm">${a.tot} total${topStat(a) ? ` · highest ${esc(topStat(a))}` : ""}${a.loc ? " · " + esc(a.loc) : ""}</div>${a.si && !isExotic(a) ? setRows(a.si) : ""}${traitBlock(a.trait)}`;
   // Anything showing one item gets the card: data-w / data-a for your own gear, data-vt for items another module rates
   // (the web app's Vendors tab answers window.VR_TIP(id) with { w } or { a }). Not on Overview or Wrapped.
   const HOVER = "[data-w], [data-a], [data-vt], [data-set]";
@@ -3018,7 +3022,7 @@ function vrMain() {
       sub: `<span>${esc(a.arch || "Legacy armor")}${setLine(a)}</span>${a.pw ? `<span class="vtpw">✦ ${a.pw}</span>` : ""}${a.lk ? '<span class="chip">🔒 Locked</span>' : ""}${a.loc && a.loc !== "Vault" ? `<span class="chip">${esc(a.loc)}</span>` : ""}${dimTagPick(a)}`,
       body: dpLayout(
         [dpSec(1, "", scores, "bare"), dpSec(2, "Verdict", why, `dp-verdict ${a.v}`), dpSec(5, "Actions", movePanel(a, true) + dimPanel(a)), dpSec(6, "Details", `<div class="facts">${fact("Where", a.loc)}${fact("Archetype", a.arch || "Legacy")}${fact("Power", a.pw)}</div>`)],
-        [dpSec(3, "Stats", statBars(a, true) + parts, "", `${a.tot} total`)],
+        [a.trait ? dpSec(8, "Exotic trait", traitBlock(a.trait)) : "", dpSec(3, "Stats", statBars(a, true) + parts, "", `${a.tot} total`)],
         [set ? dpSec(4, `${esc(a.si.name)} set`, set, "", `${a.si.ownedSlots} of 5 owned · rating ${a.si.value}`) : "", others.length ? dpSec(7, "Same slot and archetype", `<div class="list">${others.map(armorRow).join("")}</div>`) : ""],
         dpExplain(`<p><b>Armor score</b> is 40% stats compared with a Tier 5 roll, 25% fit to your build stats, 25% the set bonus (Aegis S-F) and 10% for Tier 5 or exotic.</p><p>The four smaller numbers under Stats are those parts, each out of 100.</p>`),
       ),
