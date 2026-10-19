@@ -45,7 +45,7 @@
     linear-gradient(var(--tick), var(--tick)) 100% 100% / 14px 1.5px no-repeat, linear-gradient(var(--tick), var(--tick)) 100% 100% / 1.5px 14px no-repeat;
   --spot: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(var(--c3),.10), transparent 70%);
   --cut: 3px 18px;
-  --S: #f2c14e; --A: #5b9bff; --B: #33d69a; --C: #8d97b8; --D: #ff6b6b; --U: #646e98;
+  --S: #f2c14e; --A: #b06cff; --B: #5b9bff; --C: #33d69a; --D: #ff6b6b; --U: #646e98;
   --Kinetic: #d9dde8; --Arc: #7bdcff; --Solar: #ff9c45; --Void: #b78bff; --Stasis: #5b8cff; --Strand: #3fe08a; --Unknown: #8d97b8;
   --keep: #33e3a0; --shard: #ff7a7a; --review: #f2c14e; --exotic: #f2c14e;
   --display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
@@ -58,9 +58,11 @@
   --pad: clamp(16px, 2.5vw, 56px);
   --shadow: 0 24px 60px -30px rgba(0,0,0,.9);
 }
-:root[data-theme=purple-orange] { --c1: 150,100,255; --c2: 214,110,170; --c3: 255,150,60; --c4: 255,190,110; }
-:root[data-theme=blue-purple] { --c1: 77,125,255; --c2: 120,130,255; --c3: 168,110,255; --c4: 200,150,255; }
-:root[data-theme=pink-purple] { --c1: 168,110,255; --c2: 205,110,235; --c3: 255,110,190; --c4: 255,160,215; }
+[data-theme=blue-green] { --c1: 77,125,255; --c2: 54,196,242; --c3: 51,227,160; --c4: 106,245,184; }
+[data-theme=purple-orange] { --c1: 150,100,255; --c2: 214,110,170; --c3: 255,150,60; --c4: 255,190,110; }
+[data-theme=blue-purple] { --c1: 77,125,255; --c2: 120,130,255; --c3: 168,110,255; --c4: 200,150,255; }
+[data-theme=pink-purple] { --c1: 168,110,255; --c2: 205,110,235; --c3: 255,110,190; --c4: 255,160,215; }
+#theme .tsw { display: inline-block; flex: none; width: 54px; height: 16px; border-radius: 999px; vertical-align: -3px; margin-right: 6px; background: linear-gradient(110deg, rgb(var(--c1)), rgb(var(--c2)) 35%, rgb(var(--c3)) 65%, rgb(var(--c4))); box-shadow: 0 0 0 1px var(--line-hi), 0 0 12px -2px rgba(var(--c3), .6); }
 * { box-sizing: border-box; }
 html { background: var(--void); scroll-padding-top: calc(var(--bar-h) + 16px); }
 body { margin: 0; color: var(--ink); font: 15px/1.55 var(--body); font-feature-settings: "cv11", "ss01"; background: var(--void); min-height: 100vh; overflow-x: clip; -webkit-font-smoothing: antialiased; }
@@ -109,6 +111,14 @@ button { cursor: pointer; }
 .tabrow { display: flex; }
 nav.tabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; min-width: 0; }
 nav.tabs::-webkit-scrollbar { display: none; }
+.tabsx { position: relative; flex: 1; min-width: 0; }
+nav.tabs { -webkit-mask: linear-gradient(90deg, transparent, #000 var(--fl, 0px), #000 calc(100% - var(--fr, 0px)), transparent); mask: linear-gradient(90deg, transparent, #000 var(--fl, 0px), #000 calc(100% - var(--fr, 0px)), transparent); }
+.tscroll { position: absolute; top: 50%; z-index: 2; display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border-radius: 50%; border: 1px solid var(--line-hi); background: rgba(14,20,48,.92); color: var(--ink); transform: translateY(-50%); opacity: 0; pointer-events: none; transition: opacity .2s ease, border-color .2s ease; }
+.tscroll::before { content: ""; width: 7px; height: 7px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; }
+.tscroll.l { left: 0; } .tscroll.l::before { transform: translateX(1px) rotate(135deg); }
+.tscroll.r { right: 0; } .tscroll.r::before { transform: translateX(-1px) rotate(-45deg); }
+.tscroll:hover { border-color: var(--green); }
+.tabsx.can-l .tscroll.l, .tabsx.can-r .tscroll.r { opacity: 1; pointer-events: auto; }
 nav.tabs button { position: relative; display: inline-flex; align-items: center; gap: 9px; height: 56px; padding: 0 16px; border: 0; background: none; font: 500 15.5px/1 var(--display); letter-spacing: .01em; color: var(--muted); white-space: nowrap; transition: color .2s ease, background .2s ease; isolation: isolate; }
 nav.tabs button svg { width: 19px; height: 19px; fill: currentColor; opacity: .7; transition: opacity .2s ease, filter .2s ease, transform .2s ease; }
 nav.tabs button::after { content: ""; position: absolute; left: 14px; right: 14px; top: 0; height: 3px; border-radius: 0 0 3px 3px; background: var(--grad); box-shadow: 0 0 14px rgba(var(--c3),.7); transform: scaleX(0); transition: transform .3s cubic-bezier(.2,.8,.2,1); }
@@ -559,6 +569,9 @@ details.vsec > summary .vsplit { margin-left: 8px; white-space: nowrap; }
 .vtip .nm { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font: 600 15px var(--display); }
 .vtpw { flex: none; color: var(--gold); font-size: 14px; }
 .vtip .sm { color: var(--muted); font-size: 12px; }
+.vtip { grid-template-columns: minmax(0, 1fr); }
+.vtip .sd { flex-basis: 100%; white-space: pre-line; overflow-wrap: anywhere; line-height: 1.4; }
+.vtip:has(.sd) { width: 360px; max-width: calc(100vw - 16px); }
 .vtip:has(.vtrows) { width: 320px; }
 .vtel { display: inline-block; padding: 0 7px; margin-right: 4px; border-radius: 999px; font-size: 11px; font-weight: 600; color: var(--el); border: 1px solid var(--el); background: color-mix(in srgb, var(--el) 14%, transparent); }
 .vtaegis { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; font-size: 12px; color: var(--muted); }
@@ -965,6 +978,8 @@ aside.drawer[data-mode=bottom] .dp-id h2 { font-size: 23px; }
 /* Perks, laid out like the game's weapon screen: the frame on top, one column of round sockets per perk slot, then mods */
 .pk-intr { display: flex; align-items: center; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
 .pk-intr img, .pk-intr .ph { width: 42px; height: 42px; flex: none; border-radius: 8px; background: rgba(0,0,0,.3); }
+.pk-intr.tr { align-items: flex-start; padding: 0; border: 0; }
+.pk-intr.tr span { display: block; margin-top: 3px; line-height: 1.4; }
 .pk-intr b { display: block; font: 600 16px/1.2 var(--display); }
 .pk-intr span { font-size: 13px; color: var(--muted); }
 .pk-intr[data-ptip] { cursor: help; border-radius: 8px; }
@@ -1104,7 +1119,10 @@ body.vr-booting > .topbar, body.vr-booting > main, body.vr-booting > footer { di
   .topbar { display: flex; align-items: center; gap: 24px; padding-inline: max(var(--pad), (100% - var(--page)) / 2 + var(--pad)); }
   .topbar > .wrap { display: contents; }
   .brand { margin-right: 0; }
-  .tabrow nav.tabs { order: 1; flex: 1; justify-content: center; gap: clamp(4px, .4vw, 16px); }
+  .tabrow .tabsx { order: 1; }
+  .tabrow nav.tabs { gap: clamp(4px, .4vw, 16px); }
+  .tabrow nav.tabs > :first-child { margin-left: auto; }
+  .tabrow nav.tabs > :last-child { margin-right: auto; }
   .bar-actions { order: 2; flex: none; }
   .gsearch input { width: clamp(220px, 12vw, 320px); }
   nav.tabs button { height: 76px; }
@@ -1193,7 +1211,7 @@ body.vr-booting > .topbar, body.vr-booting > main, body.vr-booting > footer { di
       <label class="gsearch"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="gq" placeholder="Search your vault" aria-label="Search weapons and armor" autocomplete="off"><kbd aria-hidden="true">/</kbd></label>
     </div>
   </div>
-  <div class="wrap tabrow"><nav class="tabs" role="tablist" aria-label="Report sections" id="tabs"></nav></div>
+  <div class="wrap tabrow"><div class="tabsx" id="tabsx"><nav class="tabs" role="tablist" aria-label="Report sections" id="tabs"></nav><button type="button" tabindex="-1" aria-hidden="true" title="More tabs" class="tscroll l"></button><button type="button" tabindex="-1" aria-hidden="true" title="More tabs" class="tscroll r"></button></div></div>
 </header>
 
 <main class="wrap">
@@ -1452,6 +1470,23 @@ function vrMain() {
   for (const el of [tgroup, tmenu]) el.addEventListener("focusout", (e) => { if (!tgroup.contains(e.relatedTarget) && !tmenu.contains(e.relatedTarget)) closeMenu(); });
   document.addEventListener("pointerdown", (e) => { if (!tmenu.hidden && !tmenu.contains(e.target) && !tgroup.contains(e.target)) closeMenu(); });
   addEventListener("scroll", () => closeMenu(), { passive: true });
+  const tabsNav = $("#tabs"), tabsX = $("#tabsx");
+  function tabsEdges() {
+    const max = tabsNav.scrollWidth - tabsNav.clientWidth, l = tabsNav.scrollLeft > 2, r = tabsNav.scrollLeft < max - 2;
+    tabsNav.style.setProperty("--fl", l ? "56px" : "0px"); tabsNav.style.setProperty("--fr", r ? "56px" : "0px");
+    tabsX.classList.toggle("can-l", l); tabsX.classList.toggle("can-r", r);
+  }
+  if (!tabsX.dataset.ready) {
+    tabsX.dataset.ready = "1";
+    tabsNav.addEventListener("scroll", () => { tabsEdges(); closeMenu(); }, { passive: true });
+    tabsNav.addEventListener("wheel", (e) => {
+      if (Math.abs(e.deltaY) <= Math.abs(e.deltaX) || tabsNav.scrollWidth <= tabsNav.clientWidth) return;
+      e.preventDefault(); tabsNav.scrollLeft += e.deltaY;
+    }, { passive: false });
+    tabsX.addEventListener("click", (e) => { const b = e.target.closest(".tscroll"); if (b) tabsNav.scrollBy({ left: (b.classList.contains("l") ? -1 : 1) * tabsNav.clientWidth * 0.7, behavior: "smooth" }); });
+    new ResizeObserver(tabsEdges).observe(tabsNav);
+  }
+  tabsEdges();
   if (window.VR_LOCAL && !$("#gear")) {
     $("#bar-actions").insertAdjacentHTML("beforeend", `<button class="btn rerate" id="rerate" type="button" title="Read your vault from Bungie again and re-rate it">Re-rate</button>`);
     $("#rerate").onclick = rerate;
@@ -1587,7 +1622,9 @@ function vrMain() {
   const bestSetTier = (a) => (a.si ? a.si.bonuses.map((b) => b.tier).filter(Boolean).sort((x, y) => SET_TIERS.indexOf(x) - SET_TIERS.indexOf(y))[0] || null : null);
   const stier = (t) => (t ? `<span class="stier t${t}" title="Aegis set tier ${t}">${t}</span>` : "");
   const setLine = (a) => (a.si ? " · " + esc(a.si.name) + stier(bestSetTier(a)) : a.set ? " · " + esc(a.set) : "");
-  const bonusRow = (b, owned) => `<div class="bonus${owned >= b.pieces ? " active" : ""}"><span class="pc">${b.pieces}PC</span><div><div class="bn">${esc(b.name)}</div>${b.effect || b.notes ? `<p>${esc([b.effect, b.notes].filter(Boolean).join(". "))}</p>` : ""}${b.description ? `<details class="full"><summary>Full bonus text</summary><div>${esc(b.description)}</div></details>` : ""}</div>${b.tier ? `<span class="tier t${b.tier}" title="Aegis rank #${b.rank ?? "?"}">${b.tier}</span>` : `<span class="tier tU">—</span>`}</div>`;
+  // The community sheet marks unconfirmed numbers with "?" (9?, [?%], a lone ?): keep the number, drop empty brackets, else X.
+  const bonusText = (t) => esc(t).replace(/ ?\[\?%?\]/g, "").replace(/(\d)\?/g, "$1").replace(/\?/g, "X");
+  const bonusRow = (b, owned) => `<div class="bonus${owned >= b.pieces ? " active" : ""}"><span class="pc">${b.pieces}PC</span><div><div class="bn">${esc(b.name)}</div>${b.description ? `<p>${bonusText(b.description)}</p>` : ""}${b.effect || b.notes ? `<details class="full"><summary>Aegis notes</summary><div>${esc([b.effect, b.notes].filter(Boolean).join(". "))}</div></details>` : ""}</div>${b.tier ? `<span class="tier t${b.tier}" title="Aegis rank #${b.rank ?? "?"}">${b.tier}</span>` : `<span class="tier tU">—</span>`}</div>`;
   const armorRow = (a) => `<button class="row v-${a.v}" data-a="${a.id}"><span class="ico${isExotic(a) ? " exotic" : ""}">${img(a.ic)}<span class="tier tU" title="Gear tier">${gearTier(a)}</span></span>
       <div style="min-width:0"><div class="nm">${esc(a.n)}${newBadge(a)}${dtag(a)}${lochip(a)}${lockIcon(a)}</div><div class="sm">${isExotic(a) ? '<span class="exo">Exotic</span> · ' : ""}${esc(a.cls)} ${esc(a.s)} · ${esc(a.arch || "Legacy")}${setLine(a)}</div><div class="perkline">${ordered(a.st).map(([n, v]) => `<span>${esc(n)} ${v}</span>`).join("")}${a.tot ? `<span>Total ${a.tot}</span>` : ""}</div></div>
       ${scoreCell(a.sc)}<div class="c-verdict">${verdict(a.v)}</div></button>`;
@@ -2111,7 +2148,7 @@ function vrMain() {
     };
     const vaultSets = (xs) => !xs.length ? '<div class="vdrop vbox" data-k="a" data-to="vault"><span class="small muted">No armor</span></div>' : `<div class="vdrop vbox split" data-k="a" data-to="vault">${[...groupBy(xs, groupOf)]
       .sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0]))
-      .map(([g, gs]) => `<div class="vtype"><div class="cap"><span class="lead">${gs.length}</span>${esc(g)}${setGrades(gs)}</div><div class="vtiles">${gs.sort(order).map((a) => atile(a)).join("")}</div></div>`).join("")}</div>`;
+      .map(([g, gs]) => `<div class="vtype"${gs[0].si && !isExotic(gs[0]) ? ` data-set="${esc(g)}"` : ""}><div class="cap"><span class="lead">${gs.length}</span>${esc(g)}${setGrades(gs)}</div><div class="vtiles">${gs.sort(order).map((a) => atile(a)).join("")}</div></div>`).join("")}</div>`;
     // The header row (a chevron in the character's header when it's a collapsible split block) and the slot rows.
     const heads = (cs, keep, fold) => `${cs.map((c) => `<div class="vhead cc c-${esc(c.cls)}"><span class="vht">${fold ? chev : ""}<b>${esc(c.cls)}</b></span><span class="small muted">${plural(DATA.armor.filter((a) => a.wh === c.id && !a.pm).length, "piece")}</span></div>`).join("")}
       <div class="vhead"><b>Vault</b><span class="small muted">${plural(DATA.armor.filter((a) => inVault(a) && keep(a)).length, "armor piece")}</span></div>`;
@@ -2166,27 +2203,31 @@ function vrMain() {
   const perkRows = (w) => perkCols(w).filter((p) => PERK_ORDER.includes(p.k)).map((p) => `<div class="vtrow"><span>${PERK_LABEL[p.k]}</span><div>${p.o.map((o) => chip(o, (p.m.includes(o) ? "good" : "alt") + (o === p.a ? " sel" : ""), o === p.a ? "✓ " : "", w.pi)).join("")}</div></div>`).join("")
     + (w.rmw?.length ? `<div class="vtrow mw"><span>Rec masterwork</span><div>${w.rmw.map((o) => chip(o, "mw", "☆ ")).join("")}</div></div>` : "");
   const tipTop = (x, sub) => `<div class="nm"><span>${esc(x.n)}</span>${x.pw ? `<span class="vtpw">✦ ${x.pw}</span>` : ""}</div><div class="sm">${sub}</div><div class="vtmeta"><span class="vtv ${x.v}">${VERDICT[x.v]}</span><span>Overall ${x.sc}${x.rs != null ? ` (${x.rs} · ${x.tier || "—"})` : ""}</span>${x.gt ? `<span>Tier ${x.gt}</span>` : ""}${x.eq ? "<span>Equipped</span>" : ""}</div>`;
-  const tipHtml = (w, a) => w
-    ? `${tipTop(w, `<span class="vtel" style="--el:var(--${esc(w.e)})">${esc(w.e)}</span> ${esc(typeLine(w))}`)}<div class="vtaegis">${tierBadge(w)}<span>${w.tier ? "tier gun according to Aegis" : "Unrated: not on Aegis's sheet"}</span></div><div class="vtaegis"><b>${w.rs ?? "—"}/100</b><span>Aegis god roll match</span></div><div class="vtrows">${perkRows(w)}</div>`
-    : `${tipTop(a, `${esc(a.cls)} · ${esc(a.arch || "Legacy")}${setLine(a)}`)}${statBars(a, true)}<div class="sm">${a.tot} total${topStat(a) ? ` · highest ${esc(topStat(a))}` : ""}${a.loc ? " · " + esc(a.loc) : ""}</div>`;
+  /** A set's 2- and 4-piece perks with their Aegis tier, one row each. */
+  const setRows = (si, full) => [2, 4].map((n) => { const b = si?.bonuses.find((x) => x.pieces === n), d = DATA.sets?.[si?.name]?.bonuses?.find((x) => x.pieces === n)?.description; return `<div class="vtaegis"><span class="tier t${b?.tier || "U"}">${b?.tier || "—"}</span><span><b>${n} piece bonus</b>${b ? " · " + esc(b.name) : ""}</span>${full && d ? `<div class="sm sd">${bonusText(d)}</div>` : ""}</div>`; }).join("");
+  /** An exotic's trait: its symbol, name and the full description. */
+  const traitBlock = (t) => (t ? `<div class="pk-intr tr">${t.ic ? img(t.ic) : ""}<div><b>${esc(t.n)}</b>${t.d ? `<span>${esc(t.d)}</span>` : ""}</div></div>` : "");
+  const tipHtml = (w, a, s) => s ? `<div class="nm"><span>${esc(s.name)}</span></div>${setRows(s, true)}` : w
+    ? `${tipTop(w, `<span class="vtel" style="--el:var(--${esc(w.e)})">${esc(w.e)}</span> ${esc(typeLine(w))}`)}<div class="vtaegis">${tierBadge(w)}<span>${w.tier ? "tier gun according to Aegis" : "Unrated: not on Aegis's sheet"}</span></div><div class="vtaegis"><b>${w.rs ?? "—"}/100</b><span>Aegis god roll match</span></div><div class="vtrows">${perkRows(w)}</div>${w.r === "Exotic" ? traitBlock(w.fr) : ""}`
+    : `${tipTop(a, `${esc(a.cls)} · ${esc(a.arch || "Legacy")}${setLine(a)}`)}${statBars(a, true)}<div class="sm">${a.tot} total${topStat(a) ? ` · highest ${esc(topStat(a))}` : ""}${a.loc ? " · " + esc(a.loc) : ""}</div>${a.si && !isExotic(a) ? setRows(a.si) : ""}${traitBlock(a.trait)}`;
   // Anything showing one item gets the card: data-w / data-a for your own gear, data-vt for items another module rates
   // (the web app's Vendors tab answers window.VR_TIP(id) with { w } or { a }). Not on Overview or Wrapped.
-  const HOVER = "[data-w], [data-a], [data-vt]";
-  const tipItem = (t) => { if (t.dataset.vt) return window.VR_TIP?.(t.dataset.vt) || null; const w = W.get(t.dataset.w), a = A.get(t.dataset.a); return w ? { w } : a ? { a } : null; };
+  const HOVER = "[data-w], [data-a], [data-vt], [data-set]";
+  const tipItem = (t) => { if (t.dataset.vt) return window.VR_TIP?.(t.dataset.vt) || null; const w = W.get(t.dataset.w), a = A.get(t.dataset.a); if (t.dataset.set) { const s = DATA.armor.find((x) => x.si?.name === t.dataset.set)?.si; return s ? { s } : null; } return w ? { w } : a ? { a } : null; };
   let tipTimer = 0, tipGone = 0;
   const hideTip = () => { clearTimeout(tipTimer); if ($("#vtip")) { $("#vtip").remove(); tipGone = Date.now(); } };
   document.addEventListener("pointerover", (e) => {
     const t = e.pointerType === "mouse" && !dragId && e.target.closest?.(HOVER);
     if (!t || t.closest("#p-overview, #p-wrapped")) return;
-    const key = t.dataset.w || t.dataset.a || t.dataset.vt;
+    const key = t.dataset.w || t.dataset.a || t.dataset.vt || "set:" + t.dataset.set;
     if ($("#vtip")?.dataset.for === key) return;
     clearTimeout(tipTimer);
     // A short rest before the first card so it doesn't flash as the mouse passes; quick from one item to the next.
     const quick = $("#vtip") || Date.now() - tipGone < 300;
     tipTimer = setTimeout(() => { const it = t.isConnected && t.matches(":hover") && tipItem(t); if (it) showTip(t, it, key); }, quick ? 100 : 400);
   });
-  function showTip(t, { w, a }, key) {
-    $("#vtip")?.remove(); document.body.insertAdjacentHTML("beforeend", `<div class="vtip" id="vtip" role="tooltip" data-for="${esc(key)}">${tipHtml(w, a)}</div>`);
+  function showTip(t, { w, a, s }, key) {
+    $("#vtip")?.remove(); document.body.insertAdjacentHTML("beforeend", `<div class="vtip" id="vtip" role="tooltip" data-for="${esc(key)}">${tipHtml(w, a, s)}</div>`);
     const tip = $("#vtip"), r = t.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
     // Underneath the tile, lined up with its left edge; above it when there's no room below; beside it when neither fits.
     const below = r.bottom + 8 + th <= innerHeight, above = r.top - 8 - th >= 8;
@@ -2477,7 +2518,7 @@ function vrMain() {
         <div class="toggles" id="perkmode"><label><input type="radio" name="perkmode" value="symbols" ${perkSymbols ? "checked" : ""}> <span>Show perks as symbols, with the name on hover</span></label>
         <label><input type="radio" name="perkmode" value="names" ${perkSymbols ? "" : "checked"}> <span>Show perk names</span></label></div>
         <div class="toggles" id="theme"><span class="small muted">Colour theme</span>
-        ${THEMES.map(([v, l]) => `<label><input type="radio" name="theme" value="${v}" ${theme === v ? "checked" : ""}> <span>${l}</span></label>`).join("")}</div>
+        ${THEMES.map(([v, l]) => `<label><input type="radio" name="theme" value="${v}" ${theme === v ? "checked" : ""}> <span><i class="tsw" data-theme="${v}"></i>${l}</span></label>`).join("")}</div>
         <div class="toggles" id="dmode"><span class="small muted">Item details open as</span>
         <label><input type="radio" name="dmode" value="dock" ${dMode === "dock" ? "checked" : ""}> <span>A sidebar: the page makes room, so you can keep browsing beside it</span></label>
         <label><input type="radio" name="dmode" value="modal" ${dMode === "modal" ? "checked" : ""}> <span>A pop-up in the middle, with the page blurred behind it</span></label>
@@ -3056,7 +3097,7 @@ function vrMain() {
       sub: `<span>${esc(a.arch || "Legacy armor")}${setLine(a)}</span>${a.pw ? `<span class="vtpw">✦ ${a.pw}</span>` : ""}${a.lk ? '<span class="chip">🔒 Locked</span>' : ""}${a.loc && a.loc !== "Vault" ? `<span class="chip">${esc(a.loc)}</span>` : ""}${dimTagPick(a)}`,
       body: dpLayout(
         [dpSec(1, "", scores, "bare"), dpSec(2, "Verdict", why, `dp-verdict ${a.v}`), dpSec(5, "Actions", movePanel(a, true) + dimPanel(a)), dpSec(6, "Details", `<div class="facts">${fact("Where", a.loc)}${fact("Archetype", a.arch || "Legacy")}${fact("Power", a.pw)}</div>`)],
-        [dpSec(3, "Stats", statBars(a, true) + parts, "", `${a.tot} total`)],
+        [dpSec(3, "Stats", statBars(a, true) + parts, "", `${a.tot} total`), a.trait ? dpSec(4, "Exotic trait", traitBlock(a.trait)) : ""],
         [set ? dpSec(4, `${esc(a.si.name)} set`, set, "", `${a.si.ownedSlots} of 5 owned · rating ${a.si.value}`) : "", others.length ? dpSec(7, "Same slot and archetype", `<div class="list">${others.map(armorRow).join("")}</div>`) : ""],
         dpExplain(`<p><b>Armor score</b> is 40% stats compared with a Tier 5 roll, 25% fit to your build stats, 25% the set bonus (Aegis S-F) and 10% for Tier 5 or exotic.</p><p>The four smaller numbers under Stats are those parts, each out of 100.</p>`),
       ),

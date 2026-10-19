@@ -16,6 +16,7 @@ export interface ArmorRating {
   rarity: string;
   gearTier: number | null;
   archetype: string | null;
+  trait: { name: string; icon: string | null; description: string } | null;
   /** Top three stats, highest first: primary, secondary, tertiary. */
   topStats: { name: string; value: number }[];
   statTotal: number;
@@ -145,6 +146,7 @@ export function rateArmor(vault: Vault, settings: Settings, setData: ArmorSetDat
       rarity: a.rarity,
       gearTier: a.gearTier,
       archetype: a.archetype,
+      trait: a.trait,
       topStats: top,
       statTotal: a.statTotal,
       setName: a.setName,

@@ -2,7 +2,7 @@
  * Vault Rater in the browser: sign in with Bungie, read the vault, rate it with the same code as the
  * local app (../../src), and render the same report page. Nothing runs on a server.
  */
-import "./loading.css";
+import { loadingBlock } from "./loading";
 import { hydrate, paths, readText } from "./shims/config";
 import { loadTokens, clearTokens, canSignIn, LoginRequired, minutesLeft } from "./shims/client";
 import { startLogin, finishLogin } from "./shims/oauth";
@@ -201,7 +201,14 @@ function lazyBuilds(input: BuildsInput) {
 /** The Vendors tab is its own chunk too; it reads vendor stock from Bungie only when first opened. */
 function lazyVendors(input: VendorsInput) {
   const ready = import("./vendors/ui").then((v) => v.initVendors(input));
-  window.VR_VENDORS = { count: () => null, render: (el) => void ready.then(() => window.VR_VENDORS!.render(el)) };
+  window.VR_VENDORS = {
+    count: () => null,
+    render: (el) => {
+      // The tab switches at once: show a loading block now, while the tab's code loads.
+      el.innerHTML = `<div class="vendors"><div class="sec-head"><h2>Vendors</h2></div>${loadingBlock("Loading vendors…")}</div>`;
+      void ready.then(() => window.VR_VENDORS!.render(el));
+    },
+  };
 }
 
 /** Sign-in status for the Settings panel, and a banner once Bungie access really runs out. */

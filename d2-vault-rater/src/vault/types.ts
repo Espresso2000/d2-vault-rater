@@ -88,6 +88,8 @@ export interface ArmorRecord {
   stats: Record<string, number>;
   statTotal: number;
   archetype: string | null;
+  /** exotic armor's trait name and description */
+  trait: WeaponPlug | null;
   setName: string | null;
   /** true for armor that predates Armor 3.0 (no archetype plug) */
   legacy: boolean;
