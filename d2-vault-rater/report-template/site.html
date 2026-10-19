@@ -770,6 +770,21 @@ details.full div { white-space: pre-line; color: var(--muted); font-size: 12.5px
 .dtag.favorite, .tagbtn.favorite[aria-pressed="true"] { color: #ff79b4; } .dtag.keep, .tagbtn.keep[aria-pressed="true"] { color: var(--green); }
 .dtag.infuse, .tagbtn.infuse[aria-pressed="true"] { color: var(--cyan); } .dtag.junk, .tagbtn.junk[aria-pressed="true"] { color: var(--shard); }
 .dtag.archive, .tagbtn.archive[aria-pressed="true"] { color: var(--muted); }
+.dtag svg { width: 10px; height: 10px; margin-right: 4px; }
+.etag { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: rgba(5,8,22,.8); box-shadow: 0 0 0 1px color-mix(in srgb, currentColor 55%, transparent); }
+.etag svg { width: 12px; height: 12px; }
+.itile .art .etag { position: absolute; top: 6px; right: 6px; z-index: 2; }
+.itile .art .etag ~ .elc { right: 32px; }
+.itile .art .etag ~ .newb { right: 48px; }
+.vitem .etag { position: absolute; top: -6px; right: -6px; z-index: 2; width: 17px; height: 17px; }
+.vitem .etag svg { width: 10px; height: 10px; }
+.vitem .etag ~ .newb { right: 13px; }
+.vinv .vitem .etag { width: 15px; height: 15px; top: -5px; right: -5px; }
+.vinv .vitem .etag svg { width: 9px; height: 9px; }
+.ctags { display: flex; flex-wrap: wrap; gap: 8px 14px; }
+.ctags label { display: flex; align-items: center; gap: 6px; }
+.ctags input[type="color"] { width: 30px; height: 26px; padding: 0; border: 1px solid var(--line-hi); border-radius: 6px; background: none; cursor: pointer; }
+.ctags input[type="text"] { width: 130px; background: var(--void); border: 1px solid var(--line-hi); border-radius: 8px; padding: 4px 8px; font: 14px var(--body); color: var(--ink); }
 .lochip { display: inline-flex; align-items: center; gap: 3px; margin-left: 6px; font-size: 11px; font-weight: 600; color: #9db8ff; vertical-align: 1px; }
 .dimpanel { display: grid; gap: 10px; padding: 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--glass); }
 .tagbtns { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -1606,7 +1621,7 @@ function vrMain() {
       ${scoreCell(w.sc)}<div class="c-verdict">${verdict(w.v)}</div></button>`;
   /** Tile: tall and narrow, icon first, like an inventory grid. */
   const weaponTile = (w) => `<button class="itile v-${w.v}${isExotic(w) ? " exotic" : ""}" data-w="${w.id}">
-      <div class="art">${img(w.ic)}${tierBadge(w)}${newBadge(w)}<span class="elc" style="color:var(--${esc(w.e)})" title="${esc(w.e)}"></span><span class="flags">${w.lk ? "🔒" : ""}${w.god ? '<span title="Wishlist god roll" style="color:var(--green)">★</span>' : ""}</span><b class="sc num${w.sc >= 90 ? " hi" : ""}">${w.sc}</b></div>
+      <div class="art">${img(w.ic)}${tagMark(w)}${tierBadge(w)}${newBadge(w)}<span class="elc" style="color:var(--${esc(w.e)})" title="${esc(w.e)}"></span><span class="flags">${w.lk ? "🔒" : ""}${w.god ? '<span title="Wishlist god roll" style="color:var(--green)">★</span>' : ""}</span><b class="sc num${w.sc >= 90 ? " hi" : ""}">${w.sc}</b></div>
       <div class="tb"><div class="nm">${esc(w.n)}</div><div class="sm">${esc(frameOf(w) || w.t)}</div><div class="sm">${esc(w.t)}</div></div><span class="vbar"></span></button>`;
   const statBars = (a, full) => {
     const want = new Set(DATA.buildStats[a.cls] || []);
@@ -1616,7 +1631,32 @@ function vrMain() {
   const gearTier = (a) => (a.gt ? "T" + a.gt : isExotic(a) ? "EX" : "—");
   const TAG_LABEL = { favorite: "Favorite", keep: "Keep", infuse: "Infuse", junk: "Junk", archive: "Archive" };
   const DIMS = DATA.dim || { tags: false, loadouts: false, loaded: false };
-  const dtag = (x) => (DIMS.tags && x.tg ? `<span class="dtag ${x.tg}" title="DIM tag${x.nt ? ": " + esc(x.nt) : ""}">${TAG_LABEL[x.tg] || esc(x.tg)}</span>` : "");
+  /* ---------- Tags: DIM's own, plus EVR tags kept in this browser ---------- */
+  // An item shows its EVR tag when it has one, otherwise its DIM tag. TAGS order is the picker order and Alt+1..9.
+  const TAG_ICON = {
+    favorite: '<path d="M8 14S1.5 10.2 1.5 5.6A3.3 3.3 0 0 1 8 4a3.3 3.3 0 0 1 6.5 1.6C14.5 10.2 8 14 8 14z"/>',
+    keep: '<path fill-rule="evenodd" d="M1.5 1.5h6l7 7-6 6-7-7zM5 3.6a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8z"/>',
+    infuse: '<path d="M9.5 1 3 9.2h4.2L6.5 15 13 6.8H8.8z"/>',
+    junk: '<g fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="5.8"/><path d="M3.9 3.9l8.2 8.2"/></g>',
+    archive: '<path fill-rule="evenodd" d="M1.5 2h13v3.5h-13zM2.5 6.5h11V13a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1zM6 8v1.5h4V8z"/>',
+    custom: '<circle cx="8" cy="8" r="5.5"/>',
+  };
+  const TAG_COLOR = { favorite: "#ff79b4", keep: "var(--green)", infuse: "var(--cyan)", junk: "var(--shard)", archive: "var(--muted)" };
+  const readJson = (k, d) => { try { return JSON.parse(store.get(k)) ?? d; } catch { return d; } };
+  const savedCtags = readJson("vr-customtags", []);
+  const CTAGS = [["Custom 1", "#f2c14e"], ["Custom 2", "#9db8ff"], ["Custom 3", "#ff8a5c"], ["Custom 4", "#b48cff"]]
+    .map(([name, color], i) => ({ name, color, ...savedCtags[i], k: "c" + (i + 1), icon: "custom" }));
+  const TAGS = [...Object.entries(TAG_LABEL).map(([k, name]) => ({ k, name, color: TAG_COLOR[k], icon: k })), ...CTAGS];
+  const tagDef = (k) => TAGS.find((t) => t.k === k) || { k, name: k, color: "var(--muted)", icon: "custom" };
+  const EVR = readJson("vr-evrtags", {});
+  // x.et is the EVR tag key and x.etl its name, so the search parser can read them off the item.
+  for (const x of [...DATA.weapons, ...DATA.armor]) if (EVR[x.id]) { x.et = EVR[x.id]; x.etl = tagDef(x.et).name; }
+  const shownTag = (x) => (x.et ? tagDef(x.et) : DIMS.tags && x.tg ? tagDef(x.tg) : null);
+  const tagLabel = (x) => shownTag(x)?.name || "Untagged";
+  const tagSvg = (t) => `<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">${TAG_ICON[t.icon]}</svg>`;
+  const tagTitle = (x, t) => `${x.et ? "EVR" : "DIM"} tag: ${esc(t.name)}${x.nt ? " · " + esc(x.nt) : ""}`;
+  const tagMark = (x) => { const t = shownTag(x); return t ? `<span class="etag" style="color:${esc(t.color)}" title="${tagTitle(x, t)}">${tagSvg(t)}</span>` : ""; };
+  const dtag = (x) => { const t = shownTag(x); return t ? `<span class="dtag" style="color:${esc(t.color)}" title="${tagTitle(x, t)}">${tagSvg(t)}${esc(t.name)}</span>` : ""; };
   const lochip = (x) => (DIMS.loadouts && x.lo?.length ? `<span class="lochip" title="In DIM loadouts: ${esc(x.lo.join(", "))}">◆ ${x.lo.length}</span>` : "");
   const SET_TIERS = ["S", "A", "B", "C", "D", "E", "F"];
   const bestSetTier = (a) => (a.si ? a.si.bonuses.map((b) => b.tier).filter(Boolean).sort((x, y) => SET_TIERS.indexOf(x) - SET_TIERS.indexOf(y))[0] || null : null);
@@ -1629,7 +1669,7 @@ function vrMain() {
       <div style="min-width:0"><div class="nm">${esc(a.n)}${newBadge(a)}${dtag(a)}${lochip(a)}${lockIcon(a)}</div><div class="sm">${isExotic(a) ? '<span class="exo">Exotic</span> · ' : ""}${esc(a.cls)} ${esc(a.s)} · ${esc(a.arch || "Legacy")}${setLine(a)}</div><div class="perkline">${ordered(a.st).map(([n, v]) => `<span>${esc(n)} ${v}</span>`).join("")}${a.tot ? `<span>Total ${a.tot}</span>` : ""}</div></div>
       ${scoreCell(a.sc)}<div class="c-verdict">${verdict(a.v)}</div></button>`;
   const armorTile = (a) => `<button class="itile v-${a.v}${isExotic(a) ? " exotic" : ""}" data-a="${a.id}">
-      <div class="art">${img(a.ic)}<span class="tier tU" title="Gear tier">${gearTier(a)}</span>${newBadge(a)}<span class="flags">${a.lk ? "🔒" : ""}</span><b class="sc num${a.sc >= 90 ? " hi" : ""}">${a.sc}</b></div>
+      <div class="art">${img(a.ic)}${tagMark(a)}<span class="tier tU" title="Gear tier">${gearTier(a)}</span>${newBadge(a)}<span class="flags">${a.lk ? "🔒" : ""}</span><b class="sc num${a.sc >= 90 ? " hi" : ""}">${a.sc}</b></div>
       <div class="tb"><div class="nm">${esc(a.n)}</div><div class="sm">${esc(a.cls)} ${esc(a.s)}</div><div class="sm">${esc(a.arch || "Legacy")}${a.tot ? " · " + a.tot : ""}</div></div><span class="vbar"></span></button>`;
   // Copies of each weapon by name, counted once (and again after a vault refresh).
   let COPIES = null;
@@ -1901,11 +1941,12 @@ function vrMain() {
         ["r", "Rarity", (w) => w.r], ["tier", "Aegis tier", (w) => tierLabel(tierOf(w))], ["v", "Verdict", (w) => VERDICT[w.v]],
         ["c", "Shard reason", (w) => (w.c ? CAT_LABEL[w.c] || w.c : null)], ["pk", "Perk", (w) => w.pk.filter((p) => p.k === "perk1" || p.k === "perk2").flatMap((p) => p.o)],
         ["x", "Extras", (w) => Object.entries(WEAPON_EXTRAS).filter(([, f]) => f(w)).map(([k]) => k)], ["loc", "Location", (w) => w.loc],
+        ["et", "Tag", tagLabel],
         ...(DIMS.tags && DIMS.loaded ? [["dt", "DIM tag", (w) => (w.tg ? TAG_LABEL[w.tg] : "Untagged")]] : []),
         ...(DIMS.loadouts && DIMS.loaded ? [["dl", "DIM loadout", (w) => (w.lo?.length ? w.lo : ["Not in a loadout"])]] : []),
       ],
       sorts: { score: ["Vault score", (w) => w.sc], roll: ["Roll score", (w) => w.rs], tier: ["Aegis tier and rank", (w) => (w.tier ? (5 - TIERS.indexOf(w.tier)) * 100 - (w.rank ?? 50) : -1)], power: ["Power", (w) => w.pw ?? 0], name: ["Name", (w) => w.n.toLowerCase()], type: ["Type", (w) => w.t] },
-      groups: { "": "None", ...(DIMS.tags && DIMS.loaded ? { dt: "DIM tag" } : {}), t: "Type", e: "Element", f: "Frame", s: "Slot", am: "Ammo", tier: "Aegis tier", v: "Verdict", c: "Shard reason", r: "Rarity", name: "Weapon name" },
+      groups: { "": "None", et: "Tag", ...(DIMS.tags && DIMS.loaded ? { dt: "DIM tag" } : {}), t: "Type", e: "Element", f: "Frame", s: "Slot", am: "Ammo", tier: "Aegis tier", v: "Verdict", c: "Shard reason", r: "Rarity", name: "Weapon name" },
       views: {
         "best-type-el": ["Best of every type and element", { group: "t", group2: "e", top: "1" }],
         "solar-autos": ["Best Solar auto rifles", { f: { t: ["Auto Rifle"], e: ["Solar"] } }],
@@ -1932,12 +1973,13 @@ function vrMain() {
         ["cls", "Class", (a) => a.cls], ["s", "Slot", (a) => a.s], ["r", "Rarity", (a) => a.r], ["arch", "Archetype", (a) => a.arch || "Legacy"], ["set", "Set", (a) => a.si?.name || a.set],
         ["stier", "Set tier", (a) => (bestSetTier(a) ? bestSetTier(a) + " tier set" : a.si ? "Unrated set" : null)], ["gt", "Gear tier", (a) => (a.gt ? "Tier " + a.gt : null)], ["p", "Highest stat", (a) => a.st[0]?.[0]], ["v", "Verdict", (a) => VERDICT[a.v]],
         ["x", "Extras", (a) => Object.entries(ARMOR_EXTRAS).filter(([, f]) => f(a)).map(([k]) => k)], ["loc", "Location", (a) => a.loc],
+        ["et", "Tag", tagLabel],
         ...(DIMS.tags && DIMS.loaded ? [["dt", "DIM tag", (a) => (a.tg ? TAG_LABEL[a.tg] : "Untagged")]] : []),
         ...(DIMS.loadouts && DIMS.loaded ? [["dl", "DIM loadout", (a) => (a.lo?.length ? a.lo : ["Not in a loadout"])]] : []),
       ],
       sorts: Object.assign({ score: ["Armor score", (a) => a.sc], setv: ["Set rating", (a) => a.si?.value ?? -1], total: ["Stat total", (a) => a.tot], name: ["Name", (a) => a.n.toLowerCase()] },
         Object.fromEntries(uniqSorted(DATA.armor, (a) => Object.keys(a.all || {})).sort((x, y) => statRank(x) - statRank(y)).map((k) => ["stat:" + k, [k + " stat", (a) => a.all?.[k] ?? 0]]))),
-      groups: { "": "None", ...(DIMS.tags && DIMS.loaded ? { dt: "DIM tag" } : {}), cls: "Class", s: "Slot", arch: "Archetype", set: "Set", stier: "Set tier", r: "Rarity", gt: "Gear tier", p: "Highest stat", v: "Verdict" },
+      groups: { "": "None", et: "Tag", ...(DIMS.tags && DIMS.loaded ? { dt: "DIM tag" } : {}), cls: "Class", s: "Slot", arch: "Archetype", set: "Set", stier: "Set tier", r: "Rarity", gt: "Gear tier", p: "Highest stat", v: "Verdict" },
       views: {
         "best-slot": ["Best per class and slot", { group: "cls", group2: "s", top: "1" }],
         "best-sets": ["Best sets first", { group: "set", sort: "setv", f: { r: ["Legendary"] } }],
@@ -1993,7 +2035,7 @@ function vrMain() {
         case "exactname": return (x) => x.n.toLowerCase() === v;
         case "perk": return (x) => has((x.pk || []).flatMap((p) => p.o));
         case "exactperk": return (x) => (x.pk || []).some((p) => p.o.some((o) => o.toLowerCase() === v));
-        case "tag": return (x) => (sv === "none" || sv === "untagged" ? !x.tg : squash(x.tg) === (QUERY_ALIAS[sv] || sv));
+        case "tag": { const s = QUERY_ALIAS[sv] || sv; return (x) => (s === "none" || s === "untagged" ? !x.tg && !x.et : [x.tg, x.et, x.etl].some((t) => t && squash(t) === s)); }
         case "is": { const s = QUERY_ALIAS[sv] || sv; return (x) => isTokens(set, x).has(s); }
         default: return () => false;
       }
@@ -2118,7 +2160,7 @@ function vrMain() {
     // ex.shown is the full list's filtered, sorted weapons; equipped weapons always show, dimmed when filtered out.
     const shown = ex.shown && ex.set === "w" ? ex.shown : DATA.weapons, match = new Set(shown.map((w) => w.id));
     const at = (to, s) => (vdim ? DATA.weapons : shown).filter((w) => where(w) === to && w.s === s);
-    const tile = (w, big) => `<button class="vitem welem${big ? " big" : ""}${match.has(w.id) ? "" : " nomatch"}${isExotic(w) ? " exotic" : ""} v-${w.v}" style="--el:var(--${esc(w.e)})" data-w="${w.id}"${can && !w.eq && match.has(w.id) ? ' draggable="true"' : ""} aria-label="${esc(w.n)} · ${esc(typeLine(w))} · ${w.sc} · ${VERDICT[w.v]}${w.eq ? " · equipped" : ""}">${img(w.ic)}${dia(w.gt)}${tierBadge(w)}${newBadge(w)}<b class="num">${w.sc}</b></button>`;
+    const tile = (w, big) => `<button class="vitem welem${big ? " big" : ""}${match.has(w.id) ? "" : " nomatch"}${isExotic(w) ? " exotic" : ""} v-${w.v}" style="--el:var(--${esc(w.e)})" data-w="${w.id}"${can && !w.eq && match.has(w.id) ? ' draggable="true"' : ""} aria-label="${esc(w.n)} · ${esc(typeLine(w))} · ${w.sc} · ${VERDICT[w.v]}${w.eq ? " · equipped" : ""}">${img(w.ic)}${tagMark(w)}${dia(w.gt)}${tierBadge(w)}${newBadge(w)}<b class="num">${w.sc}</b></button>`;
     const inVault = DATA.weapons.filter((w) => where(w) === "vault").length, armorInVault = DATA.armor.filter((a) => where(a) === "vault").length;
     // Each character's postmaster (Lost Items), rated like other gear; drag an item out to pull it and move it.
     const lost = [...DATA.weapons, ...DATA.armor].filter((x) => x.pm);
@@ -2134,7 +2176,7 @@ function vrMain() {
   /** Armor laid out like the weapons: per slot, each character's worn piece and inventory, then the vault by set;
    *  inside a set by class (border colour), tier, then archetype. Split by character: one block per character, vault limited to its class. */
   const ASLOTS = ["Helmet", "Arms", "Chest", "Legs", "Class Item"], ACLS = ["Hunter", "Titan", "Warlock"];
-  const vatile = (a, big, can) => `<button class="vitem${big ? " big" : ""} varmor c-${esc(a.cls)}${isExotic(a) ? " exotic" : ""} v-${a.v}" data-a="${a.id}"${can && !a.eq ? ' draggable="true"' : ""} aria-label="${esc(a.n)} · ${esc(a.cls)} · ${esc(a.arch || "Legacy")}${a.gt ? ` · Tier ${a.gt}` : ""} · ${a.tot} total · ${a.sc} · ${VERDICT[a.v]}${a.loc ? " · " + esc(a.loc) : ""}">${img(a.ic)}${statMark(a)}${dia(a.gt)}${newBadge(a)}<b class="num">${a.sc}</b></button>`;
+  const vatile = (a, big, can) => `<button class="vitem${big ? " big" : ""} varmor c-${esc(a.cls)}${isExotic(a) ? " exotic" : ""} v-${a.v}" data-a="${a.id}"${can && !a.eq ? ' draggable="true"' : ""} aria-label="${esc(a.n)} · ${esc(a.cls)} · ${esc(a.arch || "Legacy")}${a.gt ? ` · Tier ${a.gt}` : ""} · ${a.tot} total · ${a.sc} · ${VERDICT[a.v]}${a.loc ? " · " + esc(a.loc) : ""}">${img(a.ic)}${tagMark(a)}${statMark(a)}${dia(a.gt)}${newBadge(a)}<b class="num">${a.sc}</b></button>`;
   function armorSection(chars = [], can = false) {
     const atile = (a, big) => vatile(a, big, can);
     const order = (x, y) => ACLS.indexOf(x.cls) - ACLS.indexOf(y.cls) || (y.gt || 0) - (x.gt || 0) || (x.arch || "~").localeCompare(y.arch || "~") || y.sc - x.sc;
@@ -2361,7 +2403,7 @@ function vrMain() {
     // Render, with up to two grouping levels; groups are ordered by their first (best or worst) item
     const top = st.top ? Number(st.top) : Infinity;
     const groupList = (items, gk) => {
-      const f = gk === "dt" ? (x) => (x.tg ? TAG_LABEL[x.tg] : "Untagged") : gk === "dl" ? (x) => x.lo?.[0] || "Not in a loadout" : cfg.grouper(gk);
+      const f = gk === "et" ? tagLabel : gk === "dt" ? (x) => (x.tg ? TAG_LABEL[x.tg] : "Untagged") : gk === "dl" ? (x) => x.lo?.[0] || "Not in a loadout" : cfg.grouper(gk);
       const g = groupBy(items, (x) => String(f(x)));
       return [...g].sort((a, b) => cmp(a[1][0], b[1][0]) || a[0].localeCompare(b[0]));
     };
@@ -2523,6 +2565,8 @@ function vrMain() {
         <label><input type="radio" name="dmode" value="dock" ${dMode === "dock" ? "checked" : ""}> <span>A sidebar: the page makes room, so you can keep browsing beside it</span></label>
         <label><input type="radio" name="dmode" value="modal" ${dMode === "modal" ? "checked" : ""}> <span>A pop-up in the middle, with the page blurred behind it</span></label>
         <label><input type="radio" name="dmode" value="bottom" ${dMode === "bottom" ? "checked" : ""}> <span>A strip along the bottom</span></label></div></fieldset>
+      <fieldset id="ctags"><legend>Custom tags</legend><p class="small muted">Your own tags to sort with, saved in this browser. They follow DIM's five in the EVR tag picker, so Alt+6 to Alt+9 set them.</p>
+        <div class="ctags">${CTAGS.map((c, i) => `<label><input type="color" data-ci="${i}" value="${esc(c.color)}" aria-label="Colour of custom tag ${i + 1}"><input type="text" data-ci="${i}" value="${esc(c.name)}" maxlength="24" aria-label="Name of custom tag ${i + 1}"></label>`).join("")}</div></fieldset>
       <fieldset><legend>Strictness</legend><div class="presets">${Object.entries(PRESET_INFO).map(([k, [l, d]]) => `<label><span><input type="radio" name="preset" value="${k}" ${st.preset === k ? "checked" : ""}> <b>${l}</b></span><span>${d}</span></label>`).join("")}</div>
         <div class="tablewrap"><table class="prestable"><tr><th></th><th>Lenient</th><th>Balanced</th><th>Strict</th><th>Ruthless</th></tr>
           <tr><td>Lowest tier kept</td><td>C</td><td>B</td><td>A</td><td>S</td></tr><tr><td>Roll score to keep a spare</td><td>50</td><td>70</td><td>80</td><td>90</td></tr>
@@ -2542,6 +2586,14 @@ function vrMain() {
     if (window.VR_WEB) $("#signout").onclick = () => api("/api/signout");
     $("#perkmode").onchange = (e) => {
       perkSymbols = e.target.value === "symbols"; store.set("vr-perks", perkSymbols ? "symbols" : "names");
+      for (const k of Object.keys(rendered)) if (k !== "settings") delete rendered[k];
+    };
+    $("#ctags").onkeydown = (e) => { if (e.key === "Enter") e.preventDefault(); };
+    $("#ctags").oninput = (e) => {
+      const c = CTAGS[e.target.dataset.ci]; if (!c) return;
+      if (e.target.type === "color") c.color = e.target.value; else c.name = e.target.value.trim() || "Custom " + c.k.slice(1);
+      for (const x of [...DATA.weapons, ...DATA.armor]) if (x.et === c.k) x.etl = c.name;
+      store.set("vr-customtags", JSON.stringify(CTAGS.map(({ name, color }) => ({ name, color }))));
       for (const k of Object.keys(rendered)) if (k !== "settings") delete rendered[k];
     };
     $("#theme").onchange = (e) => { document.documentElement.dataset.theme = e.target.value; store.set("vr-theme", e.target.value); };
@@ -2860,6 +2912,31 @@ function vrMain() {
     if (!window.VR_LOCAL) return x.tg ? `<span class="chip dimpick ${x.tg}"><span class="k">DIM</span>${TAG_LABEL[x.tg] || esc(x.tg)}</span>` : "";
     return `<label class="chip dimpick ${x.tg || "none"}" title="DIM tag: changing it saves to DIM"><span class="k">DIM</span><select data-dimtag="${x.id}" aria-label="DIM tag">${[["", "No tag"], ...Object.entries(TAG_LABEL)].map(([k, l]) => `<option value="${k}"${(x.tg || "") === k ? " selected" : ""}>${l}</option>`).join("")}</select></label>`;
   };
+  // EVR tags live in this browser only, so they work on the hosted site too and never touch DIM.
+  const evrTagPick = (x) => `<label class="chip dimpick evrpick${x.et ? "" : " none"}"${x.et ? ` style="color:${esc(tagDef(x.et).color)}"` : ""} title="EVR tag, saved in this browser. Alt+1 to 9 sets one on the item under the mouse or open here, Alt+0 clears"><span class="k">EVR</span><select data-evrtag="${x.id}" aria-label="EVR tag"><option value="">No tag</option>${TAGS.map((t, i) => `<option value="${t.k}"${x.et === t.k ? " selected" : ""}>${i + 1} · ${esc(t.name)}</option>`).join("")}</select></label>`;
+  const paintPick = (pick, x) => { const t = x.et && tagDef(x.et); pick.classList.toggle("none", !t); pick.style.color = t ? t.color : ""; };
+  function setEvrTag(x, k) {
+    if (k) { EVR[x.id] = k; x.et = k; x.etl = tagDef(k).name; } else { delete EVR[x.id]; delete x.et; delete x.etl; }
+    store.set("vr-evrtags", JSON.stringify(EVR));
+    const sel = $(`select[data-evrtag="${x.id}"]`, drawer);
+    if (sel) { sel.value = k || ""; paintPick(sel.closest(".evrpick"), x); }
+    rerender();
+  }
+  drawer.addEventListener("change", (e) => {
+    const sel = e.target.closest("select[data-evrtag]"); if (!sel) return;
+    const x = W.get(sel.dataset.evrtag) || A.get(sel.dataset.evrtag); if (x) setEvrTag(x, sel.value || null);
+  });
+  // Alt+1..9 tags the item under the mouse, or the one open in the details; the same number again (or Alt+0) clears it.
+  addEventListener("keydown", (e) => {
+    const n = e.altKey && !e.ctrlKey && !e.metaKey && /^(Digit|Numpad)([0-9])$/.exec(e.code)?.[2]; if (!n) return;
+    const el = [...document.querySelectorAll(":hover")].pop()?.closest("[data-w], [data-a]");
+    const id = el ? el.dataset.w || el.dataset.a : drawerOpen() && drawer.dataset.item, x = id && (W.get(id) || A.get(id));
+    const k = n === "0" ? null : TAGS[n - 1]?.k;
+    if (!x || k === undefined) return;
+    e.preventDefault();
+    setEvrTag(x, x.et === k ? null : k);
+    cornerToast("").done(`${x.n}: ${x.et ? tagDef(x.et).name : "no EVR tag"}`, true);
+  });
   drawer.addEventListener("change", async (e) => {
     const sel = e.target.closest("select[data-dimtag]"); if (!sel) return;
     const x = W.get(sel.dataset.dimtag) || A.get(sel.dataset.dimtag); if (!x) return;
@@ -3075,7 +3152,7 @@ function vrMain() {
     openDrawer({
       id, ico: w.ic, art: src(w.ss), el: w.e, gold: isExotic(w), title: w.n,
       eyebrow: `${esc(w.s)} · ${esc(w.r)}`, tier: tierBadge(w),
-      sub: `<span>${esc(typeLine(w))}</span> ${elDot(w.e)}${w.pw ? `<span class="vtpw">✦ ${w.pw}</span>` : ""}${w.lk ? '<span class="chip">🔒 Locked</span>' : ""}${w.god ? '<span class="chip" style="color:var(--green)">Wishlist god roll</span>' : ""}${w.loc && w.loc !== "Vault" ? `<span class="chip">${esc(w.loc)}</span>` : ""}${dimTagPick(w)}`,
+      sub: `<span>${esc(typeLine(w))}</span> ${elDot(w.e)}${w.pw ? `<span class="vtpw">✦ ${w.pw}</span>` : ""}${w.lk ? '<span class="chip">🔒 Locked</span>' : ""}${w.god ? '<span class="chip" style="color:var(--green)">Wishlist god roll</span>' : ""}${w.loc && w.loc !== "Vault" ? `<span class="chip">${esc(w.loc)}</span>` : ""}${dimTagPick(w)}${evrTagPick(w)}`,
       body: dpLayout(
         [dpSec(1, "", scores, "bare"), dpSec(2, "Verdict", why, `dp-verdict ${w.v}`), dpSec(5, "", whereBox(w.src), "bare"), dpSec(6, "Actions", actions), dpSec(8, "Details", facts)],
         [dpSec(3, "Perks", perkGrid(w), "", w.god ? "Wishlist god roll" : "")],
@@ -3094,7 +3171,7 @@ function vrMain() {
     openDrawer({
       id, ico: a.ic, gold: isExotic(a), title: a.n,
       eyebrow: `${esc(a.cls)} · ${esc(a.s)} · ${esc(a.r)}`,
-      sub: `<span>${esc(a.arch || "Legacy armor")}${setLine(a)}</span>${a.pw ? `<span class="vtpw">✦ ${a.pw}</span>` : ""}${a.lk ? '<span class="chip">🔒 Locked</span>' : ""}${a.loc && a.loc !== "Vault" ? `<span class="chip">${esc(a.loc)}</span>` : ""}${dimTagPick(a)}`,
+      sub: `<span>${esc(a.arch || "Legacy armor")}${setLine(a)}</span>${a.pw ? `<span class="vtpw">✦ ${a.pw}</span>` : ""}${a.lk ? '<span class="chip">🔒 Locked</span>' : ""}${a.loc && a.loc !== "Vault" ? `<span class="chip">${esc(a.loc)}</span>` : ""}${dimTagPick(a)}${evrTagPick(a)}`,
       body: dpLayout(
         [dpSec(1, "", scores, "bare"), dpSec(2, "Verdict", why, `dp-verdict ${a.v}`), dpSec(5, "Actions", movePanel(a, true) + dimPanel(a)), dpSec(6, "Details", `<div class="facts">${fact("Where", a.loc)}${fact("Archetype", a.arch || "Legacy")}${fact("Power", a.pw)}</div>`)],
         [dpSec(3, "Stats", statBars(a, true) + parts, "", `${a.tot} total`), a.trait ? dpSec(4, "Exotic trait", traitBlock(a.trait)) : ""],
