@@ -2130,7 +2130,7 @@ function vrMain() {
     + (w.rmw?.length ? `<div class="vtrow mw"><span>Rec masterwork</span><div>${w.rmw.map((o) => chip(o, "mw", "☆ ")).join("")}</div></div>` : "");
   const tipTop = (x, sub) => `<div class="nm"><span>${esc(x.n)}</span>${x.pw ? `<span class="vtpw">✦ ${x.pw}</span>` : ""}</div><div class="sm">${sub}</div><div class="vtmeta"><span class="vtv ${x.v}">${VERDICT[x.v]}</span><span>Overall ${x.sc}${x.rs != null ? ` (${x.rs} · ${x.tier || "—"})` : ""}</span>${x.gt ? `<span>Tier ${x.gt}</span>` : ""}${x.eq ? "<span>Equipped</span>" : ""}</div>`;
   /** A set's 2- and 4-piece perks with their Aegis tier, one row each. */
-  const setRows = (si) => [2, 4].map((n) => { const b = si?.bonuses.find((x) => x.pieces === n); return `<div class="vtaegis"><span class="tier t${b?.tier || "U"}">${b?.tier || "—"}</span><span><b>${n} piece bonus</b>${b ? " · " + esc(b.name) : ""}</span></div>`; }).join("");
+  const setRows = (si) => [2, 4].map((n) => { const b = si?.bonuses.find((x) => x.pieces === n), d = DATA.sets?.[si?.name]?.bonuses?.find((x) => x.pieces === n)?.description; return `<div class="vtaegis"><span class="tier t${b?.tier || "U"}">${b?.tier || "—"}</span><span><b>${n} piece bonus</b>${b ? " · " + esc(b.name) : ""}</span>${d ? `<div class="sm" style="flex-basis:100%">${esc(d)}</div>` : ""}</div>`; }).join("");
   /** An exotic's trait: its symbol, name and the full description. */
   const traitBlock = (t) => (t ? `<div class="pk-intr tr">${t.ic ? img(t.ic) : ""}<div><b>${esc(t.n)}</b>${t.d ? `<span>${esc(t.d)}</span>` : ""}</div></div>` : "");
   const tipHtml = (w, a, s) => s ? `<div class="nm"><span>${esc(s.name)}</span></div>${setRows(s)}` : w
