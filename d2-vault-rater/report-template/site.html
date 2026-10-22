@@ -1727,11 +1727,13 @@ function vrMain() {
     const groups = {};
     const cards = new Map();
     const ammos = {};
+    // An exotic with random rolls (a trait column offering several perks) gets a card of its own, named for it.
+    const rolled = (w) => isExotic(w) && w.pk.some((p) => (p.k === "perk1" || p.k === "perk2") && p.o.length > 1);
     for (const w of DATA.weapons) if (!isExotic(w)) (ammos[w.t] ??= new Set()).add(w.am || "Other");
     for (const w of DATA.weapons) {
-      const am = w.am || "Other", key = w.t + "|" + am, split = ammos[w.t]?.size > 1;
-      if (!cards.has(key)) cards.set(key, { type: w.t, ammo: am, split, title: split ? `${am} ${w.t}` : w.t, all: [], leg: [] });
-      const c = cards.get(key); c.all.push(w); if (!isExotic(w)) c.leg.push(w);
+      const am = w.am || "Other", solo = rolled(w), key = solo ? "x|" + w.n : w.t + "|" + am, split = ammos[w.t]?.size > 1;
+      if (!cards.has(key)) cards.set(key, { type: w.t, ammo: am, split, solo, title: solo ? w.n : split ? `${am} ${w.t}` : w.t, all: [], leg: [] });
+      const c = cards.get(key); c.all.push(w); if (solo || !isExotic(w)) c.leg.push(w);
     }
     typeCards.length = 0;
     // Types with only exotics get no card; their exotics are in the Exotics section below.
@@ -1778,9 +1780,9 @@ function vrMain() {
     // Banner: a screenshot from this type when one exists, otherwise the top pick's icon, blurred.
     const withShot = [...best, ...c.all].find((w) => src(w.ss)), icon = src(best[0]?.ic);
     const art = withShot ? `<div class="tc-art"><img src="${src(withShot.ss)}" alt="" loading="lazy" decoding="async"></div>` : icon ? `<div class="tc-art ic"><img src="${icon}" alt="" loading="lazy" decoding="async"></div>` : "";
-    return `${art}<header><h3>Best ${esc(c.title.endsWith("s") ? c.title : c.title + "s")}</h3><span class="small num">${c.leg.length} legendary${exo ? ` · ${exo} exotic` : ""} · ${keep} kept</span></header>${subs}
+    return `${art}<header><h3>${c.solo ? esc(c.title) : "Best " + esc(c.title.endsWith("s") ? c.title : c.title + "s")}</h3><span class="small num">${c.solo ? `${c.leg.length} cop${c.leg.length === 1 ? "y" : "ies"} · exotic` : `${c.leg.length} legendary${exo ? ` · ${exo} exotic` : ""}`} · ${keep} kept</span></header>${subs}
       <div>${best.length ? best.map(mini).join("") : `<p class="small muted" style="padding:8px">${c.leg.length ? "None in this sub-category." : "You only own exotics of this type."}</p>`}</div>
-      <button class="linkbtn" data-set="w" data-view="type:${esc(c.type)}${c.split ? "|" + esc(c.ammo) : ""}">See all ${c.all.length}, best first →</button>`;
+      ${c.solo ? "" : `<button class="linkbtn" data-set="w" data-view="type:${esc(c.type)}${c.split ? "|" + esc(c.ammo) : ""}">See all ${c.all.length}, best first →</button>`}`;
   }
 
   /* ---------- Armor highlights ---------- */
