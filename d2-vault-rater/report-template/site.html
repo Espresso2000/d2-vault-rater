@@ -396,6 +396,16 @@ button.elcard:hover { border-color: color-mix(in srgb, currentColor 45%, transpa
 .ctl select { appearance: none; -webkit-appearance: none; height: 100%; border: 0; background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5l3 3 3-3' fill='none' stroke='%239aa3c7' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 10px center / 12px; padding: 0 30px 0 6px; color: var(--ink); font-weight: 500; font-size: 14px; cursor: pointer; }
 .ctl select:focus { outline: none; }
 .ctl select option { background: var(--panel); }
+@supports (appearance: base-select) {
+  .ctl select, .ctl select::picker(select) { appearance: base-select; }
+  .ctl select { display: flex; align-items: center; }
+  .ctl select::picker-icon { display: none; }
+  .ctl select::picker(select) { margin-block: 6px; padding: 6px; min-width: anchor-size(width); max-height: min(360px, 60vh); border: 1px solid var(--line-hi); border-radius: 3px 12px; background: var(--ticks), var(--panel); color: var(--ink); box-shadow: var(--shadow); }
+  .ctl select option { padding: 7px 12px; border-radius: 8px; font-size: 14px; background: transparent; color: var(--muted); cursor: pointer; }
+  .ctl select option::checkmark { display: none; }
+  .ctl select option:hover, .ctl select option:focus-visible { background: rgba(var(--c3),.14); color: var(--ink); outline: none; }
+  .ctl select option:checked { color: var(--green); font-weight: 600; }
+}
 .resetbtn { height: 30px; padding: 0 12px; border-radius: 9px; border: 0; background: none; color: var(--muted); font-weight: 500; font-size: 13px; margin-left: auto; }
 .resetbtn:hover { color: var(--shard); }
 .tb-foot { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding-block: 10px; border-top: 1px solid var(--line); }
@@ -436,16 +446,27 @@ button.elcard:hover { border-color: color-mix(in srgb, currentColor 45%, transpa
 .exdlg input[type=search] { width: 100%; height: var(--h); background: var(--glass); border: 1px solid var(--line); border-radius: 10px; padding: 0 12px 0 38px; color: var(--ink); font: inherit; }
 .exdlg input[type=search]:focus { border-color: var(--hover); outline: none; }
 .sortlv { list-style: none; margin: 0 0 10px; padding: 0; display: grid; gap: 8px; }
-.sortlv li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.sortlv li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 10px; border: 1px dashed transparent; transition: background .15s ease, border-color .15s ease; }
+.sortlv li.over { border-color: var(--green); background: rgba(var(--c3),.08); }
+.sortlv li.dragging { opacity: .4; }
+.lvgrip { width: 14px; height: 22px; cursor: grab; background: radial-gradient(circle, var(--faint) 1.4px, transparent 1.6px) 0 0 / 7px 7px; opacity: .8; }
+.sortlv li:hover .lvgrip { opacity: 1; background-image: radial-gradient(circle, var(--ink) 1.4px, transparent 1.6px); }
 .sortlv .lvn { width: 64px; font-size: 13px; color: var(--muted); }
 .sortlv .dirbtn { min-width: 128px; justify-content: center; }
+.sortlv .ctl select { min-width: 190px; justify-content: space-between; }
 .lvx { background: none; border: 0; padding: 6px 8px; color: var(--faint); font-size: 15px; cursor: pointer; }
 .lvx:hover { color: var(--shard); }
-.dfac { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); gap: 18px 22px; }
-.dfac fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
-.dfac legend { display: flex; gap: 10px; align-items: baseline; margin-bottom: 8px; font-weight: 600; font-size: 14px; }
-.dfac .opts { display: flex; flex-wrap: wrap; gap: 6px; max-height: 172px; overflow: auto; }
-.dfac label { position: relative; display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--glass); font-size: 13px; cursor: pointer; }
+.dfac { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr)); gap: 12px; align-items: start; }
+.dfac fieldset { min-width: 0; margin: 0; padding: 12px 14px 14px; border: 1px solid var(--line); border-radius: 3px 12px; background: var(--glass); }
+.dfac fieldset.on { border-color: rgba(var(--c3),.45); }
+.dfac legend { float: left; width: 100%; display: flex; gap: 8px; align-items: center; margin-bottom: 10px; padding: 0; font: 600 13px var(--display); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.dfac legend + * { clear: both; }
+.dfac legend .nsel { min-width: 18px; padding: 0 5px; border-radius: 999px; font: 700 11px/17px var(--body); text-align: center; color: #04140d; background: var(--green); }
+.dfac legend .linkbtn { margin-left: auto; font: 500 12.5px var(--body); letter-spacing: 0; text-transform: none; }
+.dfac .opts { display: flex; flex-wrap: wrap; gap: 6px; }
+.dfac label { position: relative; display: inline-flex; align-items: center; gap: 7px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); background: rgba(5,9,25,.4); font-size: 13px; cursor: pointer; }
+.fmore { padding: 3px 10px; border-radius: 999px; border: 1px dashed var(--line-hi); background: none; color: var(--muted); font-size: 12.5px; cursor: pointer; }
+.fmore:hover { color: var(--ink); border-color: var(--hover); }
 .dfac label:hover { border-color: var(--hover); }
 .dfac label:has(input:checked) { border-color: var(--green); background: rgba(var(--c3),.16); }
 .dfac label:has(input:focus-visible) { outline: 2px solid var(--green); outline-offset: 2px; }
@@ -2550,7 +2571,13 @@ function vrMain() {
   document.body.insertAdjacentHTML("beforeend", '<dialog class="exdlg" id="exdlg" aria-labelledby="exdlg-h"></dialog>');
   const dlg = $("#exdlg");
   const sortDirText = (kind, d) => (kind === "az" ? (d === "desc" ? "A to Z" : "Z to A") : kind === "ord" ? (d === "desc" ? "In order" : "Reversed") : d === "desc" ? "Highest first" : "Lowest first");
-  const dlgFacets = () => SETS[ex.set].facets.map(([k, l]) => { const { vals, counts, sel } = facetVals(k); return `<fieldset><legend>${esc(l)}${sel.size ? ` <button type="button" class="linkbtn" data-fclear="${esc(k)}">Clear</button>` : ""}</legend><div class="opts">${vals.map((v) => `<label><input type="checkbox" data-fk="${esc(k)}" value="${esc(v)}"${sel.has(v) ? " checked" : ""}>${esc(v)} <span class="n">${counts.get(v) || 0}</span></label>`).join("") || '<span class="small muted">Nothing left with these filters</span>'}</div></fieldset>`; }).join("");
+  // Filters with many values (frames, perks, loadouts) show the first 8, plus anything picked, until "more" is pressed.
+  const FAC_SHOW = 8, facMore = new Set();
+  const dlgFacets = () => SETS[ex.set].facets.map(([k, l]) => {
+    const { vals, counts, sel } = facetVals(k), all = facMore.has(k) || vals.length <= FAC_SHOW + 2;
+    const shown = all ? vals : vals.filter((v, i) => i < FAC_SHOW || sel.has(v));
+    return `<fieldset${sel.size ? ' class="on"' : ""}><legend><span>${esc(l)}</span>${sel.size ? `<span class="nsel">${sel.size}</span><button type="button" class="linkbtn" data-fclear="${esc(k)}">Clear</button>` : ""}</legend><div class="opts">${shown.map((v) => `<label><input type="checkbox" data-fk="${esc(k)}" value="${esc(v)}"${sel.has(v) ? " checked" : ""}>${esc(v)}<span class="n">${counts.get(v) || 0}</span></label>`).join("") || '<span class="small muted">Nothing left with these filters</span>'}${vals.length > FAC_SHOW + 2 ? `<button type="button" class="fmore" data-fmore="${esc(k)}">${all ? "Fewer" : `+ ${vals.length - shown.length} more`}</button>` : ""}</div></fieldset>`;
+  }).join("");
   function drawExDlg() {
     const cfg = SETS[ex.set], st = ex[ex.set], vmode = listMode === "vault" && ex.set === "w";
     const opt = (o, sel) => Object.entries(o).map(([k, l]) => `<option value="${esc(k)}"${k === sel ? " selected" : ""}>${esc(Array.isArray(l) ? l[0] : l)}</option>`).join("");
@@ -2562,8 +2589,8 @@ function vrMain() {
     dlg.innerHTML = `<form method="dialog" class="exdlg-in">
       <header><h2 id="exdlg-h">${cfg.label}: search, sort and filter</h2><button class="d-close" value="close" aria-label="Close">✕</button></header>
       <label class="searchbox"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="dq" placeholder="Search" aria-label="Search" value="${esc(st.q)}"></label>
-      <section><h3>Sort</h3><p class="small muted">The first rule orders the list. Where items tie, the next rule decides, and so on.</p>
-        <ol class="sortlv">${rules.map((r, i) => `<li><span class="lvn">${i ? "Then by" : "Sort by"}</span><label class="ctl"><select data-sk="${i}" aria-label="${i ? "Then by" : "Sort by"}">${opt(cfg.sorts, r.k)}</select></label><button type="button" class="ctl dirbtn" data-sd="${i}">${sortDirText((cfg.sorts[r.k] || [])[2], r.dir)}</button>${i ? `<button type="button" class="lvx" data-sx="${i}" aria-label="Remove this rule" title="Remove this rule">✕</button>` : ""}</li>`).join("")}</ol>
+      <section><h3>Sort</h3><p class="small muted">The first rule orders the list. Where items tie, the next rule decides, and so on. Drag a rule by its handle to move it up or down.</p>
+        <ol class="sortlv">${rules.map((r, i) => `<li draggable="true" data-ri="${i}"><span class="lvgrip" title="Drag to reorder" aria-hidden="true"></span><span class="lvn">${i ? "Then by" : "Sort by"}</span><label class="ctl"><select data-sk="${i}" aria-label="${i ? "Then by" : "Sort by"}">${opt(cfg.sorts, r.k)}</select></label><button type="button" class="ctl dirbtn" data-sd="${i}">${sortDirText((cfg.sorts[r.k] || [])[2], r.dir)}</button>${i ? `<button type="button" class="lvx" data-sx="${i}" aria-label="Remove this rule" title="Remove this rule">✕</button>` : ""}</li>`).join("")}</ol>
         ${rules.length < 6 ? '<button type="button" class="btn ghost" id="dadd">+ Add a sort rule</button>' : ""}</section>
       ${vmode ? "" : `<section><h3>Group and show</h3><div class="tb-row"><label class="ctl"><span>Group by</span><select id="dgroup">${opt(cfg.groups, st.group)}</select></label>${st.group ? `<label class="ctl"><span>then</span><select id="dgroup2">${opt(cfg.groups, st.group2)}</select></label>` : ""}<label class="ctl"><span>Show</span><select id="dtop">${opt({ "": "All", 1: "Best 1", 3: "Best 3", 5: "Best 5" }, st.top)}</select></label></div></section>`}
       <section><h3>Filters</h3><div class="dfac">${dlgFacets()}</div></section>
@@ -2582,6 +2609,7 @@ function vrMain() {
     else if (b.dataset.sx) st.then.splice(Number(b.dataset.sx) - 1, 1);
     else if (b.id === "dadd") { const used = new Set([st.sort, ...st.then.map((t) => t.k)]); st.then.push({ k: Object.keys(cfg.sorts).find((k) => !used.has(k)) || "name", dir: "desc" }); }
     else if (b.dataset.fclear) delete st.f[b.dataset.fclear];
+    else if (b.dataset.fmore) { const k = b.dataset.fmore; if (!facMore.delete(k)) facMore.add(k); return drawExDlg(); }
     else if (b.id === "dreset") Object.assign(st, blank());
     else if (b.closest("#dlayout")) { layout = b.dataset.v; store.set("vr-layout", layout); }
     else if (b.closest("#ddense")) { dense = b.dataset.v; store.set("vr-dense", dense); }
@@ -2596,6 +2624,20 @@ function vrMain() {
     else if (t.id === "dgroup2") st.group2 = t.value;
     else if (t.id === "dtop") st.top = t.value;
     else return;
+    dlgApply();
+  });
+  // Reordering sort rules: drag one onto another and it takes that place (the rest shift along).
+  let ruleFrom = null;
+  dlg.addEventListener("dragstart", (e) => { const li = e.target.closest?.(".sortlv li"); if (!li) return; ruleFrom = Number(li.dataset.ri); e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", ""); li.classList.add("dragging"); });
+  dlg.addEventListener("dragend", () => { ruleFrom = null; $$(".sortlv li", dlg).forEach((li) => li.classList.remove("dragging", "over")); });
+  dlg.addEventListener("dragover", (e) => { const li = ruleFrom !== null && e.target.closest?.(".sortlv li"); if (!li) return; e.preventDefault(); $$(".sortlv li.over", dlg).forEach((x) => x !== li && x.classList.remove("over")); li.classList.add("over"); });
+  dlg.addEventListener("drop", (e) => {
+    const li = ruleFrom !== null && e.target.closest?.(".sortlv li"); if (!li) return;
+    e.preventDefault();
+    const st = ex[ex.set], to = Number(li.dataset.ri), rules = [{ k: st.sort, dir: st.dir }, ...st.then];
+    if (to === ruleFrom) return;
+    rules.splice(to, 0, ...rules.splice(ruleFrom, 1));
+    ruleFrom = null; st.sort = rules[0].k; st.dir = rules[0].dir; st.then = rules.slice(1);
     dlgApply();
   });
   // Typing searches as you go, like the toolbar's box; only the filters and count redraw, so the box keeps its place.
