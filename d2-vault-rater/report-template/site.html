@@ -1000,6 +1000,7 @@ aside.drawer.scrolled .dp-mini { opacity: 1; transform: none; }
 .dp-id h2 { font-size: 27px; line-height: 1.08; font-weight: 600; margin-top: 4px; overflow-wrap: anywhere; }
 /* Bungie's ammo crate (white Primary, green Special, purple Heavy) after a weapon's name */
 .ammo-ico { height: .78em; width: auto; margin-left: .35em; vertical-align: -.02em; }
+.champ-ico { height: .95em; vertical-align: -.12em; }
 .dp-id .eyebrow { font-size: 11px; }
 .dp-sub { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 8px; font-size: 13.5px; color: var(--muted); }
 .dp-sub .chip { padding: 3px 10px; font-size: 12px; }
@@ -1807,6 +1808,9 @@ function vrMain() {
   /* ---------- Weapons highlights ---------- */
   const AMMO_ORDER = ["Primary", "Special", "Heavy"];
   const ammoIcon = (am) => (AMMO_ORDER.includes(am) ? `<img class="ammo-ico" src="https://www.bungie.net/img/destiny_content/ammo_types/${am.toLowerCase()}.png" alt="${am} ammo" title="${am} ammo">` : "");
+  // Bungie's breaker symbols (DestinyBreakerTypeDefinition), for the champion a weapon stuns.
+  const CHAMP_ICON = { Barrier: "07b9ba0194e85e46b258b04783e93d5d", Overload: "da558352b624d799cf50de14d7cb9565", Unstoppable: "825a438c85404efd6472ff9e97fc7251" };
+  const champIcon = (ch) => (CHAMP_ICON[ch] ? `<img class="ammo-ico champ-ico" src="https://www.bungie.net/common/destiny2_content/icons/DestinyBreakerTypeDefinition_${CHAMP_ICON[ch]}.png" alt="Anti-${ch}" title="Anti-${ch}: stuns ${ch} champions">` : "");
   const typeCards = [];
   let bigCards = store.get("vr-cards") !== "small";
   RENDER.weapons = () => {
@@ -2364,13 +2368,13 @@ function vrMain() {
   /** One row per perk column: green (solid) for options the rater wants, blue (dashed) for the rest, the rolled one filled with a tick; then Aegis's masterwork pick. */
   const perkRows = (w) => perkCols(w).filter((p) => PERK_ORDER.includes(p.k)).map((p) => `<div class="vtrow"><span>${PERK_LABEL[p.k]}</span><div>${p.o.map((o) => chip(o, (p.m.includes(o) ? "good" : "alt") + (o === p.a ? " sel" : ""), o === p.a ? "✓ " : "", w.pi)).join("")}</div></div>`).join("")
     + (w.rmw?.length ? `<div class="vtrow mw"><span>Rec masterwork</span><div>${w.rmw.map((o) => chip(o, "mw", "☆ ")).join("")}</div></div>` : "");
-  const tipTop = (x, sub) => `<div class="nm"><span>${esc(x.n)}</span>${x.pw ? `<span class="vtpw">✦ ${x.pw}</span>` : ""}</div><div class="sm">${sub}</div><div class="vtmeta"><span class="vtv ${x.v}">${VERDICT[x.v]}</span><span>Overall ${x.sc}${x.rs != null ? ` (${x.rs} · ${x.tier || "—"})` : ""}</span>${x.gt ? `<span>Tier ${x.gt}</span>` : ""}${x.eq ? "<span>Equipped</span>" : ""}</div>`;
+  const tipTop = (x, sub, mark = "") => `<div class="nm"><span>${esc(x.n)}${mark}</span>${x.pw ? `<span class="vtpw">✦ ${x.pw}</span>` : ""}</div><div class="sm">${sub}</div><div class="vtmeta"><span class="vtv ${x.v}">${VERDICT[x.v]}</span><span>Overall ${x.sc}${x.rs != null ? ` (${x.rs} · ${x.tier || "—"})` : ""}</span>${x.gt ? `<span>Tier ${x.gt}</span>` : ""}${x.eq ? "<span>Equipped</span>" : ""}</div>`;
   /** A set's 2- and 4-piece perks with their Aegis tier, one row each. */
   const setRows = (si, full) => [2, 4].map((n) => { const b = si?.bonuses.find((x) => x.pieces === n), d = DATA.sets?.[si?.name]?.bonuses?.find((x) => x.pieces === n)?.description; return `<div class="vtaegis"><span class="tier t${b?.tier || "U"}">${b?.tier || "—"}</span><span><b>${n} piece bonus</b>${b ? " · " + esc(b.name) : ""}</span>${full && d ? `<div class="sm sd">${bonusText(d)}</div>` : ""}</div>`; }).join("");
   /** An exotic's trait: its symbol, name and the full description. */
   const traitBlock = (t) => (t ? `<div class="pk-intr tr">${t.ic ? img(t.ic) : ""}<div><b>${esc(t.n)}</b>${t.d ? `<span>${esc(t.d)}</span>` : ""}</div></div>` : "");
   const tipHtml = (w, a, s) => s ? `<div class="nm"><span>${esc(s.name)}</span></div>${setRows(s, true)}` : w
-    ? `${tipTop(w, `<span class="vtel" style="--el:var(--${esc(w.e)})">${esc(w.e)}</span> ${esc(typeLine(w))}${w.am ? ` · ${esc(w.am)} ammo` : ""}`)}<div class="vtaegis">${tierBadge(w)}<span>${w.tier ? "tier gun according to Aegis" : "Unrated: not on Aegis's sheet"}</span></div><div class="vtaegis"><b>${w.rs ?? "—"}/100</b><span>Aegis god roll match</span></div><div class="vtrows">${perkRows(w)}</div>${w.r === "Exotic" ? traitBlock(w.fr) : ""}`
+    ? `${tipTop(w, `<span class="vtel" style="--el:var(--${esc(w.e)})">${esc(w.e)}</span> ${esc(typeLine(w))}`, ammoIcon(w.am) + champIcon(w.ch))}<div class="vtaegis">${tierBadge(w)}<span>${w.tier ? "tier gun according to Aegis" : "Unrated: not on Aegis's sheet"}</span></div><div class="vtaegis"><b>${w.rs ?? "—"}/100</b><span>Aegis god roll match</span></div><div class="vtrows">${perkRows(w)}</div>${w.r === "Exotic" ? traitBlock(w.fr) : ""}`
     : `${tipTop(a, `${esc(a.cls)} · ${esc(a.arch || "Legacy")}${setLine(a)}`)}${statBars(a, true)}<div class="sm">${a.tot} total${topStat(a) ? ` · highest ${esc(topStat(a))}` : ""}${a.loc ? " · " + esc(a.loc) : ""}</div>${a.si && !isExotic(a) ? setRows(a.si) : ""}${traitBlock(a.trait)}`;
   // Anything showing one item gets the card: data-w / data-a for your own gear, data-vt for items another module rates
   // (the web app's Vendors tab answers window.VR_TIP(id) with { w } or { a }). Not on Overview or Wrapped.
@@ -3369,10 +3373,10 @@ function vrMain() {
     const copies = DATA.weapons.filter((x) => x.n === w.n && x.id !== w.id).sort((a, b) => b.sc - a.sc);
     const scores = `<div class="breakdown"><div data-ptip="score" tabindex="0" aria-label="Overall score ${w.sc}: ${w.tier ? `Aegis tier ${w.tier}` : `wishlist rating ${w.ws}`} and roll score ${w.rs}"><b class="num grad-text">${w.sc}</b><span>Overall score</span></div><div${w.tier ? ` class="t${w.tier} tl"` : ""}>${w.tier ? `<b class="num">${w.tier}</b><span>Aegis tier${w.rank ? " · #" + w.rank : ""}</span>` : `<b class="num">${w.ws}</b><span>Not in Aegis (wishlist)</span>`}</div><div><b class="num">${w.rs}</b><span>Roll score</span></div></div>`;
     const why = `<div class="dp-vhead"><span class="vtv ${w.v}">${VERDICT[w.v]}</span><span class="small">${w.v === "keep" ? "Worth a vault slot" : w.v === "shard" ? "Safe to dismantle" : "Your call"}</span></div><ul class="reasons">${w.why.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>${w.notes ? `<p class="dp-quote"><b>Aegis:</b> ${esc(w.notes)}</p>` : ""}`;
-    const facts = `<div class="facts">${fact("Ammo", w.am)}${fact("Power", w.pw)}${fact("Masterwork", w.mw)}${fact("Gear tier", w.gt ? "Tier " + w.gt : null)}${fact("Where", w.loc)}${fact("Crafted", w.cr ? "Yes" : null)}${fact("Adept", w.ad ? "Yes" : null)}${fact("Aegis list", w.tab)}</div>`;
+    const facts = `<div class="facts">${fact("Ammo", w.am)}${fact("Champion", w.ch ? "Anti-" + w.ch : null)}${fact("Power", w.pw)}${fact("Masterwork", w.mw)}${fact("Gear tier", w.gt ? "Tier " + w.gt : null)}${fact("Where", w.loc)}${fact("Crafted", w.cr ? "Yes" : null)}${fact("Adept", w.ad ? "Yes" : null)}${fact("Aegis list", w.tab)}</div>`;
     const actions = movePanel(w, false) + dimPanel(w);
     openDrawer({
-      id, ico: w.ic, art: src(w.ss), el: w.e, gold: isExotic(w), title: w.n, titleMark: ammoIcon(w.am),
+      id, ico: w.ic, art: src(w.ss), el: w.e, gold: isExotic(w), title: w.n, titleMark: ammoIcon(w.am) + champIcon(w.ch),
       eyebrow: `${esc(w.s)} · ${esc(w.r)}`, tier: tierBadge(w),
       sub: `<span>${esc(typeLine(w))}</span> ${elDot(w.e)}${w.pw ? `<span class="vtpw">✦ ${w.pw}</span>` : ""}${w.lk ? '<span class="chip">🔒 Locked</span>' : ""}${w.god ? '<span class="chip" style="color:var(--green)">Wishlist god roll</span>' : ""}${w.loc && w.loc !== "Vault" ? `<span class="chip">${esc(w.loc)}</span>` : ""}${dimTagPick(w)}${evrTagPick(w)}`,
       body: dpLayout(

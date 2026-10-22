@@ -15,6 +15,8 @@ const ARMOR_BUCKETS: Record<number, ArmorSlot> = {
 const POSTMASTER_BUCKET = 215593132;
 const CLASSES: Record<number, ClassName> ={ 0: "Titan", 1: "Hunter", 2: "Warlock", 3: "Any" };
 const AMMO = { 1: "Primary", 2: "Special", 3: "Heavy" } as const;
+/** Bungie's breaker types: the champion a weapon stuns. */
+const BREAKER = { 1: "Barrier", 2: "Overload", 3: "Unstoppable" } as const;
 
 export const SOCKET_CATEGORY = { weaponPerks: 4241085061, intrinsic: 3956125808 };
 const STATE_LOCKED = 1;
@@ -48,7 +50,7 @@ export interface RawProfile {
   profilePlugSets?: { data?: { plugs: Record<string, RawPlug[]> } };
   characterPlugSets?: { data?: Record<string, { plugs: Record<string, RawPlug[]> }> };
   itemComponents?: {
-    instances?: { data?: Record<string, { damageType?: number; primaryStat?: { value: number }; gearTier?: number }> };
+    instances?: { data?: Record<string, { damageType?: number; primaryStat?: { value: number }; gearTier?: number; breakerType?: number }> };
     stats?: { data?: Record<string, { stats: Record<string, { statHash: number; value: number }> }> };
     sockets?: { data?: Record<string, { sockets: RawSocket[] }> };
     reusablePlugs?: { data?: Record<string, { plugs: Record<string, RawPlug[]> }> };
@@ -189,6 +191,8 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
         element: DAMAGE[inst.damageType ?? def.defaultDamageType ?? 0] ?? "Unknown",
         slot: WEAPON_BUCKETS[bucket] ?? "Unknown",
         ammo: AMMO[(def.equippingBlock?.ammoType ?? 0) as 1 | 2 | 3] ?? "Unknown",
+        // This copy's breaker as Bungie reports it on the item instance.
+        champion: BREAKER[(inst.breakerType ?? 0) as 1 | 2 | 3] ?? null,
         rarity: rarity(def),
         gearTier: inst.gearTier ?? null,
         power: inst.primaryStat?.value ?? null,
