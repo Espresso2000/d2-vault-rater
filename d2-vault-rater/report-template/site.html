@@ -610,7 +610,9 @@ details.vsec > summary .vsplit { margin-left: 8px; white-space: nowrap; }
 #explorer:not(.vmode) .vm-only { display: none; }
 .vslot { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; margin-top: 14px; }
 .vslot::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(var(--c3),.45), transparent); }
-.vcell { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px; align-items: start; }
+/* A character's inventory drop area runs down to the next slot row, so there's room to drop; the equip slot stays its size */
+.vcell { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px; align-self: stretch; }
+.vcell > .vdrop[data-equip] { align-self: start; }
 .vdrop { min-height: 70px; padding: 4px; border-radius: 10px; border: 1px dashed transparent; transition: border-color .15s ease, background .15s ease; }
 .vdrop.over { border-color: var(--green); background: rgba(var(--c3),.08); }
 .vinv, .vbox { display: flex; flex-wrap: wrap; gap: 7px; align-content: flex-start; }
