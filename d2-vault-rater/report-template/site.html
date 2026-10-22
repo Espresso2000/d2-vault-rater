@@ -1727,8 +1727,8 @@ function vrMain() {
     const groups = {};
     const cards = new Map();
     const ammos = {};
-    // An exotic with random rolls (a trait column offering several perks) gets a card of its own, named for it.
-    const rolled = (w) => isExotic(w) && w.pk.some((p) => (p.k === "perk1" || p.k === "perk2") && p.o.length > 1);
+    // Ergo Sum is the one exotic with random rolls worth comparing copies of, so it gets a card of its own.
+    const rolled = (w) => w.n === "Ergo Sum";
     for (const w of DATA.weapons) if (!isExotic(w)) (ammos[w.t] ??= new Set()).add(w.am || "Other");
     for (const w of DATA.weapons) {
       const am = w.am || "Other", solo = rolled(w), key = solo ? "x|" + w.n : w.t + "|" + am, split = ammos[w.t]?.size > 1;
