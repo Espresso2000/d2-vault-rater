@@ -616,8 +616,6 @@ details.vsec > summary .vsplit input::before { content: ""; position: absolute; 
 details.vsec > summary .vsplit input:checked { background: rgba(var(--c3),.3); border-color: var(--green); }
 details.vsec > summary .vsplit input:checked::before { transform: translateX(18px); background: var(--green); }
 details.vsec > summary .vsplit input:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
-/* Hundreds of tiles: the browser skips laying out and painting a block while it's off screen (armor, below the weapons) */
-details.vsec { content-visibility: auto; contain-intrinsic-size: auto 1200px; overflow-clip-margin: 16px; }
 details.vchar { margin-bottom: 14px; }
 /* Postmaster: one panel per character, its class name down the left in the class colour */
 .vpm { display: grid; grid-template-columns: repeat(var(--chars), minmax(0, 1fr)); gap: 14px; margin-bottom: 6px; }
@@ -1610,11 +1608,21 @@ function vrMain() {
   }
   /** After the data changes (a move, a tag, a perk): the open tab draws again now, the others when next shown.
    * The Vault tab redraws only its items, keeping its toolbar. While moves are queued it waits: the last one redraws. */
-  function rerender() {
+  function rerender(skip) {
     if (movesPending) return;
     const keep = shownTab === "list" && rendered.list;
     for (const k of Object.keys(rendered)) if (!keep || k !== "list") delete rendered[k];
-    if (keep) drawExplorer(false); else show(location.hash.slice(1) || "overview", false);
+    if (keep) keepPlace(() => drawExplorer(false), skip); else show(location.hash.slice(1) || "overview", false);
+  }
+  /** Redraws without the page jumping: the first item on screen (not one in `skip`, such as one just moved)
+   * stays where it was. Redrawing replaces every item, so the browser's own scroll anchoring has nothing to hold on to. */
+  function keepPlace(draw, skip = new Set()) {
+    const bar = barH(), seen = (el) => { const r = el.getBoundingClientRect(); return r.bottom > bar && r.top < innerHeight; };
+    const a = $$("#p-list [data-w], #p-list [data-a]").find((el) => !skip.has(el.dataset.w || el.dataset.a) && seen(el));
+    const id = a && (a.dataset.w || a.dataset.a), top = a?.getBoundingClientRect().top;
+    draw();
+    const b = id && $(`#p-list [data-w="${id}"], #p-list [data-a="${id}"]`);
+    if (b) scrollBy(0, b.getBoundingClientRect().top - top);
   }
   $("#tabs").addEventListener("click", (e) => { const b = e.target.closest("button[role=tab]"); if (b) show(b.id.slice(2), true); });
   document.addEventListener("click", (e) => { const b = e.target.closest("[data-tab]"); if (b) show(b.dataset.tab, true); });
@@ -2154,7 +2162,12 @@ function vrMain() {
   // QUERY-END
   const dirHtml = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${d === "desc" ? "M12 5v14M6 13l6 6 6-6" : "M12 19V5M6 11l6-6 6 6"}"/></svg>${d === "desc" ? "Best first" : "Worst first"}`;
   const blank = () => ({ q: "", f: {}, sort: "score", dir: "desc", then: [], group: "", group2: "", top: "", view: "", limit: 150 });
-  const ex = { set: "w", w: blank(), a: blank(), pass: () => true };
+  // Sort rules, grouping and "show best N" are remembered in this browser (search and filters start fresh).
+  const KEPT = ["sort", "dir", "then", "group", "group2", "top"];
+  const keptOf = (st) => Object.fromEntries(KEPT.map((k) => [k, st[k]]));
+  const savedSort = readJson("vr-sort", {});
+  const ex = { set: "w", w: { ...blank(), ...savedSort.w }, a: { ...blank(), ...savedSort.a }, pass: () => true };
+  const saveSort = () => store.set("vr-sort", JSON.stringify({ w: keptOf(ex.w), a: keptOf(ex.a) }));
   let layout = store.get("vr-layout") === "tiles" ? "tiles" : "rows";
   // Toolbar size: full bands, or condensed to two lines (the default, since it stays pinned) or one.
   let dense = ["full", "l1", "l2"].includes(store.get("vr-dense")) ? store.get("vr-dense") : "l2";
@@ -2231,7 +2244,7 @@ function vrMain() {
       refreshErr = ""; lastRefresh = Date.now();
       // The open Vault tab redraws now; other tabs drew from the old read, so they draw again when next shown.
       for (const k of Object.keys(rendered)) if (k !== shownTab) delete rendered[k];
-      if (shownTab === "list" && rendered.list) drawExplorer(false);
+      if (shownTab === "list" && rendered.list) keepPlace(() => drawExplorer(false));
       if (NEW.size > before) toast(`${plural(NEW.size - before, "new item")} in your vault`);
     }).catch((e) => { refreshErr = e.message; }).finally(() => {
       refreshing = null; stampRefresh();
@@ -2496,6 +2509,7 @@ function vrMain() {
     ex.pass = (x, skip) => (!qf || qf(x)) &&
       Object.entries(st.f).every(([k, vals]) => k === skip || !vals.length || [].concat(facetFn[k](x) ?? []).some((v) => vals.includes(String(v))));
     const list = cfg.items.filter((x) => ex.pass(x));
+    saveSort();
     // The first sort rule decides; where two items tie, the next one does, and so on; the score settles what's left.
     // "Best first" (desc) means highest first for numbers, and A to Z or the natural order for text and ordered sorts.
     const dir = st.dir === "asc" ? 1 : -1;
@@ -3042,10 +3056,10 @@ function vrMain() {
   /** Move items through the local app; updates the page's copy of where things are.
    * Moves run one after another (several at once only get Bungie to throttle them); the page redraws once the
    * last one is done, then reads the vault again so it matches the game. */
-  let moveQueue = Promise.resolve(), afterMoves = 0;
+  let moveQueue = Promise.resolve(), afterMoves = 0, justMoved = new Set();
   async function doMove(ids, to, equip, msgEl) {
     if (msgEl) msgEl.textContent = `Moving ${ids.length} item${ids.length > 1 ? "s" : ""}…`;
-    movesPending++; for (const id of ids) MOVING.add(id);
+    movesPending++; for (const id of ids) { MOVING.add(id); justMoved.add(id); }
     const call = moveQueue.then(() => api("/api/move", { ids, to, equip }));
     moveQueue = call.catch(() => {});
     try {
@@ -3068,7 +3082,7 @@ function vrMain() {
     } finally {
       movesPending--; moveSeq++; for (const id of ids) MOVING.delete(id);
       if (!movesPending) {
-        rerender();
+        rerender(justMoved); justMoved = new Set();
         // Bungie's own read can lag a moment behind a transfer, so wait a little before reading the vault again.
         clearTimeout(afterMoves); afterMoves = setTimeout(() => refreshVault(false), 2500);
       }
