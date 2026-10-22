@@ -6,6 +6,7 @@
     "dev": "vite",
     "snapshot": "tsx scripts/snapshot.ts",
     "build": "vite build",
+    "regen": "vite build",
     "preview": "vite preview --port 4173",
     "typecheck": "tsc --noEmit -p .",
     "local": "vite build && vite preview --mode localhost"

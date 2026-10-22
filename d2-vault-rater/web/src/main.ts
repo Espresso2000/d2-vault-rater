@@ -239,7 +239,9 @@ window.VR_API = async (path, body) => {
   try {
     switch (path) {
       case "/api/refresh":
-        // The page reloads after this, which re-reads the vault and re-rates.
+        // The page reloads after this, which re-reads the vault and re-rates. Under `npm run local` the server
+        // first rebuilds the page from the current template; a static host has no /rebuild and that is fine.
+        await fetch("rebuild", { method: "POST" }).catch(() => {});
         return { ok: true };
       case "/api/signout":
         signOut();

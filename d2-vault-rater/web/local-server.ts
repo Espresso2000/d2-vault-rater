@@ -4,10 +4,13 @@
  *   GET  /app-config.json  hands the page the API key and client id from ../.env (not secret)
  *   POST /oauth/token      relays Bungie's token exchange, adding the client secret, so the secret
  *                          stays in .env and never reaches the page
+ *   POST /rebuild          rebuilds dist from the current report-template/site.html (the page's Re-rate calls it)
  * Hosted on a static server instead, the page uses a Public Bungie app and needs neither.
  */
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { createRequire } from "node:module";
+import { execFile } from "node:child_process";
 import { parseEnv } from "node:util";
 import type { Connect, Plugin } from "vite";
 
@@ -64,6 +67,17 @@ function middleware(): Connect.NextHandleFunction {
       res.statusCode = r.status;
       res.setHeader("Content-Type", r.headers.get("content-type") || "application/json");
       return res.end(await r.text());
+    }
+    if (req.method === "POST" && path.endsWith("/rebuild")) {
+      const origin = req.headers.origin;
+      const host = req.headers.host || (req.headers[":authority"] as string | undefined);
+      if (origin && origin !== `https://${host}`) return (res.statusCode = 403), res.end("Wrong origin");
+      // The page is baked into dist at build time, so edits to the template only show after this.
+      const vite = resolve(createRequire(import.meta.url).resolve("vite/package.json"), "..", "bin", "vite.js");
+      return execFile(process.execPath, [vite, "build"], { cwd: resolve(import.meta.dirname) }, (err, _out, stderr) => {
+        res.statusCode = err ? 500 : 200;
+        res.end(err ? stderr.slice(-500) : "ok");
+      });
     }
     next();
   };
