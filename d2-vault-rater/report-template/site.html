@@ -420,6 +420,39 @@ button.elcard:hover { border-color: color-mix(in srgb, currentColor 45%, transpa
 /* Vault mode uses the weapon filters and sort; kind, layout and grouping only apply to the full list */
 #explorer.vmode :is(#exset, #exlayout, .vm-hide, #exlist, #exmore) { display: none !important; }
 .searchbox { position: relative; flex: 1 1 280px; min-width: 0; display: flex; }
+/* The toolbar's settings button, with how many extra sort rules are on */
+.exgear { position: relative; flex: none; width: var(--h); justify-content: center; padding: 0; color: var(--muted); cursor: pointer; }
+.exgear:hover { color: var(--ink); }
+.exgear svg { width: 18px; height: 18px; fill: currentColor; }
+.exgear b { position: absolute; right: -6px; top: -6px; min-width: 18px; height: 16px; padding: 0 4px; border-radius: 999px; font: 700 10px/16px var(--body); color: #04140d; background: var(--green); }
+/* Search, sort and filter settings dialog */
+.exdlg { --h: 40px; width: min(880px, calc(100vw - 32px)); max-height: calc(100vh - 48px); padding: 0; border: 1px solid var(--line-hi); border-radius: 3px 18px; background: var(--ticks), var(--panel); color: var(--ink); box-shadow: var(--shadow); }
+.exdlg::backdrop { background: rgba(3,6,18,.65); backdrop-filter: blur(3px); }
+.exdlg-in { display: grid; gap: 24px; padding: 22px 24px 0; }
+.exdlg header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.exdlg h2 { font: 600 22px var(--display); }
+.exdlg h3 { margin-bottom: 10px; font: 600 12.5px var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--green); }
+.exdlg section > p { margin: -4px 0 10px; }
+.exdlg input[type=search] { width: 100%; height: var(--h); background: var(--glass); border: 1px solid var(--line); border-radius: 10px; padding: 0 12px 0 38px; color: var(--ink); font: inherit; }
+.exdlg input[type=search]:focus { border-color: var(--hover); outline: none; }
+.sortlv { list-style: none; margin: 0 0 10px; padding: 0; display: grid; gap: 8px; }
+.sortlv li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.sortlv .lvn { width: 64px; font-size: 13px; color: var(--muted); }
+.sortlv .dirbtn { min-width: 128px; justify-content: center; }
+.lvx { background: none; border: 0; padding: 6px 8px; color: var(--faint); font-size: 15px; cursor: pointer; }
+.lvx:hover { color: var(--shard); }
+.dfac { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); gap: 18px 22px; }
+.dfac fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+.dfac legend { display: flex; gap: 10px; align-items: baseline; margin-bottom: 8px; font-weight: 600; font-size: 14px; }
+.dfac .opts { display: flex; flex-wrap: wrap; gap: 6px; max-height: 172px; overflow: auto; }
+.dfac label { position: relative; display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--glass); font-size: 13px; cursor: pointer; }
+.dfac label:hover { border-color: var(--hover); }
+.dfac label:has(input:checked) { border-color: var(--green); background: rgba(var(--c3),.16); }
+.dfac label:has(input:focus-visible) { outline: 2px solid var(--green); outline-offset: 2px; }
+.dfac input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.dfac .n { color: var(--faint); font-size: 12px; }
+.exdlg footer { position: sticky; bottom: 0; display: flex; align-items: center; gap: 14px; margin: 0 -24px; padding: 14px 24px; background: var(--panel); border-top: 1px solid var(--line); }
+.exdlg footer .btn.primary { margin-left: auto; }
 .searchbox svg { position: absolute; left: 13px; top: 50%; width: 16px; height: 16px; transform: translateY(-50%); fill: none; stroke: var(--muted); stroke-width: 2; pointer-events: none; }
 .toolbar input[type=search] { width: 100%; height: var(--h); background: var(--glass); border: 1px solid var(--line); border-radius: 10px; padding: 0 12px 0 38px; }
 .toolbar input[type=search]:focus { border-color: var(--hover); outline: none; background: var(--glass-hi); }
@@ -1520,10 +1553,11 @@ function vrMain() {
     new ResizeObserver(tabsEdges).observe(tabsNav);
   }
   tabsEdges();
+  const GEAR_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.14 12.94a7.4 7.4 0 0 0 .05-.94 7.4 7.4 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.84a.5.5 0 0 0-.49.42l-.36 2.54c-.59.24-1.13.56-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.67 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.4 7.4 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.3.6.22l2.39-.96c.5.38 1.04.7 1.63.94l.36 2.54c.04.24.25.42.49.42h3.84c.24 0 .45-.18.49-.42l.36-2.54c.59-.24 1.13-.56 1.63-.94l2.39.96c.22.08.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2Z"/></svg>';
   if (window.VR_LOCAL && !$("#gear")) {
     $("#bar-actions").insertAdjacentHTML("beforeend", `<button class="btn rerate" id="rerate" type="button" title="Read your vault from Bungie again and re-rate it">Re-rate</button>`);
     $("#rerate").onclick = rerate;
-    $("#bar-actions").insertAdjacentHTML("beforeend", `<button class="gear" id="gear" type="button" aria-label="Settings" title="Settings" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.14 12.94a7.4 7.4 0 0 0 .05-.94 7.4 7.4 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.84a.5.5 0 0 0-.49.42l-.36 2.54c-.59.24-1.13.56-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.67 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.4 7.4 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.3.6.22l2.39-.96c.5.38 1.04.7 1.63.94l.36 2.54c.04.24.25.42.49.42h3.84c.24 0 .45-.18.49-.42l.36-2.54c.59-.24 1.13-.56 1.63-.94l2.39.96c.22.08.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2Z"/></svg></button>`);
+    $("#bar-actions").insertAdjacentHTML("beforeend", `<button class="gear" id="gear" type="button" aria-label="Settings" title="Settings" aria-pressed="false">${GEAR_SVG}</button>`);
     $("#gear").onclick = () => show(location.hash === "#settings" ? store.get("vr-last-tab") || "overview" : "settings", true);
   }
   const RENDER = { builds: () => window.VR_BUILDS.render($("#p-builds")), vendors: () => window.VR_VENDORS.render($("#p-vendors")) }, rendered = {};
@@ -1958,6 +1992,11 @@ function vrMain() {
   const ARMOR_EXTRAS = { "In a DIM loadout": (a) => !!a.lo?.length, Locked: (a) => a.lk, Unlocked: (a) => !a.lk, "Tier 5": (a) => a.gt === 5, Legacy: (a) => a.legacy, "Part of a set": (a) => !!a.set, Equipped: (a) => (a.loc || "").includes("equipped") };
   const CAT_LABEL = { duplicate: "Duplicate", outscored: "Outscored", "low-tier": "Below tier floor", "d-tier": "D tier", "trash-roll": "Trash roll", unrated: "Unrated", armor: "Armor" };
   const VERDICT = { keep: "Keep", shard: "Shard", review: "Review" };
+  /** Position in a fixed order (unknown values last), for sorts like ammo or rarity. */
+  const ordOf = (list, v) => { const i = list.indexOf(v); return i < 0 ? 99 : i; };
+  const RARITY_ORDER = ["Exotic", "Legendary", "Rare", "Uncommon", "Common"], ELEMENT_ORDER = ["Kinetic", "Arc", "Solar", "Void", "Stasis", "Strand"];
+  const tagOrder = (x) => { const t = shownTag(x); return t ? TAGS.indexOf(t) : 99; };
+  const SHARED_SORTS = { r: ["Rarity", (x) => ordOf(RARITY_ORDER, x.r), "ord"], et: ["Tag", tagOrder, "ord"], v: ["Verdict", (x) => ordOf(["keep", "review", "shard"], x.v), "ord"] };
   const SETS = {
     w: {
       label: "Weapons", noun: "weapon", items: DATA.weapons, row: weaponRow, tile: weaponTile,
@@ -1971,7 +2010,9 @@ function vrMain() {
         ...(DIMS.tags && DIMS.loaded ? [["dt", "DIM tag", (w) => (w.tg ? TAG_LABEL[w.tg] : "Untagged")]] : []),
         ...(DIMS.loadouts && DIMS.loaded ? [["dl", "DIM loadout", (w) => (w.lo?.length ? w.lo : ["Not in a loadout"])]] : []),
       ],
-      sorts: { score: ["Vault score", (w) => w.sc], roll: ["Roll score", (w) => w.rs], tier: ["Aegis tier and rank", (w) => (w.tier ? (5 - TIERS.indexOf(w.tier)) * 100 - (w.rank ?? 50) : -1)], power: ["Power", (w) => w.pw ?? 0], name: ["Name", (w) => w.n.toLowerCase()], type: ["Type", (w) => w.t] },
+      sorts: { score: ["Vault score", (w) => w.sc], roll: ["Roll score", (w) => w.rs], tier: ["Aegis tier and rank", (w) => (w.tier ? (5 - TIERS.indexOf(w.tier)) * 100 - (w.rank ?? 50) : -1)], power: ["Power level", (w) => w.pw ?? 0], name: ["Name", (w) => w.n.toLowerCase(), "az"], type: ["Type", (w) => w.t, "az"],
+        am: ["Ammo type", (w) => ordOf(["Primary", "Special", "Heavy"], w.am), "ord"], e: ["Damage type", (w) => ordOf(ELEMENT_ORDER, w.e), "ord"], f: ["Weapon frame", (w) => (frameOf(w) || "~").toLowerCase(), "az"],
+        s: ["Slot", (w) => ordOf(["Kinetic", "Energy", "Power"], w.s), "ord"], ...SHARED_SORTS },
       groups: { "": "None", et: "Tag", ...(DIMS.tags && DIMS.loaded ? { dt: "DIM tag" } : {}), t: "Type", e: "Element", f: "Frame", s: "Slot", am: "Ammo", tier: "Aegis tier", v: "Verdict", c: "Shard reason", r: "Rarity", name: "Weapon name" },
       views: {
         "best-type-el": ["Best of every type and element", { group: "t", group2: "e", top: "1" }],
@@ -2003,7 +2044,9 @@ function vrMain() {
         ...(DIMS.tags && DIMS.loaded ? [["dt", "DIM tag", (a) => (a.tg ? TAG_LABEL[a.tg] : "Untagged")]] : []),
         ...(DIMS.loadouts && DIMS.loaded ? [["dl", "DIM loadout", (a) => (a.lo?.length ? a.lo : ["Not in a loadout"])]] : []),
       ],
-      sorts: Object.assign({ score: ["Armor score", (a) => a.sc], setv: ["Set rating", (a) => a.si?.value ?? -1], total: ["Stat total", (a) => a.tot], name: ["Name", (a) => a.n.toLowerCase()] },
+      sorts: Object.assign({ score: ["Armor score", (a) => a.sc], setv: ["Set rating", (a) => a.si?.value ?? -1], total: ["Stat total", (a) => a.tot], name: ["Name", (a) => a.n.toLowerCase(), "az"],
+        cls: ["Class", (a) => ordOf(["Hunter", "Titan", "Warlock"], a.cls), "ord"], s: ["Slot", (a) => ordOf(["Helmet", "Arms", "Chest", "Legs", "Class Item"], a.s), "ord"], gt: ["Gear tier", (a) => a.gt || 0],
+        arch: ["Archetype", (a) => (a.arch || "~").toLowerCase(), "az"], set: ["Set", (a) => (a.si?.name || a.set || "~").toLowerCase(), "az"], ...SHARED_SORTS },
         Object.fromEntries(uniqSorted(DATA.armor, (a) => Object.keys(a.all || {})).sort((x, y) => statRank(x) - statRank(y)).map((k) => ["stat:" + k, [k + " stat", (a) => a.all?.[k] ?? 0]]))),
       groups: { "": "None", et: "Tag", ...(DIMS.tags && DIMS.loaded ? { dt: "DIM tag" } : {}), cls: "Class", s: "Slot", arch: "Archetype", set: "Set", stier: "Set tier", r: "Rarity", gt: "Gear tier", p: "Highest stat", v: "Verdict" },
       views: {
@@ -2089,7 +2132,7 @@ function vrMain() {
   }
   // QUERY-END
   const dirHtml = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${d === "desc" ? "M12 5v14M6 13l6 6 6-6" : "M12 19V5M6 11l6-6 6 6"}"/></svg>${d === "desc" ? "Best first" : "Worst first"}`;
-  const blank = () => ({ q: "", f: {}, sort: "score", dir: "desc", group: "", group2: "", top: "", view: "", limit: 150 });
+  const blank = () => ({ q: "", f: {}, sort: "score", dir: "desc", then: [], group: "", group2: "", top: "", view: "", limit: 150 });
   const ex = { set: "w", w: blank(), a: blank(), pass: () => true };
   let layout = store.get("vr-layout") === "tiles" ? "tiles" : "rows";
   // Toolbar size: full bands, or condensed to two lines (the default, since it stays pinned) or one.
@@ -2354,6 +2397,7 @@ function vrMain() {
     if (e.key === "/" && !e.ctrlKey && !e.metaKey && !e.target.closest?.("input, textarea, select, [contenteditable]")) { e.preventDefault(); $("#gq").focus(); }
   });
 
+  const tbObserver = new ResizeObserver(([e]) => document.documentElement.style.setProperty("--tbh", `${Math.round(e.target.offsetHeight)}px`));
   function drawExplorer(full) {
     const cfg = SETS[ex.set], st = ex[ex.set];
     if (full) {
@@ -2373,6 +2417,7 @@ function vrMain() {
               <button data-l="tiles" aria-pressed="${layout === "tiles"}" title="Tiles: a compact grid of icons, like an inventory" aria-label="Tiles"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="8" rx="1.2"/><rect x="9.5" y="3" width="5" height="8" rx="1.2"/><rect x="16" y="3" width="5" height="8" rx="1.2"/><rect x="3" y="13" width="5" height="8" rx="1.2"/><rect x="9.5" y="13" width="5" height="8" rx="1.2"/><rect x="16" y="13" width="5" height="8" rx="1.2"/></svg><span>Tiles</span></button>
             </div>
             <div class="seg dense" role="group" aria-label="Toolbar size" id="exdense">${[["full", "Full", "Every filter and sort control, in bands"], ["l2", "2 lines", "Search, then filters and sort on one line"], ["l1", "1 line", "Everything on one line"]].map(([k, l, t]) => `<button data-d="${k}" aria-pressed="${dense === k}" title="${t}">${l}</button>`).join("")}</div>
+            <button class="ctl exgear" id="exgear" type="button" title="All search, sort and filter settings" aria-label="All search, sort and filter settings" aria-haspopup="dialog">${GEAR_SVG}${st.then.length ? `<b>+${st.then.length}</b>` : ""}</button>
           </div>
           <div class="tb-rest">
           <details class="tb-more"${dense !== "full" || !matchMedia("(max-width: 700px)").matches ? " open" : ""}><summary><span class="chev" aria-hidden="true"></span>Filter and sort</summary>
@@ -2391,7 +2436,8 @@ function vrMain() {
         <div id="exlist"></div><div class="more" id="exmore"></div>`;
       $("#exdense").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; dense = b.dataset.d; store.set("vr-dense", dense); drawExplorer(true); };
       $(".tb-rest").addEventListener("scroll", closeFacets, { passive: true }); $("#extoolbar").addEventListener("scroll", closeFacets, { passive: true });
-      new ResizeObserver(([e]) => document.documentElement.style.setProperty("--tbh", `${Math.round(e.target.offsetHeight)}px`)).observe($("#extoolbar"));
+      tbObserver.disconnect(); tbObserver.observe($("#extoolbar"));
+      $("#exgear").onclick = openExDlg;
       $("#exlayout").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; layout = b.dataset.l; store.set("vr-layout", layout); $$("#exlayout button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); drawExplorer(false); };
       const touch = () => { st.view = ""; st.limit = 150; $$("#explorer .view").forEach((b) => b.setAttribute("aria-pressed", "false")); drawExplorer(false); };
       $("#exset").onclick = (e) => { const b = e.target.closest("button"); if (b) { ex.set = b.dataset.s; drawExplorer(true); } };
@@ -2429,9 +2475,11 @@ function vrMain() {
     ex.pass = (x, skip) => (!qf || qf(x)) &&
       Object.entries(st.f).every(([k, vals]) => k === skip || !vals.length || [].concat(facetFn[k](x) ?? []).some((v) => vals.includes(String(v))));
     const list = cfg.items.filter((x) => ex.pass(x));
-    const [, key] = cfg.sorts[st.sort] || cfg.sorts.score;
+    // The first sort rule decides; where two items tie, the next one does, and so on; the score settles what's left.
+    // "Best first" (desc) means highest first for numbers, and A to Z or the natural order for text and ordered sorts.
     const dir = st.dir === "asc" ? 1 : -1;
-    const cmp = (a, b) => { const x = key(a), y = key(b); return (x > y ? 1 : x < y ? -1 : 0) * (st.sort === "name" || st.sort === "type" ? -dir : dir) || (a.sc - b.sc) * dir; };
+    const rules = [{ k: st.sort, dir: st.dir }, ...st.then].map(({ k, dir: d }) => { const [, key, kind] = cfg.sorts[k] || cfg.sorts.score; return [key, (d === "asc" ? 1 : -1) * (kind ? -1 : 1)]; });
+    const cmp = (a, b) => { for (const [key, m] of rules) { const x = key(a), y = key(b), c = x > y ? 1 : x < y ? -1 : 0; if (c) return c * m; } return (a.sc - b.sc) * dir; };
     list.sort(cmp);
     // Facet buttons and active chips
     for (const d of $$("#explorer details.ms")) {
@@ -2480,8 +2528,9 @@ function vrMain() {
   }
   const closeFacets = () => $$("#explorer .l1 details.ms[open], #explorer .l2 details.ms[open]").forEach((d) => (d.open = false));
   addEventListener("scroll", closeFacets, { passive: true });
-  function fillFacet(d) {
-    const cfg = SETS[ex.set], st = ex[ex.set], k = d.dataset.k;
+  /** One filter's values that still match something (or are picked), with how many items each would show. */
+  function facetVals(k) {
+    const cfg = SETS[ex.set], st = ex[ex.set];
     const f = cfg.facets.find((x) => x[0] === k)[2];
     const counts = new Map();
     for (const x of cfg.items) if (ex.pass(x, k)) for (const v of [].concat(f(x) ?? [])) if (v !== null && v !== "") counts.set(String(v), (counts.get(String(v)) || 0) + 1);
@@ -2490,9 +2539,71 @@ function vrMain() {
     const vals = uniqSorted(cfg.items, f).map(String);
     if (order) vals.sort((a, b) => order.indexOf(a) - order.indexOf(b));
     else if (k === "pk") vals.sort((a, b) => (counts.get(b) || 0) - (counts.get(a) || 0) || a.localeCompare(b));
-    d.querySelector(".pop").innerHTML = (sel.size ? `<button class="clear">Clear</button>` : "") + (vals.filter((v) => sel.has(v) || counts.get(v)).map((v) =>
+    return { vals: vals.filter((v) => sel.has(v) || counts.get(v)), counts, sel };
+  }
+  function fillFacet(d) {
+    const { vals, counts, sel } = facetVals(d.dataset.k);
+    d.querySelector(".pop").innerHTML = (sel.size ? `<button class="clear">Clear</button>` : "") + (vals.map((v) =>
       `<label><input type="checkbox" value="${esc(v)}"${sel.has(v) ? " checked" : ""}><span>${esc(v)}</span><span>${counts.get(v) || 0}</span></label>`).join("") || `<span class="small muted" style="padding:6px 8px">No options with these filters.</span>`);
   }
+  /* The toolbar's settings button: every search, sort and filter setting in one dialog. Changes apply as you make them. */
+  document.body.insertAdjacentHTML("beforeend", '<dialog class="exdlg" id="exdlg" aria-labelledby="exdlg-h"></dialog>');
+  const dlg = $("#exdlg");
+  const sortDirText = (kind, d) => (kind === "az" ? (d === "desc" ? "A to Z" : "Z to A") : kind === "ord" ? (d === "desc" ? "In order" : "Reversed") : d === "desc" ? "Highest first" : "Lowest first");
+  const dlgFacets = () => SETS[ex.set].facets.map(([k, l]) => { const { vals, counts, sel } = facetVals(k); return `<fieldset><legend>${esc(l)}${sel.size ? ` <button type="button" class="linkbtn" data-fclear="${esc(k)}">Clear</button>` : ""}</legend><div class="opts">${vals.map((v) => `<label><input type="checkbox" data-fk="${esc(k)}" value="${esc(v)}"${sel.has(v) ? " checked" : ""}>${esc(v)} <span class="n">${counts.get(v) || 0}</span></label>`).join("") || '<span class="small muted">Nothing left with these filters</span>'}</div></fieldset>`; }).join("");
+  function drawExDlg() {
+    const cfg = SETS[ex.set], st = ex[ex.set], vmode = listMode === "vault" && ex.set === "w";
+    const opt = (o, sel) => Object.entries(o).map(([k, l]) => `<option value="${esc(k)}"${k === sel ? " selected" : ""}>${esc(Array.isArray(l) ? l[0] : l)}</option>`).join("");
+    const rules = [{ k: st.sort, dir: st.dir }, ...st.then];
+    const segs = (id, cur, items) => `<div class="seg" role="group" id="${id}">${items.map(([k, l]) => `<button type="button" data-v="${k}" aria-pressed="${cur === k}">${l}</button>`).join("")}</div>`;
+    // Redrawing would drop focus and scroll: put both back.
+    const f = document.activeElement, fsel = f && dlg.contains(f) ? [...f.attributes].filter((a) => a.name === "id" || a.name.startsWith("data-") || a.name === "value").map((a) => `[${a.name}="${CSS.escape(a.value)}"]`).join("") : "";
+    const top = dlg.scrollTop;
+    dlg.innerHTML = `<form method="dialog" class="exdlg-in">
+      <header><h2 id="exdlg-h">${cfg.label}: search, sort and filter</h2><button class="d-close" value="close" aria-label="Close">✕</button></header>
+      <label class="searchbox"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="dq" placeholder="Search" aria-label="Search" value="${esc(st.q)}"></label>
+      <section><h3>Sort</h3><p class="small muted">The first rule orders the list. Where items tie, the next rule decides, and so on.</p>
+        <ol class="sortlv">${rules.map((r, i) => `<li><span class="lvn">${i ? "Then by" : "Sort by"}</span><label class="ctl"><select data-sk="${i}" aria-label="${i ? "Then by" : "Sort by"}">${opt(cfg.sorts, r.k)}</select></label><button type="button" class="ctl dirbtn" data-sd="${i}">${sortDirText((cfg.sorts[r.k] || [])[2], r.dir)}</button>${i ? `<button type="button" class="lvx" data-sx="${i}" aria-label="Remove this rule" title="Remove this rule">✕</button>` : ""}</li>`).join("")}</ol>
+        ${rules.length < 6 ? '<button type="button" class="btn ghost" id="dadd">+ Add a sort rule</button>' : ""}</section>
+      ${vmode ? "" : `<section><h3>Group and show</h3><div class="tb-row"><label class="ctl"><span>Group by</span><select id="dgroup">${opt(cfg.groups, st.group)}</select></label>${st.group ? `<label class="ctl"><span>then</span><select id="dgroup2">${opt(cfg.groups, st.group2)}</select></label>` : ""}<label class="ctl"><span>Show</span><select id="dtop">${opt({ "": "All", 1: "Best 1", 3: "Best 3", 5: "Best 5" }, st.top)}</select></label></div></section>`}
+      <section><h3>Filters</h3><div class="dfac">${dlgFacets()}</div></section>
+      <section><h3>Display</h3><div class="tb-row">${vmode ? "" : segs("dlayout", layout, [["rows", "Rows"], ["tiles", "Tiles"]])}${segs("ddense", dense, [["full", "Full toolbar"], ["l2", "2 lines"], ["l1", "1 line"]])}</div></section>
+      <footer><button type="button" class="btn" id="dreset">Reset all</button><span class="small muted" id="dcount">${$("#excount")?.textContent || ""}</span><button class="btn primary" value="done">Done</button></footer></form>`;
+    dlg.scrollTop = top;
+    if (fsel) $(fsel, dlg)?.focus();
+  }
+  function openExDlg() { drawExDlg(); dlg.showModal(); }
+  /** After a change in the dialog: the list and toolbar follow, then the dialog redraws (counts and options change too). */
+  const dlgApply = () => { const st = ex[ex.set]; st.view = ""; st.limit = 150; drawExplorer(true); drawExDlg(); };
+  dlg.addEventListener("click", (e) => {
+    if (e.target === dlg) return dlg.close();
+    const st = ex[ex.set], cfg = SETS[ex.set], b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.sd) { const i = Number(b.dataset.sd), r = i ? st.then[i - 1] : st; r.dir = r.dir === "desc" ? "asc" : "desc"; }
+    else if (b.dataset.sx) st.then.splice(Number(b.dataset.sx) - 1, 1);
+    else if (b.id === "dadd") { const used = new Set([st.sort, ...st.then.map((t) => t.k)]); st.then.push({ k: Object.keys(cfg.sorts).find((k) => !used.has(k)) || "name", dir: "desc" }); }
+    else if (b.dataset.fclear) delete st.f[b.dataset.fclear];
+    else if (b.id === "dreset") Object.assign(st, blank());
+    else if (b.closest("#dlayout")) { layout = b.dataset.v; store.set("vr-layout", layout); }
+    else if (b.closest("#ddense")) { dense = b.dataset.v; store.set("vr-dense", dense); }
+    else return;
+    dlgApply();
+  });
+  dlg.addEventListener("change", (e) => {
+    const st = ex[ex.set], t = e.target;
+    if (t.dataset.sk) { const i = Number(t.dataset.sk); if (i) st.then[i - 1].k = t.value; else st.sort = t.value; }
+    else if (t.dataset.fk) { const k = t.dataset.fk, vals = $$(`input[data-fk="${CSS.escape(k)}"]:checked`, dlg).map((i) => i.value); if (vals.length) st.f[k] = vals; else delete st.f[k]; }
+    else if (t.id === "dgroup") { st.group = t.value; if (!st.group) st.group2 = ""; }
+    else if (t.id === "dgroup2") st.group2 = t.value;
+    else if (t.id === "dtop") st.top = t.value;
+    else return;
+    dlgApply();
+  });
+  // Typing searches as you go, like the toolbar's box; only the filters and count redraw, so the box keeps its place.
+  dlg.addEventListener("input", (e) => {
+    if (e.target.id !== "dq") return;
+    ex[ex.set].q = e.target.value;
+    typing(() => { const st = ex[ex.set]; st.view = ""; st.limit = 150; drawExplorer(true); $(".dfac", dlg).innerHTML = dlgFacets(); $("#dcount", dlg).textContent = $("#excount")?.textContent || ""; });
+  });
   document.addEventListener("click", (e) => { if (!e.target.closest("details.ms")) $$("details.ms[open]").forEach((d) => (d.open = false)); });
 
   /* ---------- Shard ---------- */
