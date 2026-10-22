@@ -115,11 +115,15 @@ function render(el: HTMLElement) {
   if (!el.dataset.wired) wire(el);
   if (!defs) {
     el.innerHTML = loadingCard();
-    loading ??= load();
+    // Let the tab switch and the loading card paint before the definitions start loading.
+    if (!loading) loading = afterPaint().then(load);
     return;
   }
   draw();
 }
+
+/** Resolves once the browser has painted, so what was just drawn is on screen before heavy work starts. */
+const afterPaint = () => new Promise<void>((done) => requestAnimationFrame(() => setTimeout(done, 0)));
 
 async function load() {
   const note = (s: string) => {
@@ -133,6 +137,10 @@ async function load() {
     clarity = cachedClarity();
     cur = builds[0] ? structuredClone(builds[0]) : null;
     profileBusy = true;
+    // Drawing the editor takes a moment: show that first so the page doesn't look stuck.
+    log.push("Drawing the editor…");
+    if (panel) panel.innerHTML = loadingCard();
+    await afterPaint();
     draw();
     void refreshProfile();
     void loadClarity((h) => !!d.plugs[h]).then((t) => (clarity = t));
@@ -154,7 +162,7 @@ async function refreshProfile() {
 }
 
 function loadingCard() {
-  return `<div class="bd-loading glass"><div class="eyebrow">Builds</div><h2>${loadError ? "Couldn't load the build data" : "Loading build data…"}</h2>
+  return `<div class="bd-loading glass"><div class="eyebrow">Builds</div><div style="display:flex;align-items:center;gap:14px">${loadError ? "" : '<span class="vr-spin" aria-hidden="true"></span>'}<h2 style="margin:0">${loadError ? "Couldn't load the build data" : "Loading build data…"}</h2></div>
     ${loadError ? `<p class="vr-err">${esc(loadError)}</p><button class="btn primary" data-act="retry">Try again</button>` : ""}
     <ol class="vr-log">${log.map((l) => `<li>${esc(l)}</li>`).join("")}</ol></div>`;
 }
@@ -1432,8 +1440,8 @@ const ACTIONS: Record<string, (t: HTMLElement) => void> = {
   retry: () => {
     loadError = "";
     log.length = 0;
-    loading = load();
     if (panel) panel.innerHTML = loadingCard();
+    loading = afterPaint().then(load);
   },
   popmode: (t) => {
     popMode = t.dataset.m === "click" ? "click" : "hover";
