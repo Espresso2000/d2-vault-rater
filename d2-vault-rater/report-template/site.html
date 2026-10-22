@@ -542,14 +542,14 @@ details.group > summary::-webkit-details-marker { display: none; }
 .vhead { position: sticky; top: calc(var(--bar-h) + var(--tbh, 0px) + 22px); z-index: 2; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 10px 14px; border-radius: 3px 12px; background: var(--ticks), rgba(14,20,48,.94); border: 1px solid var(--line); }
 .vhead b { font: 600 16px var(--display); }
 .vhead.cc b, details.vsec.cc > summary h3 { color: var(--cc); }
-/* Vault mode's Postmaster / Weapons / Armor headings: no box, a big chevron and title over a white line whose ends
+/* Vault mode's Postmaster / Weapons / Armor headings: no box, a big chevron and title over a green line whose ends
    curve down, like the top of a page, so the block below reads as belonging to it */
 details.vsec > summary { position: relative; gap: 16px; margin: 0 0 22px; padding: 4px 6px 28px; }
-details.vsec > summary::after { content: ""; position: absolute; left: -12px; right: -12px; bottom: 0; height: 18px; border: 2px solid rgba(255,255,255,.8); border-bottom: 0; border-radius: 16px 16px 0 0; pointer-events: none; transition: border-color .15s ease;
+details.vsec > summary::after { content: ""; position: absolute; left: -12px; right: -12px; bottom: 0; height: 18px; border: 2px solid rgba(51,227,160,.75); border-bottom: 0; border-radius: 16px 16px 0 0; pointer-events: none; transition: border-color .15s ease;
   -webkit-mask-image: linear-gradient(#000 25%, transparent); mask-image: linear-gradient(#000 25%, transparent); }
 /* Closed: just a straight line */
 details.vsec:not([open]) > summary::after { bottom: 16px; height: 0; border-width: 2px 0 0; border-radius: 0; -webkit-mask-image: none; mask-image: none; }
-details.vsec > summary:hover::after, details.vsec > summary:focus-visible::after { border-color: #fff; }
+details.vsec > summary:hover::after, details.vsec > summary:focus-visible::after { border-color: var(--green); }
 details.vsec > summary:focus-visible { outline: none; }
 details.vsec.cc > summary::after { border-color: var(--cc); }
 details.vsec > summary .chev { width: 40px; height: 40px; }
