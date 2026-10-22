@@ -1773,8 +1773,8 @@ function vrMain() {
     const match = (w) => !kind || (kind === "f" ? frameOf(w) : w.e) === val;
     const seen = new Set();
     const rank = (ws) => ws.filter(match).sort(by((w) => w.sc)).filter((w) => c.solo || (!seen.has(w.n) && seen.add(w.n)));
-    // Exotics fill the top three only after every legendary.
-    const best = [...rank(c.leg), ...(c.solo ? [] : rank(c.all.filter(isExotic)))].slice(0, 3);
+    // Exotics compete for the top three on score like everything else.
+    const best = rank(c.solo ? c.leg : c.all).slice(0, 3);
     const keep = c.leg.filter((w) => w.v === "keep").length;
     const chip = (sub, label, n) => `<button class="subchip" data-card="${c.i}" data-sub="${esc(sub)}" aria-pressed="${c.sub === sub}"${sub.startsWith("e:") ? ` style="--dot:var(--${esc(label)})"` : ""}>${sub.startsWith("e:") ? "<i></i>" : ""}${esc(label)}${n ? `<span>${n}</span>` : ""}</button>`;
     const subs = c.leg.length > 1 ? `<div class="subchips">${chip("", "All")}${frames.length > 1 ? frames.map(([f, n]) => chip("f:" + f, f, n)).join("") : ""}${els.length > 1 ? `<i class="subsep" aria-hidden="true"></i>${els.map(([e, n]) => chip("e:" + e, e, n)).join("")}` : ""}</div>` : "";
