@@ -550,6 +550,8 @@ details.vsec > summary .chev::before { width: 8px; height: 8px; border-width: 2p
 details.vsec > summary h3 { font: 600 19px var(--display); }
 details.vsec > summary .small { margin-left: auto; text-align: right; }
 details.vsec.cc > summary { border-left: 3px solid var(--cc); }
+/* Hundreds of tiles: the browser skips laying out and painting a block while it's off screen (armor, below the weapons) */
+details.vsec { content-visibility: auto; contain-intrinsic-size: auto 1200px; overflow-clip-margin: 16px; }
 details.vchar { margin-bottom: 14px; }
 /* Postmaster: one panel per character, its class name down the left in the class colour */
 .vpm { display: grid; grid-template-columns: repeat(var(--chars), minmax(0, 1fr)); gap: 14px; margin-bottom: 6px; }
@@ -1510,6 +1512,9 @@ function vrMain() {
   }
   const RENDER = { builds: () => window.VR_BUILDS.render($("#p-builds")), vendors: () => window.VR_VENDORS.render($("#p-vendors")) }, rendered = {};
   let shownTab = null;
+  // Moves in flight (see doMove): how many, which items, and a count of finished ones so a vault read can tell it's stale.
+  let movesPending = 0, moveSeq = 0;
+  const MOVING = new Set();
   function show(id, scroll) {
     if (!TABS.some((t) => t[0] === id)) id = "overview";
     // The Builds tab can hold back a switch while a build has unsaved changes; it asks, then calls show again.
@@ -1532,10 +1537,13 @@ function vrMain() {
     try { if (location.hash.slice(1) !== id) history[scroll ? "pushState" : "replaceState"](null, "", "#" + id); } catch {}
     if (scroll) scrollTo({ top: 0, behavior: "smooth" });
   }
-  /** After the data changes (a move, a tag, a perk): the open tab draws again now, the others when next shown. */
+  /** After the data changes (a move, a tag, a perk): the open tab draws again now, the others when next shown.
+   * The Vault tab redraws only its items, keeping its toolbar. While moves are queued it waits: the last one redraws. */
   function rerender() {
-    for (const k of Object.keys(rendered)) delete rendered[k];
-    show(location.hash.slice(1) || "overview", false);
+    if (movesPending) return;
+    const keep = shownTab === "list" && rendered.list;
+    for (const k of Object.keys(rendered)) if (!keep || k !== "list") delete rendered[k];
+    if (keep) drawExplorer(false); else show(location.hash.slice(1) || "overview", false);
   }
   $("#tabs").addEventListener("click", (e) => { const b = e.target.closest("button[role=tab]"); if (b) show(b.id.slice(2), true); });
   document.addEventListener("click", (e) => { const b = e.target.closest("[data-tab]"); if (b) show(b.dataset.tab, true); });
@@ -2125,9 +2133,13 @@ function vrMain() {
   function refreshVault(byHand) {
     if (!window.VR_RELOAD || refreshing) return;
     // Not mid-drag or mid-move: the new read could put the item back where it was.
-    if (!byHand && (dragId || $(".vitem.moving"))) return;
+    if (!byHand && (dragId || movesPending)) return;
     lastRefresh = Date.now();
+    const seq = moveSeq;
+    let again = false;
     refreshing = window.VR_RELOAD().then(({ data, images }) => {
+      // A move finished while this read was on its way: it may show the item where it was, so read again instead.
+      if (seq !== moveSeq || movesPending) return void (again = true);
       Object.assign(IMG, images);
       // Same arrays, new contents: the list's filters and sorts hold on to them.
       DATA.weapons.splice(0, Infinity, ...data.weapons); DATA.armor.splice(0, Infinity, ...data.armor);
@@ -2136,9 +2148,14 @@ function vrMain() {
       COPIES = null;
       const before = NEW.size; noteNew();
       refreshErr = ""; lastRefresh = Date.now();
-      if (rendered.list) drawExplorer(false);
+      // The open Vault tab redraws now; other tabs drew from the old read, so they draw again when next shown.
+      for (const k of Object.keys(rendered)) if (k !== shownTab) delete rendered[k];
+      if (shownTab === "list" && rendered.list) drawExplorer(false);
       if (NEW.size > before) toast(`${plural(NEW.size - before, "new item")} in your vault`);
-    }).catch((e) => { refreshErr = e.message; }).finally(() => { refreshing = null; stampRefresh(); });
+    }).catch((e) => { refreshErr = e.message; }).finally(() => {
+      refreshing = null; stampRefresh();
+      if (again && !movesPending) { clearTimeout(afterMoves); afterMoves = setTimeout(() => refreshVault(false), 2500); }
+    });
     stampRefresh();
   }
   const autoRefresh = (minAge) => { if (!document.hidden && !$("#p-list").hidden && Date.now() - lastRefresh > minAge) refreshVault(false); };
@@ -2161,7 +2178,7 @@ function vrMain() {
     // ex.shown is the full list's filtered, sorted weapons; equipped weapons always show, dimmed when filtered out.
     const shown = ex.shown && ex.set === "w" ? ex.shown : DATA.weapons, match = new Set(shown.map((w) => w.id));
     const at = (to, s) => (vdim ? DATA.weapons : shown).filter((w) => where(w) === to && w.s === s);
-    const tile = (w, big) => `<button class="vitem welem${big ? " big" : ""}${match.has(w.id) ? "" : " nomatch"}${isExotic(w) ? " exotic" : ""} v-${w.v}" style="--el:var(--${esc(w.e)})" data-w="${w.id}"${can && !w.eq && match.has(w.id) ? ' draggable="true"' : ""} aria-label="${esc(w.n)} · ${esc(typeLine(w))} · ${w.sc} · ${VERDICT[w.v]}${w.eq ? " · equipped" : ""}">${img(w.ic)}${tagMark(w)}${dia(w.gt)}${tierBadge(w)}${newBadge(w)}<b class="num">${w.sc}</b></button>`;
+    const tile = (w, big) => `<button class="vitem welem${big ? " big" : ""}${match.has(w.id) ? "" : " nomatch"}${isExotic(w) ? " exotic" : ""}${MOVING.has(w.id) ? " moving" : ""} v-${w.v}" style="--el:var(--${esc(w.e)})" data-w="${w.id}"${can && !w.eq && match.has(w.id) ? ' draggable="true"' : ""} aria-label="${esc(w.n)} · ${esc(typeLine(w))} · ${w.sc} · ${VERDICT[w.v]}${w.eq ? " · equipped" : ""}">${img(w.ic)}${tagMark(w)}${dia(w.gt)}${tierBadge(w)}${newBadge(w)}<b class="num">${w.sc}</b></button>`;
     const inVault = DATA.weapons.filter((w) => where(w) === "vault").length, armorInVault = DATA.armor.filter((a) => where(a) === "vault").length;
     // Each character's postmaster (Lost Items), rated like other gear; drag an item out to pull it and move it.
     const lost = [...DATA.weapons, ...DATA.armor].filter((x) => x.pm);
@@ -2177,11 +2194,12 @@ function vrMain() {
   /** Armor laid out like the weapons: per slot, each character's worn piece and inventory, then the vault by set;
    *  inside a set by class (border colour), tier, then archetype. Split by character: one block per character, vault limited to its class. */
   const ASLOTS = ["Helmet", "Arms", "Chest", "Legs", "Class Item"], ACLS = ["Hunter", "Titan", "Warlock"];
-  const vatile = (a, big, can) => `<button class="vitem${big ? " big" : ""} varmor c-${esc(a.cls)}${isExotic(a) ? " exotic" : ""} v-${a.v}" data-a="${a.id}"${can && !a.eq ? ' draggable="true"' : ""} aria-label="${esc(a.n)} · ${esc(a.cls)} · ${esc(a.arch || "Legacy")}${a.gt ? ` · Tier ${a.gt}` : ""} · ${a.tot} total · ${a.sc} · ${VERDICT[a.v]}${a.loc ? " · " + esc(a.loc) : ""}">${img(a.ic)}${tagMark(a)}${statMark(a)}${dia(a.gt)}${newBadge(a)}<b class="num">${a.sc}</b></button>`;
+  const vatile = (a, big, can) => `<button class="vitem${big ? " big" : ""} varmor c-${esc(a.cls)}${isExotic(a) ? " exotic" : ""}${MOVING.has(a.id) ? " moving" : ""} v-${a.v}" data-a="${a.id}"${can && !a.eq ? ' draggable="true"' : ""} aria-label="${esc(a.n)} · ${esc(a.cls)} · ${esc(a.arch || "Legacy")}${a.gt ? ` · Tier ${a.gt}` : ""} · ${a.tot} total · ${a.sc} · ${VERDICT[a.v]}${a.loc ? " · " + esc(a.loc) : ""}">${img(a.ic)}${tagMark(a)}${statMark(a)}${dia(a.gt)}${newBadge(a)}<b class="num">${a.sc}</b></button>`;
+  /** Which labelled group of the vault an item sits in: armor by set, weapons by type. */
+  const groupOf = (x) => (A.has(x.id) ? (isExotic(x) ? "Exotic" : x.set || "No set") : x.t);
   function armorSection(chars = [], can = false) {
     const atile = (a, big) => vatile(a, big, can);
     const order = (x, y) => ACLS.indexOf(x.cls) - ACLS.indexOf(y.cls) || (y.gt || 0) - (x.gt || 0) || (x.arch || "~").localeCompare(y.arch || "~") || y.sc - x.sc;
-    const groupOf = (a) => (isExotic(a) ? "Exotic" : a.set || "No set");
     const rank = (g) => (g === "Exotic" ? 0 : g === "No set" ? 2 : 1);
     const bySlot = groupBy(DATA.armor, (a) => a.s), inVault = (a) => (a.wh || "vault") === "vault";
     const setGrades = (gs) => {
@@ -2191,7 +2209,7 @@ function vrMain() {
     };
     const vaultSets = (xs) => !xs.length ? '<div class="vdrop vbox" data-k="a" data-to="vault"><span class="small muted">No armor</span></div>' : `<div class="vdrop vbox split" data-k="a" data-to="vault">${[...groupBy(xs, groupOf)]
       .sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0]))
-      .map(([g, gs]) => `<div class="vtype"${gs[0].si && !isExotic(gs[0]) ? ` data-set="${esc(g)}"` : ""}><div class="cap"><span class="lead">${gs.length}</span>${esc(g)}${setGrades(gs)}</div><div class="vtiles">${gs.sort(order).map((a) => atile(a)).join("")}</div></div>`).join("")}</div>`;
+      .map(([g, gs]) => `<div class="vtype" data-g="${esc(g)}"${gs[0].si && !isExotic(gs[0]) ? ` data-set="${esc(g)}"` : ""}><div class="cap"><span class="lead">${gs.length}</span>${esc(g)}${setGrades(gs)}</div><div class="vtiles">${gs.sort(order).map((a) => atile(a)).join("")}</div></div>`).join("")}</div>`;
     // The header row (a chevron in the character's header when it's a collapsible split block) and the slot rows.
     const heads = (cs, keep, fold) => `${cs.map((c) => `<div class="vhead cc c-${esc(c.cls)}"><span class="vht">${fold ? chev : ""}<b>${esc(c.cls)}</b></span><span class="small muted">${plural(DATA.armor.filter((a) => a.wh === c.id && !a.pm).length, "piece")}</span></div>`).join("")}
       <div class="vhead"><b>Vault</b><span class="small muted">${plural(DATA.armor.filter((a) => inVault(a) && keep(a)).length, "armor piece")}</span></div>`;
@@ -2208,7 +2226,7 @@ function vrMain() {
     if (!items.length) return '<div class="vdrop vbox" data-to="vault"><span class="small muted">No weapons</span></div>';
     if (!vsplit) return `<div class="vdrop vbox" data-to="vault">${items.map((w) => tile(w)).join("")}</div>`;
     const types = groupBy(items, (w) => w.t);
-    return `<div class="vdrop vbox split" data-to="vault">${[...types].sort((a, b) => a[0].localeCompare(b[0])).map(([t, ws]) => `<div class="vtype"><div class="cap">${esc(t)}<span>${ws.length}</span></div><div class="vtiles">${ws.map((w) => tile(w)).join("")}</div></div>`).join("")}</div>`;
+    return `<div class="vdrop vbox split" data-to="vault">${[...types].sort((a, b) => a[0].localeCompare(b[0])).map(([t, ws]) => `<div class="vtype" data-g="${esc(t)}"><div class="cap">${esc(t)}<span>${ws.length}</span></div><div class="vtiles">${ws.map((w) => tile(w)).join("")}</div></div>`).join("")}</div>`;
   }
   // Drag and drop: a weapon or armor piece dropped on another place moves there; on the big slot it is equipped.
   let dragId = null;
@@ -2228,13 +2246,20 @@ function vrMain() {
     const d = dragId && e.target.closest?.(".vdrop"); if (!d || !dropOk(d)) return;
     e.preventDefault(); d.classList.remove("over");
     const id = dragId; dragId = null;
-    dropMove(id, d.dataset.to, !!d.dataset.equip);
+    dropMove(id, d);
   });
-  async function dropMove(id, to, equip) {
+  async function dropMove(id, d) {
+    const to = d.dataset.to, equip = !!d.dataset.equip;
     const w = W.get(id) || A.get(id); if (!w || ((w.wh || "vault") === to && !equip && !w.pm)) return;
     const name = to === "vault" ? "the vault" : `your ${clsOf(to) || "character"}`;
     const t = cornerToast(`${equip ? "Equipping" : "Moving"} ${w.n} ${equip ? "on" : "to"} ${name}…`);
-    $(`.vitem[data-w="${id}"], .vitem[data-a="${id}"]`)?.classList.add("moving");
+    // Show it where it was dropped straight away; the redraw after the move puts it in order (or back, if it failed).
+    const el = $(`.vitem[data-w="${id}"], .vitem[data-a="${id}"]`);
+    if (el) {
+      el.classList.add("moving");
+      if (equip) { const old = $(".vitem", d); if (old) { old.classList.remove("big"); d.nextElementSibling?.append(old); } $(".vempty", d)?.remove(); el.classList.add("big"); d.append(el); }
+      else { el.classList.remove("big"); ($(`.vtype[data-g="${CSS.escape(groupOf(w))}"] .vtiles`, d) || d).append(el); }
+    }
     const m = (await doMove([id], to, equip, null))?.[0];
     const ok = !!m?.ok && !m.error;
     t.done(ok ? `${w.n} ${equip ? "equipped on" : "moved to"} ${name}` : `${m?.ok ? `${w.n} moved, but` : `Couldn't move ${w.n}`}${m?.error ? ": " + m.error : ""}`, ok);
@@ -2844,11 +2869,17 @@ function vrMain() {
   const charId = (cls) => (DATA.chars || []).find((c) => c.cls === cls)?.id;
   const clsOf = (id) => (DATA.chars || []).find((c) => c.id === id)?.cls;
   const locText = (x) => (!x.wh || x.wh === "vault" ? "Vault" : `${clsOf(x.wh) || "Character"}${x.eq ? " (equipped)" : ""}`);
-  /** Move items through the local app; updates the page's copy of where things are. */
+  /** Move items through the local app; updates the page's copy of where things are.
+   * Moves run one after another (several at once only get Bungie to throttle them); the page redraws once the
+   * last one is done, then reads the vault again so it matches the game. */
+  let moveQueue = Promise.resolve(), afterMoves = 0;
   async function doMove(ids, to, equip, msgEl) {
     if (msgEl) msgEl.textContent = `Moving ${ids.length} item${ids.length > 1 ? "s" : ""}…`;
+    movesPending++; for (const id of ids) MOVING.add(id);
+    const call = moveQueue.then(() => api("/api/move", { ids, to, equip }));
+    moveQueue = call.catch(() => {});
     try {
-      const res = await api("/api/move", { ids, to, equip });
+      const res = await call;
       if (!res.ok) throw new Error(res.error);
       for (const m of res.results) {
         const x = W.get(m.id) || A.get(m.id);
@@ -2860,11 +2891,17 @@ function vrMain() {
       const bad = res.results.filter((m) => !m.ok || m.error);
       const done = res.results.length - bad.filter((m) => !m.ok).length;
       if (msgEl) msgEl.textContent = `${done} of ${res.results.length} done.${bad.length ? " " + bad.map((m) => `${m.name}: ${m.error}`).join(" ") : ""}`;
-      rerender();
       return res.results;
     } catch (err) {
       if (msgEl) msgEl.textContent = "Couldn't move: " + err.message;
       return ids.map((id) => ({ id, name: (W.get(id) || A.get(id))?.n || id, ok: false, error: err.message }));
+    } finally {
+      movesPending--; moveSeq++; for (const id of ids) MOVING.delete(id);
+      if (!movesPending) {
+        rerender();
+        // Bungie's own read can lag a moment behind a transfer, so wait a little before reading the vault again.
+        clearTimeout(afterMoves); afterMoves = setTimeout(() => refreshVault(false), 2500);
+      }
     }
   }
   function movePanel(x, isArmor) {
