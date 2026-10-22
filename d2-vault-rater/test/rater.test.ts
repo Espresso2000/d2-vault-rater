@@ -94,6 +94,14 @@ test("wishlist lines parse, including trash rolls and notes", () => {
   assert.deepEqual(rolls[1], { itemHash: 1004, perks: [42], trash: true, notes: "bad" });
 });
 
+test("ammo comes from the manifest's ammoType, not the weapon type", () => {
+  const mm = manifest();
+  (mm.items as any)[1001].equippingBlock = { ammoType: 3 };
+  const w = decodeProfile(profile([{ id: "h", hash: 1001, plugs: GOD_UNFORGIVEN }]), mm).weapons[0];
+  assert.equal(w.ammo, "Heavy");
+  assert.equal(vault().weapons[0].ammo, "Primary");
+});
+
 test("profile decodes into weapon columns and armor stats", () => {
   const v = vault();
   const u = v.weapons.find((w) => w.instanceId === "u1")!;
