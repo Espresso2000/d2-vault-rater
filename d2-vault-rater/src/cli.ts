@@ -21,7 +21,7 @@ import { startLogin, finishLogin } from "./bungie/oauth.js";
 import { buildReport, loggedIn, refreshSources, type ReportResult } from "./pipeline.js";
 import { applyDimActions, loadPlan, undoDimActions } from "./dim/actions.js";
 import { setDimTag, DIM_TAGS, type DimTagValue } from "./dim/sync.js";
-import { insertMod, insertPerk, moveItems } from "./bungie/transfer.js";
+import { insertMod, insertPerk, moveItems, setLocked } from "./bungie/transfer.js";
 import { applyPageSettings, loadSettings, saveSettings } from "./rating/settings.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -134,6 +134,17 @@ async function serve(port: number) {
       try {
         await insertMod(b.id, b.socket, b.mod);
         console.log(`  Mod: ${b.mod} on ${b.id}`);
+        return json(res, 200, { ok: true });
+      } catch (e) {
+        return json(res, 500, { ok: false, error: (e as Error).message });
+      }
+    }
+    if (req.method === "POST" && req.url === "/api/lock") {
+      const b = await readBody(req);
+      if (typeof b.id !== "string" || typeof b.state !== "boolean") return json(res, 400, { ok: false, error: "Send an item id and true to lock or false to unlock." });
+      try {
+        await setLocked(b.id, b.state);
+        console.log(`  ${b.state ? "Locked" : "Unlocked"} ${b.id}`);
         return json(res, 200, { ok: true });
       } catch (e) {
         return json(res, 500, { ok: false, error: (e as Error).message });

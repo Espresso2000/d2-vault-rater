@@ -180,4 +180,19 @@ export async function insertMod(id: string, socket: number, mod: string, opts: {
   Object.assign(slot, { name: opt.name, icon: opt.icon, description: opt.description });
 }
 
+/** Lock or unlock one weapon or armor piece in game. Bungie wants a character id even for vault items: any of the account's works. */
+export async function setLocked(id: string, state: boolean, opts: { vault?: Vault; send?: typeof action } = {}): Promise<void> {
+  const vault = opts.vault ?? (await currentVault());
+  const item = [...vault.weapons, ...vault.armor].find((x) => x.instanceId === id);
+  if (!item) throw new Error("Not in your vault or on a character (re-rate to refresh).");
+  const characterId = item.location.where !== "vault" ? item.location.where : vault.characters[0]?.id;
+  if (!characterId) throw new Error("Bungie needs one of your characters for this, and none were found.");
+  try {
+    await (opts.send ?? action)("/Destiny2/Actions/Items/SetLockState/", { state, itemId: id, characterId, membershipType: vault.membershipType });
+  } catch (e) {
+    throw new Error(friendly(e));
+  }
+  item.locked = state;
+}
+
 const sameSlot = (a: WeaponRecord | ArmorRecord, b: WeaponRecord | ArmorRecord) => a.kind === b.kind && a.slot === b.slot;

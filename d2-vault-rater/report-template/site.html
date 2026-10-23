@@ -1016,6 +1016,8 @@ aside.drawer.scrolled .dp-mini { opacity: 1; transform: none; }
 .breakdown:has(.bk-state) { grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.5fr); }
 .breakdown > .bk-state { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 10px 12px; }
 .bk-state .lkst { font-size: 12.5px; color: var(--muted); } .bk-state .lkst.on { color: var(--ink); }
+.lockpick.on { color: var(--gold); }
+.lockpick .k { font-size: 11px; letter-spacing: 0; }
 .bk-state .godst { font-size: 12px; color: var(--green); }
 .bk-state .chip { padding: 2px 10px; font-size: 12px; }
 .dp-sec:has(> .breakdown .bk-state) { container: bk / inline-size; }
@@ -1829,7 +1831,7 @@ function vrMain() {
   // Bungie's breaker symbols (DestinyBreakerTypeDefinition), for the champion a weapon stuns.
   const CHAMP_ICON = { Barrier: "07b9ba0194e85e46b258b04783e93d5d", Overload: "da558352b624d799cf50de14d7cb9565", Unstoppable: "825a438c85404efd6472ff9e97fc7251" };
   // w.ch lists every champion the weapon stuns (its frame's, and any from the artifact).
-  const champIcon = (chs) => (chs || []).filter((ch) => CHAMP_ICON[ch]).map((ch) => `<img class="ammo-ico champ-ico" src="https://www.bungie.net/common/destiny2_content/icons/DestinyBreakerTypeDefinition_${CHAMP_ICON[ch]}.png" alt="Anti-${ch}" title="Anti-${ch}: stuns ${ch} champions">`).join("");
+  const champIcon = (chs) => [].concat(chs || []).filter((ch) => CHAMP_ICON[ch]).map((ch) => `<img class="ammo-ico champ-ico" src="https://www.bungie.net/common/destiny2_content/icons/DestinyBreakerTypeDefinition_${CHAMP_ICON[ch]}.png" alt="Anti-${ch}" title="Anti-${ch}: stuns ${ch} champions">`).join("");
   const typeCards = [];
   let bigCards = store.get("vr-cards") !== "small";
   RENDER.weapons = () => {
@@ -3157,6 +3159,23 @@ function vrMain() {
     if (!window.VR_LOCAL) return x.tg ? `<span class="chip dimpick ${x.tg}"><span class="k">DIM</span>${TAG_LABEL[x.tg] || esc(x.tg)}</span>` : "";
     return `<label class="chip dimpick ${x.tg || "none"}" title="DIM tag: changing it saves to DIM"><span class="k">DIM</span><select data-dimtag="${x.id}" aria-label="DIM tag">${[["", "No tag"], ...Object.entries(TAG_LABEL)].map(([k, l]) => `<option value="${k}"${(x.tg || "") === k ? " selected" : ""}>${l}</option>`).join("")}</select></label>`;
   };
+  // Lock state: a picker that locks or unlocks the item in game through the app; a plain label in a report without it.
+  const lockPick = (x) => !window.VR_LOCAL ? `<span class="lkst${x.lk ? " on" : ""}">${x.lk ? "🔒 Locked" : "Unlocked"}</span>`
+    : `<label class="chip dimpick lockpick${x.lk ? " on" : " none"}" title="Locks or unlocks it in game"><span class="k">${x.lk ? "🔒" : "🔓"}</span><select data-lock="${x.id}" aria-label="Lock state"><option value="1"${x.lk ? " selected" : ""}>Locked</option><option value="0"${x.lk ? "" : " selected"}>Unlocked</option></select></label>`;
+  drawer.addEventListener("change", async (e) => {
+    const sel = e.target.closest("select[data-lock]"); if (!sel) return;
+    const x = W.get(sel.dataset.lock) || A.get(sel.dataset.lock); if (!x) return;
+    const state = sel.value === "1", pick = sel.closest(".lockpick");
+    sel.disabled = true;
+    const t = cornerToast(`${state ? "Locking" : "Unlocking"} ${x.n}…`);
+    const res = await api("/api/lock", { id: x.id, state }).catch((err) => ({ ok: false, error: err.message }));
+    sel.disabled = false;
+    if (!res.ok) { sel.value = x.lk ? "1" : "0"; t.done(`Couldn't ${state ? "lock" : "unlock"} ${x.n}: ${res.error}`, false); return; }
+    x.lk = state;
+    pick.classList.toggle("on", state); pick.classList.toggle("none", !state); $(".k", pick).textContent = state ? "🔒" : "🔓";
+    t.done(`${x.n} ${state ? "locked" : "unlocked"}`, true);
+    rerender();
+  });
   // EVR tags live in this browser only, so they work on the hosted site too and never touch DIM.
   const evrTagPick = (x) => `<label class="chip dimpick evrpick${x.et ? "" : " none"}"${x.et ? ` style="color:${esc(tagDef(x.et).color)}"` : ""} title="EVR tag, saved in this browser. Alt+1 to 9 sets one on the item under the mouse or open here, Alt+0 clears"><span class="k">EVR</span><select data-evrtag="${x.id}" aria-label="EVR tag"><option value="">No tag</option>${TAGS.map((t, i) => `<option value="${t.k}"${x.et === t.k ? " selected" : ""}>${i + 1} · ${esc(t.name)}</option>`).join("")}</select></label>`;
   const paintPick = (pick, x) => { const t = x.et && tagDef(x.et); pick.classList.toggle("none", !t); pick.style.color = t ? t.color : ""; };
@@ -3391,9 +3410,9 @@ function vrMain() {
     const w = W.get(id); if (!w) return; markSeen(id);
     const copies = DATA.weapons.filter((x) => x.n === w.n && x.id !== w.id).sort((a, b) => b.sc - a.sc);
     const scores = `<div class="breakdown"><div data-ptip="score" tabindex="0" aria-label="Overall score ${w.sc}: ${w.tier ? `Aegis tier ${w.tier}` : `wishlist rating ${w.ws}`} and roll score ${w.rs}"><b class="num grad-text">${w.sc}</b><span>Overall score</span></div><div${w.tier ? ` class="t${w.tier} tl"` : ""}>${w.tier ? `<b class="num">${w.tier}</b><span>Aegis tier${w.rank ? " · #" + w.rank : ""}</span>` : `<b class="num">${w.ws}</b><span>Not in Aegis (wishlist)</span>`}</div><div><b class="num">${w.rs}</b><span>Roll score</span></div>
-      <div class="bk-state"><span class="lkst${w.lk ? " on" : ""}">${w.lk ? "🔒 Locked" : "Unlocked"}</span>${w.god ? '<span class="godst">Wishlist god roll</span>' : ""}${dimTagPick(w)}${evrTagPick(w)}</div></div>`;
+      <div class="bk-state">${lockPick(w)}${w.god ? '<span class="godst">Wishlist god roll</span>' : ""}${dimTagPick(w)}${evrTagPick(w)}</div></div>`;
     const why = `<div class="dp-vhead"><span class="vtv ${w.v}">${VERDICT[w.v]}</span><span class="small">${w.v === "keep" ? "Worth a vault slot" : w.v === "shard" ? "Safe to dismantle" : "Your call"}</span></div><ul class="reasons">${w.why.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>${w.notes ? `<p class="dp-quote"><b>Aegis:</b> ${esc(w.notes)}</p>` : ""}`;
-    const facts = `<div class="facts">${fact("Ammo", w.am)}${fact("Champion", w.ch?.length ? w.ch.map((c) => "Anti-" + c).join(", ") : null)}${fact("Power", w.pw)}${fact("Masterwork", w.mw)}${fact("Gear tier", w.gt ? "Tier " + w.gt : null)}${fact("Where", w.loc)}${fact("Crafted", w.cr ? "Yes" : null)}${fact("Adept", w.ad ? "Yes" : null)}${fact("Aegis list", w.tab)}</div>`;
+    const facts = `<div class="facts">${fact("Ammo", w.am)}${fact("Champion", w.ch?.length ? [].concat(w.ch).map((c) => "Anti-" + c).join(", ") : null)}${fact("Power", w.pw)}${fact("Masterwork", w.mw)}${fact("Gear tier", w.gt ? "Tier " + w.gt : null)}${fact("Where", w.loc)}${fact("Crafted", w.cr ? "Yes" : null)}${fact("Adept", w.ad ? "Yes" : null)}${fact("Aegis list", w.tab)}</div>`;
     const actions = movePanel(w, false) + dimPanel(w);
     openDrawer({
       id, ico: w.ic, art: src(w.ss), el: w.e, gold: isExotic(w), title: w.n,
