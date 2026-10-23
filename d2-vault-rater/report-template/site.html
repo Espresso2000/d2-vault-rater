@@ -501,8 +501,12 @@ button.elcard:hover { border-color: color-mix(in srgb, currentColor 45%, transpa
 .rbadge b { font-weight: 600; margin-left: 3px; opacity: .85; }
 .rbadge.main { background: rgba(var(--c3),.2); }
 .itile .rbadges { gap: 3px; } .itile .rbadge { font-size: 10px; padding: 0 5px; }
-/* "Shard last": shard-verdict items sort to the end of their group and carry a red tint, flowing in the same grid as the rest */
-.shardlast .vitem.v-shard, .shardlast .itile.v-shard, .shardlast .row.v-shard { background: color-mix(in srgb, var(--shard) 34%, rgba(5,9,25,.55)); border-color: color-mix(in srgb, var(--shard) 75%, transparent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--shard) 70%, transparent), 0 0 12px color-mix(in srgb, var(--shard) 40%, transparent); }
+/* "Shard last": shard-verdict items sort to the end of their group and sit on a red region that continues the last row */
+.shardrun { flex: 1 1 0; min-width: 190px; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 7px; padding: 5px; border-radius: 3px 12px; background: color-mix(in srgb, var(--shard) 28%, rgba(5,9,25,.6)); border: 1px solid color-mix(in srgb, var(--shard) 45%, transparent); }
+.list > .shardrun { grid-column: 1 / -1; display: grid; }
+.list.rows > .shardrun { grid-template-columns: repeat(auto-fill, minmax(min(520px, 100%), 1fr)); gap: 8px 12px; }
+.list.tilegrid > .shardrun { grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 12px; }
+@media (max-width: 700px) { .list.tilegrid > .shardrun { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; } }
 .rlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .rlist li { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; }
 .rlist li .small { grid-column: 1 / -1; }
@@ -2252,12 +2256,14 @@ function vrMain() {
   let vdim = store.get("vr-vdim") === "on";
   // Shard last: weapons (and armor) the verdict says to shard sort after the rest of their group, in a red group of their own.
   let shardLast = store.get("vr-shardlast") === "on";
-  // The tint is CSS (body.shardlast); the sort is in drawExplorer's cmp.
-  const withShard = (xs, html) => xs.map(html).join("");
-  document.body.classList.toggle("shardlast", shardLast);
+  // The sort is in drawExplorer's cmp; this puts the shard items it left at the end on their red region (screen readers hear "To shard").
+  const withShard = (xs, html) => {
+    const i = shardLast ? xs.findIndex((x) => x.v === "shard") : -1;
+    return i < 0 ? xs.map(html).join("") : xs.slice(0, i).map(html).join("") + `<div class="shardrun" role="group" aria-label="To shard">${xs.slice(i).map(html).join("")}</div>`;
+  };
   // The two switches sit in the Weapons / Armor headings, which drawVault rebuilds.
   document.addEventListener("change", (e) => {
-    const id = e.target.id; if (id === "shardlast") { shardLast = e.target.checked; document.body.classList.toggle("shardlast", shardLast); store.set("vr-shardlast", shardLast ? "on" : "off"); drawExplorer(false); return; }
+    const id = e.target.id; if (id === "shardlast") { shardLast = e.target.checked; store.set("vr-shardlast", shardLast ? "on" : "off"); drawExplorer(false); return; }
     if (id !== "vsplit" && id !== "asplit" && id !== "vdim") return;
     if (id === "vsplit") vsplit = e.target.checked; else if (id === "asplit") asplit = e.target.checked; else vdim = e.target.checked;
     store.set(`vr-${id}`, e.target.checked ? "on" : "off"); drawVault();
@@ -2325,7 +2331,7 @@ function vrMain() {
     const where = (x) => (x.pm ? "postmaster" : x.wh || "vault");
     // ex.shown is the full list's filtered, sorted weapons; equipped weapons always show, dimmed when filtered out.
     const shown = ex.shown && ex.set === "w" ? ex.shown : DATA.weapons, match = new Set(shown.map((w) => w.id));
-    const at = (to, s) => (vdim ? DATA.weapons : shown).filter((w) => where(w) === to && w.s === s);
+    const at = (to, s) => (vdim ? [...DATA.weapons].sort(ex.cmp || (() => 0)) : shown).filter((w) => where(w) === to && w.s === s);
     const tile = (w, big) => `<button class="vitem welem${big ? " big" : ""}${match.has(w.id) ? "" : " nomatch"}${isExotic(w) ? " exotic" : ""}${MOVING.has(w.id) ? " moving" : ""} v-${w.v}" style="--el:var(--${esc(w.e)})" data-w="${w.id}"${can && !w.eq && match.has(w.id) ? ' draggable="true"' : ""} aria-label="${esc(w.n)} · ${esc(typeLine(w))} · ${w.sc} · ${VERDICT[w.v]}${w.eq ? " · equipped" : ""}">${img(w.ic)}${tagMark(w)}${dia(w.gt)}${tierBadge(w)}${newBadge(w)}<b class="num">${w.sc}</b></button>`;
     const inVault = DATA.weapons.filter((w) => where(w) === "vault").length, armorInVault = DATA.armor.filter((a) => where(a) === "vault").length;
     // Each character's postmaster (Lost Items), rated like other gear; drag an item out to pull it and move it.
@@ -2657,7 +2663,7 @@ function vrMain() {
     const rules = [{ k: st.sort, dir: st.dir }, ...st.then].map(({ k, dir: d }) => { const [, key, kind] = cfg.sorts[k] || cfg.sorts.score; return [key, (d === "asc" ? 1 : -1) * (kind ? -1 : 1)]; });
     const shardOrd = (x) => (shardLast && x.v === "shard" ? 1 : 0);
     const cmp = (a, b) => { const sd = shardOrd(a) - shardOrd(b); if (sd) return sd; for (const [key, m] of rules) { const x = key(a), y = key(b), c = x > y ? 1 : x < y ? -1 : 0; if (c) return c * m; } return (a.sc - b.sc) * dir; };
-    list.sort(cmp);
+    list.sort(cmp); ex.cmp = cmp;
     // Facet buttons and active chips
     for (const d of $$("#explorer details.ms")) {
       const n = (st.f[d.dataset.k] || []).length;
