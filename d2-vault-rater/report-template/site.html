@@ -665,11 +665,11 @@ details.vsec > summary .vsplit { margin-left: 8px; white-space: nowrap; }
 .vitem.varmor > .tier, .vitem.varmor > .tdia { margin: -1px 0 0 -1px; }
 .tstat img { width: 16px !important; height: 16px !important; margin: -1px; border-radius: 0 !important; }
 .vinv .tstat img { width: 13px !important; height: 13px !important; }
-.tdia { position: absolute; left: 1px; top: 14px; display: flex; flex-direction: column; gap: 3px; pointer-events: none; }
+.tdia { position: absolute; left: 3px; top: 20px; display: flex; flex-direction: column; gap: 3px; pointer-events: none; }
 .tdia i { width: 4.5px; height: 4.5px; transform: rotate(45deg); background: #f4f1e6; box-shadow: 0 0 2px #000, 0 0 1px #000; }
 .tdia.t5 i { background: #d6ecff; box-shadow: 0 0 3px #6fb8ff, 0 0 1px #000; }
-.vinv .tdia { top: 11px; left: 1px; gap: 2.5px; } .vinv .tdia i { width: 3.5px; height: 3.5px; }
-.vitem.big .tdia { top: 18px; left: 2px; gap: 4px; }
+.vinv .tdia { top: 16px; left: 2px; gap: 2.5px; } .vinv .tdia i { width: 3.5px; height: 3.5px; }
+.vitem.big .tdia { top: 22px; left: 4px; gap: 4px; }
 .vitem.big .tdia i { width: 5.5px; height: 5.5px; }
 #explorer:not(.vmode) .vm-only { display: none; }
 .vslot { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; margin-top: 14px; }
@@ -684,7 +684,7 @@ details.vsec > summary .vsplit { margin-left: 8px; white-space: nowrap; }
 .vinv { display: grid; grid-template-columns: repeat(3, 44px); gap: 5px; }
 .vinv .vitem { width: 44px; height: 44px; border-radius: 7px; }
 .vinv .vitem b { font-size: 10.5px; right: 3px; bottom: 2px; }
-.vinv .vitem .tier { min-width: 15px; height: 14px; font-size: 9px; left: -4px; top: -4px; }
+.vinv .vitem .tier { min-width: 14px; height: 13px; font-size: 8.5px; left: 1px; top: 1px; }
 /* Armor section: border colour by class */
 .vitem.varmor { border: 2px solid var(--cc, var(--line-hi)); }
 .c-Hunter { --cc: #4d9dff; } .c-Titan { --cc: #ff5a5a; } .c-Warlock { --cc: #f2c14e; } .c-Warlock.exotic { --cc: #fbdf00; }
@@ -711,14 +711,15 @@ details.vsec > summary .vsplit { margin-left: 8px; white-space: nowrap; }
 .vitem img { width: 100%; height: 100%; display: block; border-radius: 7px; }
 .vitem.big { width: 76px; height: 76px; border-color: rgba(var(--c3),.5); box-shadow: 0 0 14px -4px rgba(var(--c3),.6); }
 .vitem.exotic { border-color: rgba(242,193,78,.6); }
-.vitem .tier { position: absolute; left: -5px; top: -5px; min-width: 18px; height: 16px; padding: 0 3px; font-size: 10px; border-radius: 5px; }
+/* Badges sit inside the tile frame, so neighbouring tiles never overlap */
+.vitem .tier { position: absolute; left: 2px; top: 2px; min-width: 16px; height: 15px; padding: 0 3px; font-size: 10px; border-radius: 5px; }
 .vitem b { position: absolute; right: 4px; bottom: 3px; font: 600 12px/1 var(--display); text-shadow: 0 1px 4px #000, 0 0 2px #000; }
 .vitem.v-shard::after { content: ""; position: absolute; left: 6px; right: 6px; bottom: -4px; height: 2px; border-radius: 2px; background: var(--shard); }
 .vitem.dragging, .vitem.moving { opacity: .35; }
 /* "New" since the last read of the vault: inline after a name, pinned to the corner of a tile */
 .newb { display: inline-flex; align-items: center; font: 700 10px/1.5 var(--body); letter-spacing: .04em; text-transform: uppercase; padding: 0 6px; border-radius: 999px; margin-left: 6px; vertical-align: 2px; color: #04140d; background: var(--green); box-shadow: 0 0 10px -2px var(--green); }
 .vitem .newb, .itile .art .newb { position: absolute; z-index: 1; margin: 0; font-size: 8.5px; padding: 0 4px; }
-.vitem .newb { right: -5px; top: -5px; }
+.vitem .newb { right: 2px; top: 2px; }
 .itile .art .newb { right: 26px; top: 7px; font-size: 10px; padding: 0 6px; }
 .vrefresh { display: inline-flex; align-items: center; gap: 12px; margin-left: auto; }
 .vempty { display: grid; place-items: center; width: 76px; height: 76px; border: 1px dashed var(--line-hi); border-radius: 8px; color: var(--faint); font-size: 11px; }
@@ -844,10 +845,10 @@ details.full div { white-space: pre-line; color: var(--muted); font-size: 12.5px
 .itile .art .etag { position: absolute; top: 6px; right: 6px; z-index: 2; }
 .itile .art .etag ~ .elc { right: 32px; }
 .itile .art .etag ~ .newb { right: 48px; }
-.vitem .etag { position: absolute; top: -6px; right: -6px; z-index: 2; width: 17px; height: 17px; }
+.vitem .etag { position: absolute; top: 2px; right: 2px; z-index: 2; width: 16px; height: 16px; }
 .vitem .etag svg { width: 10px; height: 10px; }
-.vitem .etag ~ .newb { right: 13px; }
-.vinv .vitem .etag { width: 15px; height: 15px; top: -5px; right: -5px; }
+.vitem .etag ~ .newb { right: 20px; }
+.vinv .vitem .etag { width: 14px; height: 14px; top: 1px; right: 1px; }
 .vinv .vitem .etag svg { width: 9px; height: 9px; }
 .ctags { display: flex; flex-wrap: wrap; gap: 8px 14px; }
 .ctags label { display: flex; align-items: center; gap: 6px; }
