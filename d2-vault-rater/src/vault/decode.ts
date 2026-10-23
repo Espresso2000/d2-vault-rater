@@ -2,7 +2,7 @@ import { DAMAGE_TYPES as DAMAGE, type Manifest, type ItemDef } from "../bungie/d
 import { bungieUrl } from "../bungie/client.js";
 import type { ArmorRecord, ArmorSlot, ClassName, PerkColumn, Vault, WeaponMod, WeaponPlug, WeaponRecord, WeaponSlot } from "./types.js";
 
-export const PROFILE_COMPONENTS = [100, 102, 200, 201, 202, 205, 300, 304, 305, 306, 307, 310];
+export const PROFILE_COMPONENTS = [100, 102, 200, 201, 205, 300, 304, 305, 306, 307, 310];
 
 const WEAPON_BUCKETS: Record<number, WeaponSlot> = { 1498876634: "Kinetic", 2465295065: "Energy", 953998645: "Power" };
 const ARMOR_BUCKETS: Record<number, ArmorSlot> = {
@@ -49,8 +49,6 @@ export interface RawProfile {
   /** Unlocked plugs in shared plug sets (weapon mods among them), by plug set hash (components 306 and 307). */
   profilePlugSets?: { data?: { plugs: Record<string, RawPlug[]> } };
   characterPlugSets?: { data?: Record<string, { plugs: Record<string, RawPlug[]> }> };
-  /** The seasonal artifact's perks, per character (component 202). */
-  characterProgressions?: { data?: Record<string, { seasonalArtifact?: { tiers?: { items: { itemHash: number; isActive: boolean }[] }[] } }> };
   itemComponents?: {
     instances?: { data?: Record<string, { damageType?: number; primaryStat?: { value: number }; gearTier?: number }> };
     stats?: { data?: Record<string, { stats: Record<string, { statHash: number; value: number }> }> };
@@ -89,21 +87,10 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
   const statsC = raw.itemComponents?.stats?.data ?? {};
   const socketsC = raw.itemComponents?.sockets?.data ?? {};
   const plugsC = raw.itemComponents?.reusablePlugs?.data ?? {};
-  // Champions a weapon type stuns this season: the artifact's active perks are named "Anti-Barrier Hand Cannon",
-  // "Overload Pulse Rifle", "Unstoppable Bow" and so on (on any character).
-  const artifactChamps: [string, "Barrier" | "Overload" | "Unstoppable"][] = [];
-  for (const c of Object.values(raw.characterProgressions?.data ?? {}))
-    for (const t of c.seasonalArtifact?.tiers ?? [])
-      for (const it of t.items) {
-        const hit = it.isActive && /^(?:Anti-)?(Barrier|Overload|Unstoppable) (.+)$/.exec(m.items[it.itemHash]?.displayProperties?.name ?? "");
-        if (hit) artifactChamps.push([hit[2], hit[1] as "Barrier" | "Overload" | "Unstoppable"]);
-      }
   type Champ = "Barrier" | "Overload" | "Unstoppable";
-  /** Every champion a weapon stuns: from its frame or exotic trait (intrinsic plugs), its own definition, and the artifact. */
+  /** Every champion a weapon stuns: from its frame or exotic trait (intrinsic plugs), and its own definition. */
   const championsOf = (def: ItemDef, plugHashes: (number | undefined)[]): Champ[] => {
-    const type = def.itemTypeDisplayName ?? "";
     const all = [...plugHashes.map((h) => m.items[h ?? 0]?.breakerType), def.breakerType].map((b) => BREAKER[(b ?? 0) as 1 | 2 | 3]);
-    for (const [t, c] of artifactChamps) if (type === t || type.endsWith(" " + t)) all.push(c);
     return [...new Set(all.filter((c): c is Champ => !!c))];
   };
   // A plug set's unlocked plugs: the account's, plus any a character has on its own.

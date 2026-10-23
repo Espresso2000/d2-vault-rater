@@ -123,9 +123,9 @@ export function scoreRoles({ w, tags = [], score }: RoleInput, map: RolePerkMap)
       archetype = sheet ?? typeFit * (map.sustained || map.swap ? (role === "precision" && !crit ? 0.6 * UNRANKED : UNRANKED) : 1);
       if (sheet != null) notes.push(`Aegis Boss Damage rank: top ${Math.max(1, Math.round((1 - sheet) * 100))}%`);
     }
-    // Nearly every weapon stuns something (frame, exotic trait, seasonal artifact), so one breaker only starts the role; two or more, or a champion perk, hold it.
+    // Nearly every weapon stuns something (its frame or exotic trait), so one breaker only starts the role; two or more, or a champion perk, hold it.
     const breakers = w.champions?.length ?? 0;
-    if (role === "champion") archetype = breakers > 1 ? 1 : breakers ? 0.6 : 0;
+    if (role === "champion") archetype = breakers ? 1 : 0;
     if (role === "champion" && w.champions?.length) notes.push(`stuns ${w.champions.join(", ")}`);
     else if (typeFit >= 0.7) notes.push(`${w.type} suits this role`);
 

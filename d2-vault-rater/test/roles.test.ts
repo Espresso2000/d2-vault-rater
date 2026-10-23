@@ -4,6 +4,8 @@ import assert from "node:assert/strict";
 import { buildRolePerkMap, scoreRoles, rolesHeld, DEFAULT_ROLE_THRESHOLD } from "../src/rating/roles.js";
 import { parseAegisExotics, parseAegisPerks } from "../src/sources/aegis.js";
 import { parseBossSustained, parseBossSwap, bossLookup } from "../src/sources/bossDamage.js";
+import { decodeProfile } from "../src/vault/decode.js";
+import { manifest, profile } from "./fixtures/build.js";
 import type { WeaponRecord } from "../src/vault/types.js";
 
 const weapon = (over: Partial<WeaponRecord> & { perks?: string[] }): WeaponRecord =>
@@ -105,4 +107,16 @@ test("with the sheet loaded, a top-ranked archetype outscores an unranked type f
   assert.ok(rocket.burst >= other.burst);
   const still = scoreRoles({ w: weapon({ name: "Still Hunt", type: "Sniper Rifle", rarity: "Exotic" }), score: 90 }, m2).scores;
   assert.ok(still.precision > scoreRoles({ w: weapon({ type: "Pulse Rifle" }), score: 90 }, m2).scores.precision);
+});
+
+test("champions come from the frame's hidden breaker perk only, not from leftover artifact perks", () => {
+  const m = manifest();
+  m.items[10] = { ...m.items[10], breakerType: 1 }; // the frame plug: Barrier
+  m.items[9001] = { hash: 9001, displayProperties: { name: "Unstoppable Submachine Gun" }, itemType: 19 };
+  const raw = profile([{ id: "u1", hash: 1001, plugs: [10, 20, 30, 41, 50, 60] }]) as Record<string, unknown>;
+  // Stale data the live profile still returns: an "active" artifact perk for this weapon's type.
+  raw.characterProgressions = { data: { c1: { seasonalArtifact: { tiers: [{ items: [{ itemHash: 9001, isActive: true }] }] } } } };
+  const w = decodeProfile(raw as never, m).weapons[0];
+  assert.equal(w.type, "Submachine Gun");
+  assert.deepEqual(w.champions, ["Barrier"]);
 });

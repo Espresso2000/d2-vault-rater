@@ -39,7 +39,7 @@ export interface WeaponRecord {
   element: Element;
   slot: WeaponSlot;
   ammo: "Primary" | "Special" | "Heavy" | "Unknown";
-  /** The champions it stuns: its frame's (or exotic trait's), plus any this season's artifact gives its type. */
+  /** The champions it stuns: its frame's or exotic trait's hidden breaker perk, or an exotic's own. */
   champions?: ("Barrier" | "Overload" | "Unstoppable")[];
   rarity: "Exotic" | "Legendary" | "Other";
   gearTier: number | null;

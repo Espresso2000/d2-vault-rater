@@ -1851,7 +1851,7 @@ function vrMain() {
   const ammoIcon = (am) => (AMMO_ORDER.includes(am) ? `<img class="ammo-ico" src="https://www.bungie.net/img/destiny_content/ammo_types/${am.toLowerCase()}.png" alt="${am} ammo" title="${am} ammo">` : "");
   // Bungie's breaker symbols (DestinyBreakerTypeDefinition), for the champion a weapon stuns.
   const CHAMP_ICON = { Barrier: "07b9ba0194e85e46b258b04783e93d5d", Overload: "da558352b624d799cf50de14d7cb9565", Unstoppable: "825a438c85404efd6472ff9e97fc7251" };
-  // w.ch lists every champion the weapon stuns (its frame's, and any from the artifact).
+  // w.ch lists every champion the weapon stuns (its frame's or exotic trait's).
   const champIcon = (chs) => [].concat(chs || []).filter((ch) => CHAMP_ICON[ch]).map((ch) => `<img class="ammo-ico champ-ico" src="https://www.bungie.net/common/destiny2_content/icons/DestinyBreakerTypeDefinition_${CHAMP_ICON[ch]}.png" alt="Anti-${ch}" title="Anti-${ch}: stuns ${ch} champions">`).join("");
   const typeCards = [];
   let bigCards = store.get("vr-cards") !== "small";
