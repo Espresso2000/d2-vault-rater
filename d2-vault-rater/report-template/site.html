@@ -501,6 +501,9 @@ button.elcard:hover { border-color: color-mix(in srgb, currentColor 45%, transpa
 .rbadge b { font-weight: 600; margin-left: 3px; opacity: .85; }
 .rbadge.main { background: rgba(var(--c3),.2); }
 .itile .rbadges { gap: 3px; } .itile .rbadge { font-size: 10px; padding: 0 5px; }
+.rlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.rlist li { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; }
+.rlist li .small { grid-column: 1 / -1; }
 .rpop { position: fixed; z-index: 40; width: min(300px, calc(100vw - 16px)); padding: 12px 14px; border-radius: 3px 14px; background: #151c3e; border: 1px solid var(--line-hi); box-shadow: var(--shadow); font-size: 13px; }
 .rpop h4 { margin: 0 0 4px; font: 600 14px var(--display); display: flex; justify-content: space-between; gap: 10px; }
 .rpop ul { margin: 6px 0 0; padding-left: 18px; color: var(--muted); }
@@ -2515,6 +2518,11 @@ function vrMain() {
     el.innerHTML = `<span class="label">Role</span>${ROLE_TOP.map((t) => chip(t.id, t.label)).join("")}${picked.length > 1 ? `<div class="seg" role="group" aria-label="Match">${[["any", "Any"], ["all", "All"]].map(([k, l]) => `<button type="button" data-rm="${k}" aria-pressed="${st.rmatch === k}" title="${k === "any" ? "Weapons with at least one picked role" : "Weapons with every picked role"}">${l}</button>`).join("")}</div>` : ""}
       ${picked.filter((t) => t.subs).map((t) => `<span class="rsubs"><span class="label">${esc(t.label)}</span>${t.subs.map(([id, l]) => chip(id, l, " rsub")).join("")}</span>`).join("")}`;
   }
+  /** Every role a weapon holds, best first, with its score and what earned it (the details panel). */
+  const roleList = (w) => {
+    const held = Object.entries(w.ro || {}).filter(([, v]) => v >= RTH).sort((a, b) => b[1] - a[1]);
+    return held.length ? `<ul class="rlist">${held.map(([r, v]) => `<li><b>${esc(RLABEL[r] || r)}</b> <span class="num">${v}</span><span class="small muted">${esc((w.rwhy?.[r] || []).join(" · "))}</span></li>`).join("")}</ul>` : `<p class="small muted">No role scores ${RTH} or more.</p>`;
+  };
   /** Up to three role badges for a weapon, best first, each with its score. */
   const roleBadges = (w) => {
     const held = Object.entries(w.ro || {}).filter(([, v]) => v >= RTH).sort((a, b) => b[1] - a[1]).slice(0, 3);
@@ -3519,7 +3527,7 @@ function vrMain() {
       eyebrow: `${esc(w.s)} · ${esc(w.r)}${w.loc && w.loc !== "Vault" ? " · " + esc(w.loc) : ""}`, tier: tierBadge(w) + (w.pw ? `<span class="dp-pw">✦ ${w.pw}</span>` : ""),
       sub: `<span class="dp-type">${elIcon(w.e) || elDot(w.e)}<span>${esc(typeLine(w))}</span></span><span class="dp-marks">${ammoIcon(w.am)}${champIcon(w.ch)}</span>`,
       body: dpLayout(
-        [dpSec(1, "", scores, "bare"), dpSec(2, "Verdict", why, `dp-verdict ${w.v}`), dpSec(5, "", whereBox(w.src), "bare"), dpSec(6, "Actions", actions), dpSec(8, "Details", facts)],
+        [dpSec(1, "", scores, "bare"), dpSec(2, "Verdict", why, `dp-verdict ${w.v}`), dpSec(2.5, "Roles", roleList(w)), dpSec(5, "", whereBox(w.src), "bare"), dpSec(6, "Actions", actions), dpSec(8, "Details", facts)],
         [dpSec(3, "Perks", perkGrid(w), "", w.god ? "Wishlist god roll" : "")],
         [dpSec(4, "Stats", statBlock(w), "", statAside(w)), copies.length ? dpSec(7, `Other copies · ${copies.length}`, `<div class="list">${copies.map(weaponRow).join("")}</div>`) : ""],
         dpExplain(`<p><b>Overall score</b> is a 0-100 rating of this copy: 60% weapon plus 40% roll.</p><p><b>Weapon:</b> its Aegis tier (S 100, A 85, B 70, C 50, D 30), up to 5 more for a high rank in its tier. Weapons Aegis doesn't list use their wishlist rating.</p><p><b>Roll:</b> how well this copy's perks match Aegis's picks: each trait column is worth 35%, barrel and magazine 10% each, origin trait and masterwork 5% each.</p><p><b>Keep or Shard</b> also depends on your Strictness, duplicate copies and the wishlist, so the score alone doesn't decide it.</p>`),
