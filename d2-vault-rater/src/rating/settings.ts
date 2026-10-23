@@ -96,6 +96,8 @@ export const SettingsSchema = z.object({
   protect: z._default(z.array(z.string()), []),
   /** Stats the player's builds want, e.g. {"Hunter": ["Grenade", "Weapons"]}. Inferred from equipped armor when empty. */
   buildStats: z._default(z.record(z.string(), z.array(z.string())), {}),
+  /** Score (0-100) a weapon needs in a role to count as having it. */
+  roleThreshold: z._default(between(0, 100), 65),
   tone: z._default(z.enum(["short", "detailed"]), "detailed"),
   wishlists: z._default(z.array(z.string()), []),
   aegisTabs: z._default(z.array(z.object({ name: z.string(), gid: z.string() })), []),

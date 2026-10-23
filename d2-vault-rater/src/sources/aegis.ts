@@ -24,8 +24,27 @@ export interface AegisWeapon {
   tier: Tier;
   /** Exotic sheet grade below D ("E" or "F"); `tier` is clamped to D for those. */
   grade?: "E" | "F";
+  /** Exotic sheet Tags column, lowercased ("dps", "roam", "boss", "add clear", "movement", "utility", "support"). Missing in imports from before it was kept, and for legendaries. */
+  tags?: string[];
   /** Manifest hashes that carry this name (empty when unmatched). */
   hashes: number[];
+}
+
+/** One row of the sheet's Perks tab. */
+export interface AegisPerk {
+  name: string;
+  season: string;
+  /** Lowercased: utility, sustained, burst, splash, spree, refill, reload, ammo, overflow, ability, pvp... */
+  tags: string[];
+  trigger: string;
+  effect: string;
+  usage: string;
+  tier: Tier | "E" | "F";
+}
+
+export interface AegisPerkData {
+  importedAt: string;
+  perks: AegisPerk[];
 }
 
 export interface AegisData {
@@ -37,6 +56,9 @@ export interface AegisData {
 }
 
 export const aegisFile = () => join(paths.sourcesDir, "aegis.json");
+export const aegisPerksFile = () => join(paths.sourcesDir, "aegis-perks.json");
+/** Gid of the "Perks" tab, used when the htmlview tab list misses it. */
+export const AEGIS_PERKS_TAB = { name: "Perks", gid: "1589555995" };
 const aliasFile = () => join(paths.sourcesDir, "aliases.json");
 
 type Field = keyof Omit<AegisWeapon, "tab" | "recommended" | "hashes" | "rank" | "tier"> | ColumnKey | "rank" | "tier";
@@ -67,6 +89,8 @@ const splitCell = (v: string) =>
     .split(/\r?\n|\s*\/\s*/)
     .map((x) => x.trim())
     .filter(Boolean);
+
+const splitTags = (v: string) => v.toLowerCase().split(/\r?\n|\s*[,/]\s*/).map((x) => x.trim()).filter(Boolean);
 
 /** Parse one tab's CSV. Returns null when the tab is not a weapon tier tab. */
 export function parseAegisTab(tab: string, csv: string): AegisWeapon[] | null {
@@ -138,11 +162,36 @@ export function parseAegisExotics(tab: string, csv: string): AegisWeapon[] | nul
       source: "",
       recommended: { barrel: [], magazine: [], masterwork: [], perk1: [], perk2: [], origin: [] },
       notes: get("usage"),
+      tags: splitTags(get("tags")),
       rank: null,
       tier: below ? "D" : (raw as Tier),
       ...(below ? { grade: raw as "E" | "F" } : {}),
       hashes: [],
     });
+  }
+  return out;
+}
+
+/**
+ * Parse the "Perks" tab (name, season, tags, trigger, effect, ..., usage, #, tier). A picture column
+ * in front shares the "Name" header, so the last name column is the real one.
+ */
+export function parseAegisPerks(csv: string): AegisPerk[] | null {
+  const rows = parseCsv(csv);
+  const norm = (c: string) => c.toLowerCase().replace(/[^\w ]+/g, " ").trim().split(/\s+/).slice(-1)[0] ?? "";
+  const headerAt = rows.findIndex((r) => {
+    const c = r.map(norm);
+    return c.includes("name") && c.includes("tier") && c.includes("trigger");
+  });
+  if (headerAt < 0) return null;
+  const cols = rows[headerAt].map(norm);
+  const out: AegisPerk[] = [];
+  for (const r of rows.slice(headerAt + 1)) {
+    const get = (k: string) => (r[k === "name" ? cols.lastIndexOf(k) : cols.indexOf(k)] ?? "").trim();
+    const name = get("name");
+    const tier = get("tier").toUpperCase();
+    if (!name || !/^[SABCDEF]$/.test(tier)) continue;
+    out.push({ name, season: get("season"), tags: splitTags(get("tags")), trigger: get("trigger"), effect: get("effect"), usage: get("usage"), tier: tier as AegisPerk["tier"] });
   }
   return out;
 }
@@ -191,6 +240,7 @@ export async function importAegis(m: Manifest, extraTabs: { name: string; gid: s
   const weapons: AegisWeapon[] = [];
   const used: AegisData["tabs"] = [];
   for (const t of tabs) {
+    if (t.name === AEGIS_PERKS_TAB.name) continue; // shares the exotic tab's Name, Tier and Usage headers
     try {
       const csv = await getText(gvizCsvUrl(AEGIS_SHEET_ID, t.gid));
       const rows = parseAegisTab(t.name, csv) ?? parseAegisExotics(t.name, csv);
@@ -201,6 +251,15 @@ export async function importAegis(m: Manifest, extraTabs: { name: string; gid: s
     } catch (e) {
       warnings.push(`Tab ${t.name}: ${(e as Error).message}`);
     }
+  }
+  // The perk list is kept apart from the weapons; when it can't be read the previous one stays.
+  try {
+    const t = tabs.find((x) => x.name === AEGIS_PERKS_TAB.name) ?? AEGIS_PERKS_TAB;
+    const perks = parseAegisPerks(await getText(gvizCsvUrl(AEGIS_SHEET_ID, t.gid)));
+    if (perks?.length) writeJson(aegisPerksFile(), { importedAt: new Date().toISOString(), perks } satisfies AegisPerkData);
+    else warnings.push("Perks tab: no rows found; kept the previous perk list.");
+  } catch (e) {
+    warnings.push(`Perks tab: ${(e as Error).message}; kept the previous perk list.`);
   }
   const prev = readJson<AegisData | null>(aegisFile(), null);
   if (!weapons.length) {
@@ -215,4 +274,8 @@ export async function importAegis(m: Manifest, extraTabs: { name: string; gid: s
 
 export function loadAegis(): AegisData | null {
   return readJsonCached<AegisData | null>(aegisFile(), null);
+}
+
+export function loadAegisPerks(): AegisPerk[] {
+  return readJsonCached<AegisPerkData | null>(aegisPerksFile(), null)?.perks ?? [];
 }

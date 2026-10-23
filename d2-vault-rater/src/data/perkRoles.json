@@ -1,0 +1,13 @@
+{
+  "_": "Perk name -> the weapon roles it serves. Edit freely: names are matched ignoring case, accents and punctuation. 'weapons' lists exotics whose role the Aegis Tags column may not say.",
+  "add-clear": ["Mega Kill Clip", "Reaper's Tithe", "Bipod", "Gear Shift", "Chain Reaction", "Detonator Beam", "Killing Tally", "Discord", "Genesis", "Tracking Module", "Destabilizing Rounds"],
+  "champion": ["Vorpal Weapon", "Stopping Power", "Under-Over", "Adaptive Munitions", "Disruption Break", "Chill Clip", "Cold Steel", "Shield Disorient", "Armor-Piercing Rounds", "Stunloader"],
+  "burst": ["Reaper's Tithe", "Envious Arsenal", "Explosive Payload", "Timed Payload", "Kinetic Tremors", "Onslaught", "Collective Demolition", "Clown Cartridge", "Trickle Charge"],
+  "precision": ["Precision Instrument", "Focused Fury", "Cascade Point", "Headseeker", "Triple Tap", "Fourth Time's the Charm", "Rewind Rounds", "Vorpal Weapon"],
+  "sustained": ["Aggregate Charge", "Elemental Honing", "Gear Shift", "Chaos Reshaped", "High Ground", "Whirlwind Blade", "Relentless Strikes", "Target Lock", "Sword Logic"],
+  "long": ["Opening Shot", "Iron Reach", "Seraph Rounds"],
+  "close": ["Full Choke"],
+  "utility": ["Heal Clip", "Physic", "Reciprocity", "Withering Gaze", "Attrition Orbs", "Repulsor Brace", "Rimestealer", "Turnabout", "Unrelenting", "Shoot to Loot"],
+  "movement": ["Eager Edge", "Danger Zone", "Valiant Charge", "Tilting at Windmills", "Impulse Amplifier", "Perpetual Motion", "Perfect Float", "Sprint Grip"],
+  "weapons": { "movement": ["Ergo Sum", "Praxic Blade", "Alethonym", "Lumina", "Centrifuse", "Worldline Zero"] }
+}

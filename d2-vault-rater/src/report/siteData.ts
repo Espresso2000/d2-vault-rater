@@ -4,6 +4,7 @@ import type { ReportOptions } from "./report.js";
 import { setKey, type ArmorSetData } from "../sources/armorSets.js";
 import { baseName } from "../bungie/defs.js";
 import { groupBy } from "../util.js";
+import { ROLE_LABEL } from "../rating/roles.js";
 
 /**
  * The data the report page renders: every weapon and armor piece, highlights, RADS, Wrapped and DIM.
@@ -62,6 +63,9 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
     l: r.label,
     c: r.category,
     why: r.reasons,
+    // Role scores (0-100) for every role, and what earned the ones worth explaining.
+    ro: r.roles,
+    rwhy: Object.fromEntries(Object.entries(r.roleWhy).filter(([k]) => r.roles[k as keyof typeof r.roles] >= 40)),
     lk: r.locked,
     god: r.godRoll,
     src: o.sourceOf?.(r.itemHash, r.name) ?? null,
@@ -205,6 +209,7 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
         }
       : null,
     settings: { preset: o.settings.preset, focus: o.settings.focus, byWeaponType: o.settings.byWeaponType, protect: o.settings.protect },
+    roles: { threshold: o.settings.roleThreshold, label: ROLE_LABEL },
     weaponTypes: [...new Set(w.ratings.map((r) => r.type))].sort(),
   };
   return data;

@@ -488,6 +488,23 @@ button.elcard:hover { border-color: color-mix(in srgb, currentColor 45%, transpa
 .views { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; gap: 6px; }
 .view { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 5px 12px; font-size: 13px; color: var(--muted); white-space: nowrap; flex: none; transition: color .15s ease, border-color .15s ease, background .15s ease; }
 .view:hover { color: var(--ink); border-color: var(--line-hi); }
+/* Weapon role chips above the list, role badges on cards, and the why popover */
+.rolebar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 10px 0 4px; }
+.rolebar[hidden] { display: none; }
+.rolebar .label { font-size: 12px; color: var(--muted); margin-right: 2px; }
+.rolebar .rsubs { display: contents; }
+.rolebar .view.rsub { padding: 3px 10px; font-size: 12px; border-style: dashed; }
+.rolebar .seg { height: 30px; }
+.rolebar .seg button { padding: 0 10px; font-size: 12.5px; }
+.rbadges { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+.rbadge { display: inline-block; font: inherit; font-size: 11px; line-height: 1.5; padding: 0 7px; border-radius: 999px; background: rgba(var(--c3),.10); color: #c3f7e1; border: 1px solid rgba(var(--c3),.28); white-space: nowrap; cursor: help; }
+.rbadge b { font-weight: 600; margin-left: 3px; opacity: .85; }
+.rbadge.main { background: rgba(var(--c3),.2); }
+.itile .rbadges { gap: 3px; } .itile .rbadge { font-size: 10px; padding: 0 5px; }
+.rpop { position: fixed; z-index: 40; width: min(300px, calc(100vw - 16px)); padding: 12px 14px; border-radius: 3px 14px; background: #151c3e; border: 1px solid var(--line-hi); box-shadow: var(--shadow); font-size: 13px; }
+.rpop h4 { margin: 0 0 4px; font: 600 14px var(--display); display: flex; justify-content: space-between; gap: 10px; }
+.rpop ul { margin: 6px 0 0; padding-left: 18px; color: var(--muted); }
+.rpop .small { color: var(--muted); font-size: 12px; }
 .view[aria-pressed="true"] { background: rgba(var(--c3),.10); color: #c3f7e1; border-color: rgba(var(--c3),.4); }
 details.ms { position: relative; }
 details.ms summary { list-style: none; display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 11px; border: 1px solid transparent; border-radius: 9px; background: var(--glass-hi); font-size: 13.5px; color: var(--muted); cursor: pointer; white-space: nowrap; user-select: none; transition: color .15s ease, border-color .15s ease; }
@@ -1726,12 +1743,12 @@ function vrMain() {
   const miniInfo = (w) => [w.am && esc(w.am), w.mw && `MW ${esc(w.mw)}`, w.cr && "Crafted", w.ad && "Adept", w.god && '<span class="god">God roll</span>'].filter(Boolean).join(" · ");
   /** Row: one wide line per item, with perks on wide screens. */
   const weaponRow = (w) => `<button class="row v-${w.v}" data-w="${w.id}"><span class="ico${isExotic(w) ? " exotic" : ""}">${img(w.ic)}${tierBadge(w)}</span>
-      <div style="min-width:0"><div class="nm">${esc(w.n)}${newBadge(w)}${dtag(w)}${lochip(w)}${lockIcon(w)}</div><div class="sm">${isExotic(w) ? '<span class="exo">Exotic</span> · ' : ""}${esc(typeLine(w))} · ${elDot(w.e)}${w.loc && w.loc !== "Vault" ? " · " + esc(w.loc) : ""}</div><div class="perkline">${traitChips(w)}</div></div>
+      <div style="min-width:0"><div class="nm">${esc(w.n)}${newBadge(w)}${dtag(w)}${lochip(w)}${lockIcon(w)}</div><div class="sm">${isExotic(w) ? '<span class="exo">Exotic</span> · ' : ""}${esc(typeLine(w))} · ${elDot(w.e)}${w.loc && w.loc !== "Vault" ? " · " + esc(w.loc) : ""}</div><div class="perkline">${traitChips(w)}</div>${roleBadges(w)}</div>
       ${scoreCell(w.sc)}<div class="c-verdict">${verdict(w.v)}</div></button>`;
   /** Tile: tall and narrow, icon first, like an inventory grid. */
   const weaponTile = (w) => `<button class="itile v-${w.v}${isExotic(w) ? " exotic" : ""}" data-w="${w.id}">
       <div class="art">${img(w.ic)}${tagMark(w)}${tierBadge(w)}${newBadge(w)}<span class="elc" style="color:var(--${esc(w.e)})" title="${esc(w.e)}"></span><span class="flags">${w.lk ? "🔒" : ""}${w.god ? '<span title="Wishlist god roll" style="color:var(--green)">★</span>' : ""}</span><b class="sc num${w.sc >= 90 ? " hi" : ""}">${w.sc}</b></div>
-      <div class="tb"><div class="nm">${esc(w.n)}</div><div class="sm">${esc(frameOf(w) || w.t)}</div><div class="sm">${esc(w.t)}</div></div><span class="vbar"></span></button>`;
+      <div class="tb"><div class="nm">${esc(w.n)}</div><div class="sm">${esc(frameOf(w) || w.t)}</div><div class="sm">${esc(w.t)}</div>${roleBadges(w)}</div><span class="vbar"></span></button>`;
   const statBars = (a, full) => {
     const want = new Set(DATA.buildStats[a.cls] || []);
     const list = ordered(full && a.all ? Object.entries(a.all) : a.st);
@@ -2067,7 +2084,7 @@ function vrMain() {
       ],
       sorts: { score: ["Vault score", (w) => w.sc], roll: ["Roll score", (w) => w.rs], tier: ["Aegis tier and rank", (w) => (w.tier ? (5 - TIERS.indexOf(w.tier)) * 100 - (w.rank ?? 50) : -1)], power: ["Power level", (w) => w.pw ?? 0], name: ["Name", (w) => w.n.toLowerCase(), "az"], type: ["Type", (w) => w.t, "az"],
         am: ["Ammo type", (w) => ordOf(["Primary", "Special", "Heavy"], w.am), "ord"], e: ["Damage type", (w) => ordOf(ELEMENT_ORDER, w.e), "ord"], f: ["Weapon frame", (w) => (frameOf(w) || "~").toLowerCase(), "az"],
-        s: ["Slot", (w) => ordOf(["Kinetic", "Energy", "Power"], w.s), "ord"], ...SHARED_SORTS },
+        s: ["Slot", (w) => ordOf(["Kinetic", "Energy", "Power"], w.s), "ord"], role: ["Picked role score", (w) => roleScore(w, ex.w)], ...SHARED_SORTS },
       groups: { "": "None", et: "Tag", ...(DIMS.tags && DIMS.loaded ? { dt: "DIM tag" } : {}), t: "Type", e: "Element", f: "Frame", s: "Slot", am: "Ammo", tier: "Aegis tier", v: "Verdict", c: "Shard reason", r: "Rarity", name: "Weapon name" },
       views: {
         "best-type-el": ["Best of every type and element", { group: "t", group2: "e", top: "1" }],
@@ -2187,9 +2204,9 @@ function vrMain() {
   }
   // QUERY-END
   const dirHtml = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${d === "desc" ? "M12 5v14M6 13l6 6 6-6" : "M12 19V5M6 11l6-6 6 6"}"/></svg>${d === "desc" ? "Best first" : "Worst first"}`;
-  const blank = () => ({ q: "", f: {}, sort: "score", dir: "desc", then: [], group: "", group2: "", top: "", view: "", limit: 150 });
+  const blank = () => ({ q: "", f: {}, sort: "score", dir: "desc", then: [], group: "", group2: "", top: "", view: "", limit: 150, roles: [], rmatch: "any" });
   // Sort rules, grouping and "show best N" are remembered in this browser (search and filters start fresh).
-  const KEPT = ["sort", "dir", "then", "group", "group2", "top"];
+  const KEPT = ["sort", "dir", "then", "group", "group2", "top", "roles", "rmatch"];
   const keptOf = (st) => Object.fromEntries(KEPT.map((k) => [k, st[k]]));
   const savedSort = readJson("vr-sort", {});
   const ex = { set: "w", w: { ...blank(), ...savedSort.w }, a: { ...blank(), ...savedSort.a }, pass: () => true };
@@ -2457,6 +2474,68 @@ function vrMain() {
     if (e.key === "/" && !e.ctrlKey && !e.metaKey && !e.target.closest?.("input, textarea, select, [contenteditable]")) { e.preventDefault(); $("#gq").focus(); }
   });
 
+  /* ---------- Weapon roles ---------- */
+  // Every copy has a 0-100 score per role (w.ro) and holds a role at the threshold or above. Boss DPS and Range each stand for two roles,
+  // and Barrier / Overload / Unstoppable narrow Major / champion to what the weapon actually stuns.
+  const RTH = DATA.roles?.threshold ?? 65, RLABEL = DATA.roles?.label || {};
+  const ROLE_TOP = [
+    { id: "add-clear", label: "Add clear" },
+    { id: "champion", label: "Major / champion", subs: ["Barrier", "Overload", "Unstoppable"].map((c) => ["ch:" + c, c]) },
+    { id: "boss", label: "Boss DPS", leaves: ["burst", "precision"], subs: [["burst", "Burst"], ["precision", "Precision"]] },
+    { id: "sustained", label: "Sustained DPS" },
+    { id: "range", label: "Range", leaves: ["long", "close"], subs: [["long", "Long"], ["close", "Close"]] },
+    { id: "utility", label: "Support" },
+    { id: "movement", label: "Movement" },
+  ];
+  const holds = (w, r) => (w.ro?.[r] ?? 0) >= RTH;
+  /** The roles one picked top chip stands for: its picked sub-chips, else all of them. */
+  const topLeaves = (t, picked) => { const subs = (t.subs || []).map((s) => s[0]).filter((s) => picked.includes(s) && !s.startsWith("ch:")); return t.leaves ? (subs.length ? subs : t.leaves) : [t.id]; };
+  const topTest = (t, picked) => {
+    const br = (t.subs || []).map((s) => s[0]).filter((s) => s.startsWith("ch:") && picked.includes(s)).map((s) => s.slice(3));
+    // A picked breaker asks what the weapon stuns, whatever its champion score.
+    if (br.length) return (w) => [].concat(w.ch || []).some((c) => br.includes(c));
+    const leaves = topLeaves(t, picked);
+    return (w) => leaves.some((r) => holds(w, r));
+  };
+  const pickedTops = (st) => ROLE_TOP.filter((t) => st.roles.includes(t.id));
+  function roleFilter(st) {
+    const tops = pickedTops(st); if (!tops.length) return null;
+    const tests = tops.map((t) => topTest(t, st.roles));
+    return st.rmatch === "all" ? (w) => tests.every((f) => f(w)) : (w) => tests.some((f) => f(w));
+  }
+  /** Score for the picked roles: the best of them for "any", the weakest for "all". */
+  function roleScore(w, st) {
+    const per = pickedTops(st).map((t) => Math.max(...topLeaves(t, st.roles).map((r) => w.ro?.[r] ?? 0)));
+    return !per.length ? w.sc : st.rmatch === "all" ? Math.min(...per) : Math.max(...per);
+  }
+  function drawRoles() {
+    const el = $("#exroles"); if (!el) return;
+    const st = ex.w; el.hidden = ex.set !== "w"; if (el.hidden) return;
+    const picked = pickedTops(st), chip = (id, label, cls = "") => `<button class="view${cls}" data-r="${id}" aria-pressed="${st.roles.includes(id)}">${esc(label)}</button>`;
+    el.innerHTML = `<span class="label">Role</span>${ROLE_TOP.map((t) => chip(t.id, t.label)).join("")}${picked.length > 1 ? `<div class="seg" role="group" aria-label="Match">${[["any", "Any"], ["all", "All"]].map(([k, l]) => `<button type="button" data-rm="${k}" aria-pressed="${st.rmatch === k}" title="${k === "any" ? "Weapons with at least one picked role" : "Weapons with every picked role"}">${l}</button>`).join("")}</div>` : ""}
+      ${picked.filter((t) => t.subs).map((t) => `<span class="rsubs"><span class="label">${esc(t.label)}</span>${t.subs.map(([id, l]) => chip(id, l, " rsub")).join("")}</span>`).join("")}`;
+  }
+  /** Up to three role badges for a weapon, best first, each with its score. */
+  const roleBadges = (w) => {
+    const held = Object.entries(w.ro || {}).filter(([, v]) => v >= RTH).sort((a, b) => b[1] - a[1]).slice(0, 3);
+    return held.length ? `<div class="rbadges">${held.map(([r, v], i) => `<span role="button" tabindex="0" class="rbadge${i ? "" : " main"}" data-rb="${r}" data-rw="${w.id}" aria-label="${esc(RLABEL[r] || r)} ${v}: why">${esc(RLABEL[r] || r)}<b class="num">${v}</b></span>`).join("")}</div>` : "";
+  };
+  // Why a role badge: click or tap it for what earned the score.
+  const closeRolePop = () => $("#rpop")?.remove();
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-rb]");
+    if (!b) { if (!e.target.closest("#rpop")) closeRolePop(); return; }
+    e.stopPropagation(); e.preventDefault();
+    const key = b.dataset.rw + b.dataset.rb, was = $("#rpop")?.dataset.k === key; closeRolePop(); if (was) return;
+    const w = W.get(b.dataset.rw), r = b.dataset.rb; if (!w) return;
+    document.body.insertAdjacentHTML("beforeend", `<div class="rpop" id="rpop" role="dialog" data-k="${esc(key)}"><h4><span>${esc(RLABEL[r] || r)}</span><span class="num">${w.ro[r]}/100</span></h4><div class="small">${esc(w.n)}. Counts as a role at ${RTH} or more.</div><ul>${(w.rwhy?.[r] || []).map((x) => `<li>${esc(x)}</li>`).join("") || "<li>Mostly the weapon's overall rating</li>"}</ul></div>`);
+    const pop = $("#rpop"), rc = b.getBoundingClientRect();
+    pop.style.left = `${Math.max(8, Math.min(rc.left, innerWidth - pop.offsetWidth - 8))}px`;
+    pop.style.top = `${Math.max(8, Math.min(rc.bottom + 6, innerHeight - pop.offsetHeight - 8))}px`;
+  }, true);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeRolePop(); });
+  addEventListener("scroll", closeRolePop, { passive: true });
+
   const tbObserver = new ResizeObserver(([e]) => document.documentElement.style.setProperty("--tbh", `${Math.round(e.target.offsetHeight)}px`));
   function drawExplorer(full) {
     const cfg = SETS[ex.set], st = ex[ex.set];
@@ -2493,13 +2572,29 @@ function vrMain() {
           <div class="tb-foot"><span class="result num" id="excount"></span><div class="active-chips" id="exchips"></div><label class="vsplit vm-only" title="Vault view: keep filtered-out weapons in place, dimmed"><input type="checkbox" id="vdim"${vdim ? " checked" : ""}> Dim filtered</label><button class="resetbtn" id="exreset" type="button" title="Clear search, filters, sort and grouping">Reset</button></div>
           </div>
         </div>
+        <div class="rolebar" id="exroles" role="group" aria-label="Weapon roles"></div>
         <div id="exlist"></div><div class="more" id="exmore"></div>`;
+      drawRoles();
+      $("#exroles").onclick = (e) => {
+        const b = e.target.closest("[data-r]"), s = e.target.closest("[data-rm]");
+        if (s) st.rmatch = s.dataset.rm;
+        else if (b) {
+          const id = b.dataset.r, on = st.roles.includes(id);
+          st.roles = on ? st.roles.filter((r) => r !== id) : [...st.roles, id];
+          // A top chip dropped takes its sub-chips with it.
+          if (on) st.roles = st.roles.filter((r) => !(ROLE_TOP.find((t) => t.id === id)?.subs || []).some((x) => x[0] === r));
+          // Picking a role orders by it; clearing the last one goes back to the vault score.
+          if (st.roles.length && st.sort === "score") st.sort = "role"; else if (!st.roles.length && st.sort === "role") st.sort = "score";
+          $("#exsort").value = st.sort;
+        } else return;
+        drawRoles(); touch();
+      };
       $("#exdense").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; dense = b.dataset.d; store.set("vr-dense", dense); drawExplorer(true); };
       $(".tb-rest").addEventListener("scroll", closeFacets, { passive: true }); $("#extoolbar").addEventListener("scroll", closeFacets, { passive: true });
       tbObserver.disconnect(); tbObserver.observe($("#extoolbar"));
       $("#exgear").onclick = openExDlg;
       $("#exlayout").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; layout = b.dataset.l; store.set("vr-layout", layout); $$("#exlayout button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); drawExplorer(false); };
-      const touch = () => { st.view = ""; st.limit = 150; $$("#explorer .view").forEach((b) => b.setAttribute("aria-pressed", "false")); drawExplorer(false); };
+      const touch = () => { st.view = ""; st.limit = 150; $$("#explorer .views .view").forEach((b) => b.setAttribute("aria-pressed", "false")); drawExplorer(false); };
       $("#exset").onclick = (e) => { const b = e.target.closest("button"); if (b) { ex.set = b.dataset.s; drawExplorer(true); } };
       $("#explorer .views").onclick = (e) => { const b = e.target.closest("button"); if (b) applyView(ex.set, b.dataset.v); };
       $("#exq").oninput = (e) => { st.q = e.target.value; typing(touch); };
@@ -2532,7 +2627,8 @@ function vrMain() {
     const facetFn = Object.fromEntries(cfg.facets.map(([k, , f]) => [k, f]));
     const q = st.q.trim().toLowerCase();
     const qf = q ? compileQuery(st.q, ex.set) : null;
-    ex.pass = (x, skip) => (!qf || qf(x)) &&
+    const rolePass = ex.set === "w" ? roleFilter(st) : null;
+    ex.pass = (x, skip) => (!qf || qf(x)) && (!rolePass || rolePass(x)) &&
       Object.entries(st.f).every(([k, vals]) => k === skip || !vals.length || [].concat(facetFn[k](x) ?? []).some((v) => vals.includes(String(v))));
     const list = cfg.items.filter((x) => ex.pass(x));
     saveSort();
@@ -3413,7 +3509,7 @@ function vrMain() {
     const scores = `<div class="breakdown"><div data-ptip="score" tabindex="0" aria-label="Overall score ${w.sc}: ${w.tier ? `Aegis tier ${w.tier}` : `wishlist rating ${w.ws}`} and roll score ${w.rs}"><b class="num grad-text">${w.sc}</b><span>Overall score</span></div><div${w.tier ? ` class="t${w.tier} tl"` : ""}>${w.tier ? `<b class="num">${w.tier}</b><span>Aegis tier${w.rank ? " · #" + w.rank : ""}</span>` : `<b class="num">${w.ws}</b><span>Not in Aegis (wishlist)</span>`}</div><div><b class="num">${w.rs}</b><span>Roll score</span></div>
       <div class="bk-state">${lockPick(w)}${w.god ? '<span class="godst">Wishlist god roll</span>' : ""}${dimTagPick(w)}${evrTagPick(w)}</div></div>`;
     const why = `<div class="dp-vhead"><span class="vtv ${w.v}">${VERDICT[w.v]}</span><span class="small">${w.v === "keep" ? "Worth a vault slot" : w.v === "shard" ? "Safe to dismantle" : "Your call"}</span></div><ul class="reasons">${w.why.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>${w.notes ? `<p class="dp-quote"><b>Aegis:</b> ${esc(w.notes)}</p>` : ""}`;
-    const facts = `<div class="facts">${fact("Ammo", w.am)}${fact("Champion", w.ch?.length ? [].concat(w.ch).map((c) => "Anti-" + c).join(", ") : null)}${fact("Power", w.pw)}${fact("Masterwork", w.mw)}${fact("Gear tier", w.gt ? "Tier " + w.gt : null)}${fact("Where", w.loc)}${fact("Crafted", w.cr ? "Yes" : null)}${fact("Adept", w.ad ? "Yes" : null)}${fact("Aegis list", w.tab)}</div>`;
+    const facts = `<div class="facts">${fact("Ammo", w.am)}${fact("Champion", w.ch?.length ? [].concat(w.ch).map((c) => "Anti-" + c).join(", ") : null)}${fact("Roles", Object.entries(w.ro || {}).filter(([, v]) => v >= RTH).sort((a, b) => b[1] - a[1]).map(([r, v]) => `${RLABEL[r] || r} ${v}`).join(", "))}${fact("Power", w.pw)}${fact("Masterwork", w.mw)}${fact("Gear tier", w.gt ? "Tier " + w.gt : null)}${fact("Where", w.loc)}${fact("Crafted", w.cr ? "Yes" : null)}${fact("Adept", w.ad ? "Yes" : null)}${fact("Aegis list", w.tab)}</div>`;
     const actions = movePanel(w, false) + dimPanel(w);
     openDrawer({
       id, ico: w.ic, art: src(w.ss), el: w.e, gold: isExotic(w), title: w.n,

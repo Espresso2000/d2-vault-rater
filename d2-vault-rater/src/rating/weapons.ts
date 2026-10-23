@@ -1,5 +1,6 @@
 import { baseName, normalizeName, type Manifest } from "../bungie/manifest.js";
-import type { AegisData, AegisWeapon, ColumnKey } from "../sources/aegis.js";
+import { loadAegisPerks, type AegisData, type AegisPerk, type AegisWeapon, type ColumnKey } from "../sources/aegis.js";
+import { buildRolePerkMap, scoreRoles, type RoleId, type RoleScores } from "./roles.js";
 import type { WishlistData } from "../sources/wishlist.js";
 import type { WeaponRecord } from "../vault/types.js";
 import { strictnessFor, type Settings, type ShardCategory, type Tier } from "./settings.js";
@@ -44,6 +45,9 @@ export interface WeaponRating {
   /** Aegis's recommended masterwork stats for this weapon. */
   recMasterwork?: string[];
   perks: { kind: string; active: string; options: string[]; icons?: Record<string, string>; descriptions?: Record<string, string>; socket?: number }[];
+  /** 0-100 score for every weapon role, and what earned each one. */
+  roles: RoleScores;
+  roleWhy: Partial<Record<RoleId, string[]>>;
   godRoll: boolean;
   trashRoll: boolean;
   verdict: "keep" | "shard" | "review";
@@ -144,9 +148,10 @@ const tierBelow = (t: Tier, floor: Tier) => TIER_ORDER.indexOf(t) > TIER_ORDER.i
 
 export function rateWeapons(
   weapons: WeaponRecord[],
-  sources: { aegis: AegisData | null; wishlists: WishlistData | null; manifest: Manifest | null },
+  sources: { aegis: AegisData | null; wishlists: WishlistData | null; manifest: Manifest | null; /** Aegis perk list; read from disk when left out. */ perks?: AegisPerk[] },
   settings: Settings,
 ): WeaponReport {
+  const roleMap = buildRolePerkMap(sources.perks ?? loadAegisPerks());
   const ai = aegisIndex(sources.aegis);
   const wi = wishIndex(sources.wishlists, sources.manifest, new Set(weapons.map((w) => w.itemHash)));
   const protect = new Set(settings.protect.map(normalizeName));
@@ -163,6 +168,8 @@ export function rateWeapons(
     const effectiveTier: Tier = a ? a.tier : godRoll ? "B" : "C";
     const pos = a ? ai.tierPosition.get(a) ?? 1 : 1;
     const weaponScore = Math.min(100, (a?.grade ? GRADE_POINTS[a.grade] : TIER_POINTS[effectiveTier]) + (a ? Math.round(5 * (1 - pos)) : 0));
+    const score = Math.round(WEAPON_WEIGHT * weaponScore + ROLL_WEIGHT * rollScore);
+    const { scores: roles, why: roleWhy } = scoreRoles({ w, tags: a?.tags, score }, roleMap);
     return {
       instanceId: w.instanceId,
       itemHash: w.itemHash,
@@ -180,7 +187,9 @@ export function rateWeapons(
       effectiveTier,
       weaponScore,
       rollScore,
-      score: Math.round(WEAPON_WEIGHT * weaponScore + ROLL_WEIGHT * rollScore),
+      score,
+      roles,
+      roleWhy,
       matched,
       recMasterwork: a?.recommended.masterwork ?? [],
       perks: w.columns.map((c) => ({ kind: c.kind, active: c.active, options: c.options, icons: c.icons, descriptions: c.descriptions, socket: c.socket })),
