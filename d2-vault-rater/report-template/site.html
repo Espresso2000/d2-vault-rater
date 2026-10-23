@@ -502,11 +502,18 @@ button.elcard:hover { border-color: color-mix(in srgb, currentColor 45%, transpa
 .rbadge.main { background: rgba(var(--c3),.2); }
 .itile .rbadges { gap: 3px; } .itile .rbadge { font-size: 10px; padding: 0 5px; }
 /* "Shard last": shard-verdict items sort to the end of their group and sit on a red region that continues the last row */
-.shardrun { flex: 1 1 0; min-width: 190px; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 7px; padding: 5px; border-radius: 3px 12px; background: color-mix(in srgb, var(--shard) 28%, rgba(5,9,25,.6)); border: 1px solid color-mix(in srgb, var(--shard) 45%, transparent); }
-.list > .shardrun { grid-column: 1 / -1; display: grid; }
-.list.rows > .shardrun { grid-template-columns: repeat(auto-fill, minmax(min(520px, 100%), 1fr)); gap: 8px 12px; }
-.list.tilegrid > .shardrun { grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 12px; }
-@media (max-width: 700px) { .list.tilegrid > .shardrun { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; } }
+/* Each shard item sits in a red cell that bleeds half a gap into its neighbours, so the cells join into one band on the same grid as the keepers.
+   roundShard() rounds the outer corners where a row of the band starts and ends. */
+.shardcell { background: color-mix(in srgb, var(--shard) 42%, rgba(5,9,25,.6)); }
+.shardcell > .vitem, .shardcell > .itile, .shardcell > .row { border-color: color-mix(in srgb, var(--shard) 70%, transparent); }
+.shardcell.rs { border-top-left-radius: 9px; border-bottom-left-radius: 9px; }
+.shardcell.re { border-top-right-radius: 9px; border-bottom-right-radius: 9px; }
+.vtiles > .shardcell { flex: none; box-sizing: content-box; width: 56px; height: 56px; margin: 0 -3.5px; padding: 0 3.5px; }
+.list > .shardcell { display: grid; min-width: 0; }
+.list > .shardcell > .row, .list > .shardcell > .itile { height: 100%; }
+.list.rows > .shardcell { margin: 0 -6px; padding: 0 6px; }
+.list.tilegrid > .shardcell { margin: 0 -6px; padding: 0 6px; }
+@media (max-width: 700px) { .list.tilegrid > .shardcell { margin: 0 -4px; padding: 0 4px; } }
 .rlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .rlist li { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; }
 .rlist li .small { grid-column: 1 / -1; }
@@ -2257,10 +2264,20 @@ function vrMain() {
   // Shard last: weapons (and armor) the verdict says to shard sort after the rest of their group, in a red group of their own.
   let shardLast = store.get("vr-shardlast") === "on";
   // The sort is in drawExplorer's cmp; this puts the shard items it left at the end on their red region (screen readers hear "To shard").
-  const withShard = (xs, html) => {
+  const withShard = (xs, html, inner) => {
     const i = shardLast ? xs.findIndex((x) => x.v === "shard") : -1;
-    return i < 0 ? xs.map(html).join("") : xs.slice(0, i).map(html).join("") + `<div class="shardrun" role="group" aria-label="To shard">${xs.slice(i).map(html).join("")}</div>`;
+    return xs.map((x, k) => (i < 0 || k < i ? html(x) : `<span class="shardcell ${inner || ""}" title="To shard">${html(x)}</span>`)).join("");
   };
+  // Round the band's outer corners: the first and last cell on each row of a tile grid.
+  const roundShard = () => {
+    for (const grid of $$(".vtiles, .list")) {
+      const rows = new Map();
+      for (const c of grid.querySelectorAll(":scope > .shardcell")) { c.classList.remove("rs", "re"); const y = Math.round(c.getBoundingClientRect().top); (rows.get(y) || rows.set(y, []).get(y)).push(c); }
+      for (const cs of rows.values()) { cs[0].classList.add("rs"); cs.at(-1).classList.add("re"); }
+    }
+  };
+  let roundTimer = 0;
+  addEventListener("resize", () => { clearTimeout(roundTimer); roundTimer = setTimeout(roundShard, 150); });
   // The two switches sit in the Weapons / Armor headings, which drawVault rebuilds.
   document.addEventListener("change", (e) => {
     const id = e.target.id; if (id === "shardlast") { shardLast = e.target.checked; store.set("vr-shardlast", shardLast ? "on" : "off"); drawExplorer(false); return; }
@@ -2344,6 +2361,7 @@ function vrMain() {
         chars.map((c) => { const items = at(c.id, s), eq = DATA.weapons.find((w) => w.wh === c.id && w.s === s && w.eq); return `<div class="vcell"><div class="vdrop" data-to="${c.id}" data-equip="1" title="Drop here to equip">${eq ? tile(eq, true) : '<span class="vempty">Empty</span>'}</div><div class="vdrop vinv" data-to="${c.id}">${items.filter((w) => !w.eq).map((w) => tile(w)).join("")}</div></div>`; }).join("") +
         vaultBox(at("vault", s), tile)).join("")}
     </div>`, "", vswitch("vsplit", vsplit, "Split the vault by type")) + vsec("v-armor", "Armor", `${plural(DATA.armor.length, "piece")} · border colour is the class: <i class="vkey c-Hunter"></i>Hunter <i class="vkey c-Titan"></i>Titan <i class="vkey c-Warlock"></i>Warlock <i class="vkey c-Warlock exotic"></i>Warlock exotic`, armorSection(chars, can), "", vswitch("asplit", asplit, "Split by character"));
+    roundShard();
   }
   /** Armor laid out like the weapons: per slot, each character's worn piece and inventory, then the vault by set;
    *  inside a set by class (border colour), tier, then archetype. Split by character: one block per character, vault limited to its class. */
@@ -2682,7 +2700,7 @@ function vrMain() {
       return [...g].sort((a, b) => cmp(a[1][0], b[1][0]) || a[0].localeCompare(b[0]));
     };
     const head = (k, shown, all) => `<summary class="ghead"><span class="chev" aria-hidden="true"></span><h3>${esc(k)}</h3><span class="small num">${all.length}${shown < all.length ? `, showing ${shown}` : ""} · best ${Math.max(...all.map((x) => x.sc))}</span></summary>`;
-    const items = (xs) => { const k = layout === "tiles" ? "tilegrid" : "rows"; return `<div class="list ${k}">${withShard(xs, layout === "tiles" ? cfg.tile : cfg.row, "list " + k)}</div>`; };
+    const items = (xs) => { const k = layout === "tiles" ? "tilegrid" : "rows"; return `<div class="list ${k}">${withShard(xs, layout === "tiles" ? cfg.tile : cfg.row, k)}</div>`; };
     let html, shown = 0;
     if (!list.length) html = `<div class="empty">Nothing matches these filters. Remove one above or press Reset.</div>`;
     else if (!st.group) { const part = list.slice(0, Math.min(st.limit, top)); shown = part.length; html = items(part); }
@@ -2698,7 +2716,7 @@ function vrMain() {
     }
     const capped = top < Infinity && shown < list.length;
     $("#excount").textContent = capped ? `${plural(shown, cfg.noun)} of ${fmt(list.length)}` : plural(list.length, cfg.noun);
-    $("#exlist").innerHTML = html;
+    $("#exlist").innerHTML = html; roundShard();
     $("#exmore").innerHTML = !st.group && list.length > shown && shown < top ? `<button class="btn" id="exmorebtn">Show ${Math.min(300, list.length - shown)} more</button>` : "";
     const mb = $("#exmorebtn"); if (mb) mb.onclick = () => { st.limit += 300; drawExplorer(false); };
   }
