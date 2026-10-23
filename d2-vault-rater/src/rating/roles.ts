@@ -9,6 +9,7 @@ import { normalizeName } from "../bungie/defs.js";
 import { ROLE_TYPES, type Role } from "../data/encounters.js";
 import perkRoleData from "../data/perkRoles.json" with { type: "json" };
 import type { AegisPerk } from "../sources/aegis.js";
+import { bossLookup, type BossDamageData, type BossLookup } from "../sources/bossDamage.js";
 import type { WeaponRecord } from "../vault/types.js";
 
 export const LEAF_ROLES = ["add-clear", "champion", "burst", "precision", "sustained", "long", "close", "utility", "movement"] as const;
@@ -34,6 +35,11 @@ const WEIGHTS = { archetype: 0.3, perks: 0.35, tags: 0.15, quality: 0.2 };
 const PERK_TIER: Record<string, number> = { S: 1, A: 0.85, B: 0.7, C: 0.5, D: 0.3, E: 0.2, F: 0.1 };
 /** Two good perks fill the perk part. */
 const PERKS_FOR_FULL = 1.2;
+
+/** Weapon types whose damage comes from precision hits. */
+const CRIT_TYPES = new Set(["Sniper Rifle", "Linear Fusion Rifle", "Combat Bow"]);
+/** Fit a weapon falls back to when the sheet has no row for it, scaled down so ranked weapons come first. */
+const UNRANKED = 0.6;
 
 /** The encounter guide's weapon type fits, where a leaf role has one. */
 const GUIDE_ROLE: Partial<Record<RoleId, Role>> = { "add-clear": "add-clear", burst: "boss-burst", precision: "precision", sustained: "boss-sustained", long: "range", close: "close" };
@@ -63,10 +69,13 @@ export interface RolePerkMap {
   tier: Map<string, number>;
   /** Normalized perk name -> roles its Aegis tags imply. */
   tagRoles: Map<string, RoleId[]>;
+  /** Boss Damage sheet rank (0..1) per weapon, once the sheet has been imported. */
+  sustained?: BossLookup;
+  swap?: BossLookup;
 }
 
 /** The seed file plus the imported Aegis perk list, indexed once per rating run. */
-export function buildRolePerkMap(aegisPerks: AegisPerk[] = [], seed: Record<string, unknown> = perkRoleData): RolePerkMap {
+export function buildRolePerkMap(aegisPerks: AegisPerk[] = [], seed: Record<string, unknown> = perkRoleData, boss: BossDamageData | null = null): RolePerkMap {
   const add = (m: Map<string, RoleId[]>, name: string, role: RoleId) => {
     const k = normalizeName(name);
     m.set(k, [...(m.get(k) ?? []), role]);
@@ -81,7 +90,7 @@ export function buildRolePerkMap(aegisPerks: AegisPerk[] = [], seed: Record<stri
     const roles = p.tags.map((t) => PERK_TAG_ROLE[t]).filter((r): r is RoleId => !!r);
     if (roles.length) tagRoles.set(k, roles);
   }
-  return { perks, weapons, tier, tagRoles };
+  return { perks, weapons, tier, tagRoles, sustained: boss?.sustained.length ? bossLookup(boss.sustained) : undefined, swap: boss?.swap.length ? bossLookup(boss.swap) : undefined };
 }
 
 export interface RoleInput {
@@ -106,6 +115,14 @@ export function scoreRoles({ w, tags = [], score }: RoleInput, map: RolePerkMap)
     const guide = GUIDE_ROLE[role];
     const typeFit = Math.max(guide ? ROLE_TYPES[guide][w.type] ?? 0 : 0, EXTRA_TYPES[role]?.[w.type] ?? 0);
     let archetype = typeFit;
+    // Boss damage roles read Aegis's Boss Damage ranks (an exotic by name, else type + frame); with no row they fall back to the type fit.
+    if (role === "burst" || role === "sustained" || role === "precision") {
+      const rank = (l?: BossLookup) => l?.(w.name, w.type, w.frame, w.rarity === "Exotic") ?? null;
+      const crit = CRIT_TYPES.has(w.type);
+      const sheet = role === "burst" ? rank(map.swap) : role === "sustained" ? rank(map.sustained) : crit ? Math.max(rank(map.swap) ?? 0, rank(map.sustained) ?? 0) || null : null;
+      archetype = sheet ?? typeFit * (map.sustained || map.swap ? (role === "precision" && !crit ? 0.6 * UNRANKED : UNRANKED) : 1);
+      if (sheet != null) notes.push(`Aegis Boss Damage rank: top ${Math.max(1, Math.round((1 - sheet) * 100))}%`);
+    }
     // Nearly every weapon stuns something (frame, exotic trait, seasonal artifact), so one breaker only starts the role; two or more, or a champion perk, hold it.
     const breakers = w.champions?.length ?? 0;
     if (role === "champion") archetype = breakers > 1 ? 1 : breakers ? 0.6 : 0;

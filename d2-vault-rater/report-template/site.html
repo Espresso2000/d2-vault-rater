@@ -2533,7 +2533,10 @@ function vrMain() {
     pop.style.left = `${Math.max(8, Math.min(rc.left, innerWidth - pop.offsetWidth - 8))}px`;
     pop.style.top = `${Math.max(8, Math.min(rc.bottom + 6, innerHeight - pop.offsetHeight - 8))}px`;
   }, true);
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeRolePop(); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeRolePop();
+    else if ((e.key === "Enter" || e.key === " ") && e.target.matches?.("[data-rb]")) { e.preventDefault(); e.stopPropagation(); e.target.click(); }
+  }, true);
   addEventListener("scroll", closeRolePop, { passive: true });
 
   const tbObserver = new ResizeObserver(([e]) => document.documentElement.style.setProperty("--tbh", `${Math.round(e.target.offsetHeight)}px`));

@@ -4,6 +4,7 @@ import { loadTokens } from "./bungie/client.js";
 import { fetchVault } from "./vault/fetch.js";
 import { fetchWrapped } from "./vault/wrapped.js";
 import { importAegis, loadAegis } from "./sources/aegis.js";
+import { importBossDamage, loadBossDamage } from "./sources/bossDamage.js";
 import { importWishlists, loadWishlists, DEFAULT_WISHLISTS } from "./sources/wishlist.js";
 import { importArmorSets, loadArmorSets } from "./sources/armorSets.js";
 import { loadSettings } from "./rating/settings.js";
@@ -25,7 +26,7 @@ export function loggedIn(): boolean {
 
 /** Hours since the oldest rating source was imported, or Infinity if one is missing. */
 export function sourcesAgeHours(): number {
-  const dates = [loadAegis()?.importedAt, loadWishlists()?.importedAt, loadArmorSets()?.importedAt, loadActivityLoot()?.importedAt];
+  const dates = [loadAegis()?.importedAt, loadWishlists()?.importedAt, loadArmorSets()?.importedAt, loadActivityLoot()?.importedAt, loadBossDamage()?.importedAt];
   if (dates.some((d) => !d)) return Infinity;
   return Math.max(...dates.map((d) => (Date.now() - Date.parse(d!)) / 3_600_000));
 }
@@ -36,6 +37,8 @@ export async function refreshSources(log: (s: string) => void = () => {}) {
   const manifest = await loadManifest();
   log("Importing Aegis's tier list...");
   const aegis = await importAegis(manifest, settings.aegisTabs);
+  log("Importing Aegis's Boss Damage sheet...");
+  await importBossDamage();
   log("Importing community wishlists...");
   const wl = await importWishlists(settings.wishlists.length ? settings.wishlists : DEFAULT_WISHLISTS);
   log("Importing armor set tiers...");

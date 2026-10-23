@@ -11,6 +11,7 @@ import { loadManifest, currentManifest } from "./bungie/manifest.js";
 import { fetchVault, currentVault } from "./vault/fetch.js";
 import { fetchWrapped } from "./vault/wrapped.js";
 import { importAegis, loadAegis } from "./sources/aegis.js";
+import { importBossDamage } from "./sources/bossDamage.js";
 import { importWishlists, loadWishlists, DEFAULT_WISHLISTS } from "./sources/wishlist.js";
 import { importArmorSets, loadArmorSets } from "./sources/armorSets.js";
 import { buildSourceLookup, importActivityLoot, loadActivityLoot } from "./sources/activities.js";
@@ -145,6 +146,7 @@ server.registerTool(
     const settings = loadSettings();
     const manifest = await loadManifest({ force: force_manifest });
     const aegis = await importAegis(manifest, settings.aegisTabs);
+    await importBossDamage();
     const wl = await importWishlists(settings.wishlists.length ? settings.wishlists : DEFAULT_WISHLISTS);
     const armorSets = await importArmorSets().catch((e) => ({ sets: {}, warnings: [`Armor set tiers not loaded: ${(e as Error).message}`] }));
     return {

@@ -3,6 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { buildRolePerkMap, scoreRoles, rolesHeld, DEFAULT_ROLE_THRESHOLD } from "../src/rating/roles.js";
 import { parseAegisExotics, parseAegisPerks } from "../src/sources/aegis.js";
+import { parseBossSustained, parseBossSwap, bossLookup } from "../src/sources/bossDamage.js";
 import type { WeaponRecord } from "../src/vault/types.js";
 
 const weapon = (over: Partial<WeaponRecord> & { perks?: string[] }): WeaponRecord =>
@@ -56,4 +57,52 @@ test("Aegis Exotic tab keeps Tags and the Perks tab parses (picture column ignor
   assert.equal(perks[0].name, "Eager Edge");
   assert.deepEqual(perks[0].tags, ["utility"]);
   assert.equal(perks[0].tier, "S");
+});
+
+// Boss Damage sheet: blank headers, columns by position, rows are builds.
+const pad = (cells: string[], n: number) => [...cells, ...Array(n - cells.length).fill("")];
+const sheet = (rows: string[][], n: number) => `${pad(["Name"], n).map((c) => `"${c}"`).join(",")}\n${rows.map((r) => pad(r, n).map((c) => `"${c}"`).join(",")).join("\n")}\n`;
+const sustainedCsv = sheet(
+  [
+    ["Aggressive rocket launcher\nCluster Bomb + Honing", "power", "rocket", ...Array(16).fill(""), "17,960"],
+    ["Leviathan's Breath\nsimulated", "power", "bow", ...Array(16).fill(""), "12,904"],
+    ["Adaptive sword\nx", "power", "sword", ...Array(16).fill(""), "9,000"],
+    ["Flux grenade", "grenade", "grenade", ...Array(16).fill(""), "5,000"],
+  ],
+  22,
+);
+const swapCsv = sheet(
+  [
+    ["Still Hunt\npre-popped", "burst", ...Array(14).fill(""), "49,241"],
+    ["Golden Gun - Marksman", "super", ...Array(14).fill(""), "46,566"],
+    ["Aggressive rocket launcher\nx", "swap", ...Array(14).fill(""), "20,000"],
+    ["Precision hand cannon", "swap", ...Array(14).fill(""), "2,000"],
+  ],
+  18,
+);
+
+test("Boss Damage tabs keep weapon builds and read DPS by position", () => {
+  const s = parseBossSustained(sustainedCsv);
+  assert.deepEqual(s.map((r) => [r.name, r.dps]), [["Aggressive rocket launcher", 17960], ["Leviathan's Breath", 12904], ["Adaptive sword", 9000]]);
+  assert.equal(s[0].notes, "Cluster Bomb + Honing");
+  assert.deepEqual(parseBossSwap(swapCsv).map((r) => r.name), ["Still Hunt", "Aggressive rocket launcher", "Precision hand cannon"]);
+});
+
+test("Boss Damage ranks map to exotics by name and to archetypes by type and frame", () => {
+  const look = bossLookup(parseBossSustained(sustainedCsv));
+  assert.equal(look("Leviathan's Breath", "Combat Bow", "", true), 0.5);
+  assert.equal(look("Some Rocket", "Rocket Launcher", "Aggressive Frame", false), 1);
+  assert.equal(look("Other", "Rocket Launcher", "Rapid-Fire Frame", false)! > 0, true); // type's best frame, discounted
+  assert.equal(look("Unlisted Exotic", "Rocket Launcher", "Aggressive Frame", true), null);
+  assert.equal(look("Pulse", "Pulse Rifle", "Adaptive Frame", false), null);
+});
+
+test("with the sheet loaded, a top-ranked archetype outscores an unranked type for burst", () => {
+  const boss = { importedAt: "", sustained: parseBossSustained(sustainedCsv), swap: parseBossSwap(swapCsv) };
+  const m2 = buildRolePerkMap([], undefined, boss);
+  const rocket = scoreRoles({ w: weapon({ type: "Rocket Launcher", frame: "Aggressive Frame" }), score: 80 }, m2).scores;
+  const other = scoreRoles({ w: weapon({ type: "Rocket Launcher", frame: "Adaptive Frame" }), score: 80 }, m2).scores;
+  assert.ok(rocket.burst >= other.burst);
+  const still = scoreRoles({ w: weapon({ name: "Still Hunt", type: "Sniper Rifle", rarity: "Exotic" }), score: 90 }, m2).scores;
+  assert.ok(still.precision > scoreRoles({ w: weapon({ type: "Pulse Rifle" }), score: 90 }, m2).scores.precision);
 });

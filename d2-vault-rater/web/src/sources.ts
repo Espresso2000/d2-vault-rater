@@ -6,6 +6,7 @@
 import { importAegis, loadAegis, matchHashes, aegisFile, type AegisData } from "../../src/sources/aegis.js";
 import { importArmorSets, loadArmorSets, armorSetsFile, type ArmorSetData } from "../../src/sources/armorSets.js";
 import { parseWishlist, loadWishlists, wishlistFile, DEFAULT_WISHLISTS, type WishRoll } from "../../src/sources/wishlist.js";
+import { importBossDamage, loadBossDamage } from "../../src/sources/bossDamage.js";
 import { importActivityLoot, loadActivityLoot } from "../../src/sources/activities.js";
 import { writeJson } from "./shims/config";
 import type { Manifest } from "./shims/manifest";
@@ -44,6 +45,11 @@ export async function ensureSources(m: Manifest, settings: Settings, log: (s: st
     const fromSnap: AegisData = { ...snap.aegis, warnings: ["Using the tier list snapshot shipped with the site."] };
     fromSnap.unmatched = matchHashes(fromSnap.weapons, m);
     writeJson(aegisFile(), (aegis = fromSnap));
+  }
+
+  if (stale(loadBossDamage()?.importedAt)) {
+    log("Importing Aegis's Boss Damage sheet…");
+    await importBossDamage();
   }
 
   const wl = loadWishlists();

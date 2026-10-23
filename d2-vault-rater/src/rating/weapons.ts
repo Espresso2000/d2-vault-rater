@@ -1,4 +1,5 @@
 import { baseName, normalizeName, type Manifest } from "../bungie/manifest.js";
+import { loadBossDamage, type BossDamageData } from "../sources/bossDamage.js";
 import { loadAegisPerks, type AegisData, type AegisPerk, type AegisWeapon, type ColumnKey } from "../sources/aegis.js";
 import { buildRolePerkMap, scoreRoles, type RoleId, type RoleScores } from "./roles.js";
 import type { WishlistData } from "../sources/wishlist.js";
@@ -148,10 +149,10 @@ const tierBelow = (t: Tier, floor: Tier) => TIER_ORDER.indexOf(t) > TIER_ORDER.i
 
 export function rateWeapons(
   weapons: WeaponRecord[],
-  sources: { aegis: AegisData | null; wishlists: WishlistData | null; manifest: Manifest | null; /** Aegis perk list; read from disk when left out. */ perks?: AegisPerk[] },
+  sources: { aegis: AegisData | null; wishlists: WishlistData | null; manifest: Manifest | null; /** Aegis perk list; read from disk when left out. */ perks?: AegisPerk[]; /** Boss Damage sheet; read from disk when left out. */ boss?: BossDamageData | null },
   settings: Settings,
 ): WeaponReport {
-  const roleMap = buildRolePerkMap(sources.perks ?? loadAegisPerks());
+  const roleMap = buildRolePerkMap(sources.perks ?? loadAegisPerks(), undefined, sources.boss === undefined ? loadBossDamage() : sources.boss);
   const ai = aegisIndex(sources.aegis);
   const wi = wishIndex(sources.wishlists, sources.manifest, new Set(weapons.map((w) => w.itemHash)));
   const protect = new Set(settings.protect.map(normalizeName));
