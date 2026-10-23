@@ -15,6 +15,7 @@ export interface ItemDef {
   defaultDamageType?: number;
   inventory?: { bucketTypeHash: number; tierType: number; tierTypeName?: string };
   equippingBlock?: { ammoType?: number; equipableItemSetHash?: number };
+  breakerType?: number;
   sockets?: {
     /** Stripped tables keep only the plug set hashes of weapon mod sockets (an empty entry for the rest). */
     socketEntries?: { socketTypeHash?: number; singleInitialItemHash?: number; reusablePlugSetHash?: number; randomizedPlugSetHash?: number }[];

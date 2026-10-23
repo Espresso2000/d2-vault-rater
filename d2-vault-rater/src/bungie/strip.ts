@@ -4,8 +4,8 @@
  * app ships and stores them (see web/src/strip.ts).
  */
 
-/** Bumped when stripped tables gain fields, so caches made by an older format are rebuilt. 2: plug icons. 3: plug descriptions. 4: stat icons. 5: weapon base stats. 6: weapon mod plug sets. */
-export const STRIP_FORMAT = 6;
+/** Bumped when stripped tables gain fields, so caches made by an older format are rebuilt. 2: plug icons. 3: plug descriptions. 4: stat icons. 5: weapon base stats. 6: weapon mod plug sets. 7: weapon breaker type. */
+export const STRIP_FORMAT = 7;
 
 /** Plug categories that never matter for rating: cosmetics, armor mods and the like. */
 const COSMETIC = /shader|ornament|skin|emote|ghost|transmat|vehicle|ship|memento|tracker|^enhancements|spawnfx|sparrow|projection|finisher|deprecated|crafting|hologram|social|events\./i;
@@ -47,6 +47,8 @@ export function stripItems(items: Raw, allPlugs = false): Raw {
         defaultDamageType: d.defaultDamageType,
         inventory,
         equippingBlock: d.equippingBlock && { ammoType: d.equippingBlock.ammoType },
+        // An exotic's built-in champion stun (1 Barrier, 2 Overload, 3 Unstoppable).
+        breakerType: d.breakerType || undefined,
         // Socket entries only carry the plug set of a weapon mod socket, for the mods you could put in it.
         sockets: d.sockets && { socketCategories: d.sockets.socketCategories, socketEntries: modSocketSets(items, d.sockets.socketEntries) },
         // Base stats, for the stats the live item data leaves out (hidden ones like Aim Assistance and Zoom).
