@@ -4,8 +4,11 @@
  * app ships and stores them (see web/src/strip.ts).
  */
 
-/** Bumped when stripped tables gain fields, so caches made by an older format are rebuilt. 2: plug icons. 3: plug descriptions. 4: stat icons. 5: weapon base stats. 6: weapon mod plug sets. 7: weapon breaker type. */
-export const STRIP_FORMAT = 7;
+/** Bumped when stripped tables gain fields, so caches made by an older format are rebuilt. 2: plug icons. 3: plug descriptions. 4: stat icons. 5: weapon base stats. 6: weapon mod plug sets. 7: weapon breaker type. 8: plug breaker type. */
+export const STRIP_FORMAT = 8;
+
+/** The hidden sandbox perks a weapon's frame (or exotic trait) carries to stun champions: 1 Barrier, 2 Overload, 3 Unstoppable. */
+const BREAKER_PERKS: Record<number, number> = { 3469621377: 1, 472686235: 2, 2917776374: 3 };
 
 /** Plug categories that never matter for rating: cosmetics, armor mods and the like. */
 const COSMETIC = /shader|ornament|skin|emote|ghost|transmat|vehicle|ship|memento|tracker|^enhancements|spawnfx|sparrow|projection|finisher|deprecated|crafting|hologram|social|events\./i;
@@ -73,6 +76,7 @@ export function stripItems(items: Raw, allPlugs = false): Raw {
         itemType: d.itemType,
         itemTypeDisplayName: d.itemTypeDisplayName,
         plug: { plugCategoryIdentifier: d.plug.plugCategoryIdentifier },
+        breakerType: (d.perks as Raw[] | undefined)?.map((p) => BREAKER_PERKS[p.perkHash]).find(Boolean),
       };
     }
   }

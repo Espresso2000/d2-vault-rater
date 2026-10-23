@@ -98,8 +98,14 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
         const hit = it.isActive && /^(?:Anti-)?(Barrier|Overload|Unstoppable) (.+)$/.exec(m.items[it.itemHash]?.displayProperties?.name ?? "");
         if (hit) artifactChamps.push([hit[2], hit[1] as "Barrier" | "Overload" | "Unstoppable"]);
       }
-  const championOf = (def: ItemDef, type: string) =>
-    BREAKER[(def.breakerType ?? 0) as 1 | 2 | 3] ?? artifactChamps.find(([t]) => type === t || type.endsWith(" " + t))?.[1] ?? null;
+  type Champ = "Barrier" | "Overload" | "Unstoppable";
+  /** Every champion a weapon stuns: from its frame or exotic trait (intrinsic plugs), its own definition, and the artifact. */
+  const championsOf = (def: ItemDef, plugHashes: (number | undefined)[]): Champ[] => {
+    const type = def.itemTypeDisplayName ?? "";
+    const all = [...plugHashes.map((h) => m.items[h ?? 0]?.breakerType), def.breakerType].map((b) => BREAKER[(b ?? 0) as 1 | 2 | 3]);
+    for (const [t, c] of artifactChamps) if (type === t || type.endsWith(" " + t)) all.push(c);
+    return [...new Set(all.filter((c): c is Champ => !!c))];
+  };
   // A plug set's unlocked plugs: the account's, plus any a character has on its own.
   const plugSet = (hash?: number): RawPlug[] => !hash ? [] : [
     ...(raw.profilePlugSets?.data?.plugs[hash] ?? []),
@@ -204,8 +210,7 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
         element: DAMAGE[inst.damageType ?? def.defaultDamageType ?? 0] ?? "Unknown",
         slot: WEAPON_BUCKETS[bucket] ?? "Unknown",
         ammo: AMMO[(def.equippingBlock?.ammoType ?? 0) as 1 | 2 | 3] ?? "Unknown",
-        // Its own champion stun (exotics), else the one this season's artifact gives its weapon type.
-        champion: championOf(def, def.itemTypeDisplayName ?? ""),
+        champions: championsOf(def, intrinsicIdx.map((i) => sockets[i]?.plugHash)),
         rarity: rarity(def),
         gearTier: inst.gearTier ?? null,
         power: inst.primaryStat?.value ?? null,

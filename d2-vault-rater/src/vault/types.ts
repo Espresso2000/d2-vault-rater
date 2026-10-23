@@ -39,8 +39,8 @@ export interface WeaponRecord {
   element: Element;
   slot: WeaponSlot;
   ammo: "Primary" | "Special" | "Heavy" | "Unknown";
-  /** The champion it stuns, if any. */
-  champion?: "Barrier" | "Overload" | "Unstoppable" | null;
+  /** The champions it stuns: its frame's (or exotic trait's), plus any this season's artifact gives its type. */
+  champions?: ("Barrier" | "Overload" | "Unstoppable")[];
   rarity: "Exotic" | "Legendary" | "Other";
   gearTier: number | null;
   power: number | null;

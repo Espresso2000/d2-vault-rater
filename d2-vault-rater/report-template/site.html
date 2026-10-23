@@ -1810,7 +1810,8 @@ function vrMain() {
   const ammoIcon = (am) => (AMMO_ORDER.includes(am) ? `<img class="ammo-ico" src="https://www.bungie.net/img/destiny_content/ammo_types/${am.toLowerCase()}.png" alt="${am} ammo" title="${am} ammo">` : "");
   // Bungie's breaker symbols (DestinyBreakerTypeDefinition), for the champion a weapon stuns.
   const CHAMP_ICON = { Barrier: "07b9ba0194e85e46b258b04783e93d5d", Overload: "da558352b624d799cf50de14d7cb9565", Unstoppable: "825a438c85404efd6472ff9e97fc7251" };
-  const champIcon = (ch) => (CHAMP_ICON[ch] ? `<img class="ammo-ico champ-ico" src="https://www.bungie.net/common/destiny2_content/icons/DestinyBreakerTypeDefinition_${CHAMP_ICON[ch]}.png" alt="Anti-${ch}" title="Anti-${ch}: stuns ${ch} champions">` : "");
+  // w.ch lists every champion the weapon stuns (its frame's, and any from the artifact).
+  const champIcon = (chs) => (chs || []).filter((ch) => CHAMP_ICON[ch]).map((ch) => `<img class="ammo-ico champ-ico" src="https://www.bungie.net/common/destiny2_content/icons/DestinyBreakerTypeDefinition_${CHAMP_ICON[ch]}.png" alt="Anti-${ch}" title="Anti-${ch}: stuns ${ch} champions">`).join("");
   const typeCards = [];
   let bigCards = store.get("vr-cards") !== "small";
   RENDER.weapons = () => {
@@ -3373,7 +3374,7 @@ function vrMain() {
     const copies = DATA.weapons.filter((x) => x.n === w.n && x.id !== w.id).sort((a, b) => b.sc - a.sc);
     const scores = `<div class="breakdown"><div data-ptip="score" tabindex="0" aria-label="Overall score ${w.sc}: ${w.tier ? `Aegis tier ${w.tier}` : `wishlist rating ${w.ws}`} and roll score ${w.rs}"><b class="num grad-text">${w.sc}</b><span>Overall score</span></div><div${w.tier ? ` class="t${w.tier} tl"` : ""}>${w.tier ? `<b class="num">${w.tier}</b><span>Aegis tier${w.rank ? " · #" + w.rank : ""}</span>` : `<b class="num">${w.ws}</b><span>Not in Aegis (wishlist)</span>`}</div><div><b class="num">${w.rs}</b><span>Roll score</span></div></div>`;
     const why = `<div class="dp-vhead"><span class="vtv ${w.v}">${VERDICT[w.v]}</span><span class="small">${w.v === "keep" ? "Worth a vault slot" : w.v === "shard" ? "Safe to dismantle" : "Your call"}</span></div><ul class="reasons">${w.why.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>${w.notes ? `<p class="dp-quote"><b>Aegis:</b> ${esc(w.notes)}</p>` : ""}`;
-    const facts = `<div class="facts">${fact("Ammo", w.am)}${fact("Champion", w.ch ? "Anti-" + w.ch : null)}${fact("Power", w.pw)}${fact("Masterwork", w.mw)}${fact("Gear tier", w.gt ? "Tier " + w.gt : null)}${fact("Where", w.loc)}${fact("Crafted", w.cr ? "Yes" : null)}${fact("Adept", w.ad ? "Yes" : null)}${fact("Aegis list", w.tab)}</div>`;
+    const facts = `<div class="facts">${fact("Ammo", w.am)}${fact("Champion", w.ch?.length ? w.ch.map((c) => "Anti-" + c).join(", ") : null)}${fact("Power", w.pw)}${fact("Masterwork", w.mw)}${fact("Gear tier", w.gt ? "Tier " + w.gt : null)}${fact("Where", w.loc)}${fact("Crafted", w.cr ? "Yes" : null)}${fact("Adept", w.ad ? "Yes" : null)}${fact("Aegis list", w.tab)}</div>`;
     const actions = movePanel(w, false) + dimPanel(w);
     openDrawer({
       id, ico: w.ic, art: src(w.ss), el: w.e, gold: isExotic(w), title: w.n, titleMark: ammoIcon(w.am) + champIcon(w.ch),
