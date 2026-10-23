@@ -1004,6 +1004,22 @@ aside.drawer.scrolled .dp-mini { opacity: 1; transform: none; }
 .dp-id .eyebrow { font-size: 11px; }
 .dp-sub { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 8px; font-size: 13.5px; color: var(--muted); }
 .dp-sub .chip { padding: 3px 10px; font-size: 12px; }
+/* Weapon header: element symbol and type, then the ammo crate and champion symbols */
+.dp-type { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); font-size: 14.5px; }
+.el-ico { width: 20px; height: 20px; flex: none; }
+.dp-marks { display: inline-flex; align-items: center; gap: 2px; padding-left: 12px; border-left: 1px solid var(--line-hi); font-size: 19px; }
+.dp-marks .ammo-ico { margin-left: 4px; }
+.dp-marks .ammo-ico:first-child { margin-left: 0; }
+/* Power sits on the icon, opposite the tier badge */
+.dp-pw { position: absolute; left: 50%; bottom: -9px; transform: translateX(-50%); padding: 1px 7px; border-radius: 999px; font: 600 11.5px/16px var(--display); white-space: nowrap; color: var(--gold); background: rgba(10,15,36,.92); border: 1px solid rgba(242,193,78,.45); }
+/* Fourth card beside the scores: locked state and tags */
+.breakdown:has(.bk-state) { grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.5fr); }
+.breakdown > .bk-state { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 10px 12px; }
+.bk-state .lkst { font-size: 12.5px; color: var(--muted); } .bk-state .lkst.on { color: var(--ink); }
+.bk-state .godst { font-size: 12px; color: var(--green); }
+.bk-state .chip { padding: 2px 10px; font-size: 12px; }
+.dp-sec:has(> .breakdown .bk-state) { container: bk / inline-size; }
+@container bk (max-width: 520px) { .breakdown:has(.bk-state) { grid-template-columns: repeat(3, minmax(0, 1fr)); } .breakdown > .bk-state { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; align-items: center; } }
 .dimpick { position: relative; gap: 6px; color: var(--muted); }
 .dimpick.favorite { color: #ff79b4; } .dimpick.keep { color: var(--green); } .dimpick.infuse { color: var(--cyan); } .dimpick.junk { color: var(--shard); } .dimpick.archive { color: var(--muted); }
 .dimpick:not(.none) { border-color: color-mix(in srgb, currentColor 45%, transparent); background: color-mix(in srgb, currentColor 12%, rgba(5,8,22,.6)); }
@@ -1410,6 +1426,8 @@ function vrMain() {
   const tierOf = (w) => w.tier || "U";
   const tierLabel = (t) => (t === "U" ? "Not on sheet" : `${t} tier`);
   const tierBadge = (w) => `<span class="tier t${tierOf(w)}" title="${w.tier ? `Aegis ${w.tier} tier${w.rank ? ` #${w.rank} ` : " "}${esc(w.tab || "")}` : "Not on Aegis's sheet"}">${w.tier || "—"}</span>`;
+  const EL_ICON = { Kinetic: "3385a924fd3ccb92c343ade19f19a370", Arc: "092d066688b879c807c3b460afdd61e6", Solar: "2a1773e10968f2d088b97c22b22bba9e", Void: "ceb2f6197dccf3958bb31cc783eb97a0", Stasis: "530c4c3e7981dc2aefd24fd3293482bf", Strand: "b2fe51a94f3533f97079dfa0d27a4096" };
+  const elIcon = (e) => (EL_ICON[e] ? `<img class="el-ico" src="https://www.bungie.net/common/destiny2_content/icons/DestinyDamageTypeDefinition_${EL_ICON[e]}.png" alt="${esc(e)}" title="${esc(e)}">` : "");
   const elDot = (e) => `<span class="el" style="color:var(--${esc(e)})"><i></i><span>${esc(e)}</span></span>`;
   const verdict = (v) => `<span class="verdict ${v}">${v === "keep" ? "Keep" : v === "shard" ? "Shard" : "Review"}</span>`;
   const scoreCell = (s) => `<div class="score"><b class="num${s >= 90 ? " hi" : ""}">${s}</b><div class="meter"><span style="width:${Math.max(0, Math.min(100, s))}%"></span></div></div>`;
@@ -3372,14 +3390,15 @@ function vrMain() {
   function openWeapon(id) {
     const w = W.get(id); if (!w) return; markSeen(id);
     const copies = DATA.weapons.filter((x) => x.n === w.n && x.id !== w.id).sort((a, b) => b.sc - a.sc);
-    const scores = `<div class="breakdown"><div data-ptip="score" tabindex="0" aria-label="Overall score ${w.sc}: ${w.tier ? `Aegis tier ${w.tier}` : `wishlist rating ${w.ws}`} and roll score ${w.rs}"><b class="num grad-text">${w.sc}</b><span>Overall score</span></div><div${w.tier ? ` class="t${w.tier} tl"` : ""}>${w.tier ? `<b class="num">${w.tier}</b><span>Aegis tier${w.rank ? " · #" + w.rank : ""}</span>` : `<b class="num">${w.ws}</b><span>Not in Aegis (wishlist)</span>`}</div><div><b class="num">${w.rs}</b><span>Roll score</span></div></div>`;
+    const scores = `<div class="breakdown"><div data-ptip="score" tabindex="0" aria-label="Overall score ${w.sc}: ${w.tier ? `Aegis tier ${w.tier}` : `wishlist rating ${w.ws}`} and roll score ${w.rs}"><b class="num grad-text">${w.sc}</b><span>Overall score</span></div><div${w.tier ? ` class="t${w.tier} tl"` : ""}>${w.tier ? `<b class="num">${w.tier}</b><span>Aegis tier${w.rank ? " · #" + w.rank : ""}</span>` : `<b class="num">${w.ws}</b><span>Not in Aegis (wishlist)</span>`}</div><div><b class="num">${w.rs}</b><span>Roll score</span></div>
+      <div class="bk-state"><span class="lkst${w.lk ? " on" : ""}">${w.lk ? "🔒 Locked" : "Unlocked"}</span>${w.god ? '<span class="godst">Wishlist god roll</span>' : ""}${dimTagPick(w)}${evrTagPick(w)}</div></div>`;
     const why = `<div class="dp-vhead"><span class="vtv ${w.v}">${VERDICT[w.v]}</span><span class="small">${w.v === "keep" ? "Worth a vault slot" : w.v === "shard" ? "Safe to dismantle" : "Your call"}</span></div><ul class="reasons">${w.why.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>${w.notes ? `<p class="dp-quote"><b>Aegis:</b> ${esc(w.notes)}</p>` : ""}`;
     const facts = `<div class="facts">${fact("Ammo", w.am)}${fact("Champion", w.ch?.length ? w.ch.map((c) => "Anti-" + c).join(", ") : null)}${fact("Power", w.pw)}${fact("Masterwork", w.mw)}${fact("Gear tier", w.gt ? "Tier " + w.gt : null)}${fact("Where", w.loc)}${fact("Crafted", w.cr ? "Yes" : null)}${fact("Adept", w.ad ? "Yes" : null)}${fact("Aegis list", w.tab)}</div>`;
     const actions = movePanel(w, false) + dimPanel(w);
     openDrawer({
-      id, ico: w.ic, art: src(w.ss), el: w.e, gold: isExotic(w), title: w.n, titleMark: ammoIcon(w.am) + champIcon(w.ch),
-      eyebrow: `${esc(w.s)} · ${esc(w.r)}`, tier: tierBadge(w),
-      sub: `<span>${esc(typeLine(w))}</span> ${elDot(w.e)}${w.pw ? `<span class="vtpw">✦ ${w.pw}</span>` : ""}${w.lk ? '<span class="chip">🔒 Locked</span>' : ""}${w.god ? '<span class="chip" style="color:var(--green)">Wishlist god roll</span>' : ""}${w.loc && w.loc !== "Vault" ? `<span class="chip">${esc(w.loc)}</span>` : ""}${dimTagPick(w)}${evrTagPick(w)}`,
+      id, ico: w.ic, art: src(w.ss), el: w.e, gold: isExotic(w), title: w.n,
+      eyebrow: `${esc(w.s)} · ${esc(w.r)}${w.loc && w.loc !== "Vault" ? " · " + esc(w.loc) : ""}`, tier: tierBadge(w) + (w.pw ? `<span class="dp-pw">✦ ${w.pw}</span>` : ""),
+      sub: `<span class="dp-type">${elIcon(w.e) || elDot(w.e)}<span>${esc(typeLine(w))}</span></span><span class="dp-marks">${ammoIcon(w.am)}${champIcon(w.ch)}</span>`,
       body: dpLayout(
         [dpSec(1, "", scores, "bare"), dpSec(2, "Verdict", why, `dp-verdict ${w.v}`), dpSec(5, "", whereBox(w.src), "bare"), dpSec(6, "Actions", actions), dpSec(8, "Details", facts)],
         [dpSec(3, "Perks", perkGrid(w), "", w.god ? "Wishlist god roll" : "")],
