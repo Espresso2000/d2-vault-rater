@@ -376,22 +376,47 @@ button.elcard:hover { border-color: color-mix(in srgb, currentColor 45%, transpa
 .toolbar.pinned::before, .toolbar.pinned::after { content: ""; position: absolute; left: -1px; right: -1px; bottom: 100%; height: 16px; background: rgba(5,8,22,.78); backdrop-filter: blur(18px) saturate(150%); pointer-events: none; }
 .toolbar.pinned::after { bottom: auto; top: 100%; height: 9px; }
 .toolbar.pinned { box-shadow: 0 14px 30px -14px rgba(0,0,0,.9); }
-.ck-line { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; min-width: 0; }
-.ck-bot { padding-top: 8px; border-top: 1px solid var(--line); }
-.ck-top .searchbox { flex: 1 1 240px; }
-.ck-bot .tb-sort { margin-left: auto; }
-.toolbar details.ms summary { height: var(--h); }
-/* Views and Role drop-downs */
-.ms .pop.views { flex: none; display: grid; gap: 1px; min-width: 240px; }
-.vopt { text-align: left; padding: 7px 10px; border: 0; border-radius: 8px; background: none; color: var(--muted); font-size: 14px; white-space: nowrap; }
-.vopt:hover { background: var(--glass-hi); color: var(--ink); }
-.vopt[aria-pressed="true"] { color: var(--green); font-weight: 600; }
-#exviews.active summary { max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
-.ms .pop.rolebar { width: min(380px, 86vw); padding: 10px; }
-.ms .pop.rolebar .ck-line { gap: 6px; }
-.ms .pop.rolebar .rsubs { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; width: 100%; padding-top: 8px; margin-top: 2px; border-top: 1px solid var(--line); }
-.ms .pop.rolebar .rsubs .label { width: 100%; margin: 0; }
-details.dd[hidden] { display: none; }
+.toolbar { gap: 0; padding-block: 8px; }
+.ck-row { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; min-width: 0; padding-block: 8px; }
+.ck-row + .ck-row { border-top: 1px solid var(--line); }
+.toolbar.folded .ck-row:not(.ck-top) { display: none; }
+.ck-top .searchbox { flex: 1 1 300px; }
+.ck-lab { display: inline-flex; align-items: center; gap: 4px; min-width: 52px; padding: 0; border: 0; background: none; font: 500 10.5px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--green); }
+.chv { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transition: transform .15s ease; }
+button.ck-lab { cursor: pointer; }
+button.ck-lab .chv { transform: rotate(180deg); }
+.ck-views.shut button.ck-lab .chv { transform: rotate(90deg); }
+.ck-views .views { flex: 1; min-width: 0; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-mask-image: linear-gradient(90deg, #000 94%, transparent); mask-image: linear-gradient(90deg, #000 94%, transparent); padding-right: 32px; }
+.ck-views .views::-webkit-scrollbar { display: none; }
+.ck-views.shut .views, .ck-views:not(.shut) .vcur { display: none; }
+.ck-views.shut { padding-block: 6px; }
+.uv { display: inline-flex; flex: none; align-items: center; }
+.uv .view { border-style: dashed; padding-right: 26px; }
+.uvx { margin-left: -24px; width: 20px; height: 20px; border: 0; border-radius: 50%; background: none; color: var(--faint); font-size: 14px; line-height: 1; }
+.uvx:hover { color: var(--shard); background: var(--glass-hi); }
+.ck-filt .rolebar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-left: auto; }
+.ck-filt .rolebar[hidden] { display: none; }
+.ck-filt .rolebar .ck-lab { min-width: 0; margin-right: 6px; }
+.rolebar .rsubs { display: contents; }
+.rolebar .rsubs .label { margin-left: 8px; }
+.ck-foot .result { flex: 1 1 0; font-size: 15px; letter-spacing: .16em; white-space: nowrap; }
+.ck-mid { display: flex; gap: 8px; align-items: center; }
+.ck-foot .ck-sw { flex: 1 1 0; justify-content: flex-end; }
+/* The search box's own buttons: Save view (once there is something to save) and Reset */
+.searchbox .sb-acts { position: absolute; right: 5px; top: 50%; transform: translateY(-50%); display: flex; gap: 4px; }
+.toolbar .searchbox input[type=search] { padding-right: 150px; }
+.toolbar .searchbox:has(#exsave[hidden]) input[type=search] { padding-right: 70px; }
+.sbbtn { height: 26px; padding: 0 10px; border-radius: 7px; border: 1px solid var(--line); background: var(--glass-hi); color: var(--muted); font-size: 12.5px; font-weight: 500; cursor: pointer; }
+.sbbtn:hover { color: var(--ink); border-color: var(--hover); }
+#exreset:hover { color: var(--shard); }
+.sbbtn[hidden] { display: none; }
+/* Fold: a round button bottom right; folded, it sits at the end of the search line pointing down */
+.ckmini { flex: none; display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line-hi); background: var(--glass-hi); color: var(--green); cursor: pointer; }
+.ckmini:hover { border-color: var(--hover); }
+.ckmini .chv { width: 16px; height: 16px; }
+.ck-expand { display: none; }
+.toolbar.folded .ck-expand { display: inline-grid; }
+.ck-expand .chv { transform: rotate(180deg); }
 .tb-sort { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .tb-sort .sep { width: 1px; height: 22px; background: var(--line-hi); margin-inline: 4px; }
 .tb-facets:not(.all) .ms.extra:not(.active) { display: none; }
@@ -418,8 +443,6 @@ details.dd[hidden] { display: none; }
   .ctl select option:hover, .ctl select option:focus-visible { background: rgba(var(--c3),.14); color: var(--ink); outline: none; }
   .ctl select option:checked { color: var(--green); font-weight: 600; }
 }
-.resetbtn { height: 28px; padding: 0 10px; border-radius: 9px; border: 0; background: none; color: var(--muted); font-weight: 500; font-size: 13px; }
-.resetbtn:hover { color: var(--shard); }
 .ck-sw { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; }
 .ck-sw .vsplit { font-size: 13px; white-space: nowrap; }
 /* No box of its own, so the pinned toolbar stays pinned over the vault view below it too */
@@ -1283,7 +1306,9 @@ body.vr-booting > .topbar, body.vr-booting > main, body.vr-booting > footer { di
   .toolbar { position: relative; top: auto; padding-inline: 12px; }
   .ck-top .searchbox { order: -1; flex-basis: 100%; }
   .ck-top .exgear { margin-left: auto; }
-  .ck-bot .tb-sort { margin-left: 0; }
+  .ck-filt .rolebar { margin-left: 0; }
+  .ck-foot .result { flex-basis: 100%; }
+  .ck-foot .ck-sw { flex: 1 1 auto; }
   .seg.icons button span { display: none; }
 }
 @media (max-width: 560px) {
@@ -2234,9 +2259,14 @@ function vrMain() {
     setListMode("list");
     show("list", true);
   }
+  // Views saved from the cockpit's search box ("u0", "u1", ...), per kind, in this browser.
+  const myViews = (set) => { try { return JSON.parse(store.get(`vr-myviews-${set}`) || "[]"); } catch { return []; } };
+  const viewName = (set, id) => (id.startsWith("u") ? myViews(set)[id.slice(1)]?.n : SETS[set].views[id]?.[0]) || "";
+  let viewsOpen = store.get("vr-viewsopen") !== "off", tbMini = store.get("vr-tbmini") === "on";
+  const CHEV_SVG = '<svg class="chv" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>';
   function applyView(set, id, draw = true) {
-    const v = SETS[set].views[id]; if (!v) return;
-    Object.assign(ex[set], blank(), JSON.parse(JSON.stringify(v[1])), { view: id });
+    const v = id.startsWith("u") ? myViews(set)[id.slice(1)]?.st : SETS[set].views[id]?.[1]; if (!v) return;
+    Object.assign(ex[set], blank(), JSON.parse(JSON.stringify(v)), { view: id });
     if (draw) drawExplorer(true);
   }
   // The Vault tab has two modes: Vault (characters and vault side by side, like DIM, drag to move) and Full list.
@@ -2548,8 +2578,8 @@ function vrMain() {
     const el = $("#exroles"); if (!el) return;
     const st = ex.w; el.hidden = ex.set !== "w"; if (el.hidden) return;
     const picked = pickedTops(st), chip = (id, label, cls = "") => `<button class="view${cls}" data-r="${id}" aria-pressed="${st.roles.includes(id)}">${esc(label)}</button>`;
-    el.innerHTML = `<div class="ck-line">${ROLE_TOP.map((t) => chip(t.id, t.label)).join("")}${picked.length > 1 ? `<div class="seg" role="group" aria-label="Match">${[["any", "Any"], ["all", "All"]].map(([k, l]) => `<button type="button" data-rm="${k}" aria-pressed="${st.rmatch === k}" title="${k === "any" ? "Weapons with at least one picked role" : "Weapons with every picked role"}">${l}</button>`).join("")}</div>` : ""}
-      ${picked.filter((t) => t.subs).map((t) => `<span class="rsubs"><span class="label">${esc(t.label)}</span>${t.subs.map(([id, l]) => chip(id, l, " rsub")).join("")}</span>`).join("")}</div>`;
+    el.innerHTML = `<span class="ck-lab">Role</span>${ROLE_TOP.map((t) => chip(t.id, t.label)).join("")}${picked.length > 1 ? `<div class="seg" role="group" aria-label="Match">${[["any", "Any"], ["all", "All"]].map(([k, l]) => `<button type="button" data-rm="${k}" aria-pressed="${st.rmatch === k}" title="${k === "any" ? "Weapons with at least one picked role" : "Weapons with every picked role"}">${l}</button>`).join("")}</div>` : ""}
+      ${picked.filter((t) => t.subs).map((t) => `<span class="rsubs"><span class="label">${esc(t.label)}</span>${t.subs.map(([id, l]) => chip(id, l, " rsub")).join("")}</span>`).join("")}`;
   }
   /** Every role a weapon holds, best first, with its score and what earned it (the details panel). */
   const roleList = (w) => {
@@ -2588,35 +2618,47 @@ function vrMain() {
     const cfg = SETS[ex.set], st = ex[ex.set];
     if (full) {
       const opt = (o, sel) => Object.entries(o).map(([k, l]) => `<option value="${esc(k)}"${k === sel ? " selected" : ""}>${esc(Array.isArray(l) ? l[0] : l)}</option>`).join("");
-      // The cockpit, two lines. Top: view, kind, search, layout, quick views, the count, the two switches, settings.
-      // Bottom: every filter (Role among them), then sort and Reset. Picked values show as counts on their buttons.
+      // The cockpit: search (with Save view and Reset), sort and settings on top; then Views (folds), Filter and Role,
+      // and the count, Vault / Full list and the switches. The bottom-right button folds it all to the top line.
       const MAIN_FACETS = 6;
       const extra = cfg.facets.length - MAIN_FACETS;
+      const mine = myViews(ex.set);
       $("#explorer").innerHTML = `
-        <div class="toolbar" id="extoolbar">
-          <div class="ck-line ck-top">
-            <div class="seg" role="group" aria-label="View" id="listmode">${[["vault", "Vault"], ["list", "Full list"]].map(([k, l]) => `<button data-m="${k}" aria-pressed="${k === listMode}">${l}</button>`).join("")}</div>
+        <div class="toolbar${tbMini ? " folded" : ""}" id="extoolbar">
+          <div class="ck-row ck-top">
             <div class="seg" role="group" aria-label="Item kind" id="exset">${Object.entries(SETS).map(([k, c]) => `<button data-s="${k}" aria-pressed="${k === ex.set}">${c.label}</button>`).join("")}</div>
-            <label class="searchbox"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="exq" placeholder="${ex.set === "w" ? "Search name, type, perk or masterwork" : "Search name, set or archetype"}" aria-label="Search" value="${esc(st.q)}"></label>
-            <div class="seg icons" role="group" aria-label="Layout" id="exlayout">
-              <button data-l="rows" aria-pressed="${layout === "rows"}" title="Rows: one wide line per item, with perks" aria-label="Rows"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/></svg><span>Rows</span></button>
-              <button data-l="tiles" aria-pressed="${layout === "tiles"}" title="Tiles: a compact grid of icons, like an inventory" aria-label="Tiles"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="8" rx="1.2"/><rect x="9.5" y="3" width="5" height="8" rx="1.2"/><rect x="16" y="3" width="5" height="8" rx="1.2"/><rect x="3" y="13" width="5" height="8" rx="1.2"/><rect x="9.5" y="13" width="5" height="8" rx="1.2"/><rect x="16" y="13" width="5" height="8" rx="1.2"/></svg><span>Tiles</span></button>
-            </div>
-            <details class="ms dd" id="exviews"><summary>Views</summary><div class="pop views">${Object.entries(cfg.views).map(([k, [l]]) => `<button type="button" class="vopt" data-v="${k}" aria-pressed="${st.view === k}">${esc(l)}</button>`).join("")}</div></details>
-            <span class="result num" id="excount" aria-live="polite"></span>
-            <div class="ck-sw"><label class="vsplit" title="Sort what the verdict says to shard to the end of each group, on a red background"><input type="checkbox" role="switch" id="shardlast"${shardLast ? " checked" : ""}> Shard last</label><label class="vsplit vm-only" title="Keep filtered-out weapons in place, dimmed, instead of hiding them"><input type="checkbox" role="switch" id="vdim"${vdim ? " checked" : ""}> Dim filtered</label></div>
-            <button class="ctl exgear" id="exgear" type="button" title="All search, sort and filter settings" aria-label="All search, sort and filter settings" aria-haspopup="dialog">${GEAR_SVG}${st.then.length ? `<b>+${st.then.length}</b>` : ""}</button>
-          </div>
-          <div class="ck-line ck-bot">
-            <div class="tb-facets" id="exfacets">${cfg.facets.map(([k, l], i) => `<details class="ms${i >= MAIN_FACETS ? " extra" : ""}" data-k="${k}"><summary>${esc(l)}</summary><div class="pop"></div></details>`).join("")}${extra > 0 ? `<button class="morefac" id="exmorefac" type="button" aria-expanded="false">+ ${extra} more</button>` : ""}<details class="ms dd" id="exroledd"${ex.set === "w" ? "" : " hidden"}><summary>Role</summary><div class="pop rolebar" id="exroles" role="group" aria-label="Weapon roles"></div></details></div>
+            <label class="searchbox"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="exq" placeholder="${ex.set === "w" ? "Search name, type, perk or masterwork, or is:exotic perk:..." : "Search name, set or archetype"}" aria-label="Search" value="${esc(st.q)}"><span class="sb-acts"><button type="button" class="sbbtn" id="exsave" hidden title="Save this search, filters and sort as a view">Save view</button><button type="button" class="sbbtn" id="exreset" title="Clear search, filters, roles, sort and grouping">Reset</button></span></label>
             <div class="tb-sort">
               <label class="ctl"><span>Sort</span><select id="exsort">${opt(cfg.sorts, st.sort)}</select></label>
               <button class="ctl dirbtn" id="exdir" type="button" title="Flip the order">${dirHtml(st.dir)}</button>
               <label class="ctl vm-hide"><span>Group</span><select id="exgroup">${opt(cfg.groups, st.group)}</select></label>
               <label class="ctl vm-hide"${st.group ? "" : " hidden"}><span>then</span><select id="exgroup2">${opt(cfg.groups, st.group2)}</select></label>
               <label class="ctl vm-hide"><span>Show</span><select id="extop">${opt({ "": "All", 1: "Best 1", 3: "Best 3", 5: "Best 5" }, st.top)}</select></label>
-              <button class="resetbtn" id="exreset" type="button" title="Clear search, filters, roles, sort and grouping">Reset</button>
             </div>
+            <button class="ctl exgear" id="exgear" type="button" title="All search, sort and filter settings" aria-label="All search, sort and filter settings" aria-haspopup="dialog">${GEAR_SVG}${st.then.length ? `<b>+${st.then.length}</b>` : ""}</button>
+            <button class="ckmini ck-expand" type="button" data-mini title="Show views, filters and roles" aria-label="Show views, filters and roles" aria-expanded="false">${CHEV_SVG}</button>
+          </div>
+          <div class="ck-row ck-views${viewsOpen ? "" : " shut"}">
+            <button type="button" class="ck-lab" id="exvtog" aria-expanded="${viewsOpen}" title="Show or hide the views">Views${CHEV_SVG}</button>
+            <div class="views">${Object.entries(cfg.views).map(([k, [l]]) => `<button class="view" data-v="${k}" aria-pressed="${st.view === k}">${esc(l)}</button>`).join("")}${mine.map((v, i) => `<span class="uv"><button class="view" data-v="u${i}" aria-pressed="${st.view === "u" + i}" title="Your view: ${esc(v.st.q || v.n)}">${esc(v.n)}</button><button type="button" class="uvx" data-del="${i}" aria-label="Delete the view ${esc(v.n)}" title="Delete this view">×</button></span>`).join("")}</div>
+            <span class="vcur small muted" id="exvcur"></span>
+          </div>
+          <div class="ck-row ck-filt">
+            <span class="ck-lab">Filter</span>
+            <div class="tb-facets" id="exfacets">${cfg.facets.map(([k, l], i) => `<details class="ms${i >= MAIN_FACETS ? " extra" : ""}" data-k="${k}"><summary>${esc(l)}</summary><div class="pop"></div></details>`).join("")}${extra > 0 ? `<button class="morefac" id="exmorefac" type="button" aria-expanded="false">+ ${extra} more</button>` : ""}</div>
+            <div class="rolebar" id="exroles" role="group" aria-label="Weapon roles"></div>
+          </div>
+          <div class="ck-row ck-foot">
+            <span class="result num" id="excount" aria-live="polite"></span>
+            <div class="ck-mid">
+              <div class="seg" role="group" aria-label="View" id="listmode">${[["vault", "Vault"], ["list", "Full list"]].map(([k, l]) => `<button data-m="${k}" aria-pressed="${k === listMode}">${l}</button>`).join("")}</div>
+              <div class="seg icons" role="group" aria-label="Layout" id="exlayout">
+                <button data-l="rows" aria-pressed="${layout === "rows"}" title="Rows: one wide line per item, with perks" aria-label="Rows"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/></svg><span>Rows</span></button>
+                <button data-l="tiles" aria-pressed="${layout === "tiles"}" title="Tiles: a compact grid of icons, like an inventory" aria-label="Tiles"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="8" rx="1.2"/><rect x="9.5" y="3" width="5" height="8" rx="1.2"/><rect x="16" y="3" width="5" height="8" rx="1.2"/><rect x="3" y="13" width="5" height="8" rx="1.2"/><rect x="9.5" y="13" width="5" height="8" rx="1.2"/><rect x="16" y="13" width="5" height="8" rx="1.2"/></svg><span>Tiles</span></button>
+              </div>
+            </div>
+            <div class="ck-sw"><label class="vsplit" title="Sort what the verdict says to shard to the end of each group, on a red background"><input type="checkbox" role="switch" id="shardlast"${shardLast ? " checked" : ""}> Shard last</label><label class="vsplit vm-only" title="Keep filtered-out weapons in place, dimmed, instead of hiding them"><input type="checkbox" role="switch" id="vdim"${vdim ? " checked" : ""}> Dim filtered</label>
+              <button class="ckmini" type="button" data-mini title="Fold the panel to the search line" aria-label="Fold the panel to the search line" aria-expanded="true">${CHEV_SVG}</button></div>
           </div>
         </div>
         <div id="exlist"></div><div class="more" id="exmore"></div>`;
@@ -2634,9 +2676,27 @@ function vrMain() {
       $("#exlayout").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; layout = b.dataset.l; store.set("vr-layout", layout); $$("#exlayout button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); drawExplorer(false); };
       const touch = () => { st.view = ""; st.limit = 150; $$("#explorer .views .view").forEach((b) => b.setAttribute("aria-pressed", "false")); drawExplorer(false); };
       $("#exset").onclick = (e) => { const b = e.target.closest("button"); if (b) { ex.set = b.dataset.s; drawExplorer(true); } };
-      $("#explorer .views").onclick = (e) => { const b = e.target.closest("button"); if (b) { $("#exviews").open = false; applyView(ex.set, b.dataset.v); } };
-      // Views and Role are drop-downs too: one pop-up open at a time across the bar.
-      for (const d of $$("#explorer details.dd")) d.addEventListener("toggle", () => { if (d.open) { $$("#explorer details.ms[open]").forEach((o) => o !== d && (o.open = false)); placePop(d); } });
+      $("#explorer .views").onclick = (e) => {
+        const b = e.target.closest("button"); if (!b) return;
+        if (!b.dataset.del) return applyView(ex.set, b.dataset.v);
+        const list = myViews(ex.set), i = Number(b.dataset.del);
+        if (!confirm(`Delete the view "${list[i].n}"?`)) return;
+        list.splice(i, 1); store.set(`vr-myviews-${ex.set}`, JSON.stringify(list));
+        if (st.view.startsWith("u")) st.view = "";
+        drawExplorer(true);
+      };
+      // Save view: the search (colon queries and all), filters, roles and sort, under a name, as one of the Views.
+      $("#exsave").onclick = (e) => {
+        e.preventDefault();
+        const n = prompt("Name this view", st.q.trim() || "My view")?.trim(); if (!n) return;
+        const list = myViews(ex.set), keep = ["q", "f", "sort", "dir", "then", "group", "group2", "top", "roles", "rmatch"];
+        list.push({ n, st: JSON.parse(JSON.stringify(Object.fromEntries(keep.map((k) => [k, st[k]])))) });
+        store.set(`vr-myviews-${ex.set}`, JSON.stringify(list));
+        if (!viewsOpen) { viewsOpen = true; store.set("vr-viewsopen", "on"); }
+        st.view = `u${list.length - 1}`; drawExplorer(true);
+      };
+      $("#exvtog").onclick = () => { viewsOpen = !viewsOpen; store.set("vr-viewsopen", viewsOpen ? "on" : "off"); $(".ck-views").classList.toggle("shut", !viewsOpen); $("#exvtog").setAttribute("aria-expanded", String(viewsOpen)); };
+      for (const b of $$("#explorer [data-mini]")) b.onclick = () => { tbMini = !tbMini; store.set("vr-tbmini", tbMini ? "on" : "off"); $("#extoolbar").classList.toggle("folded", tbMini); };
       $("#exq").oninput = (e) => { st.q = e.target.value; typing(touch); };
       $("#exsort").onchange = (e) => { st.sort = e.target.value; touch(); };
       $("#exgroup").onchange = (e) => {
@@ -2651,7 +2711,7 @@ function vrMain() {
       $("#exdir").onclick = () => { st.dir = st.dir === "desc" ? "asc" : "desc"; $("#exdir").innerHTML = dirHtml(st.dir); touch(); };
       const mf = $("#exmorefac");
       if (mf) mf.onclick = () => { const all = $("#exfacets").classList.toggle("all"); mf.setAttribute("aria-expanded", String(all)); mf.textContent = all ? "Fewer" : `+ ${extra} more`; };
-      $("#exreset").onclick = () => { Object.assign(st, blank()); drawExplorer(true); };
+      $("#exreset").onclick = (e) => { e.preventDefault(); Object.assign(st, blank()); drawExplorer(true); };
       for (const d of $$("#explorer details.ms[data-k]")) {
         d.addEventListener("toggle", () => { if (d.open) { $$("#explorer details.ms[open]").forEach((o) => o !== d && (o.open = false)); fillFacet(d); placePop(d); } });
         d.querySelector(".pop").addEventListener("change", () => {
@@ -2684,11 +2744,9 @@ function vrMain() {
       d.querySelector("summary").innerHTML = `${esc(cfg.facets.find((f) => f[0] === d.dataset.k)[1])}${n ? ` <span class="n">${n}</span>` : ""}`;
       d.classList.toggle("active", n > 0);
     }
-    // Role and Views say what's on: the role count, the quick view's name.
-    const nr = ex.set === "w" ? st.roles.length : 0, rd = $("#exroledd"), vd = $("#exviews");
-    rd.classList.toggle("active", nr > 0); $("summary", rd).innerHTML = `Role${nr ? ` <span class="n">${nr}</span>` : ""}`;
-    vd.classList.toggle("active", !!st.view); $("summary", vd).textContent = cfg.views[st.view]?.[0] || "Views";
-    $$(".vopt", vd).forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === st.view)));
+    // Folded, the Views row still names the view that's on; Save view shows once there is something to save.
+    $("#exvcur").textContent = viewName(ex.set, st.view);
+    $("#exsave").hidden = !!st.view || !(st.q.trim() || Object.keys(st.f).length || (ex.set === "w" && st.roles.length));
     ex.shown = list;
     // Vault mode draws the grid from ex.shown; the list markup below is only for the full list.
     if (listMode === "vault" && ex.set === "w") { $("#excount").textContent = `${plural(list.length, cfg.noun)} match`; drawVault(); return; }
