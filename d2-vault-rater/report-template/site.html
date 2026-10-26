@@ -649,7 +649,7 @@ details.group > summary::-webkit-details-marker { display: none; }
 
 /* ---------- Vault mode: characters and vault side by side, like DIM ---------- */
 .vgrid { display: grid; grid-template-columns: repeat(var(--chars), minmax(0, 236px)) minmax(0, 1fr); gap: 10px 14px; align-items: start; }
-.vhead { position: sticky; top: calc(var(--bar-h) + var(--tbh, 0px) + 22px); z-index: 2; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 10px 14px; border-radius: 3px 12px; background: var(--ticks), rgb(14,20,48); border: 1px solid var(--line); }
+.vhead { position: sticky; top: calc(var(--bar-h) + var(--tbh, 0px) + 22px); z-index: 4; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 10px 14px; border-radius: 3px 12px; background: var(--ticks), rgb(14,20,48); border: 1px solid var(--line); }
 .vhead b { font: 600 16px var(--display); }
 .vhead.cc b, details.vsec.cc > summary h3 { color: var(--cc); }
 /* Vault mode's Postmaster / Weapons / Armor headings: no box, a big chevron and title over a line in the theme colour whose ends
