@@ -399,13 +399,13 @@ button.ck-lab .chv { transform: rotate(180deg); }
 .ck-filt .rolebar .ck-lab { min-width: 0; margin-right: 6px; }
 .rolebar .rsubs { display: contents; }
 .rolebar .rsubs .label { margin-left: 8px; }
-.ck-foot .result { flex: 1 1 0; font-size: 15px; letter-spacing: .16em; white-space: nowrap; }
-.ck-mid { display: flex; gap: 8px; align-items: center; }
-.ck-foot .ck-sw { flex: 1 1 0; justify-content: flex-end; }
 /* The search box's own buttons: Save view (once there is something to save) and Reset */
-.searchbox .sb-acts { position: absolute; right: 5px; top: 50%; transform: translateY(-50%); display: flex; gap: 4px; }
-.toolbar .searchbox input[type=search] { padding-right: 150px; }
-.toolbar .searchbox:has(#exsave[hidden]) input[type=search] { padding-right: 70px; }
+/* In the cockpit the box is the label: input, then the count, Save view and Reset at its end */
+.toolbar .searchbox { align-items: center; gap: 8px; padding-right: 5px; border: 1px solid var(--line); border-radius: 10px; background: var(--glass); }
+.toolbar .searchbox:focus-within { border-color: var(--hover); background: var(--glass-hi); }
+.toolbar .searchbox input[type=search], .toolbar .searchbox input[type=search]:focus { flex: 1; min-width: 0; height: calc(var(--h) - 2px); border: 0; background: none; padding-right: 0; }
+.searchbox .sb-acts { flex: none; display: flex; gap: 4px; align-items: center; }
+.sb-acts .result { margin-right: 6px; font-size: 11px; white-space: nowrap; }
 .sbbtn { height: 26px; padding: 0 10px; border-radius: 7px; border: 1px solid var(--line); background: var(--glass-hi); color: var(--muted); font-size: 12.5px; font-weight: 500; cursor: pointer; }
 .sbbtn:hover { color: var(--ink); border-color: var(--hover); }
 #exreset:hover { color: var(--shard); }
@@ -414,9 +414,12 @@ button.ck-lab .chv { transform: rotate(180deg); }
 .ckmini { flex: none; display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line-hi); background: var(--glass-hi); color: var(--green); cursor: pointer; }
 .ckmini:hover { border-color: var(--hover); }
 .ckmini .chv { width: 16px; height: 16px; }
-.ck-expand { display: none; }
-.toolbar.folded .ck-expand { display: inline-grid; }
-.ck-expand .chv { transform: rotate(180deg); }
+.toolbar.folded .ckmini .chv { transform: rotate(180deg); }
+/* The page bar above the cockpit holds what doesn't need to stay pinned */
+.pagectl { display: contents; }
+.pagectl .ck-sw { order: 2; margin-left: auto; }
+.pagebar #vmnote { order: 1; font-size: 13px; }
+.pagebar .vrefresh { order: 3; }
 .tb-sort { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .tb-sort .sep { width: 1px; height: 22px; background: var(--line-hi); margin-inline: 4px; }
 .tb-facets:not(.all) .ms.extra:not(.active) { display: none; }
@@ -448,7 +451,7 @@ button.ck-lab .chv { transform: rotate(180deg); }
 /* No box of its own, so the pinned toolbar stays pinned over the vault view below it too */
 #explorer { display: contents; }
 /* Vault mode uses the weapon filters and sort; kind, layout and grouping only apply to the full list */
-#explorer.vmode :is(#exset, #exlayout, .vm-hide, #exlist, #exmore) { display: none !important; }
+#explorer.vmode :is(#exset, .vm-hide, #exlist, #exmore), #expage.vmode #exlayout { display: none !important; }
 .searchbox { position: relative; flex: 1 1 280px; min-width: 0; display: flex; }
 /* The toolbar's settings button, with how many extra sort rules are on */
 .exgear { position: relative; flex: none; width: var(--h); justify-content: center; padding: 0; color: var(--muted); cursor: pointer; }
@@ -721,7 +724,7 @@ details.vsec > summary .vsplit { margin-left: 8px; white-space: nowrap; }
 .vinv .tdia { top: 16px; left: 2px; gap: 2.5px; } .vinv .tdia i { width: 3.5px; height: 3.5px; }
 .vitem.big .tdia { top: 22px; left: 4px; gap: 4px; }
 .vitem.big .tdia i { width: 5.5px; height: 5.5px; }
-#explorer:not(.vmode) .vm-only { display: none; }
+:is(#explorer, #expage):not(.vmode) .vm-only { display: none; }
 .vslot { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; margin-top: 14px; }
 .vslot::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(var(--c3),.45), transparent); }
 /* A character's inventory drop area runs down to the next slot row, so there's room to drop; the equip slot stays its size */
@@ -1307,8 +1310,8 @@ body.vr-booting > .topbar, body.vr-booting > main, body.vr-booting > footer { di
   .ck-top .searchbox { order: -1; flex-basis: 100%; }
   .ck-top .exgear { margin-left: auto; }
   .ck-filt .rolebar { margin-left: 0; }
-  .ck-foot .result { flex-basis: 100%; }
-  .ck-foot .ck-sw { flex: 1 1 auto; }
+  .sb-acts .result { margin-right: 2px; }
+  .ck-top .ctl > span { display: none; }
   .seg.icons button span { display: none; }
 }
 @media (max-width: 560px) {
@@ -2272,7 +2275,7 @@ function vrMain() {
   // The Vault tab has two modes: Vault (characters and vault side by side, like DIM, drag to move) and Full list.
   let listMode = store.get("vr-listmode") === "list" ? "list" : "vault";
   RENDER.list = () => {
-    $("#p-list").innerHTML = `<div class="stack" style="gap:26px"><div class="pagebar"><p id="vmnote"></p>${window.VR_RELOAD ? '<div class="vrefresh"><span class="small muted" id="vrstamp"></span><button class="btn" id="vrefresh" type="button" title="Read your vault from Bungie again. It also refreshes by itself every 3 minutes and when you come back to this page.">Refresh</button></div>' : ""}</div>
+    $("#p-list").innerHTML = `<div class="stack" style="gap:26px"><div class="pagebar"><div class="pagectl" id="expage"></div><p id="vmnote"></p>${window.VR_RELOAD ? '<div class="vrefresh"><span class="small muted" id="vrstamp"></span><button class="btn" id="vrefresh" type="button" title="Read your vault from Bungie again. It also refreshes by itself every 3 minutes and when you come back to this page.">Refresh</button></div>' : ""}</div>
       <div style="min-width:0"><div id="explorer"></div><div id="vaultview" class="vwrap"></div></div></div>`;
     if ($("#vrefresh")) { $("#vrefresh").onclick = () => refreshVault(true); stampRefresh(); }
     drawExplorer(true); setListMode(listMode);
@@ -2311,7 +2314,7 @@ function vrMain() {
     listMode = m; store.set("vr-listmode", m);
     if (!$("#listmode")) return;
     $$("#listmode button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.m === m)));
-    $("#vaultview").hidden = m !== "vault"; $("#explorer").classList.toggle("vmode", m === "vault");
+    $("#vaultview").hidden = m !== "vault"; $("#explorer").classList.toggle("vmode", m === "vault"); $("#expage").classList.toggle("vmode", m === "vault");
     $("#vmnote").innerHTML = m !== "vault" ? "" : `${window.VR_LOCAL && DATA.chars?.length ? "Drag a weapon or armor piece onto a character or the vault to move it, or onto the big slot to equip it." : "Moving items needs the app (Vault Rater.cmd or the web app)."}`;
     // Vault mode shows weapons only, through the same filters and sort as the full list.
     if (m === "vault" && ex.set !== "w") { ex.set = "w"; drawExplorer(true); } else drawExplorer(false);
@@ -2623,11 +2626,19 @@ function vrMain() {
       const MAIN_FACETS = 6;
       const extra = cfg.facets.length - MAIN_FACETS;
       const mine = myViews(ex.set);
+      // Above the cockpit, scrolling with the page: Vault / Full list, layout, and the two switches.
+      $("#expage").innerHTML = `
+        <div class="seg" role="group" aria-label="View" id="listmode">${[["vault", "Vault"], ["list", "Full list"]].map(([k, l]) => `<button data-m="${k}" aria-pressed="${k === listMode}">${l}</button>`).join("")}</div>
+        <div class="seg icons" role="group" aria-label="Layout" id="exlayout">
+          <button data-l="rows" aria-pressed="${layout === "rows"}" title="Rows: one wide line per item, with perks" aria-label="Rows"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/></svg><span>Rows</span></button>
+          <button data-l="tiles" aria-pressed="${layout === "tiles"}" title="Tiles: a compact grid of icons, like an inventory" aria-label="Tiles"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="8" rx="1.2"/><rect x="9.5" y="3" width="5" height="8" rx="1.2"/><rect x="16" y="3" width="5" height="8" rx="1.2"/><rect x="3" y="13" width="5" height="8" rx="1.2"/><rect x="9.5" y="13" width="5" height="8" rx="1.2"/><rect x="16" y="13" width="5" height="8" rx="1.2"/></svg><span>Tiles</span></button>
+        </div>
+        <div class="ck-sw"><label class="vsplit" title="Sort what the verdict says to shard to the end of each group, on a red background"><input type="checkbox" role="switch" id="shardlast"${shardLast ? " checked" : ""}> Shard last</label><label class="vsplit vm-only" title="Keep filtered-out weapons in place, dimmed, instead of hiding them"><input type="checkbox" role="switch" id="vdim"${vdim ? " checked" : ""}> Dim filtered</label></div>`;
       $("#explorer").innerHTML = `
         <div class="toolbar${tbMini ? " folded" : ""}" id="extoolbar">
           <div class="ck-row ck-top">
             <div class="seg" role="group" aria-label="Item kind" id="exset">${Object.entries(SETS).map(([k, c]) => `<button data-s="${k}" aria-pressed="${k === ex.set}">${c.label}</button>`).join("")}</div>
-            <label class="searchbox"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="exq" placeholder="${ex.set === "w" ? "Search name, type, perk or masterwork, or is:exotic perk:..." : "Search name, set or archetype"}" aria-label="Search" value="${esc(st.q)}"><span class="sb-acts"><button type="button" class="sbbtn" id="exsave" hidden title="Save this search, filters and sort as a view">Save view</button><button type="button" class="sbbtn" id="exreset" title="Clear search, filters, roles, sort and grouping">Reset</button></span></label>
+            <label class="searchbox"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="exq" placeholder="${ex.set === "w" ? "Search name, type, perk or masterwork, or is:exotic perk:..." : "Search name, set or archetype"}" aria-label="Search" value="${esc(st.q)}"><span class="sb-acts"><span class="result num" id="excount" aria-live="polite"></span><button type="button" class="sbbtn" id="exsave" hidden title="Save this search, filters and sort as a view">Save view</button><button type="button" class="sbbtn" id="exreset" title="Clear search, filters, roles, sort and grouping">Reset</button></span></label>
             <div class="tb-sort">
               <label class="ctl"><span>Sort</span><select id="exsort">${opt(cfg.sorts, st.sort)}</select></label>
               <button class="ctl dirbtn" id="exdir" type="button" title="Flip the order">${dirHtml(st.dir)}</button>
@@ -2636,7 +2647,7 @@ function vrMain() {
               <label class="ctl vm-hide"><span>Show</span><select id="extop">${opt({ "": "All", 1: "Best 1", 3: "Best 3", 5: "Best 5" }, st.top)}</select></label>
             </div>
             <button class="ctl exgear" id="exgear" type="button" title="All search, sort and filter settings" aria-label="All search, sort and filter settings" aria-haspopup="dialog">${GEAR_SVG}${st.then.length ? `<b>+${st.then.length}</b>` : ""}</button>
-            <button class="ckmini ck-expand" type="button" data-mini title="Show views, filters and roles" aria-label="Show views, filters and roles" aria-expanded="false">${CHEV_SVG}</button>
+            <button class="ckmini" type="button" id="exmini" title="Fold the panel to the search line, or open it again" aria-label="Show views, filters and roles" aria-expanded="${!tbMini}">${CHEV_SVG}</button>
           </div>
           <div class="ck-row ck-views${viewsOpen ? "" : " shut"}">
             <button type="button" class="ck-lab" id="exvtog" aria-expanded="${viewsOpen}" title="Show or hide the views">Views${CHEV_SVG}</button>
@@ -2647,18 +2658,6 @@ function vrMain() {
             <span class="ck-lab">Filter</span>
             <div class="tb-facets" id="exfacets">${cfg.facets.map(([k, l], i) => `<details class="ms${i >= MAIN_FACETS ? " extra" : ""}" data-k="${k}"><summary>${esc(l)}</summary><div class="pop"></div></details>`).join("")}${extra > 0 ? `<button class="morefac" id="exmorefac" type="button" aria-expanded="false">+ ${extra} more</button>` : ""}</div>
             <div class="rolebar" id="exroles" role="group" aria-label="Weapon roles"></div>
-          </div>
-          <div class="ck-row ck-foot">
-            <span class="result num" id="excount" aria-live="polite"></span>
-            <div class="ck-mid">
-              <div class="seg" role="group" aria-label="View" id="listmode">${[["vault", "Vault"], ["list", "Full list"]].map(([k, l]) => `<button data-m="${k}" aria-pressed="${k === listMode}">${l}</button>`).join("")}</div>
-              <div class="seg icons" role="group" aria-label="Layout" id="exlayout">
-                <button data-l="rows" aria-pressed="${layout === "rows"}" title="Rows: one wide line per item, with perks" aria-label="Rows"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/></svg><span>Rows</span></button>
-                <button data-l="tiles" aria-pressed="${layout === "tiles"}" title="Tiles: a compact grid of icons, like an inventory" aria-label="Tiles"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="8" rx="1.2"/><rect x="9.5" y="3" width="5" height="8" rx="1.2"/><rect x="16" y="3" width="5" height="8" rx="1.2"/><rect x="3" y="13" width="5" height="8" rx="1.2"/><rect x="9.5" y="13" width="5" height="8" rx="1.2"/><rect x="16" y="13" width="5" height="8" rx="1.2"/></svg><span>Tiles</span></button>
-              </div>
-            </div>
-            <div class="ck-sw"><label class="vsplit" title="Sort what the verdict says to shard to the end of each group, on a red background"><input type="checkbox" role="switch" id="shardlast"${shardLast ? " checked" : ""}> Shard last</label><label class="vsplit vm-only" title="Keep filtered-out weapons in place, dimmed, instead of hiding them"><input type="checkbox" role="switch" id="vdim"${vdim ? " checked" : ""}> Dim filtered</label>
-              <button class="ckmini" type="button" data-mini title="Fold the panel to the search line" aria-label="Fold the panel to the search line" aria-expanded="true">${CHEV_SVG}</button></div>
           </div>
         </div>
         <div id="exlist"></div><div class="more" id="exmore"></div>`;
@@ -2696,7 +2695,7 @@ function vrMain() {
         st.view = `u${list.length - 1}`; drawExplorer(true);
       };
       $("#exvtog").onclick = () => { viewsOpen = !viewsOpen; store.set("vr-viewsopen", viewsOpen ? "on" : "off"); $(".ck-views").classList.toggle("shut", !viewsOpen); $("#exvtog").setAttribute("aria-expanded", String(viewsOpen)); };
-      for (const b of $$("#explorer [data-mini]")) b.onclick = () => { tbMini = !tbMini; store.set("vr-tbmini", tbMini ? "on" : "off"); $("#extoolbar").classList.toggle("folded", tbMini); };
+      $("#exmini").onclick = () => { tbMini = !tbMini; store.set("vr-tbmini", tbMini ? "on" : "off"); $("#extoolbar").classList.toggle("folded", tbMini); $("#exmini").setAttribute("aria-expanded", String(!tbMini)); };
       $("#exq").oninput = (e) => { st.q = e.target.value; typing(touch); };
       $("#exsort").onchange = (e) => { st.sort = e.target.value; touch(); };
       $("#exgroup").onchange = (e) => {
