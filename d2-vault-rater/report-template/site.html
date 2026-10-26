@@ -388,13 +388,22 @@ button.ck-lab .chv { transform: rotate(180deg); }
 .ck-views.shut button.ck-lab .chv { transform: rotate(90deg); }
 .ck-views .views { flex: 1; min-width: 0; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-mask-image: linear-gradient(90deg, #000 94%, transparent); mask-image: linear-gradient(90deg, #000 94%, transparent); padding-right: 32px; }
 .ck-views .views::-webkit-scrollbar { display: none; }
-.ck-views.shut .views, .ck-views:not(.shut) .vcur { display: none; }
-.ck-views.shut { padding-block: 6px; }
+.ck-views.shut, .vopen { display: none; }
+.toolbar:has(.ck-views.shut) .vopen { display: inline-flex; margin-right: 6px; }
+.vopen .chv { transform: rotate(90deg); }
+.vcur { margin-left: 4px; font: 500 12px var(--body); letter-spacing: 0; text-transform: none; color: var(--muted); }
 .uv { display: inline-flex; flex: none; align-items: center; }
 .uv .view { border-style: dashed; padding-right: 26px; }
 .uvx { margin-left: -24px; width: 20px; height: 20px; border: 0; border-radius: 50%; background: none; color: var(--faint); font-size: 14px; line-height: 1; }
 .uvx:hover { color: var(--shard); background: var(--glass-hi); }
-.ck-filt .rolebar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-left: auto; }
+/* Role shares the Filter line: its chips wrap inside it, right-aligned, instead of the whole group dropping a line */
+.ck-filt .rolebar { flex: 1 1 0; min-width: 260px; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; align-items: center; }
+.ck-filt .rolebar .view { padding: 4px 7px; font-size: 12px; }
+.ck-filt { gap: 6px; }
+.ck-filt .ck-lab { min-width: 0; }
+.ck-filt details.ms summary { padding-inline: 9px; gap: 4px; font-size: 12.5px; }
+.ck-filt .morefac { padding-inline: 9px; }
+.ck-filt .tb-facets { gap: 5px; }
 .ck-filt .rolebar[hidden] { display: none; }
 .ck-filt .rolebar .ck-lab { min-width: 0; margin-right: 6px; }
 .rolebar .rsubs { display: contents; }
@@ -1309,7 +1318,7 @@ body.vr-booting > .topbar, body.vr-booting > main, body.vr-booting > footer { di
   .toolbar { position: relative; top: auto; padding-inline: 12px; }
   .ck-top .searchbox { order: -1; flex-basis: 100%; }
   .ck-top .exgear { margin-left: auto; }
-  .ck-filt .rolebar { margin-left: 0; }
+  .ck-filt .rolebar { flex-basis: 100%; justify-content: flex-start; }
   .sb-acts .result { margin-right: 2px; }
   .ck-top .ctl > span { display: none; }
   .seg.icons button span { display: none; }
@@ -2650,13 +2659,13 @@ function vrMain() {
             <button class="ckmini" type="button" id="exmini" title="Fold the panel to the search line, or open it again" aria-label="Show views, filters and roles" aria-expanded="${!tbMini}">${CHEV_SVG}</button>
           </div>
           <div class="ck-row ck-views${viewsOpen ? "" : " shut"}">
-            <button type="button" class="ck-lab" id="exvtog" aria-expanded="${viewsOpen}" title="Show or hide the views">Views${CHEV_SVG}</button>
+            <button type="button" class="ck-lab" id="exvtog" data-vtog aria-expanded="${viewsOpen}" title="Show or hide the views">Views${CHEV_SVG}</button>
             <div class="views">${Object.entries(cfg.views).map(([k, [l]]) => `<button class="view" data-v="${k}" aria-pressed="${st.view === k}">${esc(l)}</button>`).join("")}${mine.map((v, i) => `<span class="uv"><button class="view" data-v="u${i}" aria-pressed="${st.view === "u" + i}" title="Your view: ${esc(v.st.q || v.n)}">${esc(v.n)}</button><button type="button" class="uvx" data-del="${i}" aria-label="Delete the view ${esc(v.n)}" title="Delete this view">×</button></span>`).join("")}</div>
-            <span class="vcur small muted" id="exvcur"></span>
           </div>
           <div class="ck-row ck-filt">
+            <button type="button" class="ck-lab vopen" data-vtog title="Show the views">Views${CHEV_SVG}<span class="vcur" id="exvcur"></span></button>
             <span class="ck-lab">Filter</span>
-            <div class="tb-facets" id="exfacets">${cfg.facets.map(([k, l], i) => `<details class="ms${i >= MAIN_FACETS ? " extra" : ""}" data-k="${k}"><summary>${esc(l)}</summary><div class="pop"></div></details>`).join("")}${extra > 0 ? `<button class="morefac" id="exmorefac" type="button" aria-expanded="false">+ ${extra} more</button>` : ""}</div>
+            <div class="tb-facets" id="exfacets">${cfg.facets.map(([k, l], i) => `<details class="ms${i >= MAIN_FACETS ? " extra" : ""}" data-k="${k}"><summary>${esc(l)}</summary><div class="pop"></div></details>`).join("")}${extra > 0 ? `<button class="morefac" id="exmorefac" type="button" aria-expanded="false" title="${extra} more filters">+${extra}</button>` : ""}</div>
             <div class="rolebar" id="exroles" role="group" aria-label="Weapon roles"></div>
           </div>
         </div>
@@ -2694,7 +2703,8 @@ function vrMain() {
         if (!viewsOpen) { viewsOpen = true; store.set("vr-viewsopen", "on"); }
         st.view = `u${list.length - 1}`; drawExplorer(true);
       };
-      $("#exvtog").onclick = () => { viewsOpen = !viewsOpen; store.set("vr-viewsopen", viewsOpen ? "on" : "off"); $(".ck-views").classList.toggle("shut", !viewsOpen); $("#exvtog").setAttribute("aria-expanded", String(viewsOpen)); };
+      // Folded, the Views row goes and its button waits at the start of the Filter row, naming the view that's on.
+      for (const b of $$("#explorer [data-vtog]")) b.onclick = () => { viewsOpen = !viewsOpen; store.set("vr-viewsopen", viewsOpen ? "on" : "off"); $(".ck-views").classList.toggle("shut", !viewsOpen); $("#exvtog").setAttribute("aria-expanded", String(viewsOpen)); };
       $("#exmini").onclick = () => { tbMini = !tbMini; store.set("vr-tbmini", tbMini ? "on" : "off"); $("#extoolbar").classList.toggle("folded", tbMini); $("#exmini").setAttribute("aria-expanded", String(!tbMini)); };
       $("#exq").oninput = (e) => { st.q = e.target.value; typing(touch); };
       $("#exsort").onchange = (e) => { st.sort = e.target.value; touch(); };
@@ -2709,7 +2719,7 @@ function vrMain() {
       $("#extop").onchange = (e) => { st.top = e.target.value; touch(); };
       $("#exdir").onclick = () => { st.dir = st.dir === "desc" ? "asc" : "desc"; $("#exdir").innerHTML = dirHtml(st.dir); touch(); };
       const mf = $("#exmorefac");
-      if (mf) mf.onclick = () => { const all = $("#exfacets").classList.toggle("all"); mf.setAttribute("aria-expanded", String(all)); mf.textContent = all ? "Fewer" : `+ ${extra} more`; };
+      if (mf) mf.onclick = () => { const all = $("#exfacets").classList.toggle("all"); mf.setAttribute("aria-expanded", String(all)); mf.textContent = all ? "Fewer" : `+${extra}`; };
       $("#exreset").onclick = (e) => { e.preventDefault(); Object.assign(st, blank()); drawExplorer(true); };
       for (const d of $$("#explorer details.ms[data-k]")) {
         d.addEventListener("toggle", () => { if (d.open) { $$("#explorer details.ms[open]").forEach((o) => o !== d && (o.open = false)); fillFacet(d); placePop(d); } });
