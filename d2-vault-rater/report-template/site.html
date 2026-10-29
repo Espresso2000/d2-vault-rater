@@ -481,6 +481,11 @@ button.ck-lab .chv { transform: rotate(180deg); }
 .exgear b { position: absolute; right: -6px; top: -6px; min-width: 18px; height: 16px; padding: 0 4px; border-radius: 999px; font: 700 10px/16px var(--body); color: #04140d; background: var(--green); }
 /* Search, sort and filter settings dialog */
 .exdlg { --h: 40px; width: min(880px, calc(100vw - 32px)); max-height: calc(100vh - 48px); padding: 0; border: 1px solid var(--line-hi); border-radius: 3px 18px; background: var(--ticks), var(--panel); color: var(--ink); box-shadow: var(--shadow); }
+.keysdlg { width: min(460px, calc(100vw - 32px)); }
+.keysdlg dl { display: grid; grid-template-columns: max-content 1fr; gap: 10px 18px; margin: 0 0 24px; align-items: center; font-size: 14px; }
+.keysdlg dt { display: flex; gap: 4px; }
+.keysdlg dd { margin: 0; color: var(--muted); }
+kbd { display: inline-block; min-width: 24px; padding: 2px 7px; border-radius: 6px; border: 1px solid var(--line-hi); border-bottom-width: 2px; background: var(--glass-hi); font: 500 12px/18px var(--mono); text-align: center; color: var(--ink); }
 .exdlg::backdrop { background: rgba(3,6,18,.65); backdrop-filter: blur(3px); }
 .exdlg-in { display: grid; gap: 24px; padding: 22px 24px 0; }
 .exdlg header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
@@ -1660,7 +1665,7 @@ function vrMain() {
     $("#vspace").innerHTML = `<div class="vs-head"><span class="cap">Vault space</span><b class="num">${fmt(VS.used)}</b><span class="muted">of ${fmt(VS.capacity)} · ${fmt(Math.max(0, VS.capacity - VS.used))} free</span>${freed ? `<button type="button" class="vs-go" data-tab="shard">Shard list frees <b class="num">${fmt(freed)}</b> →</button>` : ""}</div>
       <div class="vs-bar" role="img" aria-label="${fmt(VS.used)} of ${fmt(VS.capacity)} vault slots used; sharding frees ${fmt(freed)}"><span class="k" style="width:${pct(keep, VS.capacity)}%"></span><span class="s" style="width:${pct(used - keep, VS.capacity)}%" title="${fmt(freed)} marked Shard"></span></div>`;
   }
-  $("#foot-meta").innerHTML = `<span>Rated ${esc(fmtDateTime(DATA.generated))}</span><span>D2 Vault Rater</span><span>Nothing changes in game until you confirm a lock plan</span>`;
+  $("#foot-meta").innerHTML = `<span>Rated ${esc(fmtDateTime(DATA.generated))}</span><span>D2 Vault Rater</span><span>Nothing changes in game until you confirm a lock plan</span><span>Press <kbd>?</kbd> for keyboard shortcuts</span>`;
 
   /* ---------- Tabs ---------- */
   // Tab icons from assets/icons (Destiny glyphs), inlined so the offline report needs no extra files.
@@ -2622,8 +2627,21 @@ function vrMain() {
   });
   $("#gq").onkeydown = (e) => { if (e.key === "Escape") { e.target.value = ""; e.target.blur(); } };
   document.addEventListener("keydown", (e) => {
-    if (e.key === "/" && !e.ctrlKey && !e.metaKey && !e.target.closest?.("input, textarea, select, [contenteditable]")) { e.preventDefault(); $("#gq").focus(); }
+    if (e.ctrlKey || e.metaKey || e.altKey || e.target.closest?.("input, textarea, select, [contenteditable]")) return;
+    if (e.key === "/") { e.preventDefault(); $("#gq").focus(); }
+    if (e.key === "?") { e.preventDefault(); keysDlg(); }
   });
+  /** "?" lists the keyboard shortcuts. */
+  function keysDlg() {
+    let d = $("#keysdlg");
+    if (!d) {
+      const keys = [["/", "Search your vault"], ["Esc", "Close the details panel or a pop-up"], ["← →", "Previous or next item in the details panel"], ["Alt+1–9", "EVR tag the item under the mouse or open in the panel"], ["Alt+0", "Clear its EVR tag"], ["?", "This list"]];
+      document.body.insertAdjacentHTML("beforeend", `<dialog class="exdlg keysdlg" id="keysdlg" aria-labelledby="keysdlg-h"><div class="exdlg-in"><header><h2 id="keysdlg-h">Keyboard shortcuts</h2><button type="button" class="dp-pill d-close" aria-label="Close">${svgIcon("close")}</button></header><dl>${keys.map(([k, l]) => `<dt>${k.split(" ").map((x) => `<kbd>${esc(x)}</kbd>`).join(" ")}</dt><dd>${l}</dd>`).join("")}</dl></div></dialog>`);
+      d = $("#keysdlg");
+      d.onclick = (e) => { if (e.target === d || e.target.closest(".d-close")) d.close(); };
+    }
+    d.showModal();
+  }
 
   /* ---------- Weapon roles ---------- */
   // Every copy has a 0-100 score per role (w.ro) and holds a role at the threshold or above. Boss DPS and Range each stand for two roles,
