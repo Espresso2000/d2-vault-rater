@@ -26,15 +26,15 @@ Two small helpers run next to the page in this mode only ([web/local-server.ts:1
 
 ## 3. Sign in
 
-Open <https://localhost:7777> and press **Sign in with Bungie**. Bungie sends you back to the page, which finishes the sign-in itself ([web/src/main.ts:246-268](../../web/src/main.ts#L246-L268)).
+Open <https://localhost:7777> and press **Sign in with Bungie**. Bungie sends you back to the page, which finishes the sign-in itself ([web/src/main.ts:247-269](../../web/src/main.ts#L247-L269)).
 
 The page then shows its progress while it:
 
 1. loads the item database: from the browser's cache, a snapshot, or by building it from bungie.net the first time ([web/src/manifest.ts:8-26](../../web/src/manifest.ts#L8-L26));
 2. imports the tier list, wishlist, armor sets and raid loot when they are over a day old ([web/src/sources.ts:26-88](../../web/src/sources.ts#L26-L88));
-3. reads and rates your vault and draws the report ([web/src/main.ts:119-176](../../web/src/main.ts#L119-L176)).
+3. reads and rates your vault and draws the report ([web/src/main.ts:119-177](../../web/src/main.ts#L119-L177)).
 
-The report has the same tabs as the local app's, and its buttons work the same way ([web/src/main.ts:202-243](../../web/src/main.ts#L202-L243)).
+The report has the same tabs as the local app's, and its buttons work the same way ([web/src/main.ts:203-244](../../web/src/main.ts#L203-L244)).
 
 ## 4. Make a build
 

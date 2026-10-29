@@ -4,25 +4,29 @@ The R&Ds tab answers two questions: which raid or dungeon is most worth farming 
 
 ## Where the loot list comes from
 
-The activities are a fixed list of every raid and dungeon in the game, each with the names Bungie and Aegis use for it ([src/sources/activities.ts:16-37](../../src/sources/activities.ts#L16-L37)). `importActivityLoot` ([src/sources/activities.ts:96](../../src/sources/activities.ts#L96)) builds each activity's loot from three places:
+The activities are a fixed list of every raid and dungeon in the game, each with the names Bungie and Aegis use for it ([src/sources/activities.ts:16-37](../../src/sources/activities.ts#L16-L37)). `importActivityLoot` ([src/sources/activities.ts:98](../../src/sources/activities.ts#L98)) builds each activity's loot from three places:
 
-1. **Bungie's collections**: every collectible whose "Source:" text names the activity, leaving out Eververse, promotional and Guided Games sources ([src/sources/activities.ts:93-94](../../src/sources/activities.ts#L93-L94), [src/sources/activities.ts:112-133](../../src/sources/activities.ts#L112-L133)). Armor in those collectibles gives the activity's armor sets.
-2. **Aegis's sheet**: weapons whose source column names the activity ([src/sources/activities.ts:134-153](../../src/sources/activities.ts#L134-L153)).
-3. **Exotic quests** that collections credit to the quest rather than the activity, such as Xenophage in Pit of Heresy ([src/sources/activities.ts:41-46](../../src/sources/activities.ts#L41-L46), [src/sources/activities.ts:154](../../src/sources/activities.ts#L154)).
+1. **Bungie's collections**: every collectible whose "Source:" text names the activity, leaving out Eververse, promotional and Guided Games sources ([src/sources/activities.ts:95-96](../../src/sources/activities.ts#L95-L96), [src/sources/activities.ts:117-138](../../src/sources/activities.ts#L117-L138)). Armor in those collectibles gives the activity's armor sets.
+2. **Aegis's sheet**: weapons whose source column names the activity ([src/sources/activities.ts:139-158](../../src/sources/activities.ts#L139-L158)).
+3. **Exotic quests** that collections credit to the quest rather than the activity, such as Xenophage in Pit of Heresy ([src/sources/activities.ts:41-46](../../src/sources/activities.ts#L41-L46), [src/sources/activities.ts:159](../../src/sources/activities.ts#L159)).
 
-When the two disagree, collections win: a weapon only the sheet ties to an activity is dropped if collections credit it to another one ([src/sources/activities.ts:174-177](../../src/sources/activities.ts#L174-L177)). Each activity's art is the most common loading-screen image among its versions ([src/sources/activities.ts:101-106](../../src/sources/activities.ts#L101-L106)).
+When the two disagree, collections win: a weapon only the sheet ties to an activity is dropped if collections credit it to another one ([src/sources/activities.ts:179-182](../../src/sources/activities.ts#L179-L182)). Each activity's art is the most common loading-screen image among its versions ([src/sources/activities.ts:103-111](../../src/sources/activities.ts#L103-L111)).
 
-The two manifest tables this needs (activities and collectibles) are downloaded and stripped once per game version, separately from the main manifest ([src/sources/activities.ts:85-91](../../src/sources/activities.ts#L85-L91)).
+The two manifest tables this needs (activities and collectibles) are downloaded and stripped once per game version, separately from the main manifest ([src/sources/activities.ts:87-93](../../src/sources/activities.ts#L87-L93)).
 
 ## Ranking activities
 
-`rateActivities` ([src/rating/activities.ts:57](../../src/rating/activities.ts#L57)) scores each activity out of 100 as 40% loot quality, 40% need and 20% armor sets ([src/rating/activities.ts:112](../../src/rating/activities.ts#L112)):
+`rateActivities` ([src/rating/activities.ts:65](../../src/rating/activities.ts#L65)) scores each activity out of 100 as 40% loot quality, 40% need and 20% armor sets ([src/rating/activities.ts:121](../../src/rating/activities.ts#L121)):
 
-- **Quality**: the average tier points of its three best weapons on Aegis's sheet; unrated loot counts 40 ([src/rating/activities.ts:87-91](../../src/rating/activities.ts#L87-L91), [src/rating/activities.ts:10](../../src/rating/activities.ts#L10)).
-- **Need**: of its S, A and B tier weapons, how many you still *chase* (own none), or could *upgrade* (own only weak rolls, which count half) ([src/rating/activities.ts:92-95](../../src/rating/activities.ts#L92-L95)). A copy with a roll score of 70+ or a god roll counts as *have* ([src/rating/activities.ts:11-12](../../src/rating/activities.ts#L11-L12), [src/rating/activities.ts:84](../../src/rating/activities.ts#L84)).
-- **Sets**: the best bonus tier among its armor sets, worth less the more slots of that set you already own ([src/rating/activities.ts:97-111](../../src/rating/activities.ts#L97-L111)).
+- **Quality**: the average tier points of its three best weapons on Aegis's sheet; unrated loot counts 40 ([src/rating/activities.ts:96-100](../../src/rating/activities.ts#L96-L100), [src/rating/activities.ts:11](../../src/rating/activities.ts#L11)).
+- **Need**: of its S, A and B tier weapons, how many you still *chase* (own none), or could *upgrade* (own only weak rolls, which count half) ([src/rating/activities.ts:101-104](../../src/rating/activities.ts#L101-L104)). A copy with a roll score of 70+ or a god roll counts as *have* ([src/rating/activities.ts:12-13](../../src/rating/activities.ts#L12-L13), [src/rating/activities.ts:93](../../src/rating/activities.ts#L93)).
+- **Sets**: the best bonus tier among its armor sets, worth less the more slots of that set you already own ([src/rating/activities.ts:106-120](../../src/rating/activities.ts#L106-L120)).
 
-70+ reads "Farm it", 50+ "Worth a run", anything lower "Low priority" ([src/rating/activities.ts:120](../../src/rating/activities.ts#L120)). Raids and dungeons are ranked separately ([src/rating/activities.ts:133-135](../../src/rating/activities.ts#L133-L135)).
+70+ reads "Farm it", 50+ "Worth a run", anything lower "Low priority" ([src/rating/activities.ts:129](../../src/rating/activities.ts#L129)). Raids and dungeons are ranked separately ([src/rating/activities.ts:143-145](../../src/rating/activities.ts#L143-L145)).
+
+## Your clears
+
+Each card shows how many times you've finished the activity and how long you've spent in it. Every version of an activity (normal, master, legacy) keeps its hashes from the manifest ([src/sources/activities.ts:103-110](../../src/sources/activities.ts#L103-L110)), and the account stats read Bungie's per-activity stats for each character ([src/vault/wrapped.ts:87](../../src/vault/wrapped.ts#L87), [src/vault/wrapped.ts:90-100](../../src/vault/wrapped.ts#L90-L100)); `rateActivities` adds them up per activity ([src/rating/activities.ts:55-58](../../src/rating/activities.ts#L55-L58)). Bungie counts a finished checkpoint run as a clear, and characters you deleted aren't included, so the totals can be lower than the account-wide raid count on the Wrapped tab. The tab can be ordered by clears instead of farm score, and Wrapped lists your five most-run activities.
 
 ## Encounter loadouts
 

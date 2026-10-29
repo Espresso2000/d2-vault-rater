@@ -2,7 +2,7 @@
 
 In this tutorial you set up a Bungie app, run Vault Rater on your PC, and read the report it makes for your vault. You need Node.js 20.12 or newer ([package.json](../../package.json)) and a Destiny 2 account. It takes about ten minutes, most of it the first download of the game's item database.
 
-Nothing in game changes during this tutorial: the rater only reads your vault and writes a plan ([src/pipeline.ts:55-90](../../src/pipeline.ts#L55-L90)).
+Nothing in game changes during this tutorial: the rater only reads your vault and writes a plan ([src/pipeline.ts:57-91](../../src/pipeline.ts#L57-L91)).
 
 ## 1. Create a Bungie app
 
@@ -44,7 +44,7 @@ On Windows you can double-click `Vault Rater.cmd` instead, in the folder above `
 
 1. A browser window opens on bungie.net. Approve the app.
 2. The browser then goes to `https://localhost:7777/callback?code=...` and shows an error. That is expected. Copy the whole address from the address bar and paste it into the terminal ([src/cli.ts:56-65](../../src/cli.ts#L56-L65)).
-3. The terminal lists what it is doing: downloading the manifest, importing Aegis's tier list, the wishlist, armor set tiers and raid loot ([src/pipeline.ts:33-46](../../src/pipeline.ts#L33-L46)), then reading and rating your vault ([src/pipeline.ts:65-82](../../src/pipeline.ts#L65-L82)). The first run takes a few minutes; later runs reuse the downloads ([caching](../explanation/caching.md)).
+3. The terminal lists what it is doing: downloading the manifest, importing Aegis's tier list, the wishlist, armor set tiers and raid loot ([src/pipeline.ts:35-48](../../src/pipeline.ts#L35-L48)), then reading and rating your vault ([src/pipeline.ts:67-85](../../src/pipeline.ts#L67-L85)). The first run takes a few minutes; later runs reuse the downloads ([caching](../explanation/caching.md)).
 4. Your report opens at <http://localhost:7780>. Keep the terminal open while you use it ([src/cli.ts:173-178](../../src/cli.ts#L173-L178)).
 
 The terminal ends with a summary like:
@@ -58,13 +58,15 @@ To apply it: npm run vault -- apply 2026-10-08T16-40-12-118Z-a3f9c1
 
 ## 5. Read the report
 
-- **Overview**: how many weapons and armor pieces to keep and shard, and your best picks per slot.
+- **Overview**: how many weapons and armor pieces to keep and shard, how full your vault is (its size comes from Bungie, [src/vault/fetch.ts:14](../../src/vault/fetch.ts#L14)) and how many slots the shard list frees, and your best picks per slot.
 - **Reports** (a menu that opens on hover, click or keyboard) holds the two reports:
-  - **Weapon Report**: open any weapon to see its score, its Aegis tier, which perks matched, and the reasons behind its verdict. The reasons are the same sentences the rater writes while deciding ([src/rating/weapons.ts:252-315](../../src/rating/weapons.ts#L252-L315)).
+  - **Weapon Report**: open any weapon to see its score, its Aegis tier, which perks matched, and the reasons behind its verdict. The reasons are the same sentences the rater writes while deciding ([src/rating/weapons.ts:258-321](../../src/rating/weapons.ts#L258-L321)).
   - **Armor Report**: best piece per class and slot, with stats and set bonuses. The class buttons list your most recently played class first.
 - **Shard**: everything marked for sharding, grouped by reason.
 - **Vault**: two modes, switched at the top. *Vault* shows each character's weapons beside your vault, by slot, like DIM: characters in the order you last played them, the equipped weapon big and the rest in a 3 × 3 grid as in the game; in the app you drag a weapon to another character or the vault to move it, or onto the big slot to equip it, and a message in the corner says when it is done. Vault mode splits the vault by weapon type, each group in its own box (a tick box turns that off), and uses the same filters and sort as the full list. Below it, an Armor section shows every armor piece by slot, then by set (exotics first), ordered by class, tier and archetype, with the border coloured by class: blue Hunter, red Titan, yellow Warlock (bright yellow #fbdf00 for Warlock exotics). *Full list* is every item, with filters, sorting and grouping. The toolbar stays pinned while you scroll; its Full / 2 lines / 1 line buttons set how much room it takes. Typing in the search box in the top bar (or pressing `/`) opens the full list filtered.
-- **R&Ds**: raids and dungeons ranked by what they would add to your vault, with a loadout from your vault for every encounter.
+- **R&Ds**: raids and dungeons ranked by what they would add to your vault, with your clears and a loadout from your vault for every encounter.
+
+Click any item to open its details: the art, the score with its verdict, tier, roll and power, perks, stats, where it drops and links to light.gg and D2 Foundry. The ‹ › buttons at the top of the panel (or the left and right arrow keys) step through the list you opened it from. The panel can sit at the side, pop up in the middle or run along the bottom; switch with the buttons beside its close button.
 
 If something you want to keep is on the shard list, [protect it](../how-to/protect-items.md); if the list is too long or too short, [change the strictness](../how-to/tune-strictness.md). Press **Re-rate** in the top bar to see the change ([src/cli.ts:151-165](../../src/cli.ts#L151-L165)).
 

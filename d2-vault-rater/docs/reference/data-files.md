@@ -11,12 +11,12 @@ Everything lives in one folder, `~/.d2-vault-rater` unless `VAULT_RATER_HOME` sa
 | `settings.json` | [Settings](settings.md) | [src/rating/settings.ts:121-125](../../src/rating/settings.ts#L121-L125) |
 | `dim-app.json` | The DIM API key registered for the rater | [src/dim/sync.ts:14](../../src/dim/sync.ts#L14) |
 | `dim-token.json` | DIM Sync access token and expiry | [src/dim/sync.ts:15](../../src/dim/sync.ts#L15) |
-| `manifest/<version>/<table>.lite.json` | Manifest tables cut down to the fields the rater reads, one folder per game version. The item table is `.lite.v2.json`, named for its strip format, so an older cache without perk icons is rebuilt (a full `<table>.json` from older versions is stripped once and can be deleted) | [src/bungie/tables.ts:11-25](../../src/bungie/tables.ts#L11-L25), [src/bungie/manifest.ts:27-31](../../src/bungie/manifest.ts#L27-L31), [src/sources/activities.ts:85-91](../../src/sources/activities.ts#L85-L91) |
+| `manifest/<version>/<table>.lite.json` | Manifest tables cut down to the fields the rater reads, one folder per game version. The item table is `.lite.v2.json`, named for its strip format, so an older cache without perk icons is rebuilt (a full `<table>.json` from older versions is stripped once and can be deleted) | [src/bungie/tables.ts:11-25](../../src/bungie/tables.ts#L11-L25), [src/bungie/manifest.ts:27-31](../../src/bungie/manifest.ts#L27-L31), [src/sources/activities.ts:87-93](../../src/sources/activities.ts#L87-L93) |
 | `sources/aegis.json` | Imported tier list with matched item hashes | [src/sources/aegis.ts:35](../../src/sources/aegis.ts#L35) |
 | `sources/aliases.json` | Your own `{"Aegis name": "Manifest name"}` fixes, read on import | [src/sources/aegis.ts:36](../../src/sources/aegis.ts#L36), [src/sources/aegis.ts:124-128](../../src/sources/aegis.ts#L124-L128) |
 | `sources/wishlists.json` | Parsed wishlist rolls, without notes | [src/sources/wishlist.ts:21](../../src/sources/wishlist.ts#L21) |
 | `sources/armor-sets.json` | Armor set bonuses with Aegis's tiers | [src/sources/armorSets.ts:41](../../src/sources/armorSets.ts#L41) |
-| `sources/activities.json` | Raid and dungeon loot | [src/sources/activities.ts:77](../../src/sources/activities.ts#L77) |
+| `sources/activities.json` | Raid and dungeon loot | [src/sources/activities.ts:79](../../src/sources/activities.ts#L79) |
 | `plans/<id>.json` | A dry-run lock plan | [src/dim/actions.ts:39](../../src/dim/actions.ts#L39) |
 | `plans/<id>-dim-tags.csv` | DIM tags CSV for that plan | [src/dim/actions.ts:117](../../src/dim/actions.ts#L117) |
 | `snapshots/<id>.json` | Lock states before a plan was applied, for undo | [src/dim/actions.ts:40](../../src/dim/actions.ts#L40) |

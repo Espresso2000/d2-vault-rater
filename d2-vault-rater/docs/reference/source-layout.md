@@ -6,7 +6,7 @@
 | --- | --- |
 | [src/server.ts:32](../../src/server.ts#L32) | MCP server: the tools and the `vault_review` prompt. |
 | [src/cli.ts:180](../../src/cli.ts#L180) | CLI commands and the local report server. |
-| [src/pipeline.ts:56](../../src/pipeline.ts#L56) | `refreshSources` and `buildReport`, the CLI's end-to-end steps. |
+| [src/pipeline.ts:58](../../src/pipeline.ts#L58) | `refreshSources` and `buildReport`, the CLI's end-to-end steps. |
 | [src/config.ts:7](../../src/config.ts#L7) | Data folder paths, Bungie keys from the environment, JSON file helpers. *Shimmed in the web app.* |
 | [src/util.ts:2](../../src/util.ts#L2) | `groupBy`. |
 | [src/bungie/client.ts:66](../../src/bungie/client.ts#L66) | Tokens, OAuth token requests, `bungie()` for Platform calls. *Shimmed.* |
@@ -18,20 +18,20 @@
 | [src/bungie/defs.ts:8](../../src/bungie/defs.ts#L8) | Manifest types and name helpers. Browser-safe. |
 | [src/bungie/transfer.ts:46](../../src/bungie/transfer.ts#L46) | Moving and equipping items. |
 | [src/vault/fetch.ts:9](../../src/vault/fetch.ts#L9) | Reads the profile and keeps the last vault. |
-| [src/vault/decode.ts:71](../../src/vault/decode.ts#L71) | Profile response → `Vault`. |
+| [src/vault/decode.ts:73](../../src/vault/decode.ts#L73) | Profile response → `Vault`. |
 | [src/vault/types.ts:67](../../src/vault/types.ts#L67) | `Vault`, `WeaponRecord`, `ArmorRecord`, `PerkColumn`. |
-| [src/vault/wrapped.ts:49](../../src/vault/wrapped.ts#L49) | Account stats for the Wrapped tab. |
+| [src/vault/wrapped.ts:56](../../src/vault/wrapped.ts#L56) | Account stats for the Wrapped tab. |
 | [src/sources/aegis.ts:138](../../src/sources/aegis.ts#L138) | Aegis's weapon tier tabs: tab list, CSV parsing, hash matching. |
 | [src/sources/armorSets.ts:99](../../src/sources/armorSets.ts#L99) | Aegis's armor set tab and the community bonus sheet. |
 | [src/sources/wishlist.ts:24](../../src/sources/wishlist.ts#L24) | DIM wishlist parsing and import. |
-| [src/sources/activities.ts:96](../../src/sources/activities.ts#L96) | Raid and dungeon loot; where each weapon comes from. |
+| [src/sources/activities.ts:98](../../src/sources/activities.ts#L98) | Raid and dungeon loot; where each weapon comes from. |
 | [src/sources/csv.ts:5](../../src/sources/csv.ts#L5) | RFC 4180 CSV parser and the Google Sheets CSV URL. |
 | [src/data/encounters.json](../../src/data/encounters.json) | Every raid and dungeon encounter: roles, shields, champions, range, damage phase, guide picks and the sources they were checked against. |
 | [src/data/encounters.ts:13](../../src/data/encounters.ts#L13) | Encounter types, role weapon fits and role meta picks. |
 | [src/rating/settings.ts:89](../../src/rating/settings.ts#L89) | Settings schema, presets, `strictnessFor`. |
 | [src/rating/weapons.ts:145](../../src/rating/weapons.ts#L145) | Weapon scores and verdicts. |
 | [src/rating/armor.ts:96](../../src/rating/armor.ts#L96) | Armor scores and verdicts. |
-| [src/rating/activities.ts:57](../../src/rating/activities.ts#L57) | Raid and dungeon ranking. |
+| [src/rating/activities.ts:65](../../src/rating/activities.ts#L65) | Raid and dungeon ranking. |
 | [src/rating/encounters.ts:88](../../src/rating/encounters.ts#L88) | Encounter loadouts. |
 | [src/dim/actions.ts:46](../../src/dim/actions.ts#L46) | Lock plan, apply, undo, DIM CSV. |
 | [src/dim/common.ts:30](../../src/dim/common.ts#L30) | DIM Sync shapes, profile read and tag write. Browser-safe. |
@@ -46,7 +46,7 @@
 | --- | --- |
 | [web/vite.config.ts:22](../../web/vite.config.ts#L22) | The shim plugin, the page plugin, local mode. |
 | [web/local-server.ts:35](../../web/local-server.ts#L35) | Local mode only: serves `app-config.json` from `.env` and relays token requests with the client secret. |
-| [web/src/main.ts:246](../../web/src/main.ts#L246) | Boot, sign-in screens, the rating run, the page's `/api` handlers. |
+| [web/src/main.ts:247](../../web/src/main.ts#L247) | Boot, sign-in screens, the rating run, the page's `/api` handlers. |
 | [web/src/shell.html:1](../../web/src/shell.html#L1) | Sign-in and progress markup injected into the report template. |
 | [web/src/appConfig.ts:28](../../web/src/appConfig.ts#L28) | Which Bungie app the site uses. |
 | [web/src/shims/](../../web/src/shims/) | Browser versions of the five Node-only modules, plus `node:*` stand-ins. |
@@ -62,7 +62,7 @@
 
 | Path | What is in it |
 | --- | --- |
-| [report-template/site.html:954](../../report-template/site.html#L954) | The report page, shared by the local report and the web app. |
+| [report-template/site.html:970](../../report-template/site.html#L970) | The report page, shared by the local report and the web app. |
 | [skill/SKILL.md:1](../../skill/SKILL.md#L1) | Instructions for an AI running a vault review. |
 | [test/](../../test/) | Unit tests and fixtures. |
 | [scripts/check-doc-refs.mjs:1](../../scripts/check-doc-refs.mjs#L1) | Checks the code links in these docs. |

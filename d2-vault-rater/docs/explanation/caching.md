@@ -14,7 +14,7 @@ Rating a vault needs a lot of data that rarely changes: Bungie's manifest (hundr
 
 ## Rating sources: refreshed after 24 hours
 
-- The local app re-imports every source when the oldest is more than a day old ([src/pipeline.ts:27-31](../../src/pipeline.ts#L27-L31), [src/pipeline.ts:58](../../src/pipeline.ts#L58)). The MCP server only re-imports when the AI calls `refresh_sources`.
+- The local app re-imports every source when the oldest is more than a day old ([src/pipeline.ts:27-33](../../src/pipeline.ts#L27-L33), [src/pipeline.ts:60](../../src/pipeline.ts#L60)). The MCP server only re-imports when the AI calls `refresh_sources`.
 - The web app checks each source on its own and re-imports it after 24 hours ([web/src/sources.ts:28](../../web/src/sources.ts#L28)). If a sheet can't be read and nothing is cached, it falls back to `public/data/sources.json` shipped with the site ([web/src/sources.ts:41-43](../../web/src/sources.ts#L41-L43)). Like the local app ([src/sources/wishlist.ts:50-51](../../src/sources/wishlist.ts#L50-L51)), it drops wishlist notes, which would make the cache about ten times bigger ([web/src/sources.ts:57](../../web/src/sources.ts#L57)). Raid loot is also rebuilt when the game version changes ([web/src/sources.ts:81](../../web/src/sources.ts#L81)).
 - The Builds tab's rating sheets refresh daily the same way ([web/src/builds/ratings.ts:17](../../web/src/builds/ratings.ts#L17)), and so do its Destiny Clarity notes; a failed Clarity refresh keeps the old copy ([web/src/builds/ratings.ts:52-63](../../web/src/builds/ratings.ts#L52-L63)).
 
@@ -32,20 +32,20 @@ In the browser, the saved files are restored with one IndexedDB read at startup 
 
 ## Images in the local report
 
-The local report embeds every icon as a data URI so it works offline; each image is downloaded once into the images folder and reused after that ([src/report/site.ts:22](../../src/report/site.ts#L22), [src/report/site.ts:41-45](../../src/report/site.ts#L41-L45)). Only the top pick per slot gets its full-size screenshot, since each is about 170 KB ([src/report/siteData.ts:14-15](../../src/report/siteData.ts#L14-L15)). The web app loads images from bungie.net as they scroll into view, so there every weapon gets its screenshot ([web/src/main.ts:164-165](../../web/src/main.ts#L164-L165)).
+The local report embeds every icon as a data URI so it works offline; each image is downloaded once into the images folder and reused after that ([src/report/site.ts:22](../../src/report/site.ts#L22), [src/report/site.ts:41-45](../../src/report/site.ts#L41-L45)). Only the top pick per slot gets its full-size screenshot, since each is about 170 KB ([src/report/siteData.ts:14-15](../../src/report/siteData.ts#L14-L15)). The web app loads images from bungie.net as they scroll into view, so there every weapon gets its screenshot ([web/src/main.ts:165-166](../../web/src/main.ts#L165-L166)).
 
 ## In the page
 
-- Images load lazily and decode off the main thread; a remote image that fails is retried twice before the placeholder shows ([report-template/site.html:976-987](../../report-template/site.html#L976-L987)).
-- Rows and tiles in long lists skip layout and paint while off screen ([report-template/site.html:478-480](../../report-template/site.html#L478-L480)), so the full list and Shard tab stay smooth with hundreds of icons.
-- The Builds tab is a separate JavaScript chunk, fetched in the background once the report is on screen ([web/src/main.ts:179-183](../../web/src/main.ts#L179-L183)).
+- Images load lazily and decode off the main thread; a remote image that fails is retried twice before the placeholder shows ([report-template/site.html:992-1003](../../report-template/site.html#L992-L1003)).
+- Rows and tiles in long lists skip layout and paint while off screen ([report-template/site.html:490-492](../../report-template/site.html#L490-L492)), so the full list and Shard tab stay smooth with hundreds of icons.
+- The Builds tab is a separate JavaScript chunk, fetched in the background once the report is on screen ([web/src/main.ts:180-184](../../web/src/main.ts#L180-L184)).
 - Its score map, stat names and weapon tiers are worked out once per rating run, not on every redraw ([web/src/builds/ui.ts:79-89](../../web/src/builds/ui.ts#L79-L89)), and items are looked up through a per-vault index ([web/src/builds/model.ts:106-113](../../web/src/builds/model.ts#L106-L113)).
 - Your Destiny membership is asked for once per visit ([web/src/shims/oauth.ts:44-59](../../web/src/shims/oauth.ts#L44-L59)).
 
 ## Fewer waits on Bungie
 
 - The Destiny membership lookup is shared: the Node rater asks once per Bungie account and process ([src/bungie/oauth.ts:44-63](../../src/bungie/oauth.ts#L44-L63)), the web app once per visit (above). Reading the vault checks the manifest version and the membership at the same time ([src/vault/fetch.ts:10](../../src/vault/fetch.ts#L10)).
-- Wrapped's account stats are fetched while the vault is read and rated, not after ([src/pipeline.ts:63-64](../../src/pipeline.ts#L63-L64), [web/src/main.ts:128-129](../../web/src/main.ts#L128-L129)). Its own requests go out together in two rounds: profile and stats first, then titles and per-weapon kills, which need the character list ([src/vault/wrapped.ts:57-80](../../src/vault/wrapped.ts#L57-L80)).
+- Wrapped's account stats are fetched while the vault is read and rated, not after ([src/pipeline.ts:65-66](../../src/pipeline.ts#L65-L66), [web/src/main.ts:128-129](../../web/src/main.ts#L128-L129)). Its own requests go out together in two rounds: profile and stats first, then titles and per-weapon kills, which need the character list ([src/vault/wrapped.ts:64-88](../../src/vault/wrapped.ts#L64-L88)).
 
 ## Hosting
 

@@ -21,7 +21,7 @@ Then run `rate_weapons` or `rate_armor` again; the new settings make the server 
 
 ## In the report page
 
-Open **Settings** (the gear button). Preset, focus, per-type presets and the protect list are saved by the page's `/api/settings` call ([src/rating/settings.ts:127-142](../../src/rating/settings.ts#L127-L142)). **Save and re-rate** saves them and rates your vault again; the web app re-rates when the page reloads ([web/src/main.ts:205-207](../../web/src/main.ts#L205-L207)).
+Open **Settings** (the gear button). Preset, focus, per-type presets and the protect list are saved by the page's `/api/settings` call ([src/rating/settings.ts:127-142](../../src/rating/settings.ts#L127-L142)). **Save and re-rate** saves them and rates your vault again; the web app re-rates when the page reloads ([web/src/main.ts:206-208](../../web/src/main.ts#L206-L208)).
 
 ## By editing settings.json
 
