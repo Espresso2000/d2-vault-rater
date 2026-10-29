@@ -68,13 +68,12 @@ export async function buildReport(log: (s: string) => void = () => {}): Promise<
   // Wrapped only needs the manifest: fetch it alongside the vault instead of after rating.
   const wrappedP = fetchWrapped(manifest).catch(() => null);
   log("Reading your vault...");
-  const vault = await fetchVault();
-  let dim = null, dimError: string | null = null;
-  if (saved.dim.tags || saved.dim.loadouts) {
-    log(`Reading DIM ${[saved.dim.tags && "tags", saved.dim.loadouts && "loadouts"].filter(Boolean).join(" and ")}...`);
-    dim = await fetchDimData(saved.dim).catch((e) => ((dimError = (e as Error).message), null));
-    if (dimError) log(`DIM data skipped: ${dimError}`);
-  }
+  // The vault and DIM are separate services: read them at the same time.
+  let dimError: string | null = null;
+  const wantDim = saved.dim.tags || saved.dim.loadouts;
+  if (wantDim) log(`Reading DIM ${[saved.dim.tags && "tags", saved.dim.loadouts && "loadouts"].filter(Boolean).join(" and ")}...`);
+  const [vault, dim] = await Promise.all([fetchVault(), wantDim ? fetchDimData(saved.dim).catch((e) => ((dimError = (e as Error).message), null)) : null]);
+  if (dimError) log(`DIM data skipped: ${dimError}`);
   const settings = withDimKeep(saved, dim);
   log("Rating weapons and armor...");
   const w = rateWeapons(vault.weapons, { manifest, aegis, wishlists: loadWishlists() }, settings);

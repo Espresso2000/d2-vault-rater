@@ -158,7 +158,8 @@ export function parseAegisExotics(tab: string, csv: string): AegisWeapon[] | nul
       name,
       season: get("season"),
       element: "",
-      frame: get("type"),
+      // The exotic tab's "type" column is the ammo slot (primary, special, power), not a frame.
+      frame: "",
       source: "",
       recommended: { barrel: [], magazine: [], masterwork: [], perk1: [], perk2: [], origin: [] },
       notes: get("usage"),

@@ -136,13 +136,14 @@ async function run() {
   /** Reads the vault (and DIM) and rates it. Runs again for the Vault tab's Refresh, reusing what's loaded above. */
   const rate = async () => {
     log("Reading your vault…");
-    const vault = await fetchVault();
-    let dim: DimData | null = null;
+    // The vault and DIM are separate services: read them at the same time.
     let dimError: string | null = null;
-    if (settings.dim.tags || settings.dim.loadouts) {
-      log(`Reading DIM ${[settings.dim.tags && "tags", settings.dim.loadouts && "loadouts"].filter(Boolean).join(" and ")}…`);
-      dim = await fetchDimData(settings.dim).catch((e) => ((dimError = (e as Error).message), null));
-    }
+    const wantDim = settings.dim.tags || settings.dim.loadouts;
+    if (wantDim) log(`Reading DIM ${[settings.dim.tags && "tags", settings.dim.loadouts && "loadouts"].filter(Boolean).join(" and ")}…`);
+    const [vault, dim] = await Promise.all([
+      fetchVault(),
+      wantDim ? fetchDimData(settings.dim).catch((e) => ((dimError = (e as Error).message), null)) : Promise.resolve(null as DimData | null),
+    ]);
     const rated = withDimKeep(settings, dim);
 
     log("Rating weapons and armor…");

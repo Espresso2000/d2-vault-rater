@@ -1331,6 +1331,8 @@ body.vr-booting > .topbar, body.vr-booting > main, body.vr-booting > footer { di
   nav.tabs button { height: 76px; }
 }
 @media (max-width: 960px) {
+  /* The cockpit's search gets its own line before it gets cramped */
+  .ck-top .searchbox { order: -1; flex-basis: 100%; }
   .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .armor-best { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .row .perkline { display: none; }
@@ -1544,7 +1546,8 @@ function vrMain() {
   const verdict = (v) => `<span class="verdict ${v}">${v === "keep" ? "Keep" : v === "shard" ? "Shard" : "Review"}</span>`;
   const scoreCell = (s) => `<div class="score"><b class="num${s >= 90 ? " hi" : ""}">${s}</b><div class="meter"><span style="width:${Math.max(0, Math.min(100, s))}%"></span></div></div>`;
   const frameOf = (w) => (w.f || "").replace(/ Frame$/, "");
-  const typeLine = (w) => [frameOf(w), w.t].filter(Boolean).join(" ");
+  // Glaive frames already name the type ("Adaptive Glaive").
+  const typeLine = (w) => (frameOf(w).endsWith(w.t) ? frameOf(w) : [frameOf(w), w.t].filter(Boolean).join(" "));
   const fmtDate = (iso) => new Date(iso).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
   const fmtDateTime = (iso) => new Date(iso).toLocaleString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
   const plural = (n, one, many = one + "s") => `${fmt(n)} ${n === 1 ? one : many}`;
@@ -2126,7 +2129,7 @@ function vrMain() {
     const vClass = (v) => (v === "Farm it" ? "farm" : v === "Worth a run" ? "run" : "low");
     const status = (w) => w.status === "chase" ? '<span class="st chase">Chase</span>' : w.status === "upgrade" ? `<span class="st upgrade" title="Your best roll scores ${w.bestRoll}">Upgrade</span>` : `<span class="st have" title="Your best copy scores ${w.bestScore}">Got it</span>`;
     const row = (w, i, key) => `<button class="lootrow" ${w.best ? `data-w="${w.best}" title="Open your best copy"` : `data-loot="${key}|${i}" title="See where to get it"`}>${img(w.icon)}
-      <div style="min-width:0"><div class="nm">${esc(w.name)}${w.rarity === "Exotic" ? ' <span class="exo">Exotic</span>' : ""}</div><div class="sm">${esc([w.frame && w.frame.replace(/ Frame$/, ""), w.type].filter(Boolean).join(" "))} · <span class="el" style="color:var(--${esc(w.element)})"><i></i><span>${esc(w.element)}</span></span>${w.owned ? ` · you own ${w.owned}` : ""}</div></div>
+      <div style="min-width:0"><div class="nm">${esc(w.name)}${w.rarity === "Exotic" ? ' <span class="exo">Exotic</span>' : ""}</div><div class="sm">${esc(typeLine({ f: w.frame, t: w.type }))} · <span class="el" style="color:var(--${esc(w.element)})"><i></i><span>${esc(w.element)}</span></span>${w.owned ? ` · you own ${w.owned}` : ""}</div></div>
       <span class="tier t${w.tier || "U"}" title="${w.tier ? `Aegis ${w.tier} tier${w.aegisRank ? " #" + w.aegisRank : ""} in ${esc(w.tab || "")}` : "Not on Aegis's sheet"}">${w.tier || "—"}</span>${status(w)}</button>`;
     const setBox = (st) => `<div class="radset"><div class="top"><b>${esc(st.name)}</b><span class="small muted">armor set</span></div>
       <div class="bon">${st.bonuses.length ? st.bonuses.map((b) => `<span><span class="small">${b.pieces}PC</span> ${esc(b.name)} ${b.tier ? `<span class="tier t${b.tier}">${b.tier}</span>` : '<span class="tier tU">—</span>'}</span>`).join("") : "Not on Aegis's set list yet."}</div>
@@ -3358,7 +3361,7 @@ function vrMain() {
       ico: w.icon, art: src(act.image), el: w.element, gold: w.rarity === "Exotic", title: w.name,
       eyebrow: `${esc(w.rarity)} · not in your vault`,
       tier: `<span class="tier t${w.tier || "U"}">${w.tier || "—"}</span>`,
-      sub: `<span>${esc([w.frame && w.frame.replace(/ Frame$/, ""), w.type].filter(Boolean).join(" "))}</span> ${elDot(w.element)} <span class="st chase">Chase</span>`,
+      sub: `<span>${esc(typeLine({ f: w.frame, t: w.type }))}</span> ${elDot(w.element)} <span class="st chase">Chase</span>`,
       body: dpLayout(
         [dpSec(1, "", `<div class="breakdown"><div${w.tier ? ` class="t${w.tier} tl"` : ""}><b class="num">${w.tier || "—"}</b><span>Aegis tier</span></div><div><b class="num">${w.aegisRank ?? "—"}</b><span>Rank${w.tab ? " in " + esc(w.tab) : ""}</span></div><div><b class="num">${act.score}</b><span>${esc(act.name)} farm score</span></div></div>`, "bare"),
           w.notes ? dpSec(2, "Aegis says", `<p class="dp-quote">${esc(w.notes)}</p>`) : ""],

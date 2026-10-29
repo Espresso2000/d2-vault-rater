@@ -147,6 +147,12 @@ export function scoreRoll(w: WeaponRecord, a: AegisWeapon | null) {
 
 const tierBelow = (t: Tier, floor: Tier) => TIER_ORDER.indexOf(t) > TIER_ORDER.indexOf(floor);
 
+/** Frame and type, e.g. "Adaptive Auto Rifle"; glaive frames already name the type ("Adaptive Glaive"). */
+export const archetype = (r: { frame: string; type: string }) => {
+  const f = r.frame.replace(/ Frame$/, "");
+  return f.endsWith(r.type) ? f : `${f} ${r.type}`.trim();
+};
+
 export function rateWeapons(
   weapons: WeaponRecord[],
   sources: { aegis: AegisData | null; wishlists: WishlistData | null; manifest: Manifest | null; /** Aegis perk list; read from disk when left out. */ perks?: AegisPerk[]; /** Boss Damage sheet; read from disk when left out. */ boss?: BossDamageData | null },
@@ -323,7 +329,7 @@ export function rateWeapons(
       continue;
     }
     r.label = "best";
-    why(`best ${r.frame ? r.frame.replace(/ Frame$/, "") + " " : ""}${r.type} in ${r.element}`);
+    why(`best ${archetype(r)} in ${r.element}`);
   }
 
   const keepers = ratings.filter((r) => r.verdict === "keep");
@@ -348,7 +354,7 @@ export function rateWeapons(
     ratings: ratings.sort(sortDesc),
     bestBySlot: topBy((r) => r.slot),
     bestByElement: topBy((r) => r.element),
-    bestByArchetype: topBy((r) => `${r.frame.replace(/ Frame$/, "")} ${r.type}`.trim(), 1),
+    bestByArchetype: topBy(archetype, 1),
     duplicates,
     shard: ratings.filter((r) => r.verdict !== "keep"),
     gaps,
