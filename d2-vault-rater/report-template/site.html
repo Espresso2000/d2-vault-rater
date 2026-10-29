@@ -2160,7 +2160,7 @@ function vrMain() {
       <div class="bon">${st.bonuses.length ? st.bonuses.map((b) => `<span><span class="small">${b.pieces}PC</span> ${esc(b.name)} ${b.tier ? `<span class="tier t${b.tier}">${b.tier}</span>` : '<span class="tier tU">—</span>'}</span>`).join("") : "Not on Aegis's set list yet."}</div>
       <div class="own">${Object.keys(st.ownedSlots).length ? "You own " + Object.entries(st.ownedSlots).map(([c, n]) => `${esc(c)} ${n}/5`).join(" · ") : "You don't own any pieces yet."}</div></div>`;
     const clearLine = (r) => !r.clears ? "" : r.clears.clears
-      ? `<div class="clr" title="Completions across every version and character (Bungie counts a finished checkpoint run too)"><b class="num">${fmt(r.clears.clears)}</b> clear${r.clears.clears === 1 ? "" : "s"}<span>·</span>${dur(r.clears.seconds)} played</div>`
+      ? `<div class="clr" title="Completions across every version of it, on the characters you still have (a finished checkpoint run counts too)"><b class="num">${fmt(r.clears.clears)}</b> clear${r.clears.clears === 1 ? "" : "s"}<span>·</span>${dur(r.clears.seconds)} played</div>`
       : `<div class="clr none">Not cleared yet</div>`;
     // The big card is the best one to farm; ordered by clears, every card is the same size.
     const card = (r, i, best) => {
@@ -3185,12 +3185,15 @@ function vrMain() {
       const max = time[0]?.[1] || 1;
       slide("wide alt", `<div class="kicker">Where your time went</div><div class="big">${esc(time[0][0])} is home</div><p>Hours played in each kind of activity.</p>
         <div class="bars">${time.map(([l, t]) => `<div class="barrow"><span>${esc(l)}</span><div class="track"><span style="width:${(t / max) * 100}%"></span></div><b class="num">${fmt(t / 3600)}h</b></div>`).join("")}</div>`);
+      // The raids and dungeons you've cleared most (from the R&Ds tab's per-activity clears).
+      const mostRun = (DATA.rads || []).filter((r) => r.clears?.clears).sort((a, b) => b.clears.clears - a.clears.clears).slice(0, 5);
       const ends = [["raid", "Raid clears"], ["dungeon", "Dungeon clears"], ["scored_nightfall", "Nightfall clears"], ["allStrikes", "Strike clears"], ["story", "Story missions"]].map(([k, l]) => [mode(k), l]).filter(([m]) => m);
       if (ends.length) slide("wide", `<div class="kicker">Endgame résumé</div><div class="big">${fmt(mode("raid")?.activitiesCleared)} raids, ${fmt(mode("dungeon")?.activitiesCleared)} dungeons</div>
         <p>Clears out of attempts. Raids took <b>${dur(mode("raid")?.secondsPlayed)}</b> of your life and dungeons <b>${dur(mode("dungeon")?.secondsPlayed)}</b>.</p>
         <div class="statgrid">${ends.map(([m, l]) => `<div><b class="num">${fmt(m.activitiesCleared)}</b><span>${l} · ${pct(m.activitiesCleared, m.activitiesEntered)}% of ${fmt(m.activitiesEntered)} started</span></div>`).join("")}
         ${mode("dungeon") ? `<div><b class="num">${fmt(mode("dungeon").bestSingleGameKills)}</b><span>Most kills in one dungeon run</span></div>` : ""}
-        ${mode("raid") ? `<div><b class="num">${fmt(mode("raid").kills)}</b><span>Enemies defeated in raids</span></div>` : ""}</div>`);
+        ${mode("raid") ? `<div><b class="num">${fmt(mode("raid").kills)}</b><span>Enemies defeated in raids</span></div>` : ""}</div>
+        ${mostRun.length ? `<div class="cap" style="margin-top:6px">Most run</div><div class="bars">${mostRun.map((r) => `<div class="barrow"><span>${esc(r.name)}</span><div class="track"><span style="width:${(r.clears.clears / mostRun[0].clears.clears) * 100}%"></span></div><b class="num">${fmt(r.clears.clears)}</b></div>`).join("")}</div>` : ""}`);
       const comp = X.modes.filter((m) => m.pvp && m.stats.activitiesEntered);
       if (comp.length) slide("third alt", `<div class="kicker">Competitive</div><div class="big">Win rates</div>
         <div class="bars">${comp.map((m) => `<div class="barrow"><span>${esc(m.label)}</span><div class="track"><span style="width:${pct(m.stats.activitiesWon, m.stats.activitiesEntered)}%"></span></div><b class="num">${pct(m.stats.activitiesWon, m.stats.activitiesEntered)}%</b></div>`).join("")}</div>
