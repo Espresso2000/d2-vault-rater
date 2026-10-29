@@ -13,6 +13,8 @@ const ARMOR_BUCKETS: Record<number, ArmorSlot> = {
   1585787867: "Class Item",
 };
 const POSTMASTER_BUCKET = 215593132;
+/** The vault's general bucket: weapons, armor and other gear (not mods or consumables). */
+export const VAULT_BUCKET = 138197802;
 const CLASSES: Record<number, ClassName> ={ 0: "Titan", 1: "Hunter", 2: "Warlock", 3: "Any" };
 const AMMO = { 1: "Primary", 2: "Special", 3: "Heavy" } as const;
 /** Bungie's breaker types: the champion a weapon stuns. */
@@ -264,5 +266,6 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
     weapons,
     armor,
     statIcons,
+    space: { used: (raw.profileInventory?.data?.items ?? []).filter((i) => i.bucketHash === VAULT_BUCKET).length, capacity: null },
   };
 }

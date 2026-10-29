@@ -1,17 +1,20 @@
 import { bungie } from "../bungie/client.js";
 import { loadManifest } from "../bungie/manifest.js";
 import { primaryMembership } from "../bungie/oauth.js";
-import { decodeProfile, PROFILE_COMPONENTS, type RawProfile } from "./decode.js";
+import { decodeProfile, PROFILE_COMPONENTS, VAULT_BUCKET, type RawProfile } from "./decode.js";
 import type { Vault } from "./types.js";
 
 let last: Vault | null = null;
 
 export async function fetchVault(): Promise<Vault> {
   const [m, who] = await Promise.all([loadManifest(), primaryMembership()]);
-  const raw = await bungie<RawProfile>(
-    `/Destiny2/${who.membershipType}/Profile/${who.membershipId}/?components=${PROFILE_COMPONENTS.join(",")}`,
-  );
+  const [raw, bucket] = await Promise.all([
+    bungie<RawProfile>(`/Destiny2/${who.membershipType}/Profile/${who.membershipId}/?components=${PROFILE_COMPONENTS.join(",")}`),
+    // The vault's size comes from its bucket definition, so it follows Bungie's increases.
+    bungie<{ itemCount?: number }>(`/Destiny2/Manifest/DestinyInventoryBucketDefinition/${VAULT_BUCKET}/`, { auth: false }).catch(() => null),
+  ]);
   last = decodeProfile(raw, m);
+  if (last.space) last.space.capacity = bucket?.itemCount ?? null;
   return last;
 }
 

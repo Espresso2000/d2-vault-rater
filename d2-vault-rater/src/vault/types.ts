@@ -109,4 +109,6 @@ export interface Vault {
   armor: ArmorRecord[];
   /** Armor stat name -> its icon URL, from the manifest. */
   statIcons?: Record<string, string>;
+  /** Items in the vault's general bucket (weapons, armor, ghosts, ships...) and how many it holds. */
+  space?: { used: number; capacity: number | null };
 }

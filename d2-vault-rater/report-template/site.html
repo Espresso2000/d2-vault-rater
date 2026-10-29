@@ -194,6 +194,18 @@ button.tile:hover .go { color: var(--ink); transform: translateX(3px); }
 .legend > span { display: inline-flex; align-items: center; gap: 7px; }
 .legend > span b { color: var(--ink); font-weight: 600; }
 
+/* Vault space: one bar, kept items in the gradient, what the shard list would free striped red */
+.vspace { display: grid; gap: 10px; }
+.vs-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; font-size: 13.5px; }
+.vs-head .cap { margin-right: 4px; }
+.vs-head b { font: 600 20px/1 var(--display); }
+.vs-go { margin-left: auto; border: 0; background: none; padding: 0; color: var(--muted); font-size: 13px; }
+.vs-go b { color: var(--shard); }
+.vs-go:hover { color: var(--ink); }
+.vs-bar { display: flex; height: 10px; border-radius: 999px; background: var(--glass-hi); box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; }
+.vs-bar .k { background: var(--grad); }
+.vs-bar .s { background: repeating-linear-gradient(135deg, rgba(255,122,122,.75) 0 5px, rgba(255,122,122,.35) 5px 10px); }
+
 /* ---------- Page structure ---------- */
 main { padding-block: 0 80px; }
 section.panel { display: grid; gap: 68px; padding-top: 44px; }
@@ -1279,6 +1291,9 @@ aside.drawer[data-mode=bottom] .dp-id h2 { font-size: 23px; }
 .facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(180px, 100%), 1fr)); gap: 0 18px; font-size: 13.5px; }
 .facts div { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--line); padding-block: 7px; min-width: 0; }
 .facts span { color: var(--muted); }
+.lookups { display: flex; flex-wrap: wrap; gap: 6px; }
+.lookups a { padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line-hi); background: var(--glass); color: var(--muted); font-size: 12.5px; font-weight: 500; text-decoration: none; transition: color .15s ease, border-color .15s ease; }
+.lookups a:hover { color: var(--ink); border-color: var(--hover); }
 .facts b { font-weight: 500; text-align: right; }
 .dp-sec .dimpanel { padding: 0; border: 0; background: none; }
 .dp-sec .dimpanel + .dimpanel { padding-top: 12px; border-top: 1px solid var(--line); border-radius: 0; }
@@ -1439,6 +1454,7 @@ body.vr-booting > .topbar, body.vr-booting > main, body.vr-booting > footer { di
       <div class="chips" id="hero-chips"></div>
     </div>
     <div class="tiles" id="tiles"></div>
+    <div class="vspace" id="vspace" hidden></div>
     <div class="tierbar">
       <div class="cap">Weapons by Aegis tier</div>
       <div class="bar" id="tierbar" role="img"></div>
@@ -1635,6 +1651,15 @@ function vrMain() {
   $("#tierbar").innerHTML = [...TIERS, "U"].filter((t) => tc[t]).map((t) => `<span class="t${t}" style="flex:${tc[t]}" title="${tierLabel(t)}: ${tc[t]}"></span>`).join("");
   $("#tierbar").setAttribute("aria-label", [...TIERS, "U"].map((t) => `${tierLabel(t)} ${tc[t]}`).join(", "));
   $("#tierlegend").innerHTML = [...TIERS, "U"].map((t) => `<span title="${tierLabel(t)}"><span class="tier t${t}">${t === "U" ? "—" : t}</span>${t === "U" ? "Not on sheet " : ""}<b class="num">${tc[t]}</b></span>`).join("");
+  // Vault space: how full the vault is, and how much the shard list would free there.
+  const VS = DATA.vaultSpace;
+  if (VS?.capacity) {
+    const freed = [...DATA.weapons, ...DATA.armor].filter((x) => x.v === "shard" && (!x.wh || x.wh === "vault")).length;
+    const used = Math.min(VS.used, VS.capacity), keep = Math.max(0, used - freed);
+    $("#vspace").hidden = false;
+    $("#vspace").innerHTML = `<div class="vs-head"><span class="cap">Vault space</span><b class="num">${fmt(VS.used)}</b><span class="muted">of ${fmt(VS.capacity)} · ${fmt(Math.max(0, VS.capacity - VS.used))} free</span>${freed ? `<button type="button" class="vs-go" data-tab="shard">Shard list frees <b class="num">${fmt(freed)}</b> →</button>` : ""}</div>
+      <div class="vs-bar" role="img" aria-label="${fmt(VS.used)} of ${fmt(VS.capacity)} vault slots used; sharding frees ${fmt(freed)}"><span class="k" style="width:${pct(keep, VS.capacity)}%"></span><span class="s" style="width:${pct(used - keep, VS.capacity)}%" title="${fmt(freed)} marked Shard"></span></div>`;
+  }
   $("#foot-meta").innerHTML = `<span>Rated ${esc(fmtDateTime(DATA.generated))}</span><span>D2 Vault Rater</span><span>Nothing changes in game until you confirm a lock plan</span>`;
 
   /* ---------- Tabs ---------- */
@@ -3332,6 +3357,8 @@ function vrMain() {
   const dpExplain = (html) => `<details class="dp-explain"><summary><span class="chev" aria-hidden="true"></span>Explanation</summary><div>${html}</div></details>`;
   const COL = { barrel: "Barrel", magazine: "Magazine", perk1: "Trait 1", perk2: "Trait 2", origin: "Origin trait", masterwork: "Masterwork", other: "Other" };
   const COL_SHORT = { barrel: "Barrel", magazine: "Mag", perk1: "Trait", perk2: "Trait", origin: "Origin", other: "Other" };
+  /** Outside pages for an item: light.gg (rolls, popularity, reviews) and D2 Foundry (perk maths), by item hash. */
+  const lookups = (x, weapon) => !x.h ? "" : `<div class="lookups"><a href="https://www.light.gg/db/items/${x.h}/" target="_blank" rel="noopener">light.gg ↗</a>${weapon ? `<a href="https://d2foundry.gg/w/${x.h}" target="_blank" rel="noopener">D2 Foundry ↗</a>` : ""}</div>`;
   const fact = (k, v) => (v === null || v === undefined || v === "" ? "" : `<div><span>${k}</span><b>${esc(v)}</b></div>`);
 
   const whereBox = (src) => {
@@ -3721,7 +3748,7 @@ function vrMain() {
       sub: `<span class="dp-type">${elIcon(w.e) || elDot(w.e)}<span>${esc(typeLine(w))}</span></span><span class="dp-marks">${ammoIcon(w.am)}${champIcon(w.ch)}</span>`,
       score: { v: w.sc, label: "Overall", verdict: w.v, tip: "score" }, strip,
       body: dpLayout(
-        [dpSec(2, "Verdict", why, `dp-verdict ${w.v}`), dpSec(5, "", whereBox(w.src), "bare"), dpSec(6, "Roles", roleList(w)), dpSec(7, "Actions", actions), dpSec(9, "Details", facts)],
+        [dpSec(2, "Verdict", why, `dp-verdict ${w.v}`), dpSec(5, "", whereBox(w.src), "bare"), dpSec(6, "Roles", roleList(w)), dpSec(7, "Actions", actions), dpSec(9, "Details", facts + lookups(w, true))],
         [dpSec(3, "Perks", perkGrid(w), "", w.god ? "Wishlist god roll" : "")],
         [dpSec(4, "Stats", statBlock(w), "", statAside(w)), copies.length ? dpSec(8, `Other copies · ${copies.length}`, `<div class="list">${copies.map(weaponRow).join("")}</div>`) : ""],
         dpExplain(`<p><b>Overall score</b> is a 0-100 rating of this copy: 60% weapon plus 40% roll.</p><p><b>Weapon:</b> its Aegis tier (S 100, A 85, B 70, C 50, D 30), up to 5 more for a high rank in its tier. Weapons Aegis doesn't list use their wishlist rating.</p><p><b>Roll:</b> how well this copy's perks match Aegis's picks: each trait column is worth 35%, barrel and magazine 10% each, origin trait and masterwork 5% each.</p><p><b>Keep or Shard</b> also depends on your Strictness, duplicate copies and the wishlist, so the score alone doesn't decide it.</p>`),
@@ -3745,7 +3772,7 @@ function vrMain() {
       sub: `<span>${esc(a.arch || "Legacy armor")}${setLine(a)}</span>`,
       score: { v: a.sc, label: "Armor", verdict: a.v }, strip,
       body: dpLayout(
-        [dpSec(2, "Verdict", why, `dp-verdict ${a.v}`), dpSec(5, "Actions", movePanel(a, true) + dimPanel(a)), dpSec(6, "Details", `<div class="facts">${fact("Where", a.loc)}${fact("Archetype", a.arch || "Legacy")}${fact("Power", a.pw)}</div>`)],
+        [dpSec(2, "Verdict", why, `dp-verdict ${a.v}`), dpSec(5, "Actions", movePanel(a, true) + dimPanel(a)), dpSec(6, "Details", `<div class="facts">${fact("Where", a.loc)}${fact("Archetype", a.arch || "Legacy")}${fact("Power", a.pw)}</div>${lookups(a)}`)],
         [dpSec(3, "Stats", statBars(a, true) + parts, "", `${a.tot} total`), a.trait ? dpSec(4, "Exotic trait", traitBlock(a.trait)) : ""],
         [set ? dpSec(4, `${esc(a.si.name)} set`, set, "", `${a.si.ownedSlots} of 5 owned · rating ${a.si.value}`) : "", others.length ? dpSec(7, "Same slot and archetype", `<div class="list">${others.map(armorRow).join("")}</div>`) : ""],
         dpExplain(`<p><b>Armor score</b> is 40% stats compared with a Tier 5 roll, 25% fit to your build stats, 25% the set bonus (Aegis S-F) and 10% for Tier 5 or exotic.</p><p>The four smaller numbers under Stats are those parts, each out of 100.</p>`),
