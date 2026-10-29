@@ -26,6 +26,8 @@ export function loggedIn(): boolean {
 
 /** Hours since the oldest rating source was imported, or Infinity if one is missing. */
 export function sourcesAgeHours(): number {
+  // Loot imported before clears were counted has no activity hashes: import it again.
+  if (loadActivityLoot()?.activities.some((a) => !a.hashes)) return Infinity;
   const dates = [loadAegis()?.importedAt, loadWishlists()?.importedAt, loadArmorSets()?.importedAt, loadActivityLoot()?.importedAt, loadBossDamage()?.importedAt];
   if (dates.some((d) => !d)) return Infinity;
   return Math.max(...dates.map((d) => (Date.now() - Date.parse(d!)) / 3_600_000));
@@ -78,10 +80,10 @@ export async function buildReport(log: (s: string) => void = () => {}): Promise<
   const w = rateWeapons(vault.weapons, { manifest, aegis, wishlists: loadWishlists() }, settings);
   const a = rateArmor(vault, settings, loadArmorSets());
   const plan = planDimActions(vault, w, a, settings);
-  const loot = loadActivityLoot();
-  const activities = loot ? rateActivities(loot, aegis, w.ratings, a.ratings, loadArmorSets()) : [];
-  log("Fetching your account stats for Wrapped...");
+  log("Fetching your account stats for Wrapped and your clears...");
   const wrapped = await wrappedP;
+  const loot = loadActivityLoot();
+  const activities = loot ? rateActivities(loot, aegis, w.ratings, a.ratings, loadArmorSets(), wrapped?.activityStats) : [];
   log("Writing the report (downloading images the first time)...");
   const { file } = await writeSite(w, a, { vaultSize: vault.weapons.length + vault.armor.length, settings, searches: plan.searches, vault, wrapped, activities, sourceOf: await buildSourceLookup(manifest, aegis, loot), encounters: planEncounters(w.ratings), dim, dimError, plan });
   return {

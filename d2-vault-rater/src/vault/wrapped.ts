@@ -16,6 +16,13 @@ export interface Wrapped {
   triumphs: { active: number; lifetime: number; legacy: number } | null;
   /** Equipped title per character, e.g. "Reaper". */
   titles: { className: string; title: string }[];
+  /** Per activity hash, across characters: completions and time played (s). Bungie's fastest time counts checkpoint runs, so it's left out. */
+  activityStats: Record<number, ActivityStats>;
+}
+
+export interface ActivityStats {
+  clears: number;
+  seconds: number;
 }
 
 const MODES: [string, number, string, boolean][] = [
@@ -49,7 +56,7 @@ export const shortName = (n: string) => n.replace(/(\s*[#-]\d+)+$/, "").trim() |
 export async function fetchWrapped(m: Manifest): Promise<Wrapped> {
   const who = await primaryMembership();
   const base = `/Destiny2/${who.membershipType}`;
-  const out: Wrapped = { name: shortName(who.displayName), characters: [], pve: null, pvp: null, bestTypePve: null, weaponTypeKills: [], topWeapons: [], modes: [], triumphs: null, titles: [] };
+  const out: Wrapped = { name: shortName(who.displayName), characters: [], pve: null, pvp: null, bestTypePve: null, weaponTypeKills: [], topWeapons: [], modes: [], triumphs: null, titles: [], activityStats: {} };
   // Every call is optional: a failed one just leaves its part out. Independent calls run together.
   const get = <T>(path: string, auth = true) => bungie<T>(path, auth ? {} : { auth: false }).catch(() => null);
   type Character = { classType: number; minutesPlayedTotal: string; light: number; dateLastPlayed: string; emblemBackgroundPath: string; titleRecordHash?: number };
@@ -74,10 +81,24 @@ export async function fetchWrapped(m: Manifest): Promise<Wrapped> {
   try {
     if (p) [charIds, chars, profileOk] = [Object.keys(p.characters.data), Object.values(p.characters.data), true];
   } catch {}
-  const [titles, unique] = await Promise.all([
+  const [titles, unique, perActivity] = await Promise.all([
     Promise.all(chars.map((c) => (c.titleRecordHash ? get<{ titleInfo?: { titlesByGender?: Record<string, string> } }>(`/Destiny2/Manifest/DestinyRecordDefinition/${c.titleRecordHash}/`, false) : null))),
     Promise.all(charIds.map((cid) => get<{ weapons?: { referenceId: number; values: StatBlock }[] }>(`${base}/Account/${who.membershipId}/Character/${cid}/Stats/UniqueWeapons/`))),
+    Promise.all(charIds.map((cid) => get<{ activities?: { activityHash: number; values: StatBlock }[] }>(`${base}/Account/${who.membershipId}/Character/${cid}/Stats/AggregateActivityStats/`))),
   ]);
+
+  // Clears per activity (raid and dungeon counts on the R&Ds tab), merged across characters. Deleted characters aren't included.
+  for (const r of perActivity) {
+    try {
+      for (const a of r?.activities ?? []) {
+        const v = (k: string) => a.values[k]?.basic.value ?? 0;
+        if (!v("activityCompletions") && !v("activitySecondsPlayed")) continue;
+        const cur = (out.activityStats[a.activityHash] ??= { clears: 0, seconds: 0 });
+        cur.clears += v("activityCompletions");
+        cur.seconds += v("activitySecondsPlayed");
+      }
+    } catch {}
+  }
 
   try {
     if (p && profileOk) {

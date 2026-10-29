@@ -63,6 +63,8 @@ export interface ActivityLoot {
   name: string;
   kind: "raid" | "dungeon";
   image: string;
+  /** Activity hashes of every version (normal, master, legacy...), to sum your clears. */
+  hashes: number[];
   weapons: LootWeapon[];
   /** Armor set names this activity drops (with set bonuses). */
   armorSets: string[];
@@ -98,11 +100,14 @@ export async function importActivityLoot(m: Manifest, aegis: AegisData | null, s
   const collectibles = await extraTable<CollectibleDef>("DestinyCollectibleDefinition", m.version);
 
   const out: ActivityLoot[] = ACTIVITIES.map((a) => {
-    // Art: the most common loading-screen image among this activity's versions.
+    // Every version of the activity, and its art: the most common loading-screen image among them.
     const images: Record<string, number> = {};
-    for (const d of Object.values(activities)) {
+    const hashes: number[] = [];
+    for (const [h, d] of Object.entries(activities)) {
       const n = d.originalDisplayProperties?.name || d.displayProperties?.name || "";
-      if (!a.match.some((x) => n.startsWith(x) || n.startsWith("The " + x)) || !d.pgcrImage || /placeholder/.test(d.pgcrImage)) continue;
+      if (!a.match.some((x) => n.startsWith(x) || n.startsWith("The " + x))) continue;
+      hashes.push(Number(h));
+      if (!d.pgcrImage || /placeholder/.test(d.pgcrImage)) continue;
       images[d.pgcrImage] = (images[d.pgcrImage] ?? 0) + 1;
     }
     const image = Object.entries(images).sort((x, y) => y[1] - x[1])[0]?.[0];
@@ -168,7 +173,7 @@ export async function importActivityLoot(m: Manifest, aegis: AegisData | null, s
     for (const s of Object.values(sets?.sets ?? {})) {
       if (s.source.split(/\s*[·,]\s*|\s+-\s+/).some((x) => a.match.includes(x.trim())) || a.match.includes(s.source.trim())) armorSets.add(s.name);
     }
-    return { key: a.key, name: a.name, kind: a.kind, image: image ? bungieUrl(image) : "", weapons: [...weapons.values()], armorSets: [...armorSets] };
+    return { key: a.key, name: a.name, kind: a.kind, image: image ? bungieUrl(image) : "", hashes, weapons: [...weapons.values()], armorSets: [...armorSets] };
   });
 
   // Bungie's collections win over the sheet: drop a sheet-only weapon that collections credit to another activity.

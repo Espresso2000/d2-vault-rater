@@ -149,9 +149,9 @@ async function run() {
     const w = rateWeapons(vault.weapons, { manifest: m, aegis, wishlists: loadWishlists() }, rated);
     const a = rateArmor(vault, rated, loadArmorSets());
     const plan = (currentPlan = planDimActions(vault, w, a, rated));
-    const activities = loot ? rateActivities(loot, aegis, w.ratings, a.ratings, loadArmorSets()) : [];
-    log("Reading your account stats for Wrapped…");
+    log("Reading your account stats and clears…");
     const wrapped = await wrappedP;
+    const activities = loot ? rateActivities(loot, aegis, w.ratings, a.ratings, loadArmorSets(), wrapped?.activityStats) : [];
 
     // Images load straight from bungie.net, so each key is just the URL.
     const images: Record<string, string> = {};

@@ -372,7 +372,7 @@ server.registerTool(
     const searches = plan_id ? loadPlan(plan_id).searches : undefined;
     const wrapped = await fetchWrapped((await sources()).manifest).catch(() => null);
     const loot = loadActivityLoot();
-    const activities = loot ? rateActivities(loot, loadAegis(), w.ratings, a.ratings, loadArmorSets()) : [];
+    const activities = loot ? rateActivities(loot, loadAegis(), w.ratings, a.ratings, loadArmorSets(), wrapped?.activityStats) : [];
     const sourceOf = await buildSourceLookup((await sources()).manifest, loadAegis(), loot);
     const opts = { vaultSize: vault.weapons.length + vault.armor.length, settings, searches, vault, wrapped, activities, sourceOf, encounters: planEncounters(w.ratings) } as Parameters<typeof writeHtml>[2];
     const d = await dimData(settings);

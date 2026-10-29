@@ -116,6 +116,8 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
   const wrapped = o.wrapped
     ? {
         ...o.wrapped,
+        // Per-activity stats are already summed into each raid and dungeon on the R&Ds tab.
+        activityStats: undefined,
         characters: o.wrapped.characters.map((c) => ({ ...c, emblem: imageKey(c.emblem) })),
         topWeapons: o.wrapped.topWeapons.map((t) => ({ ...t, icon: imageKey(t.icon), owned: w.ratings.some((r) => r.itemHash === t.hash) })),
       }

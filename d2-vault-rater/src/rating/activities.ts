@@ -4,6 +4,7 @@ import type { ActivityData, LootWeapon } from "../sources/activities.js";
 import { SET_TIER_POINTS, setKey, type ArmorSetData, type SetTier } from "../sources/armorSets.js";
 import { TIER_ORDER, TIER_POINTS, type WeaponRating } from "./weapons.js";
 import type { ArmorRating } from "./armor.js";
+import type { ActivityStats } from "../vault/wrapped.js";
 import type { Tier } from "./settings.js";
 import { groupBy } from "../util.js";
 
@@ -47,7 +48,14 @@ export interface RatedActivity {
   weapons: RatedLoot[];
   sets: RatedSet[];
   counts: { chase: number; upgrade: number; have: number; sTier: number };
+  /** Your clears across every version of the activity; null when Bungie's stats couldn't be read. */
+  clears: ActivityStats | null;
 }
+
+const sumStats = (list: ActivityStats[]): ActivityStats => ({
+  clears: list.reduce((n, x) => n + x.clears, 0),
+  seconds: list.reduce((n, x) => n + x.seconds, 0),
+});
 
 /**
  * Ranks raids and dungeons (each kind on its own) by how much they would add to this vault:
@@ -60,6 +68,7 @@ export function rateActivities(
   weapons: WeaponRating[],
   armor: ArmorRating[],
   sets: ArmorSetData | null,
+  stats: Record<number, ActivityStats> | null = null,
 ): RatedActivity[] {
   const byName = new Map<string, AegisWeapon>();
   for (const w of aegis?.weapons ?? []) {
@@ -121,6 +130,7 @@ export function rateActivities(
       parts: { quality, need, sets: setPart },
       weapons: ws,
       sets: rs,
+      clears: stats && act.hashes ? sumStats(act.hashes.map((h) => stats[h]).filter(Boolean)) : null,
       counts: {
         chase: ws.filter((w) => w.status === "chase").length,
         upgrade: ws.filter((w) => w.status === "upgrade").length,

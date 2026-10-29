@@ -441,3 +441,11 @@ test("encounter data: every raid and dungeon has encounters, each with valid fac
     }
   }
 });
+
+test("raid clears add up every version of the activity, and stay null without stats", async () => {
+  const { rateActivities } = await import("../src/rating/activities.js");
+  const loot = { importedAt: "", manifestVersion: "", activities: [{ key: "vog", name: "Vault of Glass", kind: "raid" as const, image: "", hashes: [1, 2], weapons: [], armorSets: [] }] };
+  const stats = { 1: { clears: 3, seconds: 600 }, 2: { clears: 2, seconds: 300 }, 9: { clears: 50, seconds: 1 } };
+  assert.deepEqual(rateActivities(loot, null, [], [], null, stats)[0].clears, { clears: 5, seconds: 900 });
+  assert.equal(rateActivities(loot, null, [], [], null)[0].clears, null);
+});

@@ -85,7 +85,8 @@ export async function ensureSources(m: Manifest, settings: Settings, log: (s: st
   }
 
   const loot = loadActivityLoot();
-  if (stale(loot?.importedAt) || loot?.manifestVersion !== m.version) {
+  // Loot imported before clears were counted has no activity hashes: import it again.
+  if (stale(loot?.importedAt) || loot?.manifestVersion !== m.version || loot.activities.some((a) => !a.hashes)) {
     log("Mapping raid and dungeon loot…");
     await importActivityLoot(m, aegis as AegisData, sets).catch((e) => warnings.push(`Raid and dungeon loot: ${(e as Error).message}`));
   }
