@@ -1195,6 +1195,47 @@ aside.drawer[data-mode=bottom] .dp-id h2 { font-size: 23px; }
 .dp-quote { margin: 0; padding: 11px 14px 11px 16px; border-radius: 4px 10px 10px 4px; border-left: 2px solid rgba(var(--c2),.55); background: var(--glass); color: var(--muted); font-size: 13.5px; }
 .dp-quote b { color: var(--ink); font-weight: 600; }
 
+/* Exotic catalysts: the hover card's rows, and the details panel's carousel (arrows on the sides, dots underneath) */
+.catmark { position: relative; flex: none; display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; border: 1px solid currentColor; }
+.catmark svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.catmark.ok { color: var(--keep); background: rgba(51,227,160,.12); }
+.catmark.no { color: var(--shard); background: rgba(255,122,122,.12); }
+.catmark[data-tip]::after { content: attr(data-tip); position: absolute; right: calc(100% + 8px); top: 50%; margin-top: -12px; z-index: 5; padding: 4px 8px; border-radius: 3px 8px; white-space: nowrap; font: 500 11.5px var(--body); color: var(--ink); background: #151c3e; border: 1px solid var(--line-hi); box-shadow: var(--shadow); opacity: 0; transform: translateX(3px); transition: opacity .12s, transform .12s; pointer-events: none; }
+.catmark[data-tip]:hover::after, .catmark[data-tip]:focus-visible::after { opacity: 1; transform: none; }
+.vtcat { display: grid; gap: 5px; padding-top: 8px; border-top: 1px solid var(--line); }
+.vtcl { font: 500 10px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--faint); }
+.vtcr { display: flex; align-items: center; gap: 8px; font: 600 13px var(--display); }
+.vtcr img, .vtcr .ph { width: 22px; height: 22px; flex: none; border-radius: 4px; background: rgba(0,0,0,.3); }
+.vtcr > span:not(.catmark) { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.cat-car { position: relative; }
+.cat-car.multi { padding-inline: 34px; }
+.cat-view { overflow: hidden; border-radius: 3px 12px; }
+.cat-track { display: flex; transition: transform .28s ease; }
+@media (prefers-reduced-motion: reduce) { .cat-track { transition: none; } }
+.cat-slide { flex: none; width: 100%; box-sizing: border-box; display: grid; gap: 10px; align-content: start; padding: 12px; border-radius: 3px 12px; background: var(--glass-hi); border: 1px solid var(--line); }
+.cat-head { display: flex; align-items: center; gap: 12px; }
+.cat-head img, .cat-head .ph { width: 44px; height: 44px; flex: none; border-radius: 6px; background: rgba(0,0,0,.3); }
+.cat-head b { flex: 1; min-width: 0; font: 600 15.5px/1.2 var(--display); overflow-wrap: anywhere; }
+.cat-slide p { margin: 0; font-size: 13px; line-height: 1.45; color: var(--muted); white-space: pre-line; }
+.cat-meta { display: grid; gap: 7px; }
+.cat-meta > div { display: flex; align-items: baseline; gap: 10px; font-size: 12.5px; }
+.cat-meta > div > span:first-child { flex: none; width: 74px; font: 500 10px/1.4 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--faint); }
+.cat-meta b { font-weight: 500; color: var(--ink); line-height: 1.4; }
+.cat-meta .tier { align-self: center; }
+.catprog { flex: 1; min-width: 0; display: grid; gap: 6px; }
+.catprog > div { display: grid; gap: 3px; }
+.catprog b { font: 600 12px var(--mono); }
+.catbar { height: 5px; border-radius: 3px; background: rgba(150,170,255,.14); overflow: hidden; }
+.catbar i { display: block; height: 100%; border-radius: 3px; background: var(--grad); }
+.cat-arr { position: absolute; top: 50%; transform: translateY(-50%); display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border-radius: 50%; border: 1px solid var(--line-hi); background: var(--glass-hi); color: var(--green); cursor: pointer; }
+.cat-arr.prev { left: 0; } .cat-arr.next { right: 0; }
+.cat-arr:hover { border-color: var(--green); background: rgba(var(--c3),.12); }
+.cat-arr svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.cat-dots { display: flex; justify-content: center; gap: 8px; margin-top: 10px; }
+.cat-dot { width: 8px; height: 8px; padding: 0; border-radius: 50%; border: 0; background: var(--faint); opacity: .55; cursor: pointer; transition: transform .15s, background .15s, opacity .15s; }
+.cat-dot:hover { opacity: 1; }
+.cat-dot.on { background: var(--green); opacity: 1; transform: scale(1.25); }
+
 /* Perks, laid out like the game's weapon screen: the frame on top, one column of round sockets per perk slot, then mods */
 .pk-intr { display: flex; align-items: center; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
 .pk-intr img, .pk-intr .ph { width: 42px; height: 42px; flex: none; border-radius: 8px; background: rgba(0,0,0,.3); }
@@ -2568,8 +2609,11 @@ function vrMain() {
   const setRows = (si, full) => [2, 4].map((n) => { const b = si?.bonuses.find((x) => x.pieces === n), d = DATA.sets?.[si?.name]?.bonuses?.find((x) => x.pieces === n)?.description; return `<div class="vtaegis"><span class="tier t${b?.tier || "U"}">${b?.tier || "—"}</span><span><b>${n} piece bonus</b>${b ? " · " + esc(b.name) : ""}</span>${full && d ? `<div class="sm sd">${bonusText(d)}</div>` : ""}</div>`; }).join("");
   /** An exotic's trait: its symbol, name and the full description. */
   const traitBlock = (t) => (t ? `<div class="pk-intr tr">${t.ic ? img(t.ic) : ""}<div><b>${esc(t.n)}</b>${t.d ? `<span>${esc(t.d)}</span>` : ""}</div></div>` : "");
+  /** An exotic's catalysts: a green tick when you have one, a red cross when you don't. `tip` adds an instant tooltip (the hover card has none, it can't be hovered). */
+  const catMark = (c, tip) => { const t = c.a ? "Acquired" : "Not acquired"; return `<span class="catmark ${c.a ? "ok" : "no"}"${tip ? ` data-tip="${t}" tabindex="0"` : ""} role="img" aria-label="${t}"><svg viewBox="0 0 16 16" aria-hidden="true">${c.a ? '<path d="M3.5 8.5l3 3 6-7"/>' : '<path d="M4 4l8 8M12 4l-8 8"/>'}</svg></span>`; };
+  const catTip = (w) => (w.ct?.length ? `<div class="vtcat"><span class="vtcl">Catalyst${w.ct.length > 1 ? "s" : ""}</span>${w.ct.map((c) => `<div class="vtcr">${c.ic ? img(c.ic) : ""}<span>${esc(c.n)}</span>${catMark(c)}</div>`).join("")}</div>` : "");
   const tipHtml = (w, a, s) => s ? `<div class="nm"><span>${esc(s.name)}</span></div>${setRows(s, true)}` : w
-    ? `${tipTop(w, `<span class="vtel" style="--el:var(--${esc(w.e)})">${esc(w.e)}</span> ${esc(typeLine(w))}`, ammoIcon(w.am) + champIcon(w.ch))}<div class="vtaegis">${tierBadge(w)}<span>${w.tier ? "tier gun according to Aegis" : "Unrated: not on Aegis's sheet"}</span></div><div class="vtaegis"><b>${w.rs ?? "—"}/100</b><span>Aegis god roll match</span></div><div class="vtrows">${perkRows(w)}</div>${w.r === "Exotic" ? traitBlock(w.fr) : ""}`
+    ? `${tipTop(w, `<span class="vtel" style="--el:var(--${esc(w.e)})">${esc(w.e)}</span> ${esc(typeLine(w))}`, ammoIcon(w.am) + champIcon(w.ch))}<div class="vtaegis">${tierBadge(w)}<span>${w.tier ? "tier gun according to Aegis" : "Unrated: not on Aegis's sheet"}</span></div><div class="vtaegis"><b>${w.rs ?? "—"}/100</b><span>Aegis god roll match</span></div><div class="vtrows">${perkRows(w)}</div>${w.r === "Exotic" ? traitBlock(w.fr) + catTip(w) : ""}`
     : `${tipTop(a, `${esc(a.cls)} · ${esc(a.arch || "Legacy")}${setLine(a)}`)}${statBars(a, true)}<div class="sm">${a.tot} total${topStat(a) ? ` · highest ${esc(topStat(a))}` : ""}${a.loc ? " · " + esc(a.loc) : ""}</div>${a.si && !isExotic(a) ? setRows(a.si) : ""}${traitBlock(a.trait)}`;
   // Anything showing one item gets the card: data-w / data-a for your own gear, data-vt for items another module rates
   // (the web app's Vendors tab answers window.VR_TIP(id) with { w } or { a }). Not on Overview or Wrapped.
@@ -3749,6 +3793,30 @@ function vrMain() {
     }
   });
 
+  /* Catalysts: one card per catalyst (a weapon can have several) in a carousel with arrows and dots, each with its tick or cross. */
+  const catSlide = (w, c, i, n) => {
+    const row = (k, v) => `<div><span>${k}</span>${v}</div>`;
+    const prog = c.a && c.p?.length ? `<div class="catprog">${c.p.map((p) => `<div><div class="catbar"><i style="width:${Math.min(100, Math.round((100 * p.cur) / (p.max || 1)))}%"></i></div><b>${p.cur.toLocaleString()} / ${p.max.toLocaleString()}</b></div>`).join("")}</div>` : "";
+    return `<div class="cat-slide" role="group" aria-roledescription="slide" aria-label="${i + 1} of ${n}"${i ? ' aria-hidden="true"' : ""}><div class="cat-head">${c.ic ? img(c.ic) : '<span class="ph"></span>'}<b>${esc(c.n)}</b>${catMark(c, true)}</div>${c.d || c.u ? `<p>${esc(c.d || c.u)}</p>` : ""}<div class="cat-meta">${c.d && c.u ? row("Unlock", `<b>${esc(c.u)}</b>`) : ""}${w.tier ? row("Aegis tier", tierBadge(w)) : ""}${c.s ? row("Source", `<b>${esc(c.s)}</b>`) : ""}${prog ? row("Progress", prog) : ""}</div></div>`;
+  };
+  const catalystBlock = (w) => {
+    const n = w.ct?.length || 0;
+    if (!n) return "";
+    const nav = n > 1 ? `<button type="button" class="cat-arr prev" aria-label="Previous catalyst"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3L5 8l5 5"/></svg></button><button type="button" class="cat-arr next" aria-label="Next catalyst"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg></button><div class="cat-dots">${w.ct.map((c, i) => `<button type="button" class="cat-dot${i ? "" : " on"}" data-i="${i}" aria-label="${esc(c.n)}"${i ? "" : ' aria-current="true"'}></button>`).join("")}</div>` : "";
+    return `<div class="cat-car${n > 1 ? " multi" : ""}" data-i="0" data-n="${n}"><div class="cat-view"><div class="cat-track">${w.ct.map((c, i) => catSlide(w, c, i, n)).join("")}</div></div>${nav}</div>`;
+  };
+  function catGo(car, i) {
+    const n = Number(car.dataset.n);
+    i = (i + n) % n; car.dataset.i = i;
+    $(".cat-track", car).style.transform = `translateX(-${i * 100}%)`;
+    $$(".cat-slide", car).forEach((s, j) => (j === i ? s.removeAttribute("aria-hidden") : s.setAttribute("aria-hidden", "true")));
+    $$(".cat-dot", car).forEach((d, j) => { d.classList.toggle("on", j === i); j === i ? d.setAttribute("aria-current", "true") : d.removeAttribute("aria-current"); });
+  }
+  drawer.addEventListener("click", (e) => {
+    const b = e.target.closest(".cat-arr, .cat-dot"), car = b?.closest(".cat-car");
+    if (car) catGo(car, b.classList.contains("cat-dot") ? Number(b.dataset.i) : Number(car.dataset.i) + (b.classList.contains("next") ? 1 : -1));
+  });
+
   /** The summary strip: readouts ([label, value, note]) over the lock and tag pickers. */
   const VERDICT_NOTE = { keep: "Worth a vault slot", shard: "Safe to dismantle", review: "Your call" };
   const dpStrip = (reads, state) => `<div class="dp-read">${reads.filter(Boolean).map(([k, v, note]) => `<div><span class="k">${k}</span><span class="v">${v}${note ? `<small>${note}</small>` : ""}</span></div>`).join("")}</div>${state ? `<div class="dp-state">${state}</div>` : ""}`;
@@ -3770,7 +3838,7 @@ function vrMain() {
       score: { v: w.sc, label: "Overall", verdict: w.v, tip: "score" }, strip,
       body: dpLayout(
         [dpSec(2, "Verdict", why, `dp-verdict ${w.v}`), dpSec(5, "", whereBox(w.src), "bare"), dpSec(6, "Roles", roleList(w)), dpSec(7, "Actions", actions), dpSec(9, "Details", facts + lookups(w, true))],
-        [dpSec(3, "Perks", perkGrid(w), "", w.god ? "Wishlist god roll" : "")],
+        [dpSec(3, "Perks", perkGrid(w), "", w.god ? "Wishlist god roll" : ""), dpSec(3, "Catalyst", catalystBlock(w), "", w.ct?.length > 1 ? `${w.ct.length} catalysts` : "")],
         [dpSec(4, "Stats", statBlock(w), "", statAside(w)), copies.length ? dpSec(8, `Other copies · ${copies.length}`, `<div class="list">${copies.map(weaponRow).join("")}</div>`) : ""],
         dpExplain(`<p><b>Overall score</b> is a 0-100 rating of this copy: 60% weapon plus 40% roll.</p><p><b>Weapon:</b> its Aegis tier (S 100, A 85, B 70, C 50, D 30), up to 5 more for a high rank in its tier. Weapons Aegis doesn't list use their wishlist rating.</p><p><b>Roll:</b> how well this copy's perks match Aegis's picks: each trait column is worth 35%, barrel and magazine 10% each, origin trait and masterwork 5% each.</p><p><b>Keep or Shard</b> also depends on your Strictness, duplicate copies and the wishlist, so the score alone doesn't decide it.</p>`),
       ),

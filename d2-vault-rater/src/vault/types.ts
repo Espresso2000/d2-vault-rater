@@ -56,9 +56,27 @@ export interface WeaponRecord {
   /** The intrinsic (frame) perk and the masterwork and weapon mod plugs, for the details panel. Missing in older vault snapshots. */
   intrinsic?: WeaponPlug | null;
   mods?: WeaponMod[];
+  /** An exotic's catalysts (one or several). Missing for other weapons and in older vault snapshots. */
+  catalysts?: Catalyst[];
   icon: string;
   screenshot: string | null;
   location: Location;
+}
+
+/** One exotic catalyst on a weapon: what it is, how you get it and whether you have it. */
+export interface Catalyst {
+  name: string;
+  icon: string | null;
+  /** What it does, when Bungie words it for this catalyst (most only say "upgrades this weapon to a masterwork"). */
+  description: string;
+  /** How to unlock it (the record text, e.g. "Defeat targets using X"). */
+  unlock?: string;
+  /** Where it comes from, e.g. "Acquired from the Season of Defiance Seasonal reward track." */
+  source?: string;
+  /** It is in the weapon's catalyst socket: you have it. */
+  acquired: boolean;
+  /** Acquired but not finished: each open objective's kills so far and needed. Missing when it is fully unlocked. */
+  progress?: { cur: number; max: number }[];
 }
 
 export interface WeaponPlug {

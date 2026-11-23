@@ -449,3 +449,25 @@ test("raid clears add up every version of the activity, and stay null without st
   assert.deepEqual(rateActivities(loot, null, [], [], null, stats)[0].clears, { clears: 5, seconds: 900 });
   assert.equal(rateActivities(loot, null, [], [], null)[0].clears, null);
 });
+
+test("exotic catalysts: acquired with open objectives, finished, and not acquired", () => {
+  const mm = manifest();
+  const plugItem = (hash: number, name: string) => (mm.items[hash] = { hash, displayProperties: { name, icon: `/icons/${hash}.png`, description: "Upgrades this weapon to a Masterwork." }, itemType: 19, plug: { plugCategoryIdentifier: "catalyst" } });
+  plugItem(95, "Multimach Catalyst");
+  plugItem(96, "Empty Catalyst Socket");
+  mm.records = { 700: { hash: 700, displayProperties: { name: "Multimach Catalyst", icon: "/icons/r700.png", description: "Defeat targets using Multimach CCX." }, source: "Acquired from a quest." } };
+  const def = mm.items[1002];
+  mm.items[1002] = { ...def, inventory: { ...def.inventory!, tierType: 6 }, sockets: { ...def.sockets!, socketCategories: [...def.sockets!.socketCategories, { socketCategoryHash: 2685412949, socketIndexes: [8] }] } };
+  const decode = (plug: number, objectives: { progress: number; completionValue: number; complete: boolean }[]) => {
+    const raw = profile([{ id: "x", hash: 1002, plugs: [11, 21, 31, 43, 52, 61] }]);
+    raw.itemComponents!.sockets!.data!.x.sockets[8] = { plugHash: plug, isEnabled: true, isVisible: true };
+    raw.profileRecords = { data: { records: { 700: { objectives } } } };
+    return decodeProfile(raw, mm).weapons[0].catalysts;
+  };
+  const open = decode(95, [{ progress: 2, completionValue: 2, complete: true }, { progress: 120, completionValue: 500, complete: false }]);
+  assert.deepEqual(open?.map((c) => [c.name, c.acquired, c.progress, c.source, c.description]), [["Multimach Catalyst", true, [{ cur: 120, max: 500 }], "Acquired from a quest.", ""]]);
+  assert.equal(decode(95, [{ progress: 500, completionValue: 500, complete: true }])![0].progress, undefined, "fully unlocked shows no progress");
+  // An empty socket that offers nothing still gets its catalyst, found by the weapon's name; it's not acquired.
+  const none = decode(96, [{ progress: 9, completionValue: 500, complete: false }]);
+  assert.deepEqual(none?.map((c) => [c.name, c.acquired, c.progress]), [["Multimach Catalyst", false, undefined]]);
+});

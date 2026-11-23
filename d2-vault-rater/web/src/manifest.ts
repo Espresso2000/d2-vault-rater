@@ -8,8 +8,8 @@ import { STRIP_FORMAT } from "../../src/bungie/strip.js";
 
 export async function loadLiteManifest(log: (s: string) => void): Promise<LiteManifest> {
   const m = await loadVersioned<LiteManifest>({
-    // A copy stored in an older strip format (without plug icons) is rebuilt once.
-    key: `manifest-v${STRIP_FORMAT}`,
+    // A copy stored in an older strip format (without plug icons or catalyst records) is rebuilt once.
+    key: `manifest-v${STRIP_FORMAT}-records`,
     snapshot: MANIFEST_SNAPSHOT,
     worker: () => new Worker(new URL("./manifest.worker.ts", import.meta.url), { type: "module" }),
     log,

@@ -3,13 +3,14 @@
  * shared strip functions in src/bungie/strip.ts, minus cosmetic plugs.
  * Used by the manifest worker (in the browser) and the snapshot script (in Node).
  */
-import { STRIP_FORMAT, stripActivities, stripCollectibles, stripItems, stripNamed, type Raw } from "../../src/bungie/strip.js";
+import { STRIP_FORMAT, stripActivities, stripCatalysts, stripCollectibles, stripItems, stripNamed, type Raw } from "../../src/bungie/strip.js";
 
 export const TABLES = {
   items: ["DestinyInventoryItemDefinition", (t: Raw) => stripItems(t)],
   stats: ["DestinyStatDefinition", stripNamed],
   itemSets: ["DestinyEquipableItemSetDefinition", stripNamed],
   collectibles: ["DestinyCollectibleDefinition", stripCollectibles],
+  records: ["DestinyRecordDefinition", stripCatalysts],
   activities: ["DestinyActivityDefinition", stripActivities],
 } as const;
 
@@ -28,6 +29,7 @@ export interface LiteManifest {
   stats: Raw;
   itemSets: Raw;
   collectibles: Raw;
+  records: Raw;
   activities: Raw;
 }
 

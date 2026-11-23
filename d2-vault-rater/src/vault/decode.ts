@@ -1,8 +1,9 @@
-import { DAMAGE_TYPES as DAMAGE, type Manifest, type ItemDef } from "../bungie/defs.js";
+import { DAMAGE_TYPES as DAMAGE, normalizeName, type Manifest, type ItemDef } from "../bungie/defs.js";
 import { bungieUrl } from "../bungie/client.js";
-import type { ArmorRecord, ArmorSlot, ClassName, PerkColumn, Vault, WeaponMod, WeaponPlug, WeaponRecord, WeaponSlot } from "./types.js";
+import type { ArmorRecord, ArmorSlot, Catalyst, ClassName, PerkColumn, Vault, WeaponMod, WeaponPlug, WeaponRecord, WeaponSlot } from "./types.js";
 
-export const PROFILE_COMPONENTS = [100, 102, 200, 201, 205, 300, 304, 305, 306, 307, 310];
+/** 309 is each plug's objectives (catalyst kills); 900 the account's records (is a catalyst finished). */
+export const PROFILE_COMPONENTS = [100, 102, 200, 201, 205, 300, 304, 305, 306, 307, 309, 310, 900];
 
 const WEAPON_BUCKETS: Record<number, WeaponSlot> = { 1498876634: "Kinetic", 2465295065: "Energy", 953998645: "Power" };
 const ARMOR_BUCKETS: Record<number, ArmorSlot> = {
@@ -20,7 +21,7 @@ const AMMO = { 1: "Primary", 2: "Special", 3: "Heavy" } as const;
 /** Bungie's breaker types: the champion a weapon stuns. */
 const BREAKER = { 1: "Barrier", 2: "Overload", 3: "Unstoppable" } as const;
 
-export const SOCKET_CATEGORY = { weaponPerks: 4241085061, intrinsic: 3956125808 };
+export const SOCKET_CATEGORY = { weaponPerks: 4241085061, intrinsic: 3956125808, catalyst: 2685412949 };
 const STATE_LOCKED = 1;
 const STATE_CRAFTED = 8;
 
@@ -41,10 +42,17 @@ interface RawPlug {
   enabled: boolean;
 }
 
+interface RawObjective {
+  progress?: number;
+  completionValue: number;
+  complete: boolean;
+}
+
 /** The parts of a GetProfile response the decoder reads. */
 export interface RawProfile {
   profile?: { data?: { userInfo: { membershipId: string; membershipType: number } } };
   profileInventory?: { data?: { items: RawItem[] } };
+  profileRecords?: { data?: { records: Record<string, { objectives?: RawObjective[] }> } };
   characters?: { data?: Record<string, { classType: number; dateLastPlayed?: string }> };
   characterInventories?: { data?: Record<string, { items: RawItem[] }> };
   characterEquipment?: { data?: Record<string, { items: RawItem[] }> };
@@ -56,6 +64,7 @@ export interface RawProfile {
     stats?: { data?: Record<string, { stats: Record<string, { statHash: number; value: number }> }> };
     sockets?: { data?: Record<string, { sockets: RawSocket[] }> };
     reusablePlugs?: { data?: Record<string, { plugs: Record<string, RawPlug[]> }> };
+    plugObjectives?: { data?: Record<string, { objectivesPerPlug: Record<string, RawObjective[]> }> };
   };
 }
 
@@ -69,6 +78,57 @@ function plugName(m: Manifest, hash?: number): string {
 function plugOf(m: Manifest, hash?: number): WeaponPlug | null {
   const d = hash ? m.items[hash]?.displayProperties : undefined;
   return d?.name ? { name: d.name, icon: d.icon ? bungieUrl(d.icon) : null, description: d.description ?? "" } : null;
+}
+
+const catalystsByName = new WeakMap<Manifest, Map<string, number>>();
+/** Weapon names are looser than their records ("Whisper Catalyst" for Whisper of the Worm): the record's words must run together in the weapon's name. */
+const wordsOf = (s: string) => normalizeName(s).split(" ").filter((w) => w !== "the");
+const runsIn = (rec: string[], weapon: string[]) => rec.length > 0 && weapon.some((_, i) => rec.every((w, j) => weapon[i + j] === w));
+/** Most catalysts only say they upgrade the weapon to a masterwork; that is not worth showing as a description. */
+const GENERIC_CATALYST = /masterwork|catalyst can be inserted/i;
+
+/**
+ * A weapon's exotic catalysts: the ones in its catalyst socket (inserted, or offered), else the record named after it.
+ * It's acquired when the socket holds it; it's finished when the plug's or record's objectives are all done.
+ */
+function catalystsOf(m: Manifest, raw: RawProfile, id: string, weaponName: string, def: ItemDef, sockets: RawSocket[], reusable: Record<string, RawPlug[]>): Catalyst[] {
+  const idxs = def.sockets?.socketCategories?.find((c) => c.socketCategoryHash === SOCKET_CATEGORY.catalyst)?.socketIndexes ?? [];
+  if (!idxs.length) return [];
+  let byName = catalystsByName.get(m);
+  if (!byName) catalystsByName.set(m, (byName = new Map(Object.values(m.records ?? {}).map((r) => [r.displayProperties.name, r.hash]))));
+  const plugObj = raw.itemComponents?.plugObjectives?.data?.[id]?.objectivesPerPlug ?? {};
+  const out = new Map<string, Catalyst>();
+  const add = (name: string, plugHash: number | undefined, acquired: boolean) => {
+    const recHash = byName!.get(name);
+    const rec = recHash ? m.records?.[recHash] : undefined;
+    const plug = plugHash ? m.items[plugHash]?.displayProperties : undefined;
+    // The record knows best whether it's finished; the plug's own objectives stand in when it has no record.
+    const objs = (recHash && raw.profileRecords?.data?.records[recHash]?.objectives) || plugObj[String(plugHash)] || [];
+    const open = objs.filter((o) => !o.complete).map((o) => ({ cur: o.progress ?? 0, max: o.completionValue }));
+    const desc = plug?.description ?? "";
+    out.set(name, {
+      name,
+      icon: (icon => (icon ? bungieUrl(icon) : null))(rec?.displayProperties.icon ?? plug?.icon),
+      description: desc && !GENERIC_CATALYST.test(desc.split(/\n/)[0]) ? desc : "",
+      ...(rec?.displayProperties.description ? { unlock: rec.displayProperties.description } : {}),
+      ...(rec?.source ? { source: rec.source } : {}),
+      acquired,
+      ...(acquired && open.length ? { progress: open } : {}),
+    });
+  };
+  for (const i of idxs) {
+    const active = sockets[i]?.plugHash;
+    for (const h of [active, ...(reusable[String(i)] ?? []).map((p) => p.plugItemHash)]) {
+      const n = plugName(m, h);
+      if (h && /Catalyst$/.test(n) && !out.has(n)) add(n, h, h === active);
+    }
+  }
+  if (!out.size) {
+    // The socket is empty and offers nothing (Bungie leaves that out for catalysts you haven't earned): find the record by the weapon's name.
+    const w = wordsOf(weaponName);
+    for (const r of Object.values(m.records ?? {})) if (runsIn(wordsOf(r.displayProperties.name.replace(/ Catalyst$/, "")), w)) add(r.displayProperties.name, undefined, false);
+  }
+  return [...out.values()];
 }
 
 function isEnhanced(m: Manifest, hash: number): boolean {
@@ -189,6 +249,7 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
         const n = m.stats[st.statHash]?.displayProperties?.name;
         if (n && !(n in stats)) { stats[n] = st.value; baseStats.push(n); }
       }
+      const catalysts = rarity(def) === "Exotic" ? catalystsOf(m, raw, id, name, def, sockets, reusable) : [];
       weapons.push({
         kind: "weapon",
         instanceId: id,
@@ -212,6 +273,7 @@ export function decodeProfile(raw: RawProfile, m: Manifest): Vault {
         baseStats,
         intrinsic,
         mods,
+        ...(catalysts.length ? { catalysts } : {}),
         icon: bungieUrl(def.displayProperties.icon),
         screenshot: def.screenshot ? bungieUrl(def.screenshot) : null,
         location: { where, equipped, ...(postmaster ? { postmaster } : {}) },

@@ -38,11 +38,20 @@ export interface ItemSetDef {
   displayProperties: { name: string };
 }
 
+/** An exotic catalyst's record: its name, icon, how it unlocks and (when Bungie says) where it comes from. */
+export interface CatalystDef {
+  hash: number;
+  displayProperties: { name: string; icon?: string; description?: string };
+  source?: string;
+}
+
 export interface Manifest {
   version: string;
   items: Record<string, ItemDef>;
   stats: Record<string, StatDef>;
   itemSets: Record<string, ItemSetDef>;
+  /** Exotic catalyst records. Missing in manifests cached before they were kept. */
+  records?: Record<string, CatalystDef>;
 }
 
 /** Element names by Bungie damage type. */

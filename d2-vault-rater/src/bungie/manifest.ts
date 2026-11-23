@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { paths } from "../config.js";
 import { bungie } from "./client.js";
 import { versionSlug, type Manifest } from "./defs.js";
-import { STRIP_FORMAT, stripItems, stripNamed, type Raw } from "./strip.js";
+import { STRIP_FORMAT, stripCatalysts, stripItems, stripNamed, type Raw } from "./strip.js";
 import { liteTable } from "./tables.js";
 
 export * from "./defs.js";
@@ -13,6 +13,7 @@ const COMPONENTS: [keyof Omit<Manifest, "version">, string, (t: Raw) => Raw][] =
   ["items", "DestinyInventoryItemDefinition", (t) => stripItems(t, true)],
   ["stats", "DestinyStatDefinition", stripNamed],
   ["itemSets", "DestinyEquipableItemSetDefinition", stripNamed],
+  ["records", "DestinyRecordDefinition", stripCatalysts],
 ];
 
 let cached: Manifest | null = null;

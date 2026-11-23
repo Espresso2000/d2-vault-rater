@@ -89,6 +89,17 @@ export const stripNamed = (table: Raw): Raw => {
   return out;
 };
 
+/** Exotic catalyst records: name, icon, unlock text and the "acquired from" text Bungie keeps in the hidden state. */
+export const stripCatalysts = (table: Raw): Raw => {
+  const out: Raw = {};
+  for (const [k, d] of Object.entries(table)) {
+    if (d.recordTypeName !== "Exotic Catalysts") continue;
+    const dp = d.displayProperties ?? {};
+    out[k] = { hash: d.hash, displayProperties: { name: dp.name ?? "", icon: dp.icon, description: dp.description }, source: d.stateInfo?.obscuredDescription || undefined };
+  }
+  return out;
+};
+
 export const stripCollectibles = (table: Raw): Raw => {
   const out: Raw = {};
   for (const [k, d] of Object.entries(table)) if (d.sourceString && d.itemHash) out[k] = { sourceString: d.sourceString, itemHash: d.itemHash };

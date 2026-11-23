@@ -85,6 +85,8 @@ export function buildSiteData(w: WeaponReport, a: ArmorReport, o: ReportOptions,
     // A mod socket also carries its socket index and the names of the mods that fit (their icons and text are in `modInfo`).
     md: recW.get(r.instanceId)?.mods?.map((x) => ({ ...plugData(x)!, k: x.kind, si: x.socket, o: x.options?.map((o) => o.name) })),
     rmw: r.recMasterwork?.length ? r.recMasterwork : undefined,
+    // Exotic catalysts: name, icon, effect (d), unlock text (u), source (s), whether you have it (a) and open objectives (p).
+    ct: recW.get(r.instanceId)?.catalysts?.map((c) => ({ n: c.name, ic: imageKey(c.icon), d: c.description || undefined, u: c.unlock, s: c.source, a: c.acquired, p: c.progress })),
     loc: where(recW.get(r.instanceId)?.location),
     };
   });
