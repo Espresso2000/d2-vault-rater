@@ -2688,16 +2688,11 @@ function vrMain() {
   }
 
   /* ---------- Weapon roles ---------- */
-  // Every copy has a 0-100 score per role (w.ro) and holds a role at the threshold or above. Boss DPS and Range each stand for two roles,
-  // and Barrier / Overload / Unstoppable narrow Major / champion to what the weapon actually stuns.
+  // Every copy has a 0-100 score per role (w.ro) and holds a role at the threshold or above.
   const RTH = DATA.roles?.threshold ?? 65, RLABEL = DATA.roles?.label || {};
   const ROLE_TOP = [
     { id: "add-clear", label: "Add clear" },
-    { id: "champion", label: "Major / champion", subs: ["Barrier", "Overload", "Unstoppable"].map((c) => ["ch:" + c, c]) },
-    { id: "boss", label: "Boss DPS", leaves: ["burst", "precision"], subs: [["burst", "Burst"], ["precision", "Precision"]] },
-    { id: "sustained", label: "Sustained DPS" },
-    { id: "range", label: "Range", leaves: ["long", "close"], subs: [["long", "Long"], ["close", "Close"]] },
-    { id: "utility", label: "Support" },
+    { id: "major", label: "Majors" },
     { id: "movement", label: "Movement" },
   ];
   const holds = (w, r) => (w.ro?.[r] ?? 0) >= RTH;

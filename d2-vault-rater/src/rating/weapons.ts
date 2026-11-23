@@ -1,5 +1,4 @@
 import { baseName, normalizeName, type Manifest } from "../bungie/manifest.js";
-import { loadBossDamage, type BossDamageData } from "../sources/bossDamage.js";
 import { loadAegisPerks, type AegisData, type AegisPerk, type AegisWeapon, type ColumnKey } from "../sources/aegis.js";
 import { buildRolePerkMap, scoreRoles, type RoleId, type RoleScores } from "./roles.js";
 import type { WishlistData } from "../sources/wishlist.js";
@@ -155,10 +154,10 @@ export const archetype = (r: { frame: string; type: string }) => {
 
 export function rateWeapons(
   weapons: WeaponRecord[],
-  sources: { aegis: AegisData | null; wishlists: WishlistData | null; manifest: Manifest | null; /** Aegis perk list; read from disk when left out. */ perks?: AegisPerk[]; /** Boss Damage sheet; read from disk when left out. */ boss?: BossDamageData | null },
+  sources: { aegis: AegisData | null; wishlists: WishlistData | null; manifest: Manifest | null; /** Aegis perk list; read from disk when left out. */ perks?: AegisPerk[]; },
   settings: Settings,
 ): WeaponReport {
-  const roleMap = buildRolePerkMap(sources.perks ?? loadAegisPerks(), undefined, sources.boss === undefined ? loadBossDamage() : sources.boss);
+  const roleMap = buildRolePerkMap(sources.perks ?? loadAegisPerks());
   const ai = aegisIndex(sources.aegis);
   const wi = wishIndex(sources.wishlists, sources.manifest, new Set(weapons.map((w) => w.itemHash)));
   const protect = new Set(settings.protect.map(normalizeName));
@@ -176,7 +175,7 @@ export function rateWeapons(
     const pos = a ? ai.tierPosition.get(a) ?? 1 : 1;
     const weaponScore = Math.min(100, (a?.grade ? GRADE_POINTS[a.grade] : TIER_POINTS[effectiveTier]) + (a ? Math.round(5 * (1 - pos)) : 0));
     const score = Math.round(WEAPON_WEIGHT * weaponScore + ROLL_WEIGHT * rollScore);
-    const { scores: roles, why: roleWhy } = scoreRoles({ w, tags: a?.tags, score }, roleMap);
+    const { scores: roles, why: roleWhy } = scoreRoles({ w, tags: a?.tags, notes: a?.notes, score }, roleMap);
     return {
       instanceId: w.instanceId,
       itemHash: w.itemHash,
