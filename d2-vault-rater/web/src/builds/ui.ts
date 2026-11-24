@@ -151,6 +151,8 @@ async function searchPlugs(q: string): Promise<{ title: string; hits: PlugHit[] 
     if (hits.length) out.push({ title, hits });
   };
   for (const [title, test] of SEARCH_GROUPS) add(title, Object.values(d.subclasses).flatMap((sc) => sc.sockets.filter((s) => test(s.group)).flatMap((s) => s.plugs)));
+  // Only the newest artifact (the last one the manifest lists) is the live one.
+  add("Artifact perks", d.artifacts?.at(-1)?.tiers.flat() ?? []);
   add("Armor mods", Object.values(d.mods).flat());
   return out;
 }
@@ -161,8 +163,9 @@ async function focusPlug(h: number) {
   const p = d.plugs[h];
   if (!p) return;
   const group = Object.values(d.subclasses).flatMap((sc) => sc.sockets).find((s) => s.plugs.includes(h))?.group ?? "other";
+  const artifact = d.artifacts?.some((a) => a.tiers.some((t) => t.includes(h)));
   openDrawer(`<div class="bd-pick"><div><div class="eyebrow">Builds</div><h2>${esc(p.n)}</h2></div>${plugDetail(p, group, null)}
-    <div class="bd-acts"><button class="btn primary" data-dact="addplug" data-h="${h}"${cur ? "" : " disabled"}>${cur ? `Add to “${esc(cur.name)}”` : "Open a build to add this"}</button><span class="small muted" id="bd-addmsg" aria-live="polite"></span></div></div>`);
+    ${artifact ? '<p class="small muted">Artifact perks are picked in the game; Bungie gives other apps no way to change them.</p>' : `<div class="bd-acts"><button class="btn primary" data-dact="addplug" data-h="${h}"${cur ? "" : " disabled"}>${cur ? `Add to “${esc(cur.name)}”` : "Open a build to add this"}</button><span class="small muted" id="bd-addmsg" aria-live="polite"></span></div>`}</div>`);
 }
 function addPlugToCur(t: HTMLElement) {
   const h = Number(t.dataset.h), msg = document.getElementById("bd-addmsg")!;

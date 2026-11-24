@@ -12,8 +12,9 @@ self.onmessage = async (e: MessageEvent<{ version: string; paths: Record<string,
     const names = await downloadTable(paths, "DestinyLoadoutNameDefinition").catch(() => ({}));
     const icons = await downloadTable(paths, "DestinyLoadoutIconDefinition").catch(() => ({}));
     const colors = await downloadTable(paths, "DestinyLoadoutColorDefinition").catch(() => ({}));
+    const artifacts = await downloadTable(paths, "DestinyArtifactDefinition").catch(() => ({}));
     const items = await downloadTable(paths, "DestinyInventoryItemDefinition");
-    self.postMessage({ result: stripBuildDefs(version, items, plugSets, perks, constants, { names, icons, colors }) });
+    self.postMessage({ result: stripBuildDefs(version, items, plugSets, perks, constants, { names, icons, colors }, artifacts) });
   } catch (err) {
     self.postMessage({ error: (err as Error).message });
   }

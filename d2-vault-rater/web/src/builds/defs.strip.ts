@@ -58,6 +58,8 @@ export interface BuildDefs {
   /** In-game loadout identifiers (DestinyLoadoutConstantsDefinition), for saving to an empty slot. */
   loadout: { colors: number[]; icons: number[]; names: number[] };
   /** In-game loadout name / icon image / colour swatch image by hash (absent in older cached copies). */
+  /** The seasonal artifacts (name, then each tier's perk plug hashes); absent in copies built before they were read. */
+  artifacts?: { n: string; tiers: number[][] }[];
   loadoutLook?: { names: Record<number, string>; icons: Record<number, string>; colors: Record<number, string> };
 }
 
@@ -77,7 +79,7 @@ export function groupOf(pci: string): SocketGroup {
 
 export const MOD_CATEGORY = /^enhancements\.v2_(general|head|arms|chest|legs|class_item)$/;
 
-export function stripBuildDefs(version: string, items: Raw, plugSets: Raw, perks: Raw, loadoutConstants: Raw = {}, look: { names?: Raw; icons?: Raw; colors?: Raw } = {}): BuildDefs {
+export function stripBuildDefs(version: string, items: Raw, plugSets: Raw, perks: Raw, loadoutConstants: Raw = {}, look: { names?: Raw; icons?: Raw; colors?: Raw } = {}, artifacts: Raw = {}): BuildDefs {
   const lc = Object.values(loadoutConstants)[0] ?? {};
   const out: BuildDefs = {
     version,
@@ -94,10 +96,11 @@ export function stripBuildDefs(version: string, items: Raw, plugSets: Raw, perks
   pick(look.icons, "iconImagePath", out.loadoutLook!.icons);
   pick(look.colors, "colorImagePath", out.loadoutLook!.colors);
   const statSet = new Set<number>(STAT_HASHES);
-  const addPlug = (h: number) => {
+  const artifactPerks: BuildDefs["artifacts"] = [];
+  const addPlug = (h: number, perk = false) => {
     if (out.plugs[h]) return;
     const d = items[h];
-    if (!d?.plug) return;
+    if (!d || (!d.plug && !perk)) return;
     const desc =
       d.displayProperties?.description ||
       (d.perks ?? [])
@@ -110,15 +113,25 @@ export function stripBuildDefs(version: string, items: Raw, plugSets: Raw, perks
       n: d.displayProperties?.name ?? "",
       i: d.displayProperties?.icon,
       d: desc,
-      c: d.plug.plugCategoryIdentifier ?? "",
+      c: d.plug?.plugCategoryIdentifier ?? "",
       t: d.itemTypeDisplayName || undefined,
-      ...(d.plug.energyCost?.energyCost ? { cost: d.plug.energyCost.energyCost } : {}),
-      ...(d.plug.energyCapacity?.capacityValue ? { cap: d.plug.energyCapacity.capacityValue } : {}),
+      ...(d.plug?.energyCost?.energyCost ? { cost: d.plug.energyCost.energyCost } : {}),
+      ...(d.plug?.energyCapacity?.capacityValue ? { cap: d.plug.energyCapacity.capacityValue } : {}),
       ...(st.length ? { st } : {}),
     };
   };
   const setPlugs = (setHash: number | undefined): number[] =>
     [...new Set<number>((plugSets[setHash ?? -1]?.reusablePlugItems ?? []).map((p: Raw) => p.plugItemHash))];
+
+  // Seasonal artifacts: only the newest one (highest hash is not reliable, so keep every non-redacted one with perks).
+  for (const a of Object.values(artifacts)) {
+    if (a.redacted) continue;
+    const tiers: number[][] = (a.tiers ?? []).map((t: Raw) => (t.items ?? []).map((i: Raw) => i.itemHash as number).filter((h: number) => items[h]?.displayProperties?.name));
+    if (!tiers.flat().length) continue;
+    tiers.flat().forEach((h) => addPlug(h, true));
+    artifactPerks.push({ n: a.displayProperties?.name ?? "Artifact", tiers });
+  }
+  out.artifacts = artifactPerks;
 
   for (const d of Object.values(items)) {
     // classType 3 subclasses are the old "Unfocused energy" placeholders.
