@@ -2707,6 +2707,9 @@ function vrMain() {
   };
   const pickedTops = (st) => ROLE_TOP.filter((t) => st.roles.includes(t.id));
   function roleFilter(st) {
+    // Roles saved by older versions (boss, range, champion...) no longer exist: drop them so they can't linger as an empty filter.
+    st.roles = st.roles.filter((r) => ROLE_TOP.some((t) => t.id === r));
+    if (!st.roles.length && st.sort === "role") st.sort = "score";
     const tops = pickedTops(st); if (!tops.length) return null;
     const tests = tops.map((t) => topTest(t, st.roles));
     return st.rmatch === "all" ? (w) => tests.every((f) => f(w)) : (w) => tests.some((f) => f(w));
