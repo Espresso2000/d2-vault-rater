@@ -198,6 +198,8 @@ function lazyBuilds(input: BuildsInput) {
   const ready = import("./builds/ui").then((b) => b.initBuilds(input));
   window.VR_BUILDS = {
     count: () => loadBuilds().length || null,
+    search: (q) => ready.then(() => window.VR_BUILDS!.search!(q)),
+    focus: (h) => void ready.then(() => window.VR_BUILDS!.focus!(h)),
     render: (el) => {
       // The tab switches at once: show a loading block now, while the tab's code loads.
       el.innerHTML = loadingBlock("Loading builds…");

@@ -71,6 +71,8 @@ let builds: Build[] = [];
 let cur: Build | null = null;
 let loadError = "";
 let loading: Promise<void> | null = null;
+/** The definitions' load, shared by the tab and the app bar's search. */
+let defsP: Promise<BuildDefs> | null = null;
 /** Destiny Clarity's notes: plug hash -> paragraphs. */
 let clarity: Record<number, string[]> = {};
 const log: string[] = [];
@@ -107,7 +109,78 @@ export function initBuilds(i: BuildsInput) {
   input = i;
   fixed = null;
   builds = loadBuilds();
-  window.VR_BUILDS = { render, count: () => builds.length || null, leave: (next) => (unsaved() ? (guard(next), false) : true) };
+  window.VR_BUILDS = { render, count: () => builds.length || null, leave: (next) => (unsaved() ? (guard(next), false) : true), search: searchPlugs, focus: focusPlug };
+}
+
+/* ---------- App bar search: abilities, aspects, fragments and armor mods ---------- */
+
+export interface PlugHit { h: number; name: string; icon?: string; sub: string; snip: string }
+const SEARCH_GROUPS: [string, (g: SocketGroup) => boolean][] = [
+  ["Abilities", (g) => ["super", "melee", "grenade", "class", "movement"].includes(g)],
+  ["Aspects", (g) => g === "aspects"],
+  ["Fragments", (g) => g === "fragments"],
+];
+
+/** Plugs whose name or text (description, Clarity's notes) holds q, grouped; loads the definitions on first use. */
+async function searchPlugs(q: string): Promise<{ title: string; hits: PlugHit[] }[]> {
+  const low = q.trim().toLowerCase();
+  if (!low) return [];
+  const d = (defs ??= await (defsP ??= loadBuildDefs(() => {})));
+  if (!Object.keys(clarity).length) clarity = cachedClarity();
+  const match = (p: PlugDef): PlugHit | null => {
+    const inName = p.n.toLowerCase().includes(low);
+    const t = [p.d, ...(clarity[p.h] ?? [])].find((x) => x.toLowerCase().includes(low));
+    if (!inName && !t) return null;
+    const src = t ?? p.d;
+    const from = Math.max(0, src.toLowerCase().indexOf(low) - 40);
+    const snip = (from ? "…" : "") + src.slice(from, from + 130).replace(/s+/g, " ") + (src.length > from + 130 ? "…" : "");
+    return { h: p.h, name: p.n, icon: p.i ? bungieUrl(p.i) : undefined, sub: p.t ?? "", snip };
+  };
+  const seen = new Set<number>();
+  const out: { title: string; hits: PlugHit[] }[] = [];
+  const add = (title: string, plugs: Iterable<number>) => {
+    const hits: PlugHit[] = [];
+    for (const h of plugs) {
+      const p = d.plugs[h];
+      if (!p || seen.has(h) || isEmptyPlug(p)) continue;
+      const hit = match(p);
+      if (hit) (seen.add(h), hits.push(hit));
+    }
+    // Name matches first.
+    hits.sort((a, b) => Number(b.name.toLowerCase().includes(low)) - Number(a.name.toLowerCase().includes(low)));
+    if (hits.length) out.push({ title, hits });
+  };
+  for (const [title, test] of SEARCH_GROUPS) add(title, Object.values(d.subclasses).flatMap((sc) => sc.sockets.filter((s) => test(s.group)).flatMap((s) => s.plugs)));
+  add("Armor mods", Object.values(d.mods).flat());
+  return out;
+}
+
+/** Opens a plug's full details in the Builds tab's panel, with a button to add it to the build being edited. */
+async function focusPlug(h: number) {
+  const d = (defs ??= await (defsP ??= loadBuildDefs(() => {})));
+  const p = d.plugs[h];
+  if (!p) return;
+  const group = Object.values(d.subclasses).flatMap((sc) => sc.sockets).find((s) => s.plugs.includes(h))?.group ?? "other";
+  openDrawer(`<div class="bd-pick"><div><div class="eyebrow">Builds</div><h2>${esc(p.n)}</h2></div>${plugDetail(p, group, null)}
+    <div class="bd-acts"><button class="btn primary" data-dact="addplug" data-h="${h}"${cur ? "" : " disabled"}>${cur ? `Add to “${esc(cur.name)}”` : "Open a build to add this"}</button><span class="small muted" id="bd-addmsg" aria-live="polite"></span></div></div>`);
+}
+function addPlugToCur(t: HTMLElement) {
+  const h = Number(t.dataset.h), msg = document.getElementById("bd-addmsg")!;
+  const sc = cur?.subclass ? defs!.subclasses[cur.subclass] : null;
+  const i = sc?.sockets.findIndex((s) => s.plugs.includes(h)) ?? -1;
+  if (!cur || !sc || i < 0) return void (msg.textContent = "This build's subclass can't take it.");
+  const g = sc.sockets[i].group;
+  let at = i;
+  if (g === "aspects" || g === "fragments") {
+    if (Object.values(cur.plugs).includes(h)) return void (msg.textContent = "Already in this build.");
+    const open = socketsOf(sc, g).slice(0, g === "fragments" ? fragmentSlots(cur, defs!) : 2);
+    at = open.find((j) => isEmptyPlug(defs!.plugs[cur!.plugs[j]])) ?? -1;
+    if (at < 0) return void (msg.textContent = "No free slot.");
+  }
+  cur.plugs[at] = h;
+  if (g === "aspects") trimFragments(cur, defs!);
+  touch();
+  msg.textContent = "Added. Save the build to keep it.";
 }
 
 function render(el: HTMLElement) {
@@ -132,7 +205,7 @@ async function load() {
   };
   try {
     note("Loading subclass, aspect and fragment definitions…");
-    const [d] = await Promise.all([loadBuildDefs(note), loadRatings().catch((e) => note(`Couldn't read the rating sheets: ${(e as Error).message}`))]);
+    const [d] = await Promise.all([(defsP ??= loadBuildDefs(note)), loadRatings().catch((e) => note(`Couldn't read the rating sheets: ${(e as Error).message}`))]);
     defs = d;
     clarity = cachedClarity();
     cur = builds[0] ? structuredClone(builds[0]) : null;
@@ -1017,7 +1090,7 @@ function onDrawerClick(e: Event) {
   if (a === "close") return closeDrawer();
   DRAWER_ACTIONS[a!]?.(t);
 }
-const DRAWER_ACTIONS: Record<string, (t: HTMLElement) => void> = {};
+const DRAWER_ACTIONS: Record<string, (t: HTMLElement) => void> = { addplug: addPlugToCur };
 let onDrawerChange: (e: Event) => void = () => {};
 
 /* ---------- Gear picker: every slot from one list, applied at once ---------- */
@@ -1805,6 +1878,9 @@ function previewImport(b: Build, from: string) {
 
 declare global {
   interface Window {
-    VR_BUILDS?: { render: (el: HTMLElement) => void; count: () => number | null; leave?: (next: () => void) => boolean };
+    VR_BUILDS?: {
+      render: (el: HTMLElement) => void; count: () => number | null; leave?: (next: () => void) => boolean;
+      search?: (q: string) => Promise<{ title: string; hits: PlugHit[] }[]>; focus?: (h: number) => void;
+    };
   }
 }

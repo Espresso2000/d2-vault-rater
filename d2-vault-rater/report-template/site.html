@@ -156,10 +156,26 @@ nav.tabs .count { font: 500 11px/1 var(--mono); padding: 4px 7px; border-radius:
 /* Search: typing opens the full list filtered by the text. */
 .gsearch { position: relative; display: flex; align-items: center; }
 .gsearch svg { position: absolute; left: 12px; width: 15px; height: 15px; fill: none; stroke: var(--muted); stroke-width: 2; pointer-events: none; }
-.gsearch input { width: clamp(150px, 22vw, 320px); height: 42px; font-size: 15px; padding: 0 32px 0 36px; border-radius: 10px; border: 1px solid var(--line); background: var(--glass); transition: border-color .2s ease, background .2s ease, width .25s ease; }
+.gsearch input { width: clamp(150px, 22vw, 320px); height: 42px; font-size: 15px; padding: 0 70px 0 36px; border-radius: 10px; border: 1px solid var(--line); background: var(--glass); transition: border-color .2s ease, background .2s ease, width .25s ease; }
 .gsearch input::placeholder { color: var(--faint); }
 .gsearch input:focus { outline: none; border-color: var(--hover); background: var(--glass-hi); }
 .gsearch kbd { position: absolute; right: 10px; font: 500 11px/18px var(--mono); color: var(--faint); border: 1px solid var(--line-hi); border-radius: 5px; padding: 0 5px; pointer-events: none; }
+.gsearch kbd { right: 42px; }
+.gsbtn { position: absolute; right: 5px; width: 30px; height: 32px; padding: 0; display: grid; place-items: center; border: 0; border-radius: 7px; background: none; color: var(--muted); cursor: pointer; }
+.gsbtn:hover, .gsbtn[aria-expanded=true] { color: var(--ink); background: rgba(238,241,255,.08); }
+.gsearch .gsbtn svg { position: static; width: 16px; height: 16px; stroke-linecap: round; stroke-linejoin: round; transition: transform .15s ease; }
+.gsbtn[aria-expanded=true] svg { transform: rotate(180deg); }
+.gsdrop { position: absolute; top: calc(100% + 8px); right: 0; z-index: 40; width: min(560px, 92vw); max-height: min(70vh, 640px); overflow-y: auto; overscroll-behavior: contain; background: var(--dp-bg, #0a0f24); border: 1px solid var(--line-hi); border-radius: 12px; box-shadow: 0 30px 80px -30px rgba(0,0,0,.9); padding: 6px; }
+.gsdrop[hidden] { display: none; }
+.gsdrop h3 { margin: 10px 8px 4px; font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.gsdrop h3 span { color: var(--faint); font-weight: 500; }
+.gsdrop .gsrow { display: flex; gap: 10px; align-items: center; width: 100%; padding: 7px 8px; border: 0; border-radius: 8px; background: none; color: inherit; text-align: left; cursor: pointer; font: inherit; }
+.gsdrop .gsrow:hover, .gsdrop .gsrow:focus-visible { background: rgba(238,241,255,.07); outline: none; }
+.gsdrop .gsrow > img, .gsdrop .gsrow > .ph { flex: none; width: 36px; height: 36px; border-radius: 7px; }
+.gsdrop .gsrow b { display: block; font-size: 14px; font-weight: 600; }
+.gsdrop .gsrow small { display: block; font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
+.gsdrop mark { background: rgba(242,193,78,.28); color: var(--ink); border-radius: 3px; padding: 0 1px; }
+.gsdrop .gsnone { padding: 14px 10px; color: var(--muted); font-size: 13.5px; }
 .gsearch input:focus + kbd, .gsearch input:not(:placeholder-shown) + kbd { display: none; }
 .btn.rerate { height: 42px; padding-block: 0; padding-inline: 18px; }
 
@@ -1483,7 +1499,7 @@ body.vr-booting > .topbar, body.vr-booting > main, body.vr-booting > footer { di
       <span><b id="brand-name">Vault Report</b><small>Destiny 2 · Vault Rater</small></span>
     </a>
     <div class="bar-actions" id="bar-actions">
-      <label class="gsearch"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="gq" placeholder="Search your vault" aria-label="Search weapons and armor" autocomplete="off"><kbd aria-hidden="true">/</kbd></label>
+      <div class="gsearch"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="gq" placeholder="Search your vault" aria-label="Search weapons and armor" autocomplete="off"><kbd aria-hidden="true">/</kbd><button type="button" class="gsbtn" id="gsbtn" title="Search everything: weapons, armor, abilities, aspects, fragments and mods, by name or text" aria-label="Search everything" aria-expanded="false" aria-controls="gsdrop"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9l7 7 7-7"/></svg></button><div class="gsdrop" id="gsdrop" role="listbox" aria-label="Search results" hidden></div></div>
     </div>
   </div>
   <div class="wrap tabrow"><div class="tabsx" id="tabsx"><nav class="tabs" role="tablist" aria-label="Report sections" id="tabs"></nav><button type="button" tabindex="-1" aria-hidden="true" title="More tabs" class="tscroll l"></button><button type="button" tabindex="-1" aria-hidden="true" title="More tabs" class="tscroll r"></button></div></div>
@@ -2662,6 +2678,8 @@ function vrMain() {
   // App bar search: opens the Vault tab's full list with that text, on armor when only armor matches. "/" focuses it.
   $("#gq").oninput = () => typing(() => {
     const q = $("#gq").value, low = q.trim().toLowerCase();
+    // With the results list open, typing filters it instead of opening the Vault tab.
+    if (!$("#gsdrop").hidden) return gsRun();
     const hits = (set) => SETS[set].items.some(compileQuery(q, set));
     ex.set = !low || hits("w") || !hits("a") ? "w" : "a";
     Object.assign(ex[ex.set], blank(), { q });
@@ -2669,7 +2687,58 @@ function vrMain() {
     setListMode("list");
     show("list", false);
   });
-  $("#gq").onkeydown = (e) => { if (e.key === "Escape") { e.target.value = ""; e.target.blur(); } };
+  $("#gq").onkeydown = (e) => { if (e.key === "Escape") { if (!$("#gsdrop").hidden) return gsToggle(false); e.target.value = ""; e.target.blur(); } };
+  /* Search everything: the button under the search box lists weapons, armor and (in the web app) abilities, aspects,
+     fragments and armor mods whose name or text holds the words, each with a snippet. A weapon or armor piece opens in
+     the details panel; the rest open in the Builds tab. */
+  const GS_MAX = 8;
+  const gsMark = (t, q) => { const s = String(t), i = s.toLowerCase().indexOf(q); return i < 0 ? esc(s) : esc(s.slice(0, i)) + "<mark>" + esc(s.slice(i, i + q.length)) + "</mark>" + esc(s.slice(i + q.length)); };
+  function gsToggle(on = $("#gsdrop").hidden) {
+    $("#gsdrop").hidden = !on;
+    $("#gsbtn").setAttribute("aria-expanded", String(on));
+    if (on) { $("#gq").focus(); gsRun(); }
+  }
+  let gsSeq = 0;
+  async function gsRun() {
+    const q = $("#gq").value.trim().toLowerCase(), drop = $("#gsdrop"), seq = ++gsSeq;
+    if (!q) { drop.innerHTML = '<div class="gsnone">Type a name or some text, like “scorch”, to search weapons, armor, perks, abilities, aspects, fragments and mods.</div>'; return; }
+    const groups = [];
+    const has = (txt) => String(txt ?? "").toLowerCase().includes(q);
+    // Weapons: one row per name (best copy), matched on its name, type, frame, element, masterwork or any perk.
+    const seen = new Set(), wh = [];
+    for (const w of [...DATA.weapons].sort((a, b) => b.sc - a.sc)) {
+      if (seen.has(w.n)) continue;
+      const field = [w.t, w.f, w.e, w.mw].find(has), perk = w.pk.flatMap((p) => p.o).find(has);
+      const snip = has(w.n) ? w.t + " · " + w.e : field ? field : perk ? "Perk: " + perk : null;
+      if (snip) (seen.add(w.n), wh.push({ ico: img(w.ic), name: w.n, sub: w.t, snip, attr: `data-w="${esc(w.id)}"` }));
+    }
+    const ah = DATA.armor.filter((a) => [a.n, a.arch, a.set, a.s].some(has)).sort((a, b) => b.sc - a.sc)
+      .map((a) => ({ ico: img(a.ic), name: a.n, sub: a.cls + " " + a.s, snip: [a.set, a.arch].find(has) || a.cls + " " + a.s, attr: `data-a="${esc(a.id)}"` }));
+    if (wh.length) groups.push({ title: "Weapons", all: wh, more: "w" });
+    if (ah.length) groups.push({ title: "Armor", all: ah, more: "a" });
+    if (window.VR_BUILDS?.search) {
+      drop.innerHTML = '<div class="gsnone">Searching…</div>' + (groups.length ? "" : "");
+      let found = [];
+      try { found = await window.VR_BUILDS.search(q); } catch (err) { console.warn("Search: build data unavailable", err); }
+      if (seq !== gsSeq) return;
+      for (const g of found) groups.push({ title: g.title, all: g.hits.map((h) => ({ ico: h.icon ? `<img src="${esc(h.icon)}" alt="" loading="lazy">` : '<span class="ph"></span>', name: h.name, sub: h.sub, snip: h.snip, attr: `data-plug="${h.h}"` })), cap: 25 });
+    }
+    drop.innerHTML = groups.length ? groups.map((g) => {
+      const shown = g.all.slice(0, g.cap || GS_MAX);
+      return `<h3>${g.title} <span>${g.all.length}</span></h3>` + shown.map((x) => `<button type="button" class="gsrow" role="option" ${x.attr}>${x.ico}<span style="min-width:0"><b>${gsMark(x.name, q)}</b><small>${gsMark(x.snip, q)}</small></span></button>`).join("")
+        + (g.more && g.all.length > shown.length ? `<button type="button" class="gsrow" data-more="${g.more}"><span class="small muted" style="padding-left:46px">Show all ${g.all.length} in the Vault tab</span></button>` : "");
+    }).join("") : `<div class="gsnone">Nothing matches “${esc($("#gq").value.trim())}”.</div>`;
+  }
+  $("#gsbtn").onclick = () => gsToggle();
+  $("#gsdrop").onclick = (e) => {
+    const t = e.target.closest("[data-w], [data-a], [data-plug], [data-more]");
+    if (!t) return;
+    gsToggle(false);
+    if (t.dataset.more) { ex.set = t.dataset.more; Object.assign(ex[ex.set], blank(), { q: $("#gq").value }); if (rendered.list) drawExplorer(true); setListMode("list"); show("list", false); return; }
+    if (t.dataset.plug) { show("builds"); window.VR_BUILDS.focus(Number(t.dataset.plug)); return; }
+    t.dataset.w ? openWeapon(t.dataset.w) : openArmor(t.dataset.a);
+  };
+  document.addEventListener("pointerdown", (e) => { if (!$("#gsdrop").hidden && !e.target.closest(".gsearch")) gsToggle(false); });
   document.addEventListener("keydown", (e) => {
     if (e.ctrlKey || e.metaKey || e.altKey || e.target.closest?.("input, textarea, select, [contenteditable]")) return;
     if (e.key === "/") { e.preventDefault(); $("#gq").focus(); }
